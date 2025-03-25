@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="HouseholdMS.View.InventoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HouseholdMS.View"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800">
+
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Add/Restock Section -->
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+            <TextBox x:Name="ItemTypeBox" Width="120" Margin="0,0,10,0" Text="ItemType"/>
+            <TextBox x:Name="QuantityBox" Width="80" Margin="0,0,10,0" Text="10"/>
+            <Button Content="📥 Add / Restock Item" Width="180" Click="RestockItem_Click"/>
+        </StackPanel>
+
+        <!-- Inventory Table -->
+        <ListView x:Name="InventoryListView" Grid.Row="1" Height="300">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Item Type" DisplayMemberBinding="{Binding ItemType}" Width="150"/>
+                    <GridViewColumn Header="Total Quantity" DisplayMemberBinding="{Binding TotalQuantity}" Width="100"/>
+                    <GridViewColumn Header="Used Quantity" DisplayMemberBinding="{Binding UsedQuantity}" Width="100"/>
+                    <GridViewColumn Header="Last Restocked" DisplayMemberBinding="{Binding LastRestockedDate}" Width="150"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
+</UserControl>

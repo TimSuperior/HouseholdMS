@@ -1,0 +1,49 @@
+﻿<Window x:Class="HouseholdMS.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HouseholdMS"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="420" Width="980">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20*"/>
+            <ColumnDefinition Width="80*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="95*"/>
+                <RowDefinition Height="5*"/>
+            </Grid.RowDefinitions>
+
+            <!-- ✅ Sidebar Menu -->
+            <StackPanel HorizontalAlignment="Stretch" Background="#333" Margin="0">
+                <TextBlock Text="Menu" Foreground="White" FontSize="18" FontWeight="Bold" Margin="10, 0, 0 , 0"/>
+
+                <Button Content="🏠 Households" Click="bt_HouseholdMenu"  Background="Gray" Height="30"/>
+                <Button Content="👷 Technicians" Click="bt_TechnicianMenu" Background="Gray" Height="30"/>
+                <Button Content="📦 Inventory" Click="bt_InventoryMenu" Background="Gray" Height="30"/>
+                <Button Content="🔧 Service Records" Click="bt_ServiceMenu" Background="Gray" Height="30"/>
+
+            </StackPanel>
+
+            <Grid Grid.Row="1">
+                <Button Content="🚪 Logout" Background="DimGray"  Foreground="White" />
+            </Grid>
+
+        </Grid>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="5*"/>
+                <RowDefinition Height="90*"/>
+                <RowDefinition Height="5*"/>
+            </Grid.RowDefinitions>
+        </Grid>
+
+        <ContentControl x:Name="MainContent" Grid.Column="1" Margin="5"/>
+
+    </Grid>
+</Window>
