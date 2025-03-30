@@ -85,6 +85,9 @@
     <Compile Include="View\AddHouseholdWindow.xaml.cs">
       <DependentUpon>AddHouseholdWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\AddInventoryWindow.xaml.cs">
+      <DependentUpon>AddInventoryWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Login.xaml.cs">
       <DependentUpon>Login.xaml</DependentUpon>
     </Compile>
@@ -116,6 +119,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="View\AddHouseholdWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\AddInventoryWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

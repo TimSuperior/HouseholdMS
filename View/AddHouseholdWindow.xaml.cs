@@ -13,7 +13,9 @@ namespace HouseholdMS.View
         }
         public bool Saved { get; private set; } = false;
 
-        public string Owner => OwnerBox.Text.Trim();
+        public string OwnerName => OwnerBox.Text.Trim(); // ✅ safe name
+
+        //public string Owner => OwnerBox.Text.Trim();
         public string Address => AddressBox.Text.Trim();
         public string Contact => ContactBox.Text.Trim();
         public string InstallDate => InstDatePicker.SelectedDate?.ToString("yyyy-MM-dd");
@@ -22,7 +24,7 @@ namespace HouseholdMS.View
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(Owner) || string.IsNullOrWhiteSpace(Address) ||
+            if (string.IsNullOrWhiteSpace(OwnerName) || string.IsNullOrWhiteSpace(Address) ||
                 string.IsNullOrWhiteSpace(Contact) || InstallDate == null || LastInspect == null)
             {
                 MessageBox.Show("Please fill in all fields.");
@@ -30,7 +32,7 @@ namespace HouseholdMS.View
             }
 
                 
-                    string owner = Owner;
+                    string owner = OwnerName;
                     string address = Address;
                     string contact = Contact;
                     string instDate = InstallDate;

@@ -1,27 +1,46 @@
 ﻿<Window x:Class="HouseholdMS.View.AddHouseholdWindow"
-        xmlns:userControls="clr-namespace:HouseholdMS.View.UserControls"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sys="clr-namespace:System;assembly=mscorlib" 
-        Title="Add New Household" Height="400" Width="400" WindowStartupLocation="CenterOwner">
+        xmlns:userControls="clr-namespace:HouseholdMS.View.UserControls"
+        Title="Add New Household"
+        Height="450" Width="400"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="SingleBorderWindow">
 
-    <Grid Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <Border Background="#f9f9f9" Padding="20">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <StackPanel Margin="0,0,0,10">
-            <userControls:TxtBox x:Name="OwnerBox" Placeholder="Owner Name" Margin="0,0,0,10"/>
-            <userControls:TxtBox x:Name="AddressBox" Placeholder="Address" Margin="0,0,0,10"/>
-            <userControls:TxtBox x:Name="ContactBox" Placeholder="Contact" Margin="0,0,0,10"/>
-            <DatePicker x:Name="InstDatePicker" SelectedDate="{x:Static sys:DateTime.Now}" Margin="0,0,0,10"/>
-            <DatePicker x:Name="LastInspPicker" Margin="0,0,0,10"/>
-        </StackPanel>
+            <!-- Input Fields -->
+            <StackPanel VerticalAlignment="Top">
+                <TextBlock Text="Owner Name" FontWeight="Bold" Margin="0,0,0,4"/>
+                <userControls:TxtBox x:Name="OwnerBox" Height="30" Margin="0,0,0,10"/>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right">
-            <Button Content="Save" Width="80" Margin="0,0,10,0" Click="Save_Click"/>
-            <Button Content="Cancel" Width="80" Click="Cancel_Click"/>
-        </StackPanel>
-    </Grid>
+                <TextBlock Text="Address" FontWeight="Bold" Margin="0,0,0,4"/>
+                <userControls:TxtBox x:Name="AddressBox" Height="30" Margin="0,0,0,10"/>
+
+                <TextBlock Text="Contact Number" FontWeight="Bold" Margin="0,0,0,4"/>
+                <userControls:TxtBox x:Name="ContactBox" Height="30" Margin="0,0,0,10"/>
+
+                <TextBlock Text="Installation Date" FontWeight="Bold" Margin="0,0,0,4"/>
+                <DatePicker x:Name="InstDatePicker" Height="30" Margin="0,0,0,10"/>
+
+                <TextBlock Text="Last Inspection Date" FontWeight="Bold" Margin="0,0,0,4"/>
+                <DatePicker x:Name="LastInspPicker" Height="30" Margin="0,0,0,10"/>
+            </StackPanel>
+
+            <!-- Buttons -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                <Button Content="✔ Save" Width="90" Margin="0,0,10,0" Height="35"
+                        Background="#4CAF50" Foreground="White" Click="Save_Click"/>
+
+                <Button Content="✖ Cancel" Width="90" Height="35"
+                        Background="#F44336" Foreground="White" Click="Cancel_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
 </Window>
