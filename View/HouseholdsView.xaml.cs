@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Data.SQLite;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -8,24 +9,19 @@ namespace HouseholdMS.View
 {
     public partial class HouseholdsView : UserControl
     {
-        private ObservableCollection<Household> households = new ObservableCollection<Household>();
+        private ObservableCollection<Household> allHouseholds = new ObservableCollection<Household>();
+        private ObservableCollection<Household> filteredHouseholds = new ObservableCollection<Household>();
 
         public HouseholdsView()
         {
-
-
             InitializeComponent();
-
-            //string dbPath = System.IO.Path.GetFullPath("household_management.db");
-            //MessageBox.Show(dbPath); // Debug: shows where it's reading from
-
-
             LoadHouseholds();
         }
 
         public void LoadHouseholds()
         {
-            households.Clear();
+            allHouseholds.Clear();
+            filteredHouseholds.Clear();
 
             using (SQLiteConnection conn = DatabaseHelper.GetConnection())
             {
@@ -35,7 +31,7 @@ namespace HouseholdMS.View
                 {
                     while (reader.Read())
                     {
-                        households.Add(new Household
+                        var household = new Household
                         {
                             HouseholdID = Convert.ToInt32(reader["HouseholdID"]),
                             OwnerName = reader["OwnerName"].ToString(),
@@ -43,67 +39,88 @@ namespace HouseholdMS.View
                             ContactNum = reader["ContactNum"].ToString(),
                             InstDate = reader["InstallDate"].ToString(),
                             LastInspDate = reader["LastInspect"].ToString()
-                        });
+                        };
+
+                        allHouseholds.Add(household);
+                        filteredHouseholds.Add(household);
                     }
                 }
             }
 
-            HouseholdListView.ItemsSource = households;
+            HouseholdListView.ItemsSource = filteredHouseholds;
         }
 
-        /*private void AddHousehold()
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string owner = OwnerNameBox.Text;
-            string address = AddressBox.Text;
-            string contact = ContactBox.Text;
-            string instDate = InstDateBox.Text;
-            string lastInsp = LastInspBox.Text;
+            string search = SearchBox.Text.Trim().ToLower();
+            filteredHouseholds.Clear();
 
-            using (SQLiteConnection conn = DatabaseHelper.GetConnection())
+            foreach (var h in allHouseholds)
             {
-                conn.Open();
-
-                string query = "INSERT INTO Households (OwnerName, Address, ContactNum, InstallDate, LastInspect) " +
-                               "VALUES (@Owner, @Addr, @Contact, @Inst, @Last)";
-
-                using (SQLiteCommand cmd = new SQLiteCommand(query, conn))
+                if (h.OwnerName.ToLower().Contains(search) ||
+                    h.Address.ToLower().Contains(search) ||
+                    h.ContactNum.ToLower().Contains(search))
                 {
-                    cmd.Parameters.AddWithValue("@Owner", owner);
-                    cmd.Parameters.AddWithValue("@Addr", address);
-                    cmd.Parameters.AddWithValue("@Contact", contact);
-                    cmd.Parameters.AddWithValue("@Inst", instDate);
-                    cmd.Parameters.AddWithValue("@Last", lastInsp);
-                    cmd.ExecuteNonQuery();
+                    filteredHouseholds.Add(h);
                 }
             }
-
-            LoadHouseholds();
-            ClearInputs();
-        }*/
-
-        /*private void ClearInputs()
-        {
-            OwnerNameBox.Text = "";
-            AddressBox.Text = "";
-            ContactBox.Text = "";
-            InstDateBox.Text = "";
-            LastInspBox.Text = "";
-        }*/
-
+        }
 
         private void AddHouseholdButton_Click(object sender, RoutedEventArgs e)
         {
             var win = new AddHouseholdWindow();
             if (win.ShowDialog() == true)
             {
-                LoadHouseholds(); // 
+                LoadHouseholds();
+            }
+        }
+
+        private void EditHousehold_Click(object sender, RoutedEventArgs e)
+        {
+            if (HouseholdListView.SelectedItem is Household selected)
+            {
+                var win = new AddHouseholdWindow(selected); // ✅ constructor with selected household
+                if (win.ShowDialog() == true)
+                {
+                    LoadHouseholds();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please select a household to edit.", "Edit Household", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void DeleteHousehold_Click(object sender, RoutedEventArgs e)
+        {
+            if (HouseholdListView.SelectedItem is Household selected)
+            {
+                var confirm = MessageBox.Show(
+                    $"Are you sure you want to delete household \"{selected.OwnerName}\"?",
+                    "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                if (confirm == MessageBoxResult.Yes)
+                {
+                    using (var conn = DatabaseHelper.GetConnection())
+                    {
+                        conn.Open();
+                        var cmd = new SQLiteCommand("DELETE FROM Households WHERE HouseholdID = @id", conn);
+                        cmd.Parameters.AddWithValue("@id", selected.HouseholdID);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    LoadHouseholds();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please select a household to delete.", "Delete Household", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
         private void ClearText(object sender, RoutedEventArgs e)
         {
-            TextBox box = sender as TextBox;
-            if (box != null && box.Text == box.Tag as string)
+            if (sender is TextBox box && box.Text == box.Tag as string)
             {
                 box.Text = "";
                 box.Foreground = System.Windows.Media.Brushes.Black;
@@ -112,14 +129,18 @@ namespace HouseholdMS.View
 
         private void ResetText(object sender, RoutedEventArgs e)
         {
-            TextBox box = sender as TextBox;
-            if (box != null && string.IsNullOrWhiteSpace(box.Text))
+            if (sender is TextBox box && string.IsNullOrWhiteSpace(box.Text))
             {
                 box.Text = box.Tag as string;
                 box.Foreground = System.Windows.Media.Brushes.Gray;
+
+                if (box.Name == "SearchBox")
+                {
+                    filteredHouseholds.Clear();
+                    foreach (var h in allHouseholds)
+                        filteredHouseholds.Add(h);
+                }
             }
         }
-
-
     }
 }

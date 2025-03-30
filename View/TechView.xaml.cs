@@ -9,7 +9,6 @@ namespace HouseholdMS.View
     public partial class TechView : UserControl
     {
         private ObservableCollection<Technician> technicianList = new ObservableCollection<Technician>();
-       
 
         public TechView()
         {
@@ -17,7 +16,7 @@ namespace HouseholdMS.View
             LoadTechnicians();
         }
 
-        private void LoadTechnicians()
+        public void LoadTechnicians()
         {
             technicianList.Clear();
 
@@ -43,40 +42,13 @@ namespace HouseholdMS.View
             TechnicianListView.ItemsSource = technicianList;
         }
 
-        private void AddTechnician_Click(object sender, RoutedEventArgs e)
+        private void OpenAddTechnicianDialog_Click(object sender, RoutedEventArgs e)
         {
-            string name = TechNameBox.Text.Trim();
-            string contact = TechContactBox.Text.Trim();
-            
-            string area = TechAreaBox.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(contact) ||
-                 string.IsNullOrWhiteSpace(area))
+            var win = new AddTechnicianWindow();
+            if (win.ShowDialog() == true)
             {
-                MessageBox.Show("Please fill in all fields.");
-                return;
+                LoadTechnicians(); // Refresh after successful addition
             }
-
-            using (var conn = DatabaseHelper.GetConnection())
-            {
-                conn.Open();
-
-                var cmd = new SQLiteCommand("INSERT INTO Technicians (Name, ContactNum, Address, AssignedArea) VALUES (@name, @contact, @address, @area)", conn);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@contact", contact);
-                cmd.Parameters.AddWithValue("@area", area);
-                cmd.ExecuteNonQuery();
-            }
-
-            LoadTechnicians();
-            ClearInputs();
-        }
-
-        private void ClearInputs()
-        {
-            TechNameBox.Text = "Name";
-            TechContactBox.Text = "Contact";
-            TechAreaBox.Text = "Assigned Area";
         }
     }
 }
