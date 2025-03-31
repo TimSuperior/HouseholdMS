@@ -67,7 +67,12 @@
                             Background="White"
                             SelectedDateFormat="Short"
                             VerticalContentAlignment="Center"
-                            DisplayDateEnd="{x:Static System:DateTime.Today}"/>
+                            DisplayDateEnd="{x:Static System:DateTime.Today}"
+                            Margin="0,0,0,12"/>
+
+                <!-- New Note Field -->
+                <TextBlock Text="Note (optional)" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,5"/>
+                <userControls:TxtBox x:Name="NoteBox" Height="35" Margin="0,0,0,12"/>
             </StackPanel>
 
             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">

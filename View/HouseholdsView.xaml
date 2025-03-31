@@ -59,6 +59,8 @@
                         <GridViewColumn Header="Contact" DisplayMemberBinding="{Binding ContactNum}" Width="120"/>
                         <GridViewColumn Header="Installed" DisplayMemberBinding="{Binding InstDate}" Width="110"/>
                         <GridViewColumn Header="Last Inspection" DisplayMemberBinding="{Binding LastInspDate}" Width="130"/>
+                        <!-- New Note Column -->
+                        <GridViewColumn Header="Note" DisplayMemberBinding="{Binding Note}" Width="150"/>
                     </GridView>
                 </ListView.View>
             </ListView>

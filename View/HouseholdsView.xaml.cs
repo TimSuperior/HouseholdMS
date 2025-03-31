@@ -1,195 +1,170 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Data.SQLite;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Data;
 
 namespace HouseholdMS.View
 {
-    public partial class HouseholdsView : UserControl
+    public partial class AddHouseholdWindow : Window
     {
-        /* Коллекция всех домохозяйств, загружаемых из базы данных */
-        private ObservableCollection<Household> allHouseholds = new ObservableCollection<Household>();
+        private ObservableCollection<Household> households = new ObservableCollection<Household>();
+        private int? EditingHouseholdID = null;
 
-        /* Представление для сортировки и фильтрации данных */
-        private ICollectionView view;
-
-        /* Последний нажатый заголовок столбца (для сортировки) */
-        private GridViewColumnHeader _lastHeaderClicked;
-
-        /* Последнее направление сортировки */
-        private ListSortDirection _lastDirection = ListSortDirection.Ascending;
-
-        public HouseholdsView()
+        public AddHouseholdWindow()
         {
             InitializeComponent();
-            LoadHouseholds();
-
-            /* Привязка события клика по заголовкам столбцов */
-            HouseholdListView.AddHandler(GridViewColumnHeader.ClickEvent,
-                new RoutedEventHandler(GridViewColumnHeader_Click));
+            // Set default dates and title for adding a new household.
+            InstDatePicker.SelectedDate = DateTime.Today;
+            LastInspPicker.SelectedDate = DateTime.Today;
+            InstDatePicker.DisplayDateEnd = DateTime.Today;
+            LastInspPicker.DisplayDateEnd = DateTime.Today;
+            this.Title = "Add New Household";
         }
 
-        /* Загрузка данных из таблицы Households и установка источника */
-        public void LoadHouseholds()
+        // Editing constructor: set the title to "Edit Household" and load the data.
+        public AddHouseholdWindow(Household householdToEdit) : this()
         {
-            allHouseholds.Clear();
+            EditingHouseholdID = householdToEdit.HouseholdID;
+            this.Title = "Edit Household";
 
-            using (var conn = DatabaseHelper.GetConnection())
+            OwnerBox.Text = householdToEdit.OwnerName;
+            AddressBox.Text = householdToEdit.Address;
+            ContactBox.Text = householdToEdit.ContactNum;
+
+            if (DateTime.TryParse(householdToEdit.InstDate, out var instDate))
+                InstDatePicker.SelectedDate = instDate;
+
+            if (DateTime.TryParse(householdToEdit.LastInspDate, out var lastInsp))
+                LastInspPicker.SelectedDate = lastInsp;
+
+            NoteBox.Text = householdToEdit.Note;
+        }
+
+        public bool Saved { get; private set; } = false;
+
+        public string OwnerName => OwnerBox.Text.Trim();
+        public string Address => AddressBox.Text.Trim();
+        public string Contact => ContactBox.Text.Trim();
+        public string InstallDate => InstDatePicker.SelectedDate?.ToString("yyyy-MM-dd");
+        public string LastInspect => LastInspPicker.SelectedDate?.ToString("yyyy-MM-dd");
+        public string Note => NoteBox.Text.Trim();
+
+        private void Save_Click(object sender, RoutedEventArgs e)
+        {
+            bool hasError = false;
+
+            // Reset validation styles
+            OwnerBox.Tag = null;
+            AddressBox.Tag = null;
+            ContactBox.Tag = null;
+
+            if (string.IsNullOrWhiteSpace(OwnerName))
+            {
+                OwnerBox.Tag = "error";
+                hasError = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(Address))
+            {
+                AddressBox.Tag = "error";
+                hasError = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(Contact))
+            {
+                ContactBox.Tag = "error";
+                hasError = true;
+            }
+
+            if (InstDatePicker.SelectedDate == null || InstDatePicker.SelectedDate > DateTime.Today)
+            {
+                MessageBox.Show("Installation date cannot be in the future.", "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (LastInspPicker.SelectedDate == null || LastInspPicker.SelectedDate > DateTime.Today)
+            {
+                MessageBox.Show("Inspection date cannot be in the future.", "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (hasError)
+            {
+                MessageBox.Show("Please correct the highlighted fields.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            using (SQLiteConnection conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT * FROM Households", conn))
-                using (var reader = cmd.ExecuteReader())
+
+                // 🔒 Unique Contact Number check
+                var checkContact = new SQLiteCommand(
+                    @"SELECT COUNT(*) FROM Households 
+                      WHERE ContactNum = @Contact AND (HouseholdID != @ID OR @ID IS NULL)", conn);
+                checkContact.Parameters.AddWithValue("@Contact", Contact);
+                checkContact.Parameters.AddWithValue("@ID", EditingHouseholdID ?? (object)DBNull.Value);
+
+                if (Convert.ToInt32(checkContact.ExecuteScalar()) > 0)
                 {
-                    while (reader.Read())
-                    {
-                        allHouseholds.Add(new Household
-                        {
-                            HouseholdID = Convert.ToInt32(reader["HouseholdID"]),
-                            OwnerName = reader["OwnerName"].ToString(),
-                            Address = reader["Address"].ToString(),
-                            ContactNum = reader["ContactNum"].ToString(),
-                            InstDate = reader["InstallDate"].ToString(),
-                            LastInspDate = reader["LastInspect"].ToString()
-                        });
-                    }
+                    MessageBox.Show("A household with this contact number already exists.\nContact numbers must be unique.",
+                                    "Duplicate Contact", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // ⚠ Warning for same OwnerName or Address
+                var checkSoft = new SQLiteCommand(
+                    @"SELECT COUNT(*) FROM Households 
+                      WHERE (OwnerName = @Owner OR Address = @Addr)
+                      AND (HouseholdID != @ID OR @ID IS NULL)", conn);
+                checkSoft.Parameters.AddWithValue("@Owner", OwnerName);
+                checkSoft.Parameters.AddWithValue("@Addr", Address);
+                checkSoft.Parameters.AddWithValue("@ID", EditingHouseholdID ?? (object)DBNull.Value);
+
+                if (Convert.ToInt32(checkSoft.ExecuteScalar()) > 0)
+                {
+                    var confirm = MessageBox.Show(
+                        "Another household with the same owner name or address exists.\nDo you want to proceed?",
+                        "Potential Duplicate", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                    if (confirm != MessageBoxResult.Yes)
+                        return;
+                }
+
+                // ✅ Insert or Update including Note field
+                string query = (EditingHouseholdID == null)
+                    ? @"INSERT INTO Households (OwnerName, Address, ContactNum, InstallDate, LastInspect, Note)
+                       VALUES (@Owner, @Addr, @Contact, @Inst, @Last, @Note)"
+                    : @"UPDATE Households 
+                       SET OwnerName = @Owner, Address = @Addr, ContactNum = @Contact,
+                           InstallDate = @Inst, LastInspect = @Last, Note = @Note
+                       WHERE HouseholdID = @ID";
+
+                using (SQLiteCommand cmd = new SQLiteCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Owner", OwnerName);
+                    cmd.Parameters.AddWithValue("@Addr", Address);
+                    cmd.Parameters.AddWithValue("@Contact", Contact);
+                    cmd.Parameters.AddWithValue("@Inst", InstallDate);
+                    cmd.Parameters.AddWithValue("@Last", LastInspect);
+                    cmd.Parameters.AddWithValue("@Note", Note);
+
+                    if (EditingHouseholdID != null)
+                        cmd.Parameters.AddWithValue("@ID", EditingHouseholdID);
+
+                    cmd.ExecuteNonQuery();
                 }
             }
 
-            /* Установка источника данных и связывание с ListView */
-            view = CollectionViewSource.GetDefaultView(allHouseholds);
-            HouseholdListView.ItemsSource = view;
+            Saved = true;
+            this.DialogResult = true;
+            this.Close();
         }
 
-        /* Фильтрация данных по тексту в строке поиска */
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void Cancel_Click(object sender, RoutedEventArgs e)
         {
-            if (view == null) return;
-
-            string search = SearchBox.Text.Trim().ToLower();
-
-            view.Filter = obj =>
-            {
-                if (obj is Household h)
-                {
-                    return h.OwnerName.ToLower().Contains(search) ||
-                           h.Address.ToLower().Contains(search) ||
-                           h.ContactNum.ToLower().Contains(search);
-                }
-                return false;
-            };
-        }
-
-        /* Сброс текстового поля и фильтра при потере фокуса */
-        private void ResetText(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox box && string.IsNullOrWhiteSpace(box.Text))
-            {
-                box.Text = box.Tag as string;
-                box.Foreground = System.Windows.Media.Brushes.Gray;
-
-                if (view != null) view.Filter = null;
-            }
-        }
-
-        /* Очистка подсказки при получении фокуса */
-        private void ClearText(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox box && box.Text == box.Tag as string)
-            {
-                box.Text = "";
-                box.Foreground = System.Windows.Media.Brushes.Black;
-            }
-        }
-
-        /* Обработка клика по заголовку столбца — сортировка */
-        private void GridViewColumnHeader_Click(object sender, RoutedEventArgs e)
-        {
-            if (e.OriginalSource is GridViewColumnHeader header &&
-                header.Column?.DisplayMemberBinding is Binding binding)
-            {
-                string sortBy = binding.Path.Path;
-
-                ListSortDirection direction;
-
-                // Переключение направления сортировки при повторном клике
-                if (_lastHeaderClicked == header)
-                {
-                    direction = _lastDirection == ListSortDirection.Ascending
-                        ? ListSortDirection.Descending
-                        : ListSortDirection.Ascending;
-                }
-                else
-                {
-                    direction = ListSortDirection.Ascending;
-                }
-
-                _lastHeaderClicked = header;
-                _lastDirection = direction;
-
-                view.SortDescriptions.Clear();
-                view.SortDescriptions.Add(new SortDescription(sortBy, direction));
-                view.Refresh();
-            }
-        }
-
-        /* Открытие окна добавления новой записи */
-        private void AddHouseholdButton_Click(object sender, RoutedEventArgs e)
-        {
-            var win = new AddHouseholdWindow();
-            if (win.ShowDialog() == true)
-            {
-                LoadHouseholds();
-            }
-        }
-
-        /* Открытие окна редактирования выбранной записи */
-        private void EditHousehold_Click(object sender, RoutedEventArgs e)
-        {
-            if (HouseholdListView.SelectedItem is Household selected)
-            {
-                var win = new AddHouseholdWindow(selected);
-                if (win.ShowDialog() == true)
-                {
-                    LoadHouseholds();
-                }
-            }
-            else
-            {
-                MessageBox.Show("Please select a household to edit.", "Edit Household", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-
-        /* Удаление выбранной записи после подтверждения */
-        private void DeleteHousehold_Click(object sender, RoutedEventArgs e)
-        {
-            if (HouseholdListView.SelectedItem is Household selected)
-            {
-                var confirm = MessageBox.Show(
-                    $"Are you sure you want to delete household \"{selected.OwnerName}\"?",
-                    "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-                if (confirm == MessageBoxResult.Yes)
-                {
-                    using (var conn = DatabaseHelper.GetConnection())
-                    {
-                        conn.Open();
-                        var cmd = new SQLiteCommand("DELETE FROM Households WHERE HouseholdID = @id", conn);
-                        cmd.Parameters.AddWithValue("@id", selected.HouseholdID);
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    LoadHouseholds();
-                }
-            }
-            else
-            {
-                MessageBox.Show("Please select a household to delete.", "Delete Household", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
+            this.Close();
         }
     }
 }

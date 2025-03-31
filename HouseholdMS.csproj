@@ -52,6 +52,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.SQLite, Version=1.0.119.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
@@ -90,6 +91,12 @@
     </Compile>
     <Compile Include="View\AddTechnicianWindow.xaml.cs">
       <DependentUpon>AddTechnicianWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\EditInventoryWindow.xaml.cs">
+      <DependentUpon>EditInventoryWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\InputDialogWindow.xaml.cs">
+      <DependentUpon>InputDialogWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Login.xaml.cs">
       <DependentUpon>Login.xaml</DependentUpon>
@@ -130,6 +137,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\AddTechnicianWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\EditInventoryWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\InputDialogWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

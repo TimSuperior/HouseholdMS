@@ -21,6 +21,8 @@ public static class DatabaseHelper
 
     public static SQLiteConnection GetConnection()
     {
+        Console.WriteLine("Database is located at: " + DatabaseHelper.GetDbPath());
+
         return new SQLiteConnection($"Data Source={dbPath};");
     }
 

@@ -6,4 +6,5 @@
     public string ContactNum { get; set; }
     public string InstDate { get; set; }
     public string LastInspDate { get; set; }
+    public string Note { get; set; } // New property for the optional note
 }

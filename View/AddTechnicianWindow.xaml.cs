@@ -19,30 +19,45 @@ namespace HouseholdMS.View
             string contact = ContactBox.Text.Trim();
             string area = AreaBox.Text.Trim();
 
-            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(contact) || string.IsNullOrWhiteSpace(area))
+            // ✅ Validate input fields
+            if (string.IsNullOrWhiteSpace(name) ||
+                string.IsNullOrWhiteSpace(contact) ||
+                string.IsNullOrWhiteSpace(area))
             {
-                MessageBox.Show("Please fill in all fields.");
+                MessageBox.Show("Please fill in all fields.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            using (var conn = DatabaseHelper.GetConnection())
+            try
             {
-                conn.Open();
+                // ✅ Insert technician into database
+                using (var conn = DatabaseHelper.GetConnection())
+                {
+                    conn.Open();
+                    var cmd = new SQLiteCommand(@"
+                        INSERT INTO Technicians (Name, ContactNum, Address, AssignedArea)
+                        VALUES (@name, @contact, '', @area)", conn);
 
-                var cmd = new SQLiteCommand("INSERT INTO Technicians (Name, ContactNum, Address, AssignedArea) VALUES (@name, @contact, '', @area)", conn);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@contact", contact);
-                cmd.Parameters.AddWithValue("@area", area);
-                cmd.ExecuteNonQuery();
+                    cmd.Parameters.AddWithValue("@name", name);
+                    cmd.Parameters.AddWithValue("@contact", contact);
+                    cmd.Parameters.AddWithValue("@area", area);
+                    cmd.ExecuteNonQuery();
+                }
+
+                Saved = true;
+                MessageBox.Show("Technician added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                this.DialogResult = true;
+                this.Close();
             }
-
-            Saved = true;
-            this.DialogResult = true;
-            this.Close();
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving technician:\n{ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
+            this.DialogResult = false;
             this.Close();
         }
     }
