@@ -53,5 +53,12 @@ namespace HouseholdMS
         {
             MainContent.Content = new ServiceRecordsView();
         }
+
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("You have been logged out.");
+            Application.Current.Shutdown(); // or redirect to login page
+        }
+
     }
 }

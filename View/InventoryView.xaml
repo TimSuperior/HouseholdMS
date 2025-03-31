@@ -7,27 +7,67 @@
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
 
-    <Grid Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <Border Background="#f9f9f9" Padding="20">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-        <!-- Add/Restock Button -->
-        
-            <Button Content="📥 Add / Restock Item" Width="180" Margin="10,0,10,10" Click="AddInventoryButton_Click"/>
-        
+            <!-- 🔍 Search & ➕ Add -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,12">
+                <TextBox x:Name="SearchBox"
+                         Width="260"
+                         Height="34"
+                         FontSize="14"
+                         FontStyle="Italic"
+                         Margin="0,0,12,0"
+                         Padding="10,2"
+                         VerticalContentAlignment="Center"
+                         Foreground="Gray"
+                         Background="White"
+                         BorderBrush="#CCC"
+                         BorderThickness="1"
+                         Tag="Search by item type"
+                         Text="Search by item type"
+                         GotFocus="ClearText"
+                         LostFocus="ResetText"
+                         TextChanged="SearchBox_TextChanged"/>
 
-        <!-- Inventory Table -->
-        <ListView x:Name="InventoryListView" Grid.Row="1" Height="300">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="Item Type" DisplayMemberBinding="{Binding ItemType}" Width="150"/>
-                    <GridViewColumn Header="Total Quantity" DisplayMemberBinding="{Binding TotalQuantity}" Width="100"/>
-                    <GridViewColumn Header="Used Quantity" DisplayMemberBinding="{Binding UsedQuantity}" Width="100"/>
-                    <GridViewColumn Header="Last Restocked" DisplayMemberBinding="{Binding LastRestockedDate}" Width="150"/>
-                </GridView>
-            </ListView.View>
-        </ListView>
-    </Grid>
+                <Button Content="📥 Add / Restock"
+                        Width="160"
+                        Height="34"
+                        Background="#4CAF50"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        BorderBrush="#4CAF50"
+                        Cursor="Hand"
+                        HorizontalAlignment="Left"
+                        Click="AddInventoryButton_Click"/>
+            </StackPanel>
+
+            <!-- 📋 Inventory Table -->
+            <Border Grid.Row="1"
+                    Background="White"
+                    CornerRadius="6"
+                    BorderBrush="#DDD"
+                    BorderThickness="1"
+                    SnapsToDevicePixels="True"
+                    Padding="4">
+                <ListView x:Name="InventoryListView"
+                          BorderThickness="0"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          VerticalContentAlignment="Top">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Item Type" DisplayMemberBinding="{Binding ItemType}" Width="160"/>
+                            <GridViewColumn Header="Total Quantity" DisplayMemberBinding="{Binding TotalQuantity}" Width="120"/>
+                            <GridViewColumn Header="Used Quantity" DisplayMemberBinding="{Binding UsedQuantity}" Width="120"/>
+                            <GridViewColumn Header="Last Restocked" DisplayMemberBinding="{Binding LastRestockedDate}" Width="160"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Border>
+        </Grid>
+    </Border>
 </UserControl>

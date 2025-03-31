@@ -5,45 +5,106 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HouseholdMS"
         mc:Ignorable="d"
-        Title="MainWindow" Height="420" Width="980">
+        Title="Household Management System"
+        Height="500"
+        Width="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="#f0f2f5">
+
+    <Window.Resources>
+        <!-- ✅ Sidebar Button Style -->
+        <Style x:Key="MenuButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Margin" Value="10,4"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#3f4d63"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#546579"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="20*"/>
-            <ColumnDefinition Width="80*"/>
+            <ColumnDefinition Width="200"/>
+            <!-- Sidebar -->
+            <ColumnDefinition Width="*"/>
+            <!-- Main content -->
         </Grid.ColumnDefinitions>
 
-        <Grid Grid.Column="0">
+        <!-- ✅ Sidebar Area -->
+        <Grid Grid.Column="0" Background="#2e3b4e">
             <Grid.RowDefinitions>
-                <RowDefinition Height="95*"/>
-                <RowDefinition Height="5*"/>
+                <RowDefinition Height="Auto"/>
+                <!-- Header -->
+                <RowDefinition Height="*"/>
+                <!-- Menu buttons -->
+                <RowDefinition Height="Auto"/>
+                <!-- Logout -->
             </Grid.RowDefinitions>
 
-            <!-- ✅ Sidebar Menu -->
-            <StackPanel HorizontalAlignment="Stretch" Background="#333" Margin="0">
-                <TextBlock Text="Menu" Foreground="White" FontSize="18" FontWeight="Bold" Margin="10, 0, 0 , 0"/>
-
-                <Button Content="🏠 Households" Click="bt_HouseholdMenu"  Background="Gray" Height="30"/>
-                <Button Content="👷 Technicians" Click="bt_TechnicianMenu" Background="Gray" Height="30"/>
-                <Button Content="📦 Inventory" Click="bt_InventoryMenu" Background="Gray" Height="30"/>
-                <Button Content="🔧 Service Records" Click="bt_ServiceMenu" Background="Gray" Height="30"/>
-
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Margin="10,20,10,10">
+                <TextBlock Text="☰ Main Menu"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           Margin="5,0,0,20"/>
             </StackPanel>
 
-            <Grid Grid.Row="1">
-                <Button Content="🚪 Logout" Background="DimGray"  Foreground="White" />
-            </Grid>
+            <!-- Menu Buttons -->
+            <StackPanel Grid.Row="1">
+                <Button Content="🏠 Households" Click="bt_HouseholdMenu" Style="{StaticResource MenuButtonStyle}"/>
+                <Button Content="👷 Technicians" Click="bt_TechnicianMenu" Style="{StaticResource MenuButtonStyle}"/>
+                <Button Content="📦 Inventory" Click="bt_InventoryMenu" Style="{StaticResource MenuButtonStyle}"/>
+                <Button Content="🔧 Service Records" Click="bt_ServiceMenu" Style="{StaticResource MenuButtonStyle}"/>
+            </StackPanel>
 
+            <!-- Logout Button -->
+            <StackPanel Grid.Row="2" Margin="10,0,10,10">
+                <Button Content="🚪 Logout"
+                        Height="38"
+                        FontWeight="Bold"
+                        Foreground="White"
+                        Background="#c62828"
+                        BorderBrush="Transparent"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Click="Logout_Click"
+                        Padding="10,0"/>
+            </StackPanel>
         </Grid>
 
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="5*"/>
-                <RowDefinition Height="90*"/>
-                <RowDefinition Height="5*"/>
-            </Grid.RowDefinitions>
-        </Grid>
-
-        <ContentControl x:Name="MainContent" Grid.Column="1" Margin="5"/>
-
+        <!-- ✅ Main Content -->
+        <Border Grid.Column="1"
+                Margin="10"
+                Background="White"
+                CornerRadius="8"
+                BorderBrush="#ddd"
+                BorderThickness="1"
+                Padding="10">
+            <ContentControl x:Name="MainContent"/>
+        </Border>
     </Grid>
 </Window>

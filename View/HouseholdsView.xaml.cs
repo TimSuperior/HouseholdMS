@@ -1,37 +1,53 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data.SQLite;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 
 namespace HouseholdMS.View
 {
     public partial class HouseholdsView : UserControl
     {
+        /* Коллекция всех домохозяйств, загружаемых из базы данных */
         private ObservableCollection<Household> allHouseholds = new ObservableCollection<Household>();
-        private ObservableCollection<Household> filteredHouseholds = new ObservableCollection<Household>();
+
+        /* Представление для сортировки и фильтрации данных */
+        private ICollectionView view;
+
+        /* Последний нажатый заголовок столбца (для сортировки) */
+        private GridViewColumnHeader _lastHeaderClicked;
+
+        /* Последнее направление сортировки */
+        private ListSortDirection _lastDirection = ListSortDirection.Ascending;
 
         public HouseholdsView()
         {
             InitializeComponent();
             LoadHouseholds();
+
+            /* Привязка события клика по заголовкам столбцов */
+            HouseholdListView.AddHandler(GridViewColumnHeader.ClickEvent,
+                new RoutedEventHandler(GridViewColumnHeader_Click));
         }
 
+        /* Загрузка данных из таблицы Households и установка источника */
         public void LoadHouseholds()
         {
             allHouseholds.Clear();
-            filteredHouseholds.Clear();
 
-            using (SQLiteConnection conn = DatabaseHelper.GetConnection())
+            using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
-                using (SQLiteCommand cmd = new SQLiteCommand("SELECT * FROM Households", conn))
-                using (SQLiteDataReader reader = cmd.ExecuteReader())
+                using (var cmd = new SQLiteCommand("SELECT * FROM Households", conn))
+                using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        var household = new Household
+                        allHouseholds.Add(new Household
                         {
                             HouseholdID = Convert.ToInt32(reader["HouseholdID"]),
                             OwnerName = reader["OwnerName"].ToString(),
@@ -39,33 +55,89 @@ namespace HouseholdMS.View
                             ContactNum = reader["ContactNum"].ToString(),
                             InstDate = reader["InstallDate"].ToString(),
                             LastInspDate = reader["LastInspect"].ToString()
-                        };
-
-                        allHouseholds.Add(household);
-                        filteredHouseholds.Add(household);
+                        });
                     }
                 }
             }
 
-            HouseholdListView.ItemsSource = filteredHouseholds;
+            /* Установка источника данных и связывание с ListView */
+            view = CollectionViewSource.GetDefaultView(allHouseholds);
+            HouseholdListView.ItemsSource = view;
         }
 
+        /* Фильтрация данных по тексту в строке поиска */
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string search = SearchBox.Text.Trim().ToLower();
-            filteredHouseholds.Clear();
+            if (view == null) return;
 
-            foreach (var h in allHouseholds)
+            string search = SearchBox.Text.Trim().ToLower();
+
+            view.Filter = obj =>
             {
-                if (h.OwnerName.ToLower().Contains(search) ||
-                    h.Address.ToLower().Contains(search) ||
-                    h.ContactNum.ToLower().Contains(search))
+                if (obj is Household h)
                 {
-                    filteredHouseholds.Add(h);
+                    return h.OwnerName.ToLower().Contains(search) ||
+                           h.Address.ToLower().Contains(search) ||
+                           h.ContactNum.ToLower().Contains(search);
                 }
+                return false;
+            };
+        }
+
+        /* Сброс текстового поля и фильтра при потере фокуса */
+        private void ResetText(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox box && string.IsNullOrWhiteSpace(box.Text))
+            {
+                box.Text = box.Tag as string;
+                box.Foreground = System.Windows.Media.Brushes.Gray;
+
+                if (view != null) view.Filter = null;
             }
         }
 
+        /* Очистка подсказки при получении фокуса */
+        private void ClearText(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox box && box.Text == box.Tag as string)
+            {
+                box.Text = "";
+                box.Foreground = System.Windows.Media.Brushes.Black;
+            }
+        }
+
+        /* Обработка клика по заголовку столбца — сортировка */
+        private void GridViewColumnHeader_Click(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is GridViewColumnHeader header &&
+                header.Column?.DisplayMemberBinding is Binding binding)
+            {
+                string sortBy = binding.Path.Path;
+
+                ListSortDirection direction;
+
+                // Переключение направления сортировки при повторном клике
+                if (_lastHeaderClicked == header)
+                {
+                    direction = _lastDirection == ListSortDirection.Ascending
+                        ? ListSortDirection.Descending
+                        : ListSortDirection.Ascending;
+                }
+                else
+                {
+                    direction = ListSortDirection.Ascending;
+                }
+
+                _lastHeaderClicked = header;
+                _lastDirection = direction;
+
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription(sortBy, direction));
+                view.Refresh();
+            }
+        }
+
+        /* Открытие окна добавления новой записи */
         private void AddHouseholdButton_Click(object sender, RoutedEventArgs e)
         {
             var win = new AddHouseholdWindow();
@@ -75,11 +147,12 @@ namespace HouseholdMS.View
             }
         }
 
+        /* Открытие окна редактирования выбранной записи */
         private void EditHousehold_Click(object sender, RoutedEventArgs e)
         {
             if (HouseholdListView.SelectedItem is Household selected)
             {
-                var win = new AddHouseholdWindow(selected); // ✅ constructor with selected household
+                var win = new AddHouseholdWindow(selected);
                 if (win.ShowDialog() == true)
                 {
                     LoadHouseholds();
@@ -91,6 +164,7 @@ namespace HouseholdMS.View
             }
         }
 
+        /* Удаление выбранной записи после подтверждения */
         private void DeleteHousehold_Click(object sender, RoutedEventArgs e)
         {
             if (HouseholdListView.SelectedItem is Household selected)
@@ -115,31 +189,6 @@ namespace HouseholdMS.View
             else
             {
                 MessageBox.Show("Please select a household to delete.", "Delete Household", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-
-        private void ClearText(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox box && box.Text == box.Tag as string)
-            {
-                box.Text = "";
-                box.Foreground = System.Windows.Media.Brushes.Black;
-            }
-        }
-
-        private void ResetText(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox box && string.IsNullOrWhiteSpace(box.Text))
-            {
-                box.Text = box.Tag as string;
-                box.Foreground = System.Windows.Media.Brushes.Gray;
-
-                if (box.Name == "SearchBox")
-                {
-                    filteredHouseholds.Clear();
-                    foreach (var h in allHouseholds)
-                        filteredHouseholds.Add(h);
-                }
             }
         }
     }
