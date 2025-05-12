@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using HouseholdMS.View.UserControls;
 
 namespace HouseholdMS.View
 {
@@ -14,13 +15,28 @@ namespace HouseholdMS.View
     {
         private ObservableCollection<InventoryItem> allInventory = new ObservableCollection<InventoryItem>();
         private ICollectionView view;
+        private readonly string _currentUserRole;
 
         public InventoryItem SelectedInventoryItem { get; set; }
 
-        public InventoryView()
+        public InventoryView(string userRole = "User")
         {
             InitializeComponent();
+            _currentUserRole = userRole;
             LoadInventory();
+            ApplyRoleRestrictions();
+        }
+
+        private void ApplyRoleRestrictions()
+        {
+            if (_currentUserRole == "User")
+            {
+                if (FindName("AddInventoryButton") is Button addBtn)
+                    addBtn.Visibility = Visibility.Collapsed;
+
+                if (FindName("FormContent") is ContentControl formContent)
+                    formContent.Visibility = Visibility.Collapsed;
+            }
         }
 
         public void LoadInventory()
@@ -58,14 +74,10 @@ namespace HouseholdMS.View
             if (view == null) return;
 
             string search = SearchBox.Text.Trim().ToLower();
-
             view.Filter = obj =>
             {
-                if (obj is InventoryItem item)
-                {
-                    return item.ItemType.ToLower().Contains(search);
-                }
-                return false;
+                return obj is InventoryItem item &&
+                       item.ItemType.ToLower().Contains(search);
             };
         }
 
@@ -90,15 +102,62 @@ namespace HouseholdMS.View
 
         private void AddInventoryButton_Click(object sender, RoutedEventArgs e)
         {
-            var win = new AddInventoryWindow();
-            if (win.ShowDialog() == true)
+            if (_currentUserRole == "User")
             {
+                MessageBox.Show("Access Denied: You cannot add inventory.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var form = new AddInventoryControl();
+            form.OnSavedSuccessfully += (s, args) =>
+            {
+                FormContent.Content = null;
                 LoadInventory();
+            };
+            form.OnCancelRequested += (s, args) => FormContent.Content = null;
+
+            FormContent.Content = form;
+        }
+
+        private void InventoryDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (InventoryDataGrid.SelectedItem is InventoryItem selectedItem)
+            {
+                if (_currentUserRole == "User")
+                {
+                    FormContent.Content = null;
+                    return;
+                }
+
+                var form = new AddInventoryControl(selectedItem);
+                form.OnSavedSuccessfully += (s, args) =>
+                {
+                    FormContent.Content = null;
+                    LoadInventory();
+                    InventoryDataGrid.SelectedItem = null;
+                };
+                form.OnCancelRequested += (s, args) =>
+                {
+                    FormContent.Content = null;
+                    InventoryDataGrid.SelectedItem = null;
+                };
+
+                FormContent.Content = form;
+            }
+            else
+            {
+                FormContent.Content = null;
             }
         }
 
         private void Restock_Click(object sender, RoutedEventArgs e)
         {
+            if (_currentUserRole == "User")
+            {
+                MessageBox.Show("Access Denied: You cannot restock inventory.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (sender is Button btn && btn.Tag is InventoryItem item)
             {
                 var dialog = new InputDialogWindow($"Enter quantity to restock for '{item.ItemType}':");
@@ -132,6 +191,12 @@ namespace HouseholdMS.View
 
         private void Use_Click(object sender, RoutedEventArgs e)
         {
+            if (_currentUserRole == "User")
+            {
+                MessageBox.Show("Access Denied: You cannot use inventory items.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (sender is Button btn && btn.Tag is InventoryItem item)
             {
                 var dialog = new InputDialogWindow($"Enter quantity to use from '{item.ItemType}':");
@@ -167,48 +232,9 @@ namespace HouseholdMS.View
                 }
             }
         }
-
-        private void EditButton_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedItem = InventoryDataGrid.SelectedItem as InventoryItem;
-            if (selectedItem == null)
-            {
-                MessageBox.Show("Please select an item to edit.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var win = new EditInventoryWindow(selectedItem); // Pass selected item
-            if (win.ShowDialog() == true)
-            {
-                LoadInventory();
-            }
-        }
-
-        private void DeleteButton_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedItem = InventoryDataGrid.SelectedItem as InventoryItem;
-            if (selectedItem == null)
-            {
-                MessageBox.Show("Please select an item to delete.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var result = MessageBox.Show($"Are you sure you want to delete '{selectedItem.ItemType}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
-            {
-                using (var conn = DatabaseHelper.GetConnection())
-                {
-                    conn.Open();
-                    var cmd = new SQLiteCommand("DELETE FROM StockInventory WHERE ItemID = @id", conn);
-                    cmd.Parameters.AddWithValue("@id", selectedItem.ItemID);
-                    cmd.ExecuteNonQuery();
-                }
-
-                LoadInventory();
-            }
-        }
     }
 
+    // Model
     public class InventoryItem
     {
         public int ItemID { get; set; }
@@ -218,17 +244,17 @@ namespace HouseholdMS.View
         public string LastRestockedDate { get; set; }
         public int LowStockThreshold { get; set; }
         public string Note { get; set; }
-
         public bool IsLowStock => TotalQuantity <= LowStockThreshold;
     }
 
+    // Converter
     public class LowStockHighlightConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            if (values.Length == 2 &&
-                int.TryParse(values[0]?.ToString(), out int total) &&
-                int.TryParse(values[1]?.ToString(), out int threshold))
+            if (values.Length >= 2
+             && int.TryParse(values[0]?.ToString(), out int total)
+             && int.TryParse(values[1]?.ToString(), out int threshold))
             {
                 return total <= threshold;
             }
@@ -236,8 +262,6 @@ namespace HouseholdMS.View
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
     }
 }

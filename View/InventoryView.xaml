@@ -11,8 +11,7 @@
              Foreground="#333">
 
     <UserControl.Resources>
-        <local:LowStockHighlightConverter x:Key="LowStockConverter"/>
-
+        <!-- Action Button Style -->
         <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="Height" Value="36"/>
             <Setter Property="FontSize" Value="14"/>
@@ -43,7 +42,7 @@
             </Setter>
         </Style>
 
-        <!-- Style for the search textbox, giving it a corner radius and consistent padding. -->
+        <!-- Search TextBox Style -->
         <Style x:Key="SearchTextBoxStyle" TargetType="TextBox">
             <Setter Property="Background" Value="White"/>
             <Setter Property="BorderBrush" Value="#CCC"/>
@@ -53,21 +52,9 @@
             <Setter Property="FontStyle" Value="Italic"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Foreground" Value="Gray"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6">
-                            <ScrollViewer x:Name="PART_ContentHost"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
         </Style>
 
-        <!-- Base style for the DataGrid, with subtle row highlighting and improved readability. -->
+        <!-- Inventory DataGrid Style -->
         <Style x:Key="InventoryDataGridStyle" TargetType="DataGrid">
             <Setter Property="AutoGenerateColumns" Value="False"/>
             <Setter Property="CanUserAddRows" Value="False"/>
@@ -81,98 +68,123 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="AlternatingRowBackground" Value="#FAFAFA"/>
         </Style>
+
+        <!-- Highlight Low Stock -->
+        <Style x:Key="LowStockRowStyle" TargetType="DataGridRow">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsLowStock}" Value="True">
+                    <Setter Property="Background" Value="#FFFDE7E9"/>
+                    <Setter Property="Foreground" Value="#B71C1C"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
     </UserControl.Resources>
 
     <Border Background="#F9F9F9" Padding="20">
         <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
 
-            <Grid Grid.Row="0" Margin="0,0,0,12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <!-- Left Side -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-                <TextBox x:Name="SearchBox"
-                         Style="{StaticResource SearchTextBoxStyle}"
-                         Height="36"
-                         Tag="Search by item type"
-                         Text="Search by item type"
-                         GotFocus="ClearText"
-                         LostFocus="ResetText"
-                         TextChanged="SearchBox_TextChanged"/>
+                <!-- Search and Add -->
+                <Grid Grid.Row="0" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <Button Content="📥 New Item"
-                        Grid.Column="1"
-                        Height="36"
-                        Style="{StaticResource ActionButtonStyle}"
-                        Background="#4CAF50"
-                        BorderBrush="#4CAF50"
-                        Margin="10,0,0,0"
-                        Click="AddInventoryButton_Click"/>
+                    <TextBox x:Name="SearchBox"
+                             Style="{StaticResource SearchTextBoxStyle}"
+                             Height="36"
+                             Tag="Search by item type"
+                             Text="Search by item type"
+                             GotFocus="ClearText"
+                             LostFocus="ResetText"
+                             TextChanged="SearchBox_TextChanged"/>
+
+                    <Button x:Name="AddInventoryButton"
+                            Content="📥 New Item"
+                            Grid.Column="1"
+                            Height="36"
+                            Style="{StaticResource ActionButtonStyle}"
+                            Background="#4CAF50"
+                            Margin="10,0,0,0"
+                            Click="AddInventoryButton_Click"/>
+                </Grid>
+
+                <!-- Inventory Table -->
+                <Border Grid.Row="1"
+        Background="White"
+        CornerRadius="10"
+        BorderBrush="#DDD"
+        BorderThickness="1"
+        Padding="6">
+                    <DataGrid x:Name="InventoryDataGrid"
+              Style="{StaticResource InventoryDataGridStyle}"
+              RowStyle="{StaticResource LowStockRowStyle}"
+              SelectedItem="{Binding SelectedInventoryItem, Mode=TwoWay}"
+              SelectionChanged="InventoryDataGrid_SelectionChanged"
+              MinWidth="950"
+              HorizontalScrollBarVisibility="Auto"
+              VerticalScrollBarVisibility="Auto">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Item Type" Binding="{Binding ItemType}" Width="150"/>
+                            <DataGridTextColumn Header="Total&#x0a;Quantity" Binding="{Binding TotalQuantity}" Width="90"/>
+                            <DataGridTextColumn Header="Used&#x0a;Quantity" Binding="{Binding UsedQuantity}" Width="90"/>
+                            <DataGridTextColumn Header="Low&#x0a;Threshold" Binding="{Binding LowStockThreshold}" Width="90"/>
+                            <DataGridTextColumn Header="Last&#x0a;Restocked" Binding="{Binding LastRestockedDate}" Width="120"/>
+
+                            <DataGridTemplateColumn Header="Restock" Width="90">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="➕ Restock"
+                                Tag="{Binding}"
+                                Style="{StaticResource ActionButtonStyle}"
+                                Background="#43A047"
+                                Click="Restock_Click"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Use" Width="90">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="➖ Use"
+                                Tag="{Binding}"
+                                Style="{StaticResource ActionButtonStyle}"
+                                Background="#E53935"
+                                Click="Use_Click"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="*" MinWidth="150"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
             </Grid>
 
-            <Border Grid.Row="1"
+            <!-- Right Side -->
+            <Border Grid.Column="1"
                     Background="White"
-                    CornerRadius="10"
+                    CornerRadius="6"
                     BorderBrush="#DDD"
                     BorderThickness="1"
-                    Padding="6"
-                    SnapsToDevicePixels="True">
-                <DataGrid x:Name="InventoryDataGrid"
-                          Style="{StaticResource InventoryDataGridStyle}"
-                          SelectedItem="{Binding SelectedInventoryItem, Mode=TwoWay}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Item Type" Binding="{Binding ItemType}" Width="150"/>
-                        <DataGridTextColumn Header="Total Quantity" Binding="{Binding TotalQuantity}" Width="120"/>
-                        <DataGridTextColumn Header="Used Quantity" Binding="{Binding UsedQuantity}" Width="120"/>
-                        <DataGridTextColumn Header="Last Restocked" Binding="{Binding LastRestockedDate}" Width="150"/>
-                        <DataGridTemplateColumn Header="Restock" Width="100">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content="➕ Restock"
-                                            Tag="{Binding}"
-                                            Style="{StaticResource ActionButtonStyle}"
-                                            Background="#43A047"
-                                            ToolTip="Add items to inventory"
-                                            Click="Restock_Click"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="Use" Width="100">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content="➖ Use"
-                                            Tag="{Binding}"
-                                            Style="{StaticResource ActionButtonStyle}"
-                                            Background="#E53935"
-                                            ToolTip="Use items from inventory"
-                                            Click="Use_Click"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="*"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+                    Padding="10"
+                    Margin="10,0,0,0">
+                <ContentControl x:Name="FormContent"/>
             </Border>
-
-            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-                <Button Content="✏️ Edit"
-                        Width="80"
-                        Style="{StaticResource ActionButtonStyle}"
-                        Background="#1976D2"
-                        Margin="0,0,10,0"
-                        Click="EditButton_Click"/>
-                <Button Content="🗑️ Delete"
-                        Width="80"
-                        Style="{StaticResource ActionButtonStyle}"
-                        Background="#D32F2F"
-                        Click="DeleteButton_Click"/>
-            </StackPanel>
         </Grid>
     </Border>
 </UserControl>

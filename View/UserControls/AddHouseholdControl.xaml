@@ -1,0 +1,128 @@
+﻿<UserControl x:Class="HouseholdMS.View.UserControls.AddHouseholdControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:System="clr-namespace:System;assembly=mscorlib"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             Background="White"
+             d:DesignHeight="530"
+             d:DesignWidth="440">
+
+
+
+    <Border Padding="25"
+            CornerRadius="12"
+            BorderBrush="#e0e0e0"
+            BorderThickness="1"
+            Background="White"
+            SnapsToDevicePixels="True">
+
+        <Grid>
+            <Grid.Resources>
+                <Style x:Key="ErrorBoxStyle" TargetType="TextBox">
+                    <Style.Triggers>
+                        <Trigger Property="Tag" Value="error">
+                            <Setter Property="BorderBrush" Value="Red"/>
+                            <Setter Property="BorderThickness" Value="1.5"/>
+                            <Setter Property="ToolTip" Value="This field is required."/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Resources>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <TextBlock x:Name="FormHeader"
+                       Grid.Row="0"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Foreground="#2E3B4E"
+                       Margin="0,0,0,20"/>
+
+            <!-- Form Fields -->
+            <StackPanel Grid.Row="1" VerticalAlignment="Top">
+
+                <TextBlock Text="Owner Name" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                <TextBox x:Name="OwnerBox" Style="{StaticResource ErrorBoxStyle}" Height="35" Margin="0,0,0,12"/>
+
+                <TextBlock Text="Address" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                <TextBox x:Name="AddressBox" Style="{StaticResource ErrorBoxStyle}" Height="35" Margin="0,0,0,12"/>
+
+                <TextBlock Text="Contact Number" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                <TextBox x:Name="ContactBox" Style="{StaticResource ErrorBoxStyle}" Height="35" Margin="0,0,0,12"/>
+
+                <TextBlock Text="Installation Date" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                <DatePicker x:Name="InstDatePicker"
+                            Height="35"
+                            Padding="6,0"
+                            BorderBrush="#C0C0C0"
+                            BorderThickness="1"
+                            Background="White"
+                            SelectedDateFormat="Short"
+                            VerticalContentAlignment="Center"
+                            DisplayDateEnd="{x:Static System:DateTime.Today}"
+                            Margin="0,0,0,12"/>
+
+                <TextBlock Text="Last Inspection Date" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                <DatePicker x:Name="LastInspPicker"
+                            Height="35"
+                            Padding="6,0"
+                            BorderBrush="#C0C0C0"
+                            BorderThickness="1"
+                            Background="White"
+                            SelectedDateFormat="Short"
+                            VerticalContentAlignment="Center"
+                            DisplayDateEnd="{x:Static System:DateTime.Today}"
+                            Margin="0,0,0,12"/>
+
+                <TextBlock Text="Note (optional)" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                <TextBox x:Name="NoteBox"
+                         Height="80"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"
+                         BorderBrush="#C0C0C0"
+                         BorderThickness="1"
+                         Margin="0,0,0,12"/>
+            </StackPanel>
+
+            <!-- Buttons -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                <Button x:Name="SaveButton"
+                        Content="✔ Save"
+                        Width="120"
+                        Height="38"
+                        FontWeight="Bold"
+                        Background="#4CAF50"
+                        Foreground="White"
+                        Margin="0,0,10,0"
+                        Click="Save_Click"/>
+
+                <Button Content="✖ Cancel"
+                        Width="100"
+                        Height="38"
+                        FontWeight="Bold"
+                        Background="#F44336"
+                        Foreground="White"
+                        Margin="0,0,10,0"
+                        Click="Cancel_Click"/>
+
+                <Button x:Name="DeleteButton"
+                        Content="🗑 Delete"
+                        Width="100"
+                        Height="38"
+                        FontWeight="Bold"
+                        Background="#9E1B1B"
+                        Foreground="White"
+                        Visibility="Collapsed"
+                        Click="Delete_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

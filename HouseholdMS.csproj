@@ -16,6 +16,7 @@
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -25,11 +26,13 @@
     <UpdateIntervalUnits>Days</UpdateIntervalUnits>
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
+    <MapFileExtensions>false</MapFileExtensions>
+    <ProductName>HMS</ProductName>
+    <PublisherName>Timur</PublisherName>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
+    <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -43,13 +46,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
@@ -78,23 +82,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="DatabaseInitializer.cs" />
     <Compile Include="Model\DatabaseHelper.cs" />
     <Compile Include="Model\Household.cs" />
     <Compile Include="Model\InventoryItem.cs" />
     <Compile Include="Model\ServiceRecord.cs" />
     <Compile Include="Model\Technician.cs" />
-    <Compile Include="View\AddHouseholdWindow.xaml.cs">
-      <DependentUpon>AddHouseholdWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\AddInventoryWindow.xaml.cs">
-      <DependentUpon>AddInventoryWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\AddTechnicianWindow.xaml.cs">
-      <DependentUpon>AddTechnicianWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\EditInventoryWindow.xaml.cs">
-      <DependentUpon>EditInventoryWindow.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="Model\User.cs" />
     <Compile Include="View\InputDialogWindow.xaml.cs">
       <DependentUpon>InputDialogWindow.xaml</DependentUpon>
     </Compile>
@@ -107,14 +101,32 @@
     <Compile Include="View\InventoryView.xaml.cs">
       <DependentUpon>InventoryView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\RegisterUser.xaml.cs">
+      <DependentUpon>RegisterUser.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\ServiceRecordsView.xaml.cs">
       <DependentUpon>ServiceRecordsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\TechView.xaml.cs">
       <DependentUpon>TechView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\UserControls\AddHouseholdControl.xaml.cs">
+      <DependentUpon>AddHouseholdControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\UserControls\AddInventoryControl.xaml.cs">
+      <DependentUpon>AddInventoryControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\UserControls\AddServiceRecordControl.xaml.cs">
+      <DependentUpon>AddServiceRecordControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\UserControls\AddTechnicianControl.xaml.cs">
+      <DependentUpon>AddTechnicianControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\UserControls\TxtBox.xaml.cs">
       <DependentUpon>TxtBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\UserManagementView.xaml.cs">
+      <DependentUpon>UserManagementView.xaml</DependentUpon>
     </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -128,22 +140,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="View\AddHouseholdWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\AddInventoryWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\AddTechnicianWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\EditInventoryWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="View\InputDialogWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -160,6 +156,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\RegisterUser.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\ServiceRecordsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -168,7 +168,27 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\UserControls\AddHouseholdControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\UserControls\AddInventoryControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\UserControls\AddServiceRecordControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\UserControls\AddTechnicianControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\UserControls\TxtBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\UserManagementView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -191,9 +211,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Content Include="household_management.db">
+    <None Include="household_management.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

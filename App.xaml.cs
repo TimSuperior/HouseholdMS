@@ -1,17 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
+using HouseholdMS.Database; // 👈 Import your DatabaseInitializer namespace
 
 namespace HouseholdMS
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+            // ✅ Initialize the database on app startup
+            DatabaseInitializer.Initialize();
+
+            // ✅ After DB is ready, open login window
+            var loginWindow = new View.Login();
+            loginWindow.Show();
+        }
     }
 }

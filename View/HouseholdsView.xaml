@@ -3,87 +3,82 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:HouseholdMS.View"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
 
-    <Border Background="#f9f9f9" Padding="20" SnapsToDevicePixels="True">
+    <Border Background="#f9f9f9" Padding="20">
         <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
 
-            <!-- Search + Add Button -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,10">
-                <TextBox x:Name="SearchBox"
-                         Width="280"
-                         Height="32"
-                         Margin="0,0,10,0"
-                         VerticalContentAlignment="Center"
-                         Foreground="Gray"
-                         FontSize="14"
-                         FontStyle="Italic"
-                         Text="Search by name, address, or contact"
-                         Tag="Search by name, address, or contact"
-                         GotFocus="ClearText"
-                         LostFocus="ResetText"
-                         TextChanged="SearchBox_TextChanged"/>
+            <!-- Left Side -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-                <Button Content="➕ Add Household"
-                        Width="160"
-                        Height="32"
-                        Background="#4CAF50"
-                        Foreground="White"
-                        FontWeight="Bold"
-                        Cursor="Hand"
-                        Click="AddHouseholdButton_Click"/>
-            </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBox x:Name="SearchBox"
+                             Width="200"
+                             Height="32"
+                             Margin="0,0,10,0"
+                             VerticalContentAlignment="Center"
+                             Foreground="Gray"
+                             FontSize="13"
+                             FontStyle="Italic"
+                             Text="Search by name, address, or contact"
+                             Tag="Search by name, address, or contact"
+                             GotFocus="ClearText"
+                             LostFocus="ResetText"
+                             TextChanged="SearchBox_TextChanged"/>
 
-            <!-- Household List -->
-            <ListView x:Name="HouseholdListView"
-                      Grid.Row="1"
-                      Background="White"
-                      BorderBrush="#DDD"
-                      BorderThickness="1"
-                      SelectionMode="Single"
-                      ScrollViewer.VerticalScrollBarVisibility="Auto"
-                      VerticalAlignment="Stretch"
-                      SnapsToDevicePixels="True">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="ID" DisplayMemberBinding="{Binding HouseholdID}" Width="70"/>
-                        <GridViewColumn Header="Owner Name" DisplayMemberBinding="{Binding OwnerName}" Width="160"/>
-                        <GridViewColumn Header="Address" DisplayMemberBinding="{Binding Address}" Width="220"/>
-                        <GridViewColumn Header="Contact" DisplayMemberBinding="{Binding ContactNum}" Width="120"/>
-                        <GridViewColumn Header="Installed" DisplayMemberBinding="{Binding InstDate}" Width="110"/>
-                        <GridViewColumn Header="Last Inspection" DisplayMemberBinding="{Binding LastInspDate}" Width="130"/>
-                        <!-- New Note Column -->
-                        <GridViewColumn Header="Note" DisplayMemberBinding="{Binding Note}" Width="150"/>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+                    <Button x:Name="AddHouseholdButton"
+                            Content="➕ Add Household"
+                            Width="150"
+                            Height="32"
+                            Background="#4CAF50"
+                            Foreground="White"
+                            FontWeight="Bold"
+                            Cursor="Hand"
+                            Click="AddHouseholdButton_Click"/>
+                </StackPanel>
 
-            <!-- Edit/Delete -->
-            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-                <Button Content="✏ Edit Selected"
-                        Width="130"
-                        Margin="0,0,10,0"
-                        Background="#2196F3"
-                        Foreground="White"
-                        FontWeight="SemiBold"
-                        Cursor="Hand"
-                        Click="EditHousehold_Click"/>
+                <ListView x:Name="HouseholdListView"
+                          Grid.Row="1"
+                          Background="White"
+                          BorderBrush="#DDD"
+                          BorderThickness="1"
+                          SelectionMode="Single"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          SelectionChanged="HouseholdListView_SelectionChanged">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="ID" DisplayMemberBinding="{Binding HouseholdID}" Width="70"/>
+                            <GridViewColumn Header="Owner Name" DisplayMemberBinding="{Binding OwnerName}" Width="160"/>
+                            <GridViewColumn Header="Address" DisplayMemberBinding="{Binding Address}" Width="220"/>
+                            <GridViewColumn Header="Contact" DisplayMemberBinding="{Binding ContactNum}" Width="120"/>
+                            <GridViewColumn Header="Installed" DisplayMemberBinding="{Binding InstDate}" Width="110"/>
+                            <GridViewColumn Header="Last Inspection" DisplayMemberBinding="{Binding LastInspDate}" Width="130"/>
+                            <GridViewColumn Header="Note" DisplayMemberBinding="{Binding Note}" Width="150"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
 
-                <Button Content="🗑 Delete Selected"
-                        Width="130"
-                        Background="#F44336"
-                        Foreground="White"
-                        FontWeight="SemiBold"
-                        Cursor="Hand"
-                        Click="DeleteHousehold_Click"/>
-            </StackPanel>
+            <!-- Right Side (Form Content) -->
+            <Border x:Name="FormContainer"
+                    Grid.Column="1"
+                    Background="White"
+                    CornerRadius="6"
+                    BorderBrush="#DDD"
+                    BorderThickness="1"
+                    Padding="10"
+                    Margin="10,0,0,0">
+                <ContentControl x:Name="FormContent"/>
+            </Border>
         </Grid>
     </Border>
 </UserControl>

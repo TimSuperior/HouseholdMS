@@ -1,27 +1,90 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using System.Data.SQLite;
+using HouseholdMS.Properties;
 
-namespace HouseholdMS.Properties
+namespace HouseholdMS.View
 {
-    /// <summary>
-    /// Interaction logic for Login.xaml
-    /// </summary>
     public partial class Login : Window
     {
         public Login()
         {
             InitializeComponent();
+        }
+
+        private void Login_Click(object sender, RoutedEventArgs e)
+        {
+            string username = UsernameBox.Text.Trim();
+            string password = PasswordBox.Password.Trim();
+
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            {
+                MessageBox.Show("Please enter both Username and Password.", "Missing Credentials", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                using (var conn = DatabaseHelper.GetConnection())
+                {
+                    conn.Open();
+
+                    string query = "SELECT Role FROM Users WHERE LOWER(Username) = LOWER(@username) AND PasswordHash = @password";
+                    using (var cmd = new SQLiteCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@username", username);
+                        cmd.Parameters.AddWithValue("@password", password);
+
+                        var role = cmd.ExecuteScalar() as string;
+
+                        if (!string.IsNullOrEmpty(role))
+                        {
+                            MessageBox.Show($"Welcome {username}!\nRole: {role}", "Login Successful", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                            var mainWindow = new MainWindow(role);
+                            mainWindow.Show();
+                            this.Close();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Invalid username or password.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            UsernameBox.Clear();
+                            PasswordBox.Clear();
+                            UsernameBox.Focus();
+                        }
+                    }
+                }
+            }
+            catch (SQLiteException ex)
+            {
+                MessageBox.Show($"Database connection error:\n{ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An unexpected error occurred:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void Register_Click(object sender, RoutedEventArgs e)
+        {
+            var registerWindow = new RegisterUser();
+            registerWindow.Show();
+            this.Close();
+        }
+
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+
+            if (Application.Current.Windows.Count == 0)
+            {
+                Application.Current.Shutdown();
+            }
         }
     }
 }

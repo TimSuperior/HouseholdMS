@@ -1,0 +1,80 @@
+﻿<UserControl x:Class="HouseholdMS.View.UserControls.AddInventoryControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="400" d:DesignWidth="420"
+             Background="White">
+
+    <Border Padding="20" Background="White" BorderBrush="#DDD" BorderThickness="1" CornerRadius="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Form Fields -->
+            <StackPanel Grid.Row="0">
+                <TextBlock x:Name="FormHeader"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="#2E3B4E"
+                           Margin="0,0,0,20"/>
+
+                <TextBlock Text="Item Type" FontWeight="SemiBold"/>
+                <TextBox x:Name="ItemTypeBox" Height="32" Margin="0,0,0,10"/>
+
+                <TextBlock Text="Total Quantity" FontWeight="SemiBold"/>
+                <TextBox x:Name="TotalQtyBox" Height="32" Margin="0,0,0,10"/>
+
+                <TextBlock Text="Low Stock Threshold" FontWeight="SemiBold"/>
+                <TextBox x:Name="ThresholdBox" Height="32" Margin="0,0,0,10"/>
+
+                <TextBlock Text="Note (optional)" FontWeight="SemiBold"/>
+                <TextBox x:Name="NoteBox"
+                         Height="80"
+                         Margin="0,0,0,10"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"/>
+            </StackPanel>
+
+            <!-- Action Buttons -->
+            <StackPanel Grid.Row="1"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="0,20,0,0">
+
+                <Button x:Name="SaveButton"
+                        Content="✔ Save Changes"
+                        Width="120"
+                        Height="38"
+                        Background="#4CAF50"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        Margin="0,0,10,0"
+                        Click="Save_Click"/>
+
+                <Button Content="✖ Cancel"
+                        Width="100"
+                        Height="36"
+                        Background="#F44336"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        Margin="0,0,10,0"
+                        Click="Cancel_Click"/>
+
+                <Button x:Name="DeleteButton"
+                        Content="🗑 Delete"
+                        Width="100"
+                        Height="36"
+                        Background="#D32F2F"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        Visibility="Collapsed"
+                        Click="Delete_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

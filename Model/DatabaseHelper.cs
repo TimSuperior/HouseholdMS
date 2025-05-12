@@ -4,26 +4,25 @@ using System.IO;
 
 public static class DatabaseHelper
 {
-    private static string dbPath;
+    private static readonly string dbPath;
 
     static DatabaseHelper()
     {
-        string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        string targetFolder = Path.Combine(appDataPath, "HouseholdMS");
-        dbPath = Path.Combine(targetFolder, "household_management.db");
-
-        if (!Directory.Exists(targetFolder))
-            Directory.CreateDirectory(targetFolder);
+        // ✅ Now use the same folder where the .exe is located
+        string appFolder = AppDomain.CurrentDomain.BaseDirectory;
+        dbPath = Path.Combine(appFolder, "household_management.db");
 
         if (!File.Exists(dbPath))
-            File.Copy("household_management.db", dbPath); // should be in build output folder
+        {
+            // (Optional safety) You can show a debug message
+            Console.WriteLine("⚠️ Warning: Database file not found. It should have been created at startup by DatabaseInitializer.");
+            // Not creating DB here! DB creation happens ONLY inside DatabaseInitializer.
+        }
     }
 
     public static SQLiteConnection GetConnection()
     {
-        Console.WriteLine("Database is located at: " + DatabaseHelper.GetDbPath());
-
-        return new SQLiteConnection($"Data Source={dbPath};");
+        return new SQLiteConnection($"Data Source={dbPath};Version=3;");
     }
 
     public static string GetDbPath() => dbPath;

@@ -1,64 +1,63 @@
 ﻿using HouseholdMS.View;
+using HouseholdMS.Properties;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data.SQLite;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
 
 namespace HouseholdMS
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
-        private ObservableCollection<Household> households = new ObservableCollection<Household>();
-        public MainWindow()
+        private readonly string _currentUserRole;
+
+        public MainWindow(string userRole)
         {
-
             InitializeComponent();
-            MainContent.Content = new HouseholdsView();
-        }
+            _currentUserRole = userRole;
 
-        
+            if (_currentUserRole == "Admin")
+            {
+                ManageUsersButton.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                ManageUsersButton.Visibility = Visibility.Collapsed;
+            }
+
+            // 🔥 Pass role to HouseholdsView
+            MainContent.Content = new HouseholdsView(_currentUserRole);
+        }
 
         private void bt_HouseholdMenu(object sender, RoutedEventArgs e)
         {
-            MainContent.Content = new HouseholdsView();
+            MainContent.Content = new HouseholdsView(_currentUserRole);
         }
 
         private void bt_TechnicianMenu(object sender, RoutedEventArgs e)
         {
-            MainContent.Content = new TechView();
+            MainContent.Content = new TechView(_currentUserRole);
         }
 
         private void bt_InventoryMenu(object sender, RoutedEventArgs e)
         {
-            MainContent.Content = new InventoryView();
+            MainContent.Content = new InventoryView(_currentUserRole);
         }
 
         private void bt_ServiceMenu(object sender, RoutedEventArgs e)
         {
-            MainContent.Content = new ServiceRecordsView();
+            MainContent.Content = new ServiceRecordsView(_currentUserRole);
+        }
+
+        private void bt_ManageUsers(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new UserManagementView();
         }
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("You have been logged out.");
-            Application.Current.Shutdown(); // or redirect to login page
+            var loginWindow = new Login();
+            loginWindow.Show();
+            this.Close();
         }
-
     }
 }
