@@ -89,6 +89,9 @@
     <Compile Include="Model\ServiceRecord.cs" />
     <Compile Include="Model\Technician.cs" />
     <Compile Include="Model\User.cs" />
+    <Compile Include="View\EqTesting\AllTestMenuView.xaml.cs">
+      <DependentUpon>AllTestMenuView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\InputDialogWindow.xaml.cs">
       <DependentUpon>InputDialogWindow.xaml</DependentUpon>
     </Compile>
@@ -143,6 +146,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="View\EqTesting\AllTestMenuView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\InputDialogWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -244,6 +251,34 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\id_sample.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\bat_insp.jpg" />
+    <Resource Include="Assets\inverter_insp.jpg" />
+    <Resource Include="Assets\mmpt_insp.jpg" />
+    <Resource Include="Assets\wiring_insp.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\1st.png" />
+    <Resource Include="Assets\2st.png" />
+    <Resource Include="Assets\3st.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\ac_check.mp4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\cont_check.mp4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\finish_check.mp4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\mmpt_check.mp4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.119.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.119.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />

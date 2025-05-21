@@ -83,7 +83,7 @@
                 <Button x:Name="ManageUsersButton" Content="👥 Manage Users" Click="bt_ManageUsers" Style="{StaticResource MenuButtonStyle}"
                                 Visibility="Collapsed"/>
                 <!-- Hidden by default -->
-
+                <Button x:Name="bt_AllTest" Content="🔧 All Test" Click="bt_AllTest_Click"  Style="{StaticResource MenuButtonStyle}"/>
             </StackPanel>
 
             <!-- Logout Button -->

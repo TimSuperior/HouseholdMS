@@ -3,6 +3,7 @@ using HouseholdMS.Properties;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using HouseholdMS.View.EqTesting;
 
 namespace HouseholdMS
 {
@@ -58,6 +59,12 @@ namespace HouseholdMS
             var loginWindow = new Login();
             loginWindow.Show();
             this.Close();
+        }
+
+
+        private void bt_AllTest_Click(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new AllTestMenuView(_currentUserRole);
         }
     }
 }
