@@ -156,6 +156,12 @@ namespace HouseholdMS.View.UserControls
             if (string.IsNullOrWhiteSpace(Address)) { AddressBox.Tag = "error"; hasError = true; }
             if (string.IsNullOrWhiteSpace(Contact)) { ContactBox.Tag = "error"; hasError = true; }
 
+            if (!int.TryParse(ContactBox.Text, out _))
+            {
+                MessageBox.Show("Please enter valid contact number!", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
             if (InstDatePicker.SelectedDate == null || InstDatePicker.SelectedDate > DateTime.Today)
             {
                 MessageBox.Show("Installation date cannot be in the future.", "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);

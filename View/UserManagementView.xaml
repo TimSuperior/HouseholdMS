@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
 
@@ -21,64 +20,54 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="👥 User Management"
-                           FontSize="22"
-                           FontWeight="Bold"
-                           Margin="0,0,0,10"/>
+                <!-- Header -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBlock Text="👥 User Management"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               Margin="0,0,0,10"/>
+                </StackPanel>
 
-                <ListView x:Name="UserListView"
-                          Grid.Row="1"
-                          Background="White"
-                          BorderBrush="#DDD"
-                          BorderThickness="1"
-                          SelectionMode="Single"
-                          ScrollViewer.VerticalScrollBarVisibility="Auto"
-                          SelectionChanged="UserListView_SelectionChanged">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="ID" DisplayMemberBinding="{Binding UserID}" Width="70"/>
-                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" Width="150"/>
-                            <GridViewColumn Header="Username" DisplayMemberBinding="{Binding Username}" Width="150"/>
-                            <GridViewColumn Header="Role" DisplayMemberBinding="{Binding Role}" Width="100"/>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
+                <!-- User List -->
+                <Border Grid.Row="1"
+                        Background="White"
+                        CornerRadius="0"
+                        BorderBrush="#DDD"
+                        BorderThickness="1"
+                        Padding="0"
+                        SnapsToDevicePixels="True">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto"
+                                  CanContentScroll="True">
+                        <ListView x:Name="UserListView" 
+                                  Background="White"
+                                  BorderBrush="#DDD"
+                                  BorderThickness="0"
+                                  SelectionMode="Single"
+                                  SelectionChanged="UserListView_SelectionChanged">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="ID" DisplayMemberBinding="{Binding UserID}" Width="70"/>
+                                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" Width="150"/>
+                                    <GridViewColumn Header="Username" DisplayMemberBinding="{Binding Username}" Width="150"/>
+                                    <GridViewColumn Header="Role" DisplayMemberBinding="{Binding Role}" Width="150"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </ScrollViewer>
+                </Border>
             </Grid>
 
-            <!-- Right Side: Edit Form -->
-            <Border Grid.Column="1"
+            <!-- Right Side: Inline Form Area (like FormContent) -->
+            <Border x:Name="FormContainer"
+                    Grid.Column="1"
                     Background="White"
                     CornerRadius="6"
                     BorderBrush="#DDD"
                     BorderThickness="1"
                     Padding="10"
                     Margin="10,0,0,0">
-                <StackPanel>
-                    <TextBlock Text="User Details" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,20"/>
-
-                    <TextBlock Text="Name:" FontWeight="Bold"/>
-                    <TextBox x:Name="NameBox" Margin="0,0,0,10"/>
-
-                    <TextBlock Text="Username:" FontWeight="Bold"/>
-                    <TextBox x:Name="UsernameBox" Margin="0,0,0,10" IsEnabled="False"/>
-
-                    <TextBlock Text="Role:" FontWeight="Bold"/>
-                    <ComboBox x:Name="RoleComboBox" Margin="0,0,0,20">
-                        <ComboBoxItem Content="User"/>
-                        <ComboBoxItem Content="Technician"/>
-                        <ComboBoxItem Content="Admin"/>
-                    </ComboBox>
-
-                    <Button x:Name="SaveChangesButton"
-                            Content="💾 Save Changes"
-                            Width="140"
-                            Height="32"
-                            Background="#4CAF50"
-                            Foreground="White"
-                            FontWeight="Bold"
-                            HorizontalAlignment="Left"
-                            Click="SaveChangesButton_Click"/>
-                </StackPanel>
+                <ContentControl x:Name="FormContent"/>
             </Border>
         </Grid>
     </Border>

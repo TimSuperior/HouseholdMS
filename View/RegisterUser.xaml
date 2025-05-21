@@ -8,67 +8,67 @@
         Background="#f0f2f5">
 
     <Grid>
-        <Border Background="White" 
-                CornerRadius="12" 
-                Padding="20" 
-                Width="300"
-                VerticalAlignment="Center" 
-                HorizontalAlignment="Center"
+        <Border Background="White"
                 BorderBrush="#DDD"
-                BorderThickness="1">
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="20"
+                Width="300"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                SnapsToDevicePixels="True">
 
-            <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center">
+            <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0">
 
-                <TextBlock Text="Register New User"
+                <!-- Title -->
+                <TextBlock Text="Create New Account"
                            FontSize="22"
                            FontWeight="Bold"
                            Foreground="#333"
                            TextAlignment="Center"
                            Margin="0,0,0,20"/>
 
-                <TextBlock Text="Name" 
-                           FontSize="13" 
-                           Margin="5,0,0,2" 
-                           Foreground="#555"/>
-                <TextBox x:Name="NameBox" 
-                         Height="36" 
-                         Margin="0,0,0,10" 
-                         Padding="10,0" 
-                         Background="#FAFAFA" 
-                         BorderBrush="#CCC" 
-                         BorderThickness="1"/>
+                <!-- Name -->
+                <TextBlock Text="Name" FontSize="13" Margin="5,0,0,2" Foreground="#555"/>
+                <TextBox x:Name="NameBox"
+                         Height="36"
+                         Margin="0,0,0,10"
+                         Padding="10,0"
+                         Background="#FAFAFA"
+                         BorderBrush="#CCC"
+                         BorderThickness="1"
+                         VerticalContentAlignment="Center"/>
 
-                <TextBlock Text="Username" 
-                           FontSize="13" 
-                           Margin="5,0,0,2" 
-                           Foreground="#555"/>
-                <TextBox x:Name="UsernameBox" 
-                         Height="36" 
-                         Margin="0,0,0,10" 
-                         Padding="10,0" 
-                         Background="#FAFAFA" 
-                         BorderBrush="#CCC" 
-                         BorderThickness="1"/>
+                <!-- Username -->
+                <TextBlock Text="Username" FontSize="13" Margin="5,0,0,2" Foreground="#555"/>
+                <TextBox x:Name="UsernameBox"
+                         Height="36"
+                         Margin="0,0,0,10"
+                         Padding="10,0"
+                         Background="#FAFAFA"
+                         BorderBrush="#CCC"
+                         BorderThickness="1"
+                         VerticalContentAlignment="Center"/>
 
-                <TextBlock Text="Password" 
-                           FontSize="13" 
-                           Margin="5,0,0,2" 
-                           Foreground="#555"/>
-                <PasswordBox x:Name="PasswordBox" 
-                             Height="36" 
-                             Margin="0,0,0,20" 
-                             Padding="10,0" 
-                             Background="#FAFAFA" 
-                             BorderBrush="#CCC" 
-                             BorderThickness="1"/>
+                <!-- Password -->
+                <TextBlock Text="Password" FontSize="13" Margin="5,0,0,2" Foreground="#555"/>
+                <PasswordBox x:Name="PasswordBox"
+                             Height="36"
+                             Margin="0,0,0,20"
+                             Padding="10,0"
+                             Background="#FAFAFA"
+                             BorderBrush="#CCC"
+                             BorderThickness="1"
+                             VerticalContentAlignment="Center"/>
 
+                <!-- Buttons -->
                 <Button Content="✅ Register"
                         Height="40"
-                        Margin="0,0,0,10"
                         Background="#4CAF50"
                         Foreground="White"
                         FontWeight="Bold"
                         BorderThickness="0"
+                        Margin="0,0,0,10"
                         Cursor="Hand"
                         Click="RegisterButton_Click"/>
 
@@ -78,10 +78,11 @@
                         Foreground="#333"
                         FontWeight="SemiBold"
                         BorderThickness="0"
+                        Margin="0"
                         Cursor="Hand"
                         Click="BackToLoginButton_Click"/>
-
             </StackPanel>
+
         </Border>
     </Grid>
 </Window>

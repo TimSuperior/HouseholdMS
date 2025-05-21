@@ -2,13 +2,13 @@
 using System.Data.SQLite;
 using System.Windows;
 using System.Windows.Controls;
+using HouseholdMS.View.UserControls; // Make sure this is where UserFormControl is located
 
 namespace HouseholdMS.View
 {
     public partial class UserManagementView : UserControl
     {
         private ObservableCollection<User> users = new ObservableCollection<User>();
-        private User selectedUser;
 
         public UserManagementView()
         {
@@ -44,59 +44,29 @@ namespace HouseholdMS.View
 
         private void UserListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            selectedUser = (User)UserListView.SelectedItem;
-            if (selectedUser != null)
+            var selectedUser = UserListView.SelectedItem as User;
+            if (selectedUser == null)
             {
-                NameBox.Text = selectedUser.Name;
-                UsernameBox.Text = selectedUser.Username;
-                RoleComboBox.SelectedValue = selectedUser.Role;
-
-                if (selectedUser.UserID == 1)
-                {
-                    // 🔥 If root selected, disable form
-                    NameBox.IsEnabled = false;
-                    UsernameBox.IsEnabled = false;
-                    RoleComboBox.IsEnabled = false;
-                    SaveChangesButton.IsEnabled = false;
-                }
-                else
-                {
-                    // 🔥 If normal user, enable form
-                    NameBox.IsEnabled = true;
-                    UsernameBox.IsEnabled = false; // Username stays always locked
-                    RoleComboBox.IsEnabled = true;
-                    SaveChangesButton.IsEnabled = true;
-                }
-            }
-        }
-
-        private void SaveChangesButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (selectedUser == null) return;
-
-            if (selectedUser.UserID == 1)
-            {
-                MessageBox.Show("You cannot modify the root admin account.", "Action Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                FormContent.Content = null;
                 return;
             }
 
-            string newName = NameBox.Text.Trim();
-            string newRole = (RoleComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+            var form = new UserFormControl(selectedUser);
 
-            using (var conn = DatabaseHelper.GetConnection())
+            form.OnSaveSuccess += (s, args) =>
             {
-                conn.Open();
-                using (var cmd = new SQLiteCommand("UPDATE Users SET Name = @name, Role = @role WHERE UserID = @userId", conn))
-                {
-                    cmd.Parameters.AddWithValue("@name", newName);
-                    cmd.Parameters.AddWithValue("@role", newRole);
-                    cmd.Parameters.AddWithValue("@userId", selectedUser.UserID);
-                    cmd.ExecuteNonQuery();
-                }
-            }
+                FormContent.Content = null;
+                LoadUsers();
+                UserListView.SelectedItem = null;
+            };
 
-            MessageBox.Show("User details updated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-            LoadUsers();
+            form.OnCancel += (s, args) =>
+            {
+                FormContent.Content = null;
+                UserListView.SelectedItem = null;
+            };
+
+            FormContent.Content = form;
         }
     }
 

@@ -54,6 +54,12 @@ namespace HouseholdMS.View.UserControls
                 return;
             }
 
+            if (!int.TryParse(ContactBox.Text, out _))
+            {
+                MessageBox.Show("Please enter valid contact number!", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();

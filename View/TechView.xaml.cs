@@ -21,17 +21,19 @@ namespace HouseholdMS.View
             _currentUserRole = userRole;
             LoadTechnicians();
             ApplyRoleRestrictions();
+
+            // Bind ListView
+            listView.ItemsSource = technicianList;
+            listView.SelectionChanged += TechnicianListView_SelectionChanged;
         }
 
         private void ApplyRoleRestrictions()
         {
             if (_currentUserRole != "Admin")
             {
-                // 🔥 Instead of disabling, hide Add Button
                 if (FindName("AddTechnicianButton") is Button addBtn)
                     addBtn.Visibility = Visibility.Collapsed;
 
-                // 🔥 Hide FormContent panel too
                 if (FindName("FormContent") is ContentControl formContent)
                     formContent.Visibility = Visibility.Collapsed;
             }
@@ -60,8 +62,6 @@ namespace HouseholdMS.View
                     });
                 }
             }
-
-            TechnicianDataGrid.ItemsSource = technicianList;
         }
 
         private void AddTechnicianButton_Click(object sender, RoutedEventArgs e)
@@ -72,7 +72,7 @@ namespace HouseholdMS.View
                 return;
             }
 
-            var form = new AddTechnicianControl(); // Add mode
+            var form = new AddTechnicianControl();
             form.OnSavedSuccessfully += (s, args) =>
             {
                 FormContent.Content = null;
@@ -83,9 +83,9 @@ namespace HouseholdMS.View
             FormContent.Content = form;
         }
 
-        private void TechnicianDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void TechnicianListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var selected = TechnicianDataGrid.SelectedItem as Technician;
+            var selected = listView.SelectedItem as Technician;
             if (selected == null)
             {
                 FormContent.Content = null;
@@ -98,17 +98,17 @@ namespace HouseholdMS.View
                 return;
             }
 
-            var form = new AddTechnicianControl(selected); // Edit mode
+            var form = new AddTechnicianControl(selected);
             form.OnSavedSuccessfully += (s, args) =>
             {
                 FormContent.Content = null;
                 LoadTechnicians();
-                TechnicianDataGrid.SelectedItem = null;
+                listView.SelectedItem = null;
             };
             form.OnCancelRequested += (s, args) =>
             {
                 FormContent.Content = null;
-                TechnicianDataGrid.SelectedItem = null;
+                listView.SelectedItem = null;
             };
 
             FormContent.Content = form;
@@ -120,7 +120,7 @@ namespace HouseholdMS.View
 
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
-                TechnicianDataGrid.ItemsSource = technicianList;
+                listView.ItemsSource = technicianList;
             }
             else
             {
@@ -133,13 +133,13 @@ namespace HouseholdMS.View
                      || (t.Notee?.ToLower().Contains(searchTerm) ?? false))
                     .ToList();
 
-                TechnicianDataGrid.ItemsSource = filtered;
+                listView.ItemsSource = filtered;
             }
         }
 
         private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (SearchBox.Text == "Search...")
+            if (SearchBox.Text == "Search by name, address, or contact")
             {
                 SearchBox.Text = "";
                 SearchBox.Foreground = new SolidColorBrush(Colors.Black);
@@ -150,7 +150,7 @@ namespace HouseholdMS.View
         {
             if (string.IsNullOrWhiteSpace(SearchBox.Text))
             {
-                SearchBox.Text = "Search...";
+                SearchBox.Text = "Search by name, address, or contact";
                 SearchBox.Foreground = new SolidColorBrush(Colors.Gray);
             }
         }

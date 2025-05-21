@@ -125,6 +125,9 @@
     <Compile Include="View\UserControls\TxtBox.xaml.cs">
       <DependentUpon>TxtBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\UserControls\UserFormControl.xaml.cs">
+      <DependentUpon>UserFormControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\UserManagementView.xaml.cs">
       <DependentUpon>UserManagementView.xaml</DependentUpon>
     </Compile>
@@ -185,6 +188,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\UserControls\TxtBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\UserControls\UserFormControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
