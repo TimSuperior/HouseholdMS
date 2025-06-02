@@ -1,0 +1,62 @@
+﻿<UserControl x:Class="HouseholdMS.View.EqTesting.SwitchTestMenuView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HouseholdMS.View.UserControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800">
+
+    <Grid Background="#F4F6F8" Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="StepTitle" FontSize="24" FontWeight="Bold" Foreground="#2C3E50" Margin="0 0 0 20"/>
+
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="20" BorderBrush="#CCC" BorderThickness="1">
+            <StackPanel>
+                <TextBlock x:Name="StepInstruction" FontSize="14" Foreground="#555" Margin="0 0 0 20" TextWrapping="Wrap"/>
+
+                <StackPanel x:Name="TestInfoPanel" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal" Margin="0 5">
+                        <TextBlock Text="Device Name (장비 명칭):" Width="150"/>
+                        <TextBox x:Name="DeviceNameBox" Width="200"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0 5">
+                        <TextBlock Text="Serial Number (일련번호):" Width="150"/>
+                        <TextBox x:Name="SerialBox" Width="200"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0 5">
+                        <TextBlock Text="Installation Site (설치 장소):" Width="150"/>
+                        <TextBox x:Name="LocationBox" Width="200"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0 5">
+                        <TextBlock Text="Date/Time (일자/시간):" Width="150"/>
+                        <TextBlock x:Name="DateTimeText" Width="200"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel x:Name="SwitchTestPanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 10" Visibility="Collapsed">
+                    <Button Content="PV Switch Test (PV 스위치 테스트)" Width="150" Height="35" Margin="5"/>
+                    <Button Content="MPPT Switch Test (MPPT 스위치 테스트)" Width="150" Height="35" Margin="5"/>
+                    <Button Content="Battery Switch Test (배터리 스위치 테스트)" Width="150" Height="35" Margin="5"/>
+                    <Button Content="AC Load Switch Test (AC 부하 스위치 테스트)" Width="150" Height="35" Margin="5"/>
+                </StackPanel>
+
+                <StackPanel x:Name="ResultPanel" Visibility="Collapsed">
+                    <TextBlock Text="All test steps completed. You can now save the result. (모든 테스트 완료. 결과를 저장하세요.)" Foreground="Green" Margin="0 10"/>
+                    <Button Content="💾 Save (저장)" Width="120" Height="35" HorizontalAlignment="Right"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 20 0 0">
+            <Button Content="⬅ Prev" Width="100" Margin="5" Click="OnPrevStep"/>
+            <Button Content="Next ➡" Width="100" Margin="5" Click="OnNextStep"/>
+            <Button Content="❌ Close" Width="100" Margin="5"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -83,8 +83,21 @@
                 <Button x:Name="ManageUsersButton" Content="👥 Manage Users" Click="bt_ManageUsers" Style="{StaticResource MenuButtonStyle}"
                                 Visibility="Collapsed"/>
                 <!-- Hidden by default -->
-                <Button x:Name="bt_AllTest" Content="🔧 All Test" Click="bt_AllTest_Click"  Style="{StaticResource MenuButtonStyle}"/>
-                <Button x:Name="bt_BatteryTest" Content="🔧 Battery Test" Click="bt_BatteryTest_Click" Style="{StaticResource MenuButtonStyle}"/>
+                <Button x:Name="bt_AllTest" Content="🔧 All Test" Click="bt_AllTest_Click"  
+                        Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
+                <Button x:Name="bt_BatteryTest" Content="🔧 Battery Test" Click="bt_BatteryTest_Click" 
+                        Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
+                <Button x:Name="bt_ControllerTest" Content="🔧 Controller Test" Click="bt_ControllerTest_Click" 
+                        Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
+                <Button x:Name="bt_InverterTest" Content="🔧 Inverter Test" Click="bt_InverterTest_Click" 
+                        Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
+                <Button x:Name="bt_SwitchTest" Content="🔧 Switch Test" Click="bt_SwitchTest_Click" 
+                        Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
+                <Button x:Name="bt_SPDTest" Content="🔧 SPD Test" Click="bt_SPDTest_Click" 
+                        Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
+                <Button x:Name="bt_SettingMenu" Content="🔧 Settings" Click="bt_SettingMenu_Click" 
+                        Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
+
             </StackPanel>
 
             <!-- Logout Button -->

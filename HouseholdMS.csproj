@@ -95,6 +95,18 @@
     <Compile Include="View\EqTesting\BatteryTestMenuView.xaml.cs">
       <DependentUpon>BatteryTestMenuView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\EqTesting\ControllerTestMenuView.xaml.cs">
+      <DependentUpon>ControllerTestMenuView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\EqTesting\InverterTestMenuView.xaml.cs">
+      <DependentUpon>InverterTestMenuView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\EqTesting\SPDTestMenuView.xaml.cs">
+      <DependentUpon>SPDTestMenuView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\EqTesting\SwitchTestMenuView.xaml.cs">
+      <DependentUpon>SwitchTestMenuView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\InputDialogWindow.xaml.cs">
       <DependentUpon>InputDialogWindow.xaml</DependentUpon>
     </Compile>
@@ -112,6 +124,9 @@
     </Compile>
     <Compile Include="View\ServiceRecordsView.xaml.cs">
       <DependentUpon>ServiceRecordsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\SettingMenuView.xaml.cs">
+      <DependentUpon>SettingMenuView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\TechView.xaml.cs">
       <DependentUpon>TechView.xaml</DependentUpon>
@@ -157,6 +172,22 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\EqTesting\ControllerTestMenuView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\EqTesting\InverterTestMenuView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\EqTesting\SPDTestMenuView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\EqTesting\SwitchTestMenuView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\InputDialogWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -178,6 +209,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\ServiceRecordsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\SettingMenuView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

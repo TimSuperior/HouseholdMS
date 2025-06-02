@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="HouseholdMS.View.EqTesting.ControllerTestMenuView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800">
+    <Grid Background="#F4F6F8" Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="🧪 Controller Test Menu (컨트롤러 점검 메뉴)" 
+                   FontSize="24" FontWeight="Bold" Foreground="#2C3E50" Margin="0 0 0 20"/>
+
+        <Border Grid.Row="1" Background="White" BorderBrush="#CCC" BorderThickness="1" CornerRadius="10" Padding="20">
+            <StackPanel>
+                <TextBlock x:Name="StepTitle" FontSize="18" FontWeight="SemiBold" Foreground="#222"/>
+                <TextBlock x:Name="StepInstruction" FontSize="14" Foreground="#555" TextWrapping="Wrap" Margin="0 10 0 20"/>
+
+                <StackPanel x:Name="UserInfoPanel" Visibility="Collapsed" Margin="0 10 0 20">
+                    <TextBlock Text="Device ID (장비 ID):" FontWeight="Bold" Margin="0 5 0 2"/>
+                    <TextBox x:Name="DeviceIdBox" Height="30" Margin="0 0 0 10"/>
+
+                    <TextBlock Text="Location (설치 위치):" FontWeight="Bold" Margin="0 5 0 2"/>
+                    <TextBox x:Name="LocationBox" Height="30" Margin="0 0 0 10"/>
+
+                    <TextBlock Text="Technician Name (점검자 이름):" FontWeight="Bold" Margin="0 5 0 2"/>
+                    <TextBox x:Name="TechnicianBox" Height="30"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 20 0 0">
+            <Button Content="⬅ Prev" Width="100" Margin="5" Click="OnPrevStep"/>
+            <Button Content="Next ➡" Width="100" Margin="5" Click="OnNextStep"/>
+            <Button Content="❌ Close" Width="100" Margin="5" Click="OnClose"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
