@@ -66,5 +66,10 @@ namespace HouseholdMS
         {
             MainContent.Content = new AllTestMenuView(_currentUserRole);
         }
+
+        private void bt_BatteryTest_Click(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new BatteryTestMenuView(_currentUserRole);
+        }
     }
 }

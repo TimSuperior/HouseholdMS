@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Data.SQLite;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using HouseholdMS.Model;
 
 namespace HouseholdMS.View.UserControls
 {
@@ -54,20 +55,27 @@ namespace HouseholdMS.View.UserControls
                 NameBox.Tag = null;
             }
 
-            using (var conn = DatabaseHelper.GetConnection())
+            try
             {
-                conn.Open();
-                using (var cmd = new SQLiteCommand("UPDATE Users SET Name = @name, Role = @role WHERE UserID = @userId", conn))
+                using (var conn = DatabaseHelper.GetConnection())
                 {
-                    cmd.Parameters.AddWithValue("@name", newName);
-                    cmd.Parameters.AddWithValue("@role", newRole);
-                    cmd.Parameters.AddWithValue("@userId", user.UserID);
-                    cmd.ExecuteNonQuery();
+                    conn.Open();
+                    using (var cmd = new SqlCommand("UPDATE Users SET Name = @name, Role = @role WHERE UserID = @userId", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@name", newName);
+                        cmd.Parameters.AddWithValue("@role", newRole);
+                        cmd.Parameters.AddWithValue("@userId", user.UserID);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
-            }
 
-            MessageBox.Show("User details updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-            OnSaveSuccess?.Invoke(this, EventArgs.Empty);
+                MessageBox.Show("User details updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                OnSaveSuccess?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating user:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
@@ -86,18 +94,25 @@ namespace HouseholdMS.View.UserControls
             if (result != MessageBoxResult.Yes)
                 return;
 
-            using (var conn = DatabaseHelper.GetConnection())
+            try
             {
-                conn.Open();
-                using (var cmd = new SQLiteCommand("DELETE FROM Users WHERE UserID = @userId", conn))
+                using (var conn = DatabaseHelper.GetConnection())
                 {
-                    cmd.Parameters.AddWithValue("@userId", user.UserID);
-                    cmd.ExecuteNonQuery();
+                    conn.Open();
+                    using (var cmd = new SqlCommand("DELETE FROM Users WHERE UserID = @userId", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@userId", user.UserID);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
-            }
 
-            MessageBox.Show("User deleted successfully.", "Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
-            OnSaveSuccess?.Invoke(this, EventArgs.Empty);
+                MessageBox.Show("User deleted successfully.", "Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
+                OnSaveSuccess?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error deleting user:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

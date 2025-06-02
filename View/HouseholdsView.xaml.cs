@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Data.SQLite;
+using System.Data.SqlClient;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using HouseholdMS.View.UserControls;
+using HouseholdMS.Model;
 
 namespace HouseholdMS.View
 {
@@ -51,7 +52,7 @@ namespace HouseholdMS.View
             using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT * FROM Households", conn))
+                using (var cmd = new SqlCommand("SELECT * FROM Households", conn))
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
@@ -60,11 +61,14 @@ namespace HouseholdMS.View
                         {
                             HouseholdID = Convert.ToInt32(reader["HouseholdID"]),
                             OwnerName = reader["OwnerName"].ToString(),
-                            Address = reader["Address"].ToString(),
+                            UserName = reader["UserName"].ToString(),
+                            Municipality = reader["Municipality"].ToString(),
+                            District = reader["District"].ToString(),
                             ContactNum = reader["ContactNum"].ToString(),
-                            InstDate = reader["InstallDate"].ToString(),
-                            LastInspDate = reader["LastInspect"].ToString(),
-                            Note = reader["Note"] != DBNull.Value ? reader["Note"].ToString() : string.Empty
+                            InstallDate = Convert.ToDateTime(reader["InstallDate"]),
+                            LastInspect = Convert.ToDateTime(reader["LastInspect"]),
+                            UserComm = reader["UserComm"] != DBNull.Value ? reader["UserComm"].ToString() : string.Empty,
+                            Statuss = reader["Statuss"] != DBNull.Value ? reader["Statuss"].ToString() : string.Empty
                         });
                     }
                 }
@@ -81,8 +85,10 @@ namespace HouseholdMS.View
             string search = SearchBox.Text?.Trim().ToLower() ?? string.Empty;
             view.Filter = obj => obj is Household h &&
                 (h.OwnerName.ToLower().Contains(search) ||
-                 h.Address.ToLower().Contains(search) ||
-                 h.ContactNum.ToLower().Contains(search));
+                 h.ContactNum.ToLower().Contains(search) ||
+                 h.UserName.ToLower().Contains(search) ||
+                 h.Municipality.ToLower().Contains(search) ||
+                 h.District.ToLower().Contains(search));
         }
 
         private void ResetText(object sender, RoutedEventArgs e)
@@ -206,7 +212,7 @@ namespace HouseholdMS.View
                     using (var conn = DatabaseHelper.GetConnection())
                     {
                         conn.Open();
-                        var cmd = new SQLiteCommand("DELETE FROM Households WHERE HouseholdID = @id", conn);
+                        var cmd = new SqlCommand("DELETE FROM Households WHERE HouseholdID = @id", conn);
                         cmd.Parameters.AddWithValue("@id", selected.HouseholdID);
                         cmd.ExecuteNonQuery();
                     }

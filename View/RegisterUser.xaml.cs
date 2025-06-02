@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Windows;
-using System.Data.SQLite;
+using System.Data.SqlClient;
+using HouseholdMS.Model;
 
-namespace HouseholdMS.View // << MATCH this to your namespace
+namespace HouseholdMS.View
 {
     public partial class RegisterUser : Window
     {
@@ -29,10 +30,10 @@ namespace HouseholdMS.View // << MATCH this to your namespace
                 {
                     conn.Open();
 
-                    using (var checkCmd = new SQLiteCommand("SELECT COUNT(*) FROM Users WHERE LOWER(Username) = LOWER(@username)", conn))
+                    using (var checkCmd = new SqlCommand("SELECT COUNT(*) FROM Users WHERE LOWER(Username) = LOWER(@username)", conn))
                     {
                         checkCmd.Parameters.AddWithValue("@username", username);
-                        long existing = (long)checkCmd.ExecuteScalar();
+                        int existing = (int)checkCmd.ExecuteScalar();
 
                         if (existing > 0)
                         {
@@ -41,11 +42,11 @@ namespace HouseholdMS.View // << MATCH this to your namespace
                         }
                     }
 
-                    using (var insertCmd = new SQLiteCommand("INSERT INTO Users (Name, Username, PasswordHash, Role) VALUES (@name, @username, @password, 'User')", conn))
+                    using (var insertCmd = new SqlCommand("INSERT INTO Users (Name, Username, PasswordHash, Role) VALUES (@name, @username, @password, 'User')", conn))
                     {
                         insertCmd.Parameters.AddWithValue("@name", name);
                         insertCmd.Parameters.AddWithValue("@username", username);
-                        insertCmd.Parameters.AddWithValue("@password", password);
+                        insertCmd.Parameters.AddWithValue("@password", password); // TODO: Hash password in production!
 
                         insertCmd.ExecuteNonQuery();
                     }

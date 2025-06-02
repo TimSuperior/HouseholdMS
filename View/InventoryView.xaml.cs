@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Data.SQLite;
+using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using HouseholdMS.View.UserControls;
+using HouseholdMS.Model;
 
 namespace HouseholdMS.View
 {
@@ -46,7 +47,7 @@ namespace HouseholdMS.View
             using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT * FROM StockInventory", conn))
+                using (var cmd = new SqlCommand("SELECT * FROM StockInventory", conn))
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
@@ -75,10 +76,8 @@ namespace HouseholdMS.View
 
             string search = SearchBox.Text.Trim().ToLower();
             view.Filter = obj =>
-            {
-                return obj is InventoryItem item &&
-                       item.ItemType.ToLower().Contains(search);
-            };
+                obj is InventoryItem item &&
+                item.ItemType.ToLower().Contains(search);
         }
 
         private void ClearText(object sender, RoutedEventArgs e)
@@ -173,7 +172,7 @@ namespace HouseholdMS.View
                     using (var conn = DatabaseHelper.GetConnection())
                     {
                         conn.Open();
-                        var cmd = new SQLiteCommand(@"
+                        var cmd = new SqlCommand(@"
                             UPDATE StockInventory 
                             SET TotalQuantity = TotalQuantity + @qty, 
                                 LastRestockedDate = @now 
@@ -218,7 +217,7 @@ namespace HouseholdMS.View
                     using (var conn = DatabaseHelper.GetConnection())
                     {
                         conn.Open();
-                        var cmd = new SQLiteCommand(@"
+                        var cmd = new SqlCommand(@"
                             UPDATE StockInventory 
                             SET TotalQuantity = TotalQuantity - @qty, 
                                 UsedQuantity = UsedQuantity + @qty 

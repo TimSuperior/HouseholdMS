@@ -6,10 +6,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              Background="White"
-             d:DesignHeight="530"
+             d:DesignHeight="600"
              d:DesignWidth="440">
-
-
 
     <Border Padding="25"
             CornerRadius="12"
@@ -46,51 +44,62 @@
                        Margin="0,0,0,20"/>
 
             <!-- Form Fields -->
-            <StackPanel Grid.Row="1" VerticalAlignment="Top">
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel VerticalAlignment="Top">
 
-                <TextBlock Text="Owner Name" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <TextBox x:Name="OwnerBox" Style="{StaticResource ErrorBoxStyle}" Height="35" Margin="0,0,0,12"/>
+                    <TextBlock Text="Owner Name" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <TextBox x:Name="OwnerBox" Style="{StaticResource ErrorBoxStyle}" Height="35" Margin="0,0,0,12"/>
 
-                <TextBlock Text="Address" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <TextBox x:Name="AddressBox" Style="{StaticResource ErrorBoxStyle}" Height="35" Margin="0,0,0,12"/>
+                    <TextBlock Text="User Name" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <TextBox x:Name="UserNameBox" Height="35" Margin="0,0,0,12"/>
 
-                <TextBlock Text="Contact Number" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <TextBox x:Name="ContactBox" Style="{StaticResource ErrorBoxStyle}" Height="35" Margin="0,0,0,12"/>
+                    <TextBlock Text="Municipality" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <TextBox x:Name="MunicipalityBox" Height="35" Margin="0,0,0,12"/>
 
-                <TextBlock Text="Installation Date" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <DatePicker x:Name="InstDatePicker"
-                            Height="35"
-                            Padding="6,0"
-                            BorderBrush="#C0C0C0"
-                            BorderThickness="1"
-                            Background="White"
-                            SelectedDateFormat="Short"
-                            VerticalContentAlignment="Center"
-                            DisplayDateEnd="{x:Static System:DateTime.Today}"
-                            Margin="0,0,0,12"/>
+                    <TextBlock Text="District" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <TextBox x:Name="DistrictBox" Height="35" Margin="0,0,0,12"/>
 
-                <TextBlock Text="Last Inspection Date" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <DatePicker x:Name="LastInspPicker"
-                            Height="35"
-                            Padding="6,0"
-                            BorderBrush="#C0C0C0"
-                            BorderThickness="1"
-                            Background="White"
-                            SelectedDateFormat="Short"
-                            VerticalContentAlignment="Center"
-                            DisplayDateEnd="{x:Static System:DateTime.Today}"
-                            Margin="0,0,0,12"/>
+                    <TextBlock Text="Contact Number" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <TextBox x:Name="ContactBox" Style="{StaticResource ErrorBoxStyle}" Height="35" Margin="0,0,0,12"/>
 
-                <TextBlock Text="Note (optional)" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <TextBox x:Name="NoteBox"
-                         Height="80"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         VerticalScrollBarVisibility="Auto"
-                         BorderBrush="#C0C0C0"
-                         BorderThickness="1"
-                         Margin="0,0,0,12"/>
-            </StackPanel>
+                    <TextBlock Text="Installation Date" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <DatePicker x:Name="InstDatePicker"
+                                Height="35"
+                                Padding="6,0"
+                                BorderBrush="#C0C0C0"
+                                BorderThickness="1"
+                                Background="White"
+                                SelectedDateFormat="Short"
+                                VerticalContentAlignment="Center"
+                                DisplayDateEnd="{x:Static System:DateTime.Today}"
+                                Margin="0,0,0,12"/>
+
+                    <TextBlock Text="Last Inspection Date" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <DatePicker x:Name="LastInspPicker"
+                                Height="35"
+                                Padding="6,0"
+                                BorderBrush="#C0C0C0"
+                                BorderThickness="1"
+                                Background="White"
+                                SelectedDateFormat="Short"
+                                VerticalContentAlignment="Center"
+                                DisplayDateEnd="{x:Static System:DateTime.Today}"
+                                Margin="0,0,0,12"/>
+
+                    <TextBlock Text="Status" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <TextBox x:Name="StatusBox" Height="35" Margin="0,0,0,12"/>
+
+                    <TextBlock Text="Note (optional)" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <TextBox x:Name="NoteBox"
+                             Height="80"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             BorderBrush="#C0C0C0"
+                             BorderThickness="1"
+                             Margin="0,0,0,12"/>
+                </StackPanel>
+            </ScrollViewer>
 
             <!-- Buttons -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">

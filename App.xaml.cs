@@ -1,5 +1,7 @@
-﻿using System.Windows;
-using HouseholdMS.Database; // 👈 Import your DatabaseInitializer namespace
+﻿using System;
+using System.Windows;
+using HouseholdMS.Model;
+
 
 namespace HouseholdMS
 {
@@ -7,10 +9,24 @@ namespace HouseholdMS
     {
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            // ✅ Initialize the database on app startup
-            DatabaseInitializer.Initialize();
+            // ✅ Optional: Test connection to SQL Server
+            try
+            {
+                if (!DatabaseHelper.TestConnection())
+                {
+                    MessageBox.Show("❌ Cannot connect to the database. Please check SQL Server configuration.", "DB Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Shutdown(); // Exit app
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Unexpected error during DB connection:\n" + ex.Message);
+                Shutdown();
+                return;
+            }
 
-            // ✅ After DB is ready, open login window
+            // ✅ Start app
             var loginWindow = new View.Login();
             loginWindow.Show();
         }

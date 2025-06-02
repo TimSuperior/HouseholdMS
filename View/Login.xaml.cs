@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Windows;
-using System.Data.SQLite;
+using System.Data.SqlClient;
 using HouseholdMS.Properties;
+using HouseholdMS.Model;
 
 namespace HouseholdMS.View
 {
@@ -30,7 +31,7 @@ namespace HouseholdMS.View
                     conn.Open();
 
                     string query = "SELECT Role FROM Users WHERE LOWER(Username) = LOWER(@username) AND PasswordHash = @password";
-                    using (var cmd = new SQLiteCommand(query, conn))
+                    using (var cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@username", username);
                         cmd.Parameters.AddWithValue("@password", password);
@@ -55,7 +56,7 @@ namespace HouseholdMS.View
                     }
                 }
             }
-            catch (SQLiteException ex)
+            catch (SqlException ex)
             {
                 MessageBox.Show($"Database connection error:\n{ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }

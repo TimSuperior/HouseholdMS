@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Data.SQLite;
+using System.Data.SqlClient;
 using System.Windows;
 using System.Windows.Controls;
 using HouseholdMS.View.UserControls;
+using HouseholdMS.Model;
 
 namespace HouseholdMS.View
 {
@@ -25,20 +26,18 @@ namespace HouseholdMS.View
             if (_currentUserRole == "User")
             {
                 if (FindName("AddServiceRecordButton") is Button addBtn)
-                    addBtn.Visibility = Visibility.Collapsed; // 🔥 Hide Add button
+                    addBtn.Visibility = Visibility.Collapsed;
 
                 if (FindName("RefreshButton") is Button refreshBtn)
-                    refreshBtn.Visibility = Visibility.Collapsed; // (Optional) If needed, hide Refresh too
+                    refreshBtn.Visibility = Visibility.Collapsed;
 
                 if (FindName("FormContent") is ContentControl formContent)
-                    formContent.Visibility = Visibility.Collapsed; // 🔥 Hide FormContent panel
+                    formContent.Visibility = Visibility.Collapsed;
             }
             else if (_currentUserRole == "Technician")
             {
                 if (FindName("FormContent") is ContentControl formContent)
                     formContent.Visibility = Visibility.Visible;
-
-                // Technician can add, but no delete — so no change needed unless you implement Delete button
             }
         }
 
@@ -46,13 +45,13 @@ namespace HouseholdMS.View
         {
             records.Clear();
 
-            using (SQLiteConnection conn = DatabaseHelper.GetConnection())
+            using (SqlConnection conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
                 string query = "SELECT * FROM InspectionReport";
 
-                using (SQLiteCommand cmd = new SQLiteCommand(query, conn))
-                using (SQLiteDataReader reader = cmd.ExecuteReader())
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
@@ -148,10 +147,10 @@ namespace HouseholdMS.View
             if (MessageBox.Show($"Are you sure you want to delete Service Record #{record.ReportID}?",
                 "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
-                using (var conn = DatabaseHelper.GetConnection())
+                using (SqlConnection conn = DatabaseHelper.GetConnection())
                 {
                     conn.Open();
-                    var cmd = new SQLiteCommand("DELETE FROM InspectionReport WHERE ReportID = @id", conn);
+                    var cmd = new SqlCommand("DELETE FROM InspectionReport WHERE ReportID = @id", conn);
                     cmd.Parameters.AddWithValue("@id", record.ReportID);
                     cmd.ExecuteNonQuery();
                 }

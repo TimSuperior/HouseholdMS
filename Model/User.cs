@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HouseholdMS.Models
+namespace HouseholdMS.Model
 {
     public class User
     {

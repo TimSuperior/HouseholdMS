@@ -10,7 +10,7 @@ namespace HouseholdMS.View
         {
             InitializeComponent();
             PromptText.Text = prompt;
-            QuantityBox.Focus();
+            this.Loaded += (s, e) => QuantityBox.Focus();
         }
 
         private void Ok_Click(object sender, RoutedEventArgs e)
@@ -19,16 +19,19 @@ namespace HouseholdMS.View
             {
                 Quantity = value;
                 this.DialogResult = true;
+                this.Close();
             }
             else
             {
                 MessageBox.Show("Please enter a valid positive number.", "Invalid Input", MessageBoxButton.OK, MessageBoxImage.Warning);
+                QuantityBox.Focus();
             }
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
+            this.Close();
         }
     }
 }

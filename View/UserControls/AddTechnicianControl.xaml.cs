@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Data.SQLite;
+using System.Data.SqlClient;
 using System.Windows;
 using System.Windows.Controls;
+using HouseholdMS.Model;
 
 namespace HouseholdMS.View.UserControls
 {
@@ -56,7 +57,7 @@ namespace HouseholdMS.View.UserControls
 
             if (!int.TryParse(ContactBox.Text, out _))
             {
-                MessageBox.Show("Please enter valid contact number!", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please enter a valid contact number!", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -91,7 +92,7 @@ namespace HouseholdMS.View.UserControls
                     : @"INSERT INTO Technicians (Name, ContactNum, AssignedArea, Address, Note)
                        VALUES (@name, @contact, @area, @address, @note)";
 
-                using (var cmd = new SQLiteCommand(query, conn))
+                using (var cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@name", name);
                     cmd.Parameters.AddWithValue("@contact", contact);
@@ -112,14 +113,14 @@ namespace HouseholdMS.View.UserControls
             OnSavedSuccessfully?.Invoke(this, EventArgs.Empty);
         }
 
-        private bool IsDuplicate(SQLiteConnection conn, string field, object value, int? ignoreId)
+        private bool IsDuplicate(SqlConnection conn, string field, object value, int? ignoreId)
         {
             string query = $@"
                 SELECT COUNT(*) FROM Technicians
                 WHERE {field} = @value
                 AND (@id IS NULL OR TechnicianID != @id)";
 
-            using (var cmd = new SQLiteCommand(query, conn))
+            using (var cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@value", value);
                 cmd.Parameters.AddWithValue("@id", ignoreId ?? (object)DBNull.Value);
@@ -144,7 +145,7 @@ namespace HouseholdMS.View.UserControls
                 using (var conn = DatabaseHelper.GetConnection())
                 {
                     conn.Open();
-                    var cmd = new SQLiteCommand("DELETE FROM Technicians WHERE TechnicianID = @id", conn);
+                    var cmd = new SqlCommand("DELETE FROM Technicians WHERE TechnicianID = @id", conn);
                     cmd.Parameters.AddWithValue("@id", _technician.TechnicianID);
                     cmd.ExecuteNonQuery();
                 }

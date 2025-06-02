@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Data.SQLite;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using HouseholdMS.View.UserControls;
+using HouseholdMS.Model;
 
 namespace HouseholdMS.View
 {
@@ -22,7 +23,6 @@ namespace HouseholdMS.View
             LoadTechnicians();
             ApplyRoleRestrictions();
 
-            // Bind ListView
             listView.ItemsSource = technicianList;
             listView.SelectionChanged += TechnicianListView_SelectionChanged;
         }
@@ -46,7 +46,7 @@ namespace HouseholdMS.View
             using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
-                var cmd = new SQLiteCommand("SELECT * FROM Technicians", conn);
+                var cmd = new SqlCommand("SELECT * FROM Technicians", conn);
                 var reader = cmd.ExecuteReader();
 
                 while (reader.Read())
@@ -86,13 +86,7 @@ namespace HouseholdMS.View
         private void TechnicianListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var selected = listView.SelectedItem as Technician;
-            if (selected == null)
-            {
-                FormContent.Content = null;
-                return;
-            }
-
-            if (_currentUserRole != "Admin")
+            if (selected == null || _currentUserRole != "Admin")
             {
                 FormContent.Content = null;
                 return;

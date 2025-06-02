@@ -84,6 +84,7 @@
                                 Visibility="Collapsed"/>
                 <!-- Hidden by default -->
                 <Button x:Name="bt_AllTest" Content="🔧 All Test" Click="bt_AllTest_Click"  Style="{StaticResource MenuButtonStyle}"/>
+                <Button x:Name="bt_BatteryTest" Content="🔧 Battery Test" Click="bt_BatteryTest_Click" Style="{StaticResource MenuButtonStyle}"/>
             </StackPanel>
 
             <!-- Logout Button -->

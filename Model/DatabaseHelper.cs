@@ -1,29 +1,47 @@
 ﻿using System;
-using System.Data.SQLite;
-using System.IO;
+using System.Configuration;
+using System.Data.SqlClient;
 
-public static class DatabaseHelper
+namespace HouseholdMS.Model // ✅ Adjust this if your actual namespace differs
 {
-    private static readonly string dbPath;
-
-    static DatabaseHelper()
+    public static class DatabaseHelper
     {
-        // ✅ Now use the same folder where the .exe is located
-        string appFolder = AppDomain.CurrentDomain.BaseDirectory;
-        dbPath = Path.Combine(appFolder, "household_management.db");
+        private static readonly string connectionString;
 
-        if (!File.Exists(dbPath))
+        static DatabaseHelper()
         {
-            // (Optional safety) You can show a debug message
-            Console.WriteLine("⚠️ Warning: Database file not found. It should have been created at startup by DatabaseInitializer.");
-            // Not creating DB here! DB creation happens ONLY inside DatabaseInitializer.
+            connectionString = ConfigurationManager.ConnectionStrings["AppDb"]?.ConnectionString;
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException("Connection string 'AppDb' not found in App.config.");
+            }
+        }
+
+        public static SqlConnection GetConnection()
+        {
+            return new SqlConnection(connectionString);
+        }
+
+        public static string GetConnectionString()
+        {
+            return connectionString;
+        }
+
+        public static bool TestConnection()
+        {
+            try
+            {
+                using (var conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
-
-    public static SQLiteConnection GetConnection()
-    {
-        return new SQLiteConnection($"Data Source={dbPath};Version=3;");
-    }
-
-    public static string GetDbPath() => dbPath;
 }

@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="900">
+             d:DesignHeight="450" d:DesignWidth="1200">
 
     <UserControl.Resources>
         <!-- Button style -->
@@ -52,9 +52,9 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
                         <Border Background="{TemplateBinding Background}" 
-                            BorderBrush="{TemplateBinding BorderBrush}" 
-                            BorderThickness="{TemplateBinding BorderThickness}" 
-                            CornerRadius="6">
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="6">
                             <ScrollViewer x:Name="PART_ContentHost" />
                         </Border>
                     </ControlTemplate>
@@ -80,15 +80,14 @@
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                     <TextBox x:Name="SearchBox"
                              Style="{StaticResource SearchBoxStyle}"
-                                Width="280"
-                             
+                             Width="280"
                              Margin="0,0,10,0"
                              VerticalContentAlignment="Center"
                              Foreground="Gray"
                              FontSize="13"
                              FontStyle="Italic"
-                             Text="Search by name, address, or contact"
-                             Tag="Search by name, address, or contact"
+                             Text="Search by owner, user, area or contact"
+                             Tag="Search by owner, user, area or contact"
                              GotFocus="ClearText"
                              LostFocus="ResetText"
                              TextChanged="SearchBox_TextChanged"/>
@@ -97,7 +96,6 @@
                             Content="➕ Add Household"
                             Style="{StaticResource ActionButtonStyle}"
                             Width="150"
-                            
                             Background="#4CAF50"
                             Foreground="White"
                             FontWeight="Bold"
@@ -115,13 +113,16 @@
                           SelectionChanged="HouseholdListView_SelectionChanged">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="ID" DisplayMemberBinding="{Binding HouseholdID}" Width="70"/>
-                            <GridViewColumn Header="Owner Name" DisplayMemberBinding="{Binding OwnerName}" Width="160"/>
-                            <GridViewColumn Header="Address" DisplayMemberBinding="{Binding Address}" Width="220"/>
-                            <GridViewColumn Header="Contact" DisplayMemberBinding="{Binding ContactNum}" Width="120"/>
-                            <GridViewColumn Header="Installed" DisplayMemberBinding="{Binding InstDate}" Width="110"/>
-                            <GridViewColumn Header="Last Inspection" DisplayMemberBinding="{Binding LastInspDate}" Width="130"/>
-                            <GridViewColumn Header="Note" DisplayMemberBinding="{Binding Note}" Width="150"/>
+                            <GridViewColumn Header="ID" DisplayMemberBinding="{Binding HouseholdID}" Width="50"/>
+                            <GridViewColumn Header="Owner Name" DisplayMemberBinding="{Binding OwnerName}" Width="120"/>
+                            <GridViewColumn Header="User Name" DisplayMemberBinding="{Binding UserName}" Width="120"/>
+                            <GridViewColumn Header="Municipality" DisplayMemberBinding="{Binding Municipality}" Width="120"/>
+                            <GridViewColumn Header="District" DisplayMemberBinding="{Binding District}" Width="120"/>
+                            <GridViewColumn Header="Contact" DisplayMemberBinding="{Binding ContactNum}" Width="100"/>
+                            <GridViewColumn Header="Installed" DisplayMemberBinding="{Binding InstDate}" Width="100"/>
+                            <GridViewColumn Header="Last Inspect" DisplayMemberBinding="{Binding LastInspDate}" Width="110"/>
+                            <GridViewColumn Header="Status" DisplayMemberBinding="{Binding Statuss}" Width="90"/>
+                            <GridViewColumn Header="Comment" DisplayMemberBinding="{Binding UserComm}" Width="150"/>
                         </GridView>
                     </ListView.View>
                 </ListView>

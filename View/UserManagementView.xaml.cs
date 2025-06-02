@@ -1,8 +1,9 @@
 ﻿using System.Collections.ObjectModel;
-using System.Data.SQLite;
+using System.Data.SqlClient;
 using System.Windows;
 using System.Windows.Controls;
-using HouseholdMS.View.UserControls; // Make sure this is where UserFormControl is located
+using HouseholdMS.View.UserControls;
+using HouseholdMS.Model;
 
 namespace HouseholdMS.View
 {
@@ -23,7 +24,7 @@ namespace HouseholdMS.View
             using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT UserID, Name, Username, Role FROM Users", conn))
+                using (var cmd = new SqlCommand("SELECT UserID, Name, Username, Role FROM Users", conn))
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
