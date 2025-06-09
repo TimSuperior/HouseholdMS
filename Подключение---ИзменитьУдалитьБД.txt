@@ -22,4 +22,8 @@ EXIT
 
 Then re-run your script:
 
-sqlcmd -S localhost\SQLEXPRESS -E -i "C:\Users\TSuperior\source\repos\HouseholdMS\create_db.sql"
+sqlcmd -S localhost\SQLEXPRESS -E -i "C:\Users\TSuperior\source\repos\HouseholdMS\create_db.sql"  - скрипт создания БД
+
+
+---------------------------------------------
+Компьютер\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQL15.SQL_WORKSTATION  - локация для авторизации
