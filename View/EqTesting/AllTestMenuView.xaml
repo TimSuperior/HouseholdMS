@@ -13,14 +13,11 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header All Test Module-->
+        <!-- Header -->
         <TextBlock Text="🔧 종합 점검 (All Test Module)" 
-                   FontSize="24" 
-                   FontWeight="Bold" 
-                   Foreground="#222" 
-                   Margin="0 0 0 20"/>
+                   FontSize="24" FontWeight="Bold" Foreground="#222" Margin="0 0 0 20"/>
 
-        <!-- Test Step Content Area -->
+        <!-- Content -->
         <Border Grid.Row="1" Background="#FFFFFF" BorderBrush="#CCC" BorderThickness="1" CornerRadius="10" Padding="20">
             <StackPanel>
 
@@ -28,7 +25,7 @@
                 <TextBlock x:Name="StepTitle" FontSize="18" FontWeight="SemiBold" Foreground="#222"/>
                 <TextBlock x:Name="StepInstruction" FontSize="14" Foreground="#555" TextWrapping="Wrap" Margin="0 10 0 20"/>
 
-                <!-- Step 1: User Info + Instruction Image -->
+                <!-- Step 1: Info Entry -->
                 <StackPanel x:Name="UserInfoPanel" Visibility="Collapsed" Margin="0 10 0 20">
                     <TextBlock Text="Device ID:" FontWeight="Bold" Foreground="#444" Margin="0 5 0 2"/>
                     <TextBox x:Name="DeviceIdBox" Margin="0 0 0 10" Height="30"/>
@@ -36,8 +33,11 @@
                     <TextBlock Text="Location:" FontWeight="Bold" Foreground="#444" Margin="0 5 0 2"/>
                     <TextBox x:Name="LocationBox" Margin="0 0 0 10" Height="30"/>
 
-                    <TextBlock Text="Technician Name:" FontWeight="Bold" Foreground="#444" Margin="0 5 0 2"/>
-                    <TextBox x:Name="TechnicianBox" Margin="0 0 0 10" Height="30"/>
+                    <TextBlock Text="Technician:" FontWeight="Bold" Foreground="#444" Margin="0 5 0 2"/>
+                    <ComboBox x:Name="TechnicianComboBox" Margin="0 0 0 10" Height="30"/>
+
+                    <TextBlock Text="Household:" FontWeight="Bold" Foreground="#444" Margin="0 5 0 2"/>
+                    <ComboBox x:Name="HouseholdComboBox" Margin="0 0 0 10" Height="30"/>
 
                     <Image x:Name="InstructionImage" 
                            Source="pack://application:,,,/Assets/id_sample.jpg"
@@ -45,7 +45,7 @@
                 </StackPanel>
 
                 <!-- Step 2: Select Inspection Items -->
-                <StackPanel x:Name="InspectionItemsPanel" Visibility="Collapsed" Margin="0 10 0 10">
+                <StackPanel x:Name="InspectionItemsPanel" Visibility="Collapsed"  Margin="0 10 0 10">
                     <TextBlock Text="✅ Select Inspection Items:" FontSize="16" FontWeight="Bold" Margin="0 0 0 10"/>
 
                     <ScrollViewer VerticalScrollBarVisibility="Auto" Height="400">
@@ -250,7 +250,7 @@ Width="200" Height="200" Margin="20 0 0 0"/>
             </StackPanel>
         </Border>
 
-        <!-- Navigation Buttons -->
+        <!-- Footer -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 20 0 0">
             <Button Content="⬅ Prev" Width="100" Margin="5" Click="OnPrevStep"/>
             <Button Content="Next ➡" Width="100" Margin="5" Click="OnNextStep"/>

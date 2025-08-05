@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Data.SqlClient;
 using System.Windows;
 using System.Windows.Controls;
 using HouseholdMS.Model;
+using System.Data.SQLite; // Use SQLite!
 
 namespace HouseholdMS.View.UserControls
 {
@@ -92,7 +92,7 @@ namespace HouseholdMS.View.UserControls
                     : @"INSERT INTO Technicians (Name, ContactNum, AssignedArea, Address, Note)
                        VALUES (@name, @contact, @area, @address, @note)";
 
-                using (var cmd = new SqlCommand(query, conn))
+                using (var cmd = new SQLiteCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@name", name);
                     cmd.Parameters.AddWithValue("@contact", contact);
@@ -113,14 +113,14 @@ namespace HouseholdMS.View.UserControls
             OnSavedSuccessfully?.Invoke(this, EventArgs.Empty);
         }
 
-        private bool IsDuplicate(SqlConnection conn, string field, object value, int? ignoreId)
+        private bool IsDuplicate(SQLiteConnection conn, string field, object value, int? ignoreId)
         {
             string query = $@"
                 SELECT COUNT(*) FROM Technicians
                 WHERE {field} = @value
                 AND (@id IS NULL OR TechnicianID != @id)";
 
-            using (var cmd = new SqlCommand(query, conn))
+            using (var cmd = new SQLiteCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@value", value);
                 cmd.Parameters.AddWithValue("@id", ignoreId ?? (object)DBNull.Value);
@@ -145,9 +145,11 @@ namespace HouseholdMS.View.UserControls
                 using (var conn = DatabaseHelper.GetConnection())
                 {
                     conn.Open();
-                    var cmd = new SqlCommand("DELETE FROM Technicians WHERE TechnicianID = @id", conn);
-                    cmd.Parameters.AddWithValue("@id", _technician.TechnicianID);
-                    cmd.ExecuteNonQuery();
+                    using (var cmd = new SQLiteCommand("DELETE FROM Technicians WHERE TechnicianID = @id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", _technician.TechnicianID);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
 
                 MessageBox.Show("Technician deleted successfully.", "Deleted", MessageBoxButton.OK, MessageBoxImage.Information);

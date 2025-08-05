@@ -19,6 +19,9 @@
         <Grid>
             <Grid.Resources>
                 <Style x:Key="ErrorBoxStyle" TargetType="TextBox">
+                    <Setter Property="BorderBrush" Value="#C0C0C0"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                    <Setter Property="ToolTip" Value="{x:Null}"/>
                     <Style.Triggers>
                         <Trigger Property="Tag" Value="error">
                             <Setter Property="BorderBrush" Value="Red"/>
@@ -36,35 +39,42 @@
             </Grid.RowDefinitions>
 
             <!-- Header -->
-            <TextBlock x:Name="FormHeader"
-                       Grid.Row="0"
-                       FontSize="20"
-                       FontWeight="Bold"
-                       Foreground="#2E3B4E"
-                       Margin="0,0,0,20"/>
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                <TextBlock Text="📝" FontSize="22" Margin="0,0,8,0"/>
+                <TextBlock x:Name="FormHeader"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Foreground="#2E3B4E"/>
+            </StackPanel>
 
             <!-- Form Fields -->
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                 <StackPanel VerticalAlignment="Top">
 
-                    <TextBlock Text="Owner Name" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="OwnerBox" Style="{StaticResource ErrorBoxStyle}" Height="35" Margin="0,0,0,12"/>
+                    <!-- Owner Name -->
+                    <TextBlock Text="Owner Name" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBox x:Name="OwnerBox" Style="{StaticResource ErrorBoxStyle}" Height="32" Margin="0,0,0,10" TabIndex="1"/>
 
-                    <TextBlock Text="User Name" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="UserNameBox" Height="35" Margin="0,0,0,12"/>
+                    <!-- User Name -->
+                    <TextBlock Text="User Name" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBox x:Name="UserNameBox" Height="32" Margin="0,0,0,10" TabIndex="2"/>
 
-                    <TextBlock Text="Municipality" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="MunicipalityBox" Height="35" Margin="0,0,0,12"/>
+                    <!-- Municipality -->
+                    <TextBlock Text="Municipality" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBox x:Name="MunicipalityBox" Height="32" Margin="0,0,0,10" TabIndex="3"/>
 
-                    <TextBlock Text="District" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="DistrictBox" Height="35" Margin="0,0,0,12"/>
+                    <!-- District -->
+                    <TextBlock Text="District" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBox x:Name="DistrictBox" Height="32" Margin="0,0,0,10" TabIndex="4"/>
 
-                    <TextBlock Text="Contact Number" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="ContactBox" Style="{StaticResource ErrorBoxStyle}" Height="35" Margin="0,0,0,12"/>
+                    <!-- Contact Number -->
+                    <TextBlock Text="Contact Number" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBox x:Name="ContactBox" Style="{StaticResource ErrorBoxStyle}" Height="32" Margin="0,0,0,10" TabIndex="5"/>
 
-                    <TextBlock Text="Installation Date" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <!-- Installation Date -->
+                    <TextBlock Text="Installation Date" FontWeight="SemiBold" Margin="0,0,0,4"/>
                     <DatePicker x:Name="InstDatePicker"
-                                Height="35"
+                                Height="32"
                                 Padding="6,0"
                                 BorderBrush="#C0C0C0"
                                 BorderThickness="1"
@@ -72,11 +82,13 @@
                                 SelectedDateFormat="Short"
                                 VerticalContentAlignment="Center"
                                 DisplayDateEnd="{x:Static System:DateTime.Today}"
-                                Margin="0,0,0,12"/>
+                                Margin="0,0,0,10"
+                                TabIndex="6"/>
 
-                    <TextBlock Text="Last Inspection Date" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <!-- Last Inspection Date -->
+                    <TextBlock Text="Last Inspection Date" FontWeight="SemiBold" Margin="0,0,0,4"/>
                     <DatePicker x:Name="LastInspPicker"
-                                Height="35"
+                                Height="32"
                                 Padding="6,0"
                                 BorderBrush="#C0C0C0"
                                 BorderThickness="1"
@@ -84,53 +96,58 @@
                                 SelectedDateFormat="Short"
                                 VerticalContentAlignment="Center"
                                 DisplayDateEnd="{x:Static System:DateTime.Today}"
-                                Margin="0,0,0,12"/>
+                                Margin="0,0,0,10"
+                                TabIndex="7"/>
 
-                    <TextBlock Text="Status" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="StatusBox" Height="35" Margin="0,0,0,12"/>
+                    <!-- Status -->
+                    <TextBlock Text="Status" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBox x:Name="StatusBox" Height="32" Margin="0,0,0,10" TabIndex="8"/>
 
-                    <TextBlock Text="Note (optional)" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <!-- Note -->
+                    <TextBlock Text="Note (optional)" FontWeight="SemiBold" Margin="0,0,0,4"/>
                     <TextBox x:Name="NoteBox"
-                             Height="80"
+                             Height="60"
                              AcceptsReturn="True"
                              TextWrapping="Wrap"
                              VerticalScrollBarVisibility="Auto"
                              BorderBrush="#C0C0C0"
                              BorderThickness="1"
-                             Margin="0,0,0,12"/>
+                             Margin="0,0,0,10"
+                             TabIndex="9"/>
                 </StackPanel>
             </ScrollViewer>
 
             <!-- Buttons -->
-            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0" >
                 <Button x:Name="SaveButton"
-                        Content="✔ Save"
-                        Width="120"
-                        Height="38"
+                        Content="💾 Save"
+                        Width="110"
+                        Height="36"
                         FontWeight="Bold"
                         Background="#4CAF50"
                         Foreground="White"
-                        Margin="0,0,10,0"
-                        Click="Save_Click"/>
-
+                        Margin="0,0,8,0"
+                        Click="Save_Click"
+                        TabIndex="10"/>
                 <Button Content="✖ Cancel"
                         Width="100"
-                        Height="38"
+                        Height="36"
                         FontWeight="Bold"
                         Background="#F44336"
                         Foreground="White"
-                        Margin="0,0,10,0"
-                        Click="Cancel_Click"/>
-
+                        Margin="0,0,8,0"
+                        Click="Cancel_Click"
+                        TabIndex="11"/>
                 <Button x:Name="DeleteButton"
                         Content="🗑 Delete"
                         Width="100"
-                        Height="38"
+                        Height="36"
                         FontWeight="Bold"
                         Background="#9E1B1B"
                         Foreground="White"
                         Visibility="Collapsed"
-                        Click="Delete_Click"/>
+                        Click="Delete_Click"
+                        TabIndex="12"/>
             </StackPanel>
         </Grid>
     </Border>

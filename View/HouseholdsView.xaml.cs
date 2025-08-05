@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.SqlClient;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using HouseholdMS.View.UserControls;
 using HouseholdMS.Model;
+using System.Data.SQLite;
 
 namespace HouseholdMS.View
 {
@@ -17,6 +18,21 @@ namespace HouseholdMS.View
         private ICollectionView view;
         private GridViewColumnHeader _lastHeaderClicked;
         private ListSortDirection _lastDirection = ListSortDirection.Ascending;
+
+        // Column header to property mapping for sorting
+        private readonly Dictionary<string, string> _headerToProperty = new Dictionary<string, string>
+        {
+            { "ID", "HouseholdID" },
+            { "Owner Name", "OwnerName" },
+            { "User Name", "UserName" },
+            { "Municipality", "Municipality" },
+            { "District", "District" },
+            { "Contact", "ContactNum" },
+            { "Installed", "InstallDate" },
+            { "Last Inspect", "LastInspect" },
+            { "Status", "Statuss" },
+            { "Comment", "UserComm" }
+        };
 
         private readonly string _currentUserRole;
 
@@ -52,11 +68,14 @@ namespace HouseholdMS.View
             using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new SqlCommand("SELECT * FROM Households", conn))
+                using (var cmd = new SQLiteCommand("SELECT * FROM Households", conn))
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
+                        DateTime installDate = DateTime.TryParse(reader["InstallDate"]?.ToString(), out DateTime dt1) ? dt1 : DateTime.MinValue;
+                        DateTime lastInspect = DateTime.TryParse(reader["LastInspect"]?.ToString(), out DateTime dt2) ? dt2 : DateTime.MinValue;
+
                         allHouseholds.Add(new Household
                         {
                             HouseholdID = Convert.ToInt32(reader["HouseholdID"]),
@@ -65,8 +84,8 @@ namespace HouseholdMS.View
                             Municipality = reader["Municipality"].ToString(),
                             District = reader["District"].ToString(),
                             ContactNum = reader["ContactNum"].ToString(),
-                            InstallDate = Convert.ToDateTime(reader["InstallDate"]),
-                            LastInspect = Convert.ToDateTime(reader["LastInspect"]),
+                            InstallDate = installDate,
+                            LastInspect = lastInspect,
                             UserComm = reader["UserComm"] != DBNull.Value ? reader["UserComm"].ToString() : string.Empty,
                             Statuss = reader["Statuss"] != DBNull.Value ? reader["Statuss"].ToString() : string.Empty
                         });
@@ -110,12 +129,18 @@ namespace HouseholdMS.View
             }
         }
 
+        // Improved sorting: supports all columns, including dates with CellTemplate
         private void GridViewColumnHeader_Click(object sender, RoutedEventArgs e)
         {
-            if (e.OriginalSource is GridViewColumnHeader header &&
-                header.Column?.DisplayMemberBinding is Binding binding)
+            if (e.OriginalSource is GridViewColumnHeader header)
             {
-                string sortBy = binding.Path.Path;
+                string headerText = header.Content?.ToString();
+
+                if (string.IsNullOrEmpty(headerText) || !_headerToProperty.ContainsKey(headerText))
+                    return; // Not a sortable column
+
+                string sortBy = _headerToProperty[headerText];
+
                 ListSortDirection direction = (_lastHeaderClicked == header && _lastDirection == ListSortDirection.Ascending)
                     ? ListSortDirection.Descending
                     : ListSortDirection.Ascending;
@@ -212,9 +237,11 @@ namespace HouseholdMS.View
                     using (var conn = DatabaseHelper.GetConnection())
                     {
                         conn.Open();
-                        var cmd = new SqlCommand("DELETE FROM Households WHERE HouseholdID = @id", conn);
-                        cmd.Parameters.AddWithValue("@id", selected.HouseholdID);
-                        cmd.ExecuteNonQuery();
+                        using (var cmd = new SQLiteCommand("DELETE FROM Households WHERE HouseholdID = @id", conn))
+                        {
+                            cmd.Parameters.AddWithValue("@id", selected.HouseholdID);
+                            cmd.ExecuteNonQuery();
+                        }
                     }
 
                     LoadHouseholds();

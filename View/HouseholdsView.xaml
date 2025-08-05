@@ -119,8 +119,21 @@
                             <GridViewColumn Header="Municipality" DisplayMemberBinding="{Binding Municipality}" Width="120"/>
                             <GridViewColumn Header="District" DisplayMemberBinding="{Binding District}" Width="120"/>
                             <GridViewColumn Header="Contact" DisplayMemberBinding="{Binding ContactNum}" Width="100"/>
-                            <GridViewColumn Header="Installed" DisplayMemberBinding="{Binding InstDate}" Width="100"/>
-                            <GridViewColumn Header="Last Inspect" DisplayMemberBinding="{Binding LastInspDate}" Width="110"/>
+                            <GridViewColumn Header="Installed" Width="100">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding InstallDate, StringFormat='yyyy-MM-dd'}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Last Inspect" Width="110">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding LastInspect, StringFormat='yyyy-MM-dd'}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
                             <GridViewColumn Header="Status" DisplayMemberBinding="{Binding Statuss}" Width="90"/>
                             <GridViewColumn Header="Comment" DisplayMemberBinding="{Binding UserComm}" Width="150"/>
                         </GridView>

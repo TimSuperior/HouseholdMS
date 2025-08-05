@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
@@ -9,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using HouseholdMS.View.UserControls;
 using HouseholdMS.Model;
+using System.Data.SQLite; // Use SQLite!
 
 namespace HouseholdMS.View
 {
@@ -47,7 +47,7 @@ namespace HouseholdMS.View
             using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new SqlCommand("SELECT * FROM StockInventory", conn))
+                using (var cmd = new SQLiteCommand("SELECT * FROM StockInventory", conn))
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
@@ -172,15 +172,17 @@ namespace HouseholdMS.View
                     using (var conn = DatabaseHelper.GetConnection())
                     {
                         conn.Open();
-                        var cmd = new SqlCommand(@"
+                        using (var cmd = new SQLiteCommand(@"
                             UPDATE StockInventory 
                             SET TotalQuantity = TotalQuantity + @qty, 
                                 LastRestockedDate = @now 
-                            WHERE ItemID = @id", conn);
-                        cmd.Parameters.AddWithValue("@qty", quantity);
-                        cmd.Parameters.AddWithValue("@now", DateTime.Now.ToString("yyyy-MM-dd"));
-                        cmd.Parameters.AddWithValue("@id", item.ItemID);
-                        cmd.ExecuteNonQuery();
+                            WHERE ItemID = @id", conn))
+                        {
+                            cmd.Parameters.AddWithValue("@qty", quantity);
+                            cmd.Parameters.AddWithValue("@now", DateTime.Now.ToString("yyyy-MM-dd"));
+                            cmd.Parameters.AddWithValue("@id", item.ItemID);
+                            cmd.ExecuteNonQuery();
+                        }
                     }
 
                     LoadInventory();
@@ -217,14 +219,16 @@ namespace HouseholdMS.View
                     using (var conn = DatabaseHelper.GetConnection())
                     {
                         conn.Open();
-                        var cmd = new SqlCommand(@"
+                        using (var cmd = new SQLiteCommand(@"
                             UPDATE StockInventory 
                             SET TotalQuantity = TotalQuantity - @qty, 
                                 UsedQuantity = UsedQuantity + @qty 
-                            WHERE ItemID = @id", conn);
-                        cmd.Parameters.AddWithValue("@qty", quantity);
-                        cmd.Parameters.AddWithValue("@id", item.ItemID);
-                        cmd.ExecuteNonQuery();
+                            WHERE ItemID = @id", conn))
+                        {
+                            cmd.Parameters.AddWithValue("@qty", quantity);
+                            cmd.Parameters.AddWithValue("@id", item.ItemID);
+                            cmd.ExecuteNonQuery();
+                        }
                     }
 
                     LoadInventory();

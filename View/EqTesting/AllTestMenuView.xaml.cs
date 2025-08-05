@@ -7,6 +7,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
+using System.Data.SQLite; // <-- Updated for SQLite!
+using HouseholdMS.Model;
 
 namespace HouseholdMS.View.EqTesting
 {
@@ -16,11 +18,12 @@ namespace HouseholdMS.View.EqTesting
         private int currentStepIndex = 0;
         private readonly List<BitmapImage> uploadedImages = new List<BitmapImage>();
 
-
         public AllTestMenuView(string userRole = "Admin")
         {
             InitializeComponent();
             steps = LoadTestSteps();
+            LoadTechnicians();
+            LoadHouseholds();
             DisplayCurrentStep();
         }
 
@@ -42,93 +45,111 @@ namespace HouseholdMS.View.EqTesting
             };
         }
 
+        private void LoadTechnicians()
+        {
+            using (var conn = DatabaseHelper.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new SQLiteCommand("SELECT TechnicianID, Name FROM Technicians", conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    List<object> list = new List<object>();
+                    while (reader.Read())
+                    {
+                        list.Add(new { ID = reader.GetInt32(0), Name = reader.GetString(1) });
+                    }
+                    TechnicianComboBox.ItemsSource = list;
+                    TechnicianComboBox.DisplayMemberPath = "Name";
+                    TechnicianComboBox.SelectedValuePath = "ID";
+                }
+            }
+        }
+
+        private void LoadHouseholds()
+        {
+            using (var conn = DatabaseHelper.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new SQLiteCommand("SELECT HouseholdID, OwnerName FROM Households", conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    List<object> list = new List<object>();
+                    while (reader.Read())
+                    {
+                        list.Add(new { ID = reader.GetInt32(0), Name = reader.GetString(1) });
+                    }
+                    HouseholdComboBox.ItemsSource = list;
+                    HouseholdComboBox.DisplayMemberPath = "Name";
+                    HouseholdComboBox.SelectedValuePath = "ID";
+                }
+            }
+        }
+
         private void DisplayCurrentStep()
         {
-            var step = steps[currentStepIndex];
+            TestStep step = steps[currentStepIndex];
             StepTitle.Text = step.Title;
             StepInstruction.Text = step.Instruction;
 
-            // Default hide everything
-            UserInfoPanel.Visibility = Visibility.Collapsed;
-            //ImageUploadPanel.Visibility = Visibility.Collapsed;
-            DeviceStatus.Visibility = Visibility.Collapsed;
-            InstructionImage.Visibility = Visibility.Collapsed;
-            InspectionItemsPanel.Visibility = Visibility.Collapsed;
-            MultiImagePanel.Visibility = Visibility.Collapsed;
-            AnnotationPanel.Visibility = Visibility.Collapsed;
-            AnnotationPanel5.Visibility = Visibility.Collapsed;
-            AnnotationPanel6.Visibility = Visibility.Collapsed;
-            AnnotationPanel7.Visibility = Visibility.Collapsed;
-            AnnotationPanel8.Visibility = Visibility.Collapsed;
-            AnnotationPanel9.Visibility = Visibility.Collapsed;
-            AnnotationPanel10.Visibility = Visibility.Collapsed;
-            // Step-based panel control
-            switch (currentStepIndex)
+            foreach (UIElement panel in new UIElement[] {
+                UserInfoPanel, InstructionImage, InspectionItemsPanel,
+                MultiImagePanel, AnnotationPanel, AnnotationPanel5, AnnotationPanel6,
+                AnnotationPanel7, AnnotationPanel8, AnnotationPanel9, AnnotationPanel10
+            })
             {
-                case 0:
-                    UserInfoPanel.Visibility = Visibility.Visible;
-                    InstructionImage.Visibility = Visibility.Visible;
-                    break;
-                case 1:
-                    InspectionItemsPanel.Visibility = Visibility.Visible;
-                    break;
-                case 2:
-                    MultiImagePanel.Visibility = Visibility.Visible;
-                    break;
-                case 3:
-                    AnnotationPanel.Visibility = Visibility.Visible;
-                    if (uploadedImages.Count > 0)
-                    {
-                        //AnnotatedImage.Source = uploadedImages[0];
-                    }
-                    break;
-                case 4:
-                    AnnotationPanel5.Visibility = Visibility.Visible;
-                    break;
-                case 5:
-                    AnnotationPanel6.Visibility = Visibility.Visible;
-                    break;
-                case 6:
-                    AnnotationPanel7.Visibility = Visibility.Visible;
-                    break;
-                case 7:
-                    AnnotationPanel8.Visibility = Visibility.Visible;
-                    break;
-                case 8:
-                    AnnotationPanel9.Visibility = Visibility.Visible;
-                    break;
-                case 9:
-                    AnnotationPanel10.Visibility = Visibility.Visible;
-                    break;
+                panel.Visibility = Visibility.Collapsed;
             }
 
-            if (step.RequiresImage)
-                //ImageUploadPanel.Visibility = Visibility.Visible;
+            if (currentStepIndex == 0) { UserInfoPanel.Visibility = Visibility.Visible; InstructionImage.Visibility = Visibility.Visible; }
+            else if (currentStepIndex == 1) InspectionItemsPanel.Visibility = Visibility.Visible;
+            else if (currentStepIndex == 2) MultiImagePanel.Visibility = Visibility.Visible;
+            else if (currentStepIndex == 3) AnnotationPanel.Visibility = Visibility.Visible;
+            else if (currentStepIndex == 4) AnnotationPanel5.Visibility = Visibility.Visible;
+            else if (currentStepIndex == 5) AnnotationPanel6.Visibility = Visibility.Visible;
+            else if (currentStepIndex == 6) AnnotationPanel7.Visibility = Visibility.Visible;
+            else if (currentStepIndex == 7) AnnotationPanel8.Visibility = Visibility.Visible;
+            else if (currentStepIndex == 8) AnnotationPanel9.Visibility = Visibility.Visible;
+            else if (currentStepIndex == 9) AnnotationPanel10.Visibility = Visibility.Visible;
 
-            if (step.RequiresDeviceStatus)
-            {
-                DeviceStatus.Visibility = Visibility.Visible;
-                DeviceStatus.Text = "MPPT Controller Connected ✅";
-            }
-
-            // Lock step 1 inputs after filled
-            bool isStep0 = currentStepIndex == 0;
-            DeviceIdBox.IsEnabled = isStep0;
-            LocationBox.IsEnabled = isStep0;
-            TechnicianBox.IsEnabled = isStep0;
+            DeviceStatus.Visibility = step.RequiresDeviceStatus ? Visibility.Visible : Visibility.Collapsed;
+            if (step.RequiresDeviceStatus) DeviceStatus.Text = "MPPT Controller Connected ✅";
         }
 
         private void OnNextStep(object sender, RoutedEventArgs e)
         {
             if (currentStepIndex == 0)
             {
-                if (string.IsNullOrWhiteSpace(DeviceIdBox.Text) ||
-                    string.IsNullOrWhiteSpace(LocationBox.Text) ||
-                    string.IsNullOrWhiteSpace(TechnicianBox.Text))
+                if (TechnicianComboBox.SelectedValue == null || HouseholdComboBox.SelectedValue == null)
                 {
-                    MessageBox.Show("⚠ Please fill in all required fields: Device ID, Location, and Technician Name.",
-                        "Missing Information", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Please select Technician and Household.", "Missing Info", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
+                }
+
+                int techId = Convert.ToInt32(TechnicianComboBox.SelectedValue);
+                int houseId = Convert.ToInt32(HouseholdComboBox.SelectedValue);
+
+                using (var conn = DatabaseHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var cmd1 = new SQLiteCommand("SELECT COUNT(*) FROM Technicians WHERE TechnicianID = @id", conn))
+                    {
+                        cmd1.Parameters.AddWithValue("@id", techId);
+                        if (Convert.ToInt32(cmd1.ExecuteScalar()) == 0)
+                        {
+                            MessageBox.Show("Technician does not exist in DB.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                    }
+
+                    using (var cmd2 = new SQLiteCommand("SELECT COUNT(*) FROM Households WHERE HouseholdID = @id", conn))
+                    {
+                        cmd2.Parameters.AddWithValue("@id", houseId);
+                        if (Convert.ToInt32(cmd2.ExecuteScalar()) == 0)
+                        {
+                            MessageBox.Show("Household does not exist in DB.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                    }
                 }
             }
 
@@ -139,8 +160,8 @@ namespace HouseholdMS.View.EqTesting
             }
             else
             {
-                MessageBox.Show("✅ All 11 test steps completed. You can now save or export the results.",
-                    "Test Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                SaveTestDataToDatabase();
+                MessageBox.Show("✅ All test steps completed and saved.", "Done", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -155,71 +176,106 @@ namespace HouseholdMS.View.EqTesting
 
         private void OnClose(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Test session has been closed. Returning to Step 1.",
-                            "Session Ended", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            // Reset step index
-            currentStepIndex = 0;
-
-            // Clear Step 1 inputs
-            DeviceIdBox.Text = string.Empty;
-            LocationBox.Text = string.Empty;
-            TechnicianBox.Text = string.Empty;
-
-            // Clear uploaded image
-            
-            uploadedImages.Clear();
-            UploadedImageList.ItemsSource = null;
-
-            // Clear Annotation TextBoxes
-            AnnotationBox.Text = string.Empty;
-            AnnotationBox5.Text = string.Empty;
-            AnnotationBox6.Text = string.Empty;
-            AnnotationBox7.Text = string.Empty;
-            //AnnotationBox8.Text = string.Empty;
-            AnnotationBox9.Text = string.Empty;
-            AnnotationBox10.Text = string.Empty;
-
-            // Uncheck Inspection CheckBoxes (if named)
-            BatteryCheckBox.IsChecked = false;
-            InverterCheckBox.IsChecked = false;
-            WiringCheckBox.IsChecked = false;
-            MPPTCheckBox.IsChecked = false;
-
-            // Reset UI
-            DisplayCurrentStep();
-        }
-
-
-
-        private void OnUploadImage(object sender, RoutedEventArgs e)
-        {
-            var dlg = new OpenFileDialog { Filter = "Images|*.png;*.jpg;*.jpeg" };
-            if (dlg.ShowDialog() == true)
-            {
-                //UploadedImage.Source = new BitmapImage(new Uri(dlg.FileName));
-            }
+            System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
         }
 
         private void OnUploadMultipleImages(object sender, RoutedEventArgs e)
         {
-            var dlg = new OpenFileDialog
-            {
-                Filter = "Images|*.png;*.jpg;*.jpeg",
-                Multiselect = true
-            };
-
+            OpenFileDialog dlg = new OpenFileDialog { Filter = "Images|*.png;*.jpg;*.jpeg", Multiselect = true };
             if (dlg.ShowDialog() == true)
             {
                 uploadedImages.Clear();
-                foreach (var file in dlg.FileNames)
+                foreach (string file in dlg.FileNames)
                 {
-                    var image = new BitmapImage(new Uri(file));
-                    uploadedImages.Add(image);
+                    uploadedImages.Add(new BitmapImage(new Uri(file)));
                 }
-
                 UploadedImageList.ItemsSource = uploadedImages;
             }
+        }
+
+        private void SaveTestDataToDatabase()
+        {
+            using (var conn = DatabaseHelper.GetConnection())
+            {
+                conn.Open();
+                using (var cmd = new SQLiteCommand(@"INSERT INTO TestReports 
+                    (HouseholdID, TechnicianID, TestDate, InspectionItems, Annotations, SettingsVerification, ImagePaths, DeviceStatus)
+                    VALUES (@HouseholdID, @TechnicianID, @TestDate, @InspectionItems, @Annotations, @SettingsVerification, @ImagePaths, @DeviceStatus)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@HouseholdID", HouseholdComboBox.SelectedValue);
+                    cmd.Parameters.AddWithValue("@TechnicianID", TechnicianComboBox.SelectedValue);
+                    cmd.Parameters.AddWithValue("@TestDate", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    cmd.Parameters.AddWithValue("@InspectionItems", string.Join(", ", GetSelectedItems()));
+                    cmd.Parameters.AddWithValue("@Annotations", CombineAnnotations());
+                    cmd.Parameters.AddWithValue("@SettingsVerification", "Voltage=220V, Freq=60Hz, PowerLimit=5000W");
+                    cmd.Parameters.AddWithValue("@ImagePaths", string.Join(",", uploadedImages.Select(i => i.UriSource != null ? i.UriSource.LocalPath : "")));
+                    cmd.Parameters.AddWithValue("@DeviceStatus", DeviceStatus.Text);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        private IEnumerable<string> GetSelectedItems()
+        {
+            if (BatteryCheckBox.IsChecked == true) yield return "Battery";
+            if (InverterCheckBox.IsChecked == true) yield return "Inverter";
+            if (WiringCheckBox.IsChecked == true) yield return "Wiring";
+            if (MPPTCheckBox.IsChecked == true) yield return "MPPT";
+        }
+
+        private string CombineAnnotations()
+        {
+            List<string> list = new List<string>();
+            if (!string.IsNullOrWhiteSpace(AnnotationBox.Text)) list.Add(AnnotationBox.Text);
+            if (!string.IsNullOrWhiteSpace(AnnotationBox5.Text)) list.Add(AnnotationBox5.Text);
+            if (!string.IsNullOrWhiteSpace(AnnotationBox6.Text)) list.Add(AnnotationBox6.Text);
+            if (!string.IsNullOrWhiteSpace(AnnotationBox7.Text)) list.Add(AnnotationBox7.Text);
+            if (!string.IsNullOrWhiteSpace(AnnotationBox9.Text)) list.Add(AnnotationBox9.Text);
+            if (!string.IsNullOrWhiteSpace(AnnotationBox10.Text)) list.Add(AnnotationBox10.Text);
+            return string.Join("\n", list);
+        }
+
+        private void OnImageClicked(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Image img && img.Source is BitmapImage bmp)
+            {
+                Window win = new Window
+                {
+                    Title = "Image Preview",
+                    Width = 800,
+                    Height = 600,
+                    Background = Brushes.Black,
+                    Content = CreateZoomViewer(bmp)
+                };
+                win.ShowDialog();
+            }
+        }
+
+        private UIElement CreateZoomViewer(BitmapImage imgSrc)
+        {
+            Image img = new Image { Source = imgSrc, Stretch = Stretch.Uniform };
+            ScaleTransform scale = new ScaleTransform(1.0, 1.0);
+            img.RenderTransform = scale;
+            img.RenderTransformOrigin = new Point(0.5, 0.5);
+
+            img.MouseWheel += (s, e) =>
+            {
+                double delta = e.Delta > 0 ? 0.1 : -0.1;
+                scale.ScaleX = Clamp(scale.ScaleX + delta, 0.5, 5);
+                scale.ScaleY = Clamp(scale.ScaleY + delta, 0.5, 5);
+            };
+
+            return new ScrollViewer
+            {
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Content = img
+            };
+        }
+
+        private double Clamp(double value, double min, double max)
+        {
+            return (value < min) ? min : (value > max) ? max : value;
         }
 
         private class TestStep
@@ -237,55 +293,5 @@ namespace HouseholdMS.View.EqTesting
                 RequiresDeviceStatus = requiresDeviceStatus;
             }
         }
-
-        private void OnImageClicked(object sender, MouseButtonEventArgs e)
-        {
-            var imageControl = sender as Image;
-            if (imageControl?.Source is BitmapImage bitmapImage)
-            {
-                var previewWindow = new Window
-                {
-                    Title = "🔍 Image Preview",
-                    Width = 800,
-                    Height = 600,
-                    Background = Brushes.Black,
-                    Content = CreateZoomViewer(bitmapImage)
-                };
-
-                previewWindow.ShowDialog();
-            }
-        }
-
-        private UIElement CreateZoomViewer(BitmapImage imageSource)
-        {
-            var img = new Image
-            {
-                Source = imageSource,
-                Stretch = Stretch.Uniform
-            };
-
-            var scaleTransform = new ScaleTransform(1.0, 1.0);
-            img.RenderTransform = scaleTransform;
-            img.RenderTransformOrigin = new Point(0.5, 0.5);
-
-            img.MouseWheel += (s, e) =>
-            {
-                double zoomDelta = e.Delta > 0 ? 0.1 : -0.1;
-                scaleTransform.ScaleX += zoomDelta;
-                scaleTransform.ScaleY += zoomDelta;
-
-                // Limit zoom between 0.5x and 5x
-                scaleTransform.ScaleX = Math.Max(0.5, Math.Min(5, scaleTransform.ScaleX));
-                scaleTransform.ScaleY = Math.Max(0.5, Math.Min(5, scaleTransform.ScaleY));
-            };
-
-            return new ScrollViewer
-            {
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                Content = img
-            };
-        }
-
     }
 }

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Data.SqlClient;
 using System.Windows;
 using System.Windows.Controls;
 using HouseholdMS.View.UserControls;
 using HouseholdMS.Model;
+using System.Data.SQLite; // SQLite
 
 namespace HouseholdMS.View
 {
@@ -45,13 +45,13 @@ namespace HouseholdMS.View
         {
             records.Clear();
 
-            using (SqlConnection conn = DatabaseHelper.GetConnection())
+            using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
                 string query = "SELECT * FROM InspectionReport";
 
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                using (SqlDataReader reader = cmd.ExecuteReader())
+                using (var cmd = new SQLiteCommand(query, conn))
+                using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
@@ -147,12 +147,14 @@ namespace HouseholdMS.View
             if (MessageBox.Show($"Are you sure you want to delete Service Record #{record.ReportID}?",
                 "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
-                using (SqlConnection conn = DatabaseHelper.GetConnection())
+                using (var conn = DatabaseHelper.GetConnection())
                 {
                     conn.Open();
-                    var cmd = new SqlCommand("DELETE FROM InspectionReport WHERE ReportID = @id", conn);
-                    cmd.Parameters.AddWithValue("@id", record.ReportID);
-                    cmd.ExecuteNonQuery();
+                    using (var cmd = new SQLiteCommand("DELETE FROM InspectionReport WHERE ReportID = @id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", record.ReportID);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
 
                 LoadServiceRecords();

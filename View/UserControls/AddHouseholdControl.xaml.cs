@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Data;
-using System.Data.SqlClient;
 using System.Windows;
 using System.Windows.Controls;
 using HouseholdMS.Model;
+using System.Data.SQLite;
 
 namespace HouseholdMS.View.UserControls
 {
@@ -21,6 +20,7 @@ namespace HouseholdMS.View.UserControls
             SaveButton.Content = "➕ Add";
             DeleteButton.Visibility = Visibility.Collapsed;
 
+            // Always set to today, non-nullable expectation
             InstDatePicker.SelectedDate = DateTime.Today;
             LastInspPicker.SelectedDate = DateTime.Today;
         }
@@ -41,11 +41,8 @@ namespace HouseholdMS.View.UserControls
             NoteBox.Text = householdToEdit.UserComm;
             StatusBox.Text = householdToEdit.Statuss;
 
-            if (DateTime.TryParse(householdToEdit.InstallDate.ToString(), out DateTime dt1))
-                InstDatePicker.SelectedDate = dt1;
-
-            if (DateTime.TryParse(householdToEdit.LastInspect.ToString(), out DateTime dt2))
-                LastInspPicker.SelectedDate = dt2;
+            InstDatePicker.SelectedDate = householdToEdit.InstallDate;
+            LastInspPicker.SelectedDate = householdToEdit.LastInspect;
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)
@@ -57,38 +54,40 @@ namespace HouseholdMS.View.UserControls
                 conn.Open();
 
                 // Duplicate contact number check
-                var contactCheck = new SqlCommand(@"
+                using (var contactCheck = new SQLiteCommand(@"
                     SELECT COUNT(*) FROM Households
                     WHERE ContactNum = @Contact
-                    AND (@ID IS NULL OR HouseholdID != @ID)", conn);
-
-                contactCheck.Parameters.AddWithValue("@Contact", Contact);
-                contactCheck.Parameters.AddWithValue("@ID", (object)EditingHouseholdID ?? DBNull.Value);
-
-                if (Convert.ToInt32(contactCheck.ExecuteScalar()) > 0)
+                    AND (@ID IS NULL OR HouseholdID != @ID)", conn))
                 {
-                    MessageBox.Show("A household with this contact number already exists.", "Duplicate Contact", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
+                    contactCheck.Parameters.AddWithValue("@Contact", Contact);
+                    contactCheck.Parameters.AddWithValue("@ID", (object)EditingHouseholdID ?? DBNull.Value);
+
+                    if (Convert.ToInt32(contactCheck.ExecuteScalar()) > 0)
+                    {
+                        MessageBox.Show("A household with this contact number already exists.", "Duplicate Contact", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
                 }
 
                 // Soft check based on OwnerName only
-                var softCheck = new SqlCommand(@"
+                using (var softCheck = new SQLiteCommand(@"
                     SELECT COUNT(*) FROM Households
                     WHERE OwnerName = @Owner
-                    AND (@ID IS NULL OR HouseholdID != @ID)", conn);
-
-                softCheck.Parameters.AddWithValue("@Owner", OwnerName);
-                softCheck.Parameters.AddWithValue("@ID", (object)EditingHouseholdID ?? DBNull.Value);
-
-                if (Convert.ToInt32(softCheck.ExecuteScalar()) > 0)
+                    AND (@ID IS NULL OR HouseholdID != @ID)", conn))
                 {
-                    var confirm = MessageBox.Show(
-                        "A similar household already exists.\nDo you still want to save?",
-                        "Possible Duplicate",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning);
+                    softCheck.Parameters.AddWithValue("@Owner", OwnerName);
+                    softCheck.Parameters.AddWithValue("@ID", (object)EditingHouseholdID ?? DBNull.Value);
 
-                    if (confirm != MessageBoxResult.Yes) return;
+                    if (Convert.ToInt32(softCheck.ExecuteScalar()) > 0)
+                    {
+                        var confirm = MessageBox.Show(
+                            "A similar household already exists.\nDo you still want to save?",
+                            "Possible Duplicate",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Warning);
+
+                        if (confirm != MessageBoxResult.Yes) return;
+                    }
                 }
 
                 string query = (EditingHouseholdID == null)
@@ -108,15 +107,18 @@ namespace HouseholdMS.View.UserControls
                             Statuss = @Status
                         WHERE HouseholdID = @ID";
 
-                using (var cmd = new SqlCommand(query, conn))
+                using (var cmd = new SQLiteCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@Owner", OwnerName);
                     cmd.Parameters.AddWithValue("@UserName", UserName);
                     cmd.Parameters.AddWithValue("@Municipality", Municipality);
                     cmd.Parameters.AddWithValue("@District", District);
                     cmd.Parameters.AddWithValue("@Contact", Contact);
-                    cmd.Parameters.AddWithValue("@Inst", string.IsNullOrEmpty(InstallDate) ? (object)DBNull.Value : InstallDate);
-                    cmd.Parameters.AddWithValue("@Last", string.IsNullOrEmpty(LastInspect) ? (object)DBNull.Value : LastInspect);
+
+                    // Save dates as yyyy-MM-dd for ISO and sorting compatibility
+                    cmd.Parameters.AddWithValue("@Inst", InstDatePicker.SelectedDate.Value.ToString("yyyy-MM-dd"));
+                    cmd.Parameters.AddWithValue("@Last", LastInspPicker.SelectedDate.Value.ToString("yyyy-MM-dd"));
+
                     cmd.Parameters.AddWithValue("@UserComm", string.IsNullOrWhiteSpace(Note) ? (object)DBNull.Value : Note);
                     cmd.Parameters.AddWithValue("@Status", string.IsNullOrWhiteSpace(Status) ? (object)DBNull.Value : Status);
 
@@ -151,9 +153,11 @@ namespace HouseholdMS.View.UserControls
             using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
-                var cmd = new SqlCommand("DELETE FROM Households WHERE HouseholdID = @id", conn);
-                cmd.Parameters.AddWithValue("@id", EditingHouseholdID);
-                cmd.ExecuteNonQuery();
+                using (var cmd = new SQLiteCommand("DELETE FROM Households WHERE HouseholdID = @id", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", EditingHouseholdID);
+                    cmd.ExecuteNonQuery();
+                }
             }
 
             MessageBox.Show("Household deleted successfully.", "Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -174,15 +178,16 @@ namespace HouseholdMS.View.UserControls
                 return false;
             }
 
+            // Non-nullable, must select a date
             if (InstDatePicker.SelectedDate == null || InstDatePicker.SelectedDate > DateTime.Today)
             {
-                MessageBox.Show("Installation date cannot be in the future.", "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Installation date cannot be in the future or empty.", "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
 
             if (LastInspPicker.SelectedDate == null || LastInspPicker.SelectedDate > DateTime.Today)
             {
-                MessageBox.Show("Inspection date cannot be in the future.", "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Inspection date cannot be in the future or empty.", "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
 
@@ -201,14 +206,17 @@ namespace HouseholdMS.View.UserControls
             return true;
         }
 
+        // Properties for field values (UI -> code)
         public string OwnerName => OwnerBox.Text.Trim();
         public string UserName => UserNameBox.Text.Trim();
         public string Municipality => MunicipalityBox.Text.Trim();
         public string District => DistrictBox.Text.Trim();
         public string Contact => ContactBox.Text.Trim();
-        public string InstallDate => InstDatePicker.SelectedDate?.ToString("yyyy-MM-dd");
-        public string LastInspect => LastInspPicker.SelectedDate?.ToString("yyyy-MM-dd");
         public string Note => NoteBox.Text.Trim();
         public string Status => StatusBox.Text.Trim();
+
+        // If you need them as DateTime (for internal logic)
+        public DateTime InstallDate => InstDatePicker.SelectedDate.Value;
+        public DateTime LastInspect => LastInspPicker.SelectedDate.Value;
     }
 }

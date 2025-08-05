@@ -16,6 +16,7 @@ namespace HouseholdMS
             InitializeComponent();
             _currentUserRole = userRole;
 
+            // Show role-specific buttons
             if (_currentUserRole == "Admin" || _currentUserRole == "Technician")
             {
                 bt_AllTest.Visibility = Visibility.Visible;
@@ -24,8 +25,9 @@ namespace HouseholdMS
                 bt_InverterTest.Visibility = Visibility.Visible;
                 bt_SwitchTest.Visibility = Visibility.Visible;
                 bt_SPDTest.Visibility = Visibility.Visible;
+                bt_TestReports.Visibility = Visibility.Visible;
 
-                if(_currentUserRole == "Admin")
+                if (_currentUserRole == "Admin")
                 {
                     bt_SettingMenu.Visibility = Visibility.Visible;
                     ManageUsersButton.Visibility = Visibility.Visible;
@@ -40,11 +42,11 @@ namespace HouseholdMS
                 bt_SwitchTest.Visibility = Visibility.Collapsed;
                 bt_SPDTest.Visibility = Visibility.Collapsed;
                 bt_SettingMenu.Visibility = Visibility.Collapsed;
-
+                bt_TestReports.Visibility = Visibility.Collapsed;
                 ManageUsersButton.Visibility = Visibility.Collapsed;
             }
 
-            // 🔥 Pass role to HouseholdsView
+            // 🔥 Default content: Households
             MainContent.Content = new HouseholdsView(_currentUserRole);
         }
 
@@ -68,6 +70,11 @@ namespace HouseholdMS
             MainContent.Content = new ServiceRecordsView(_currentUserRole);
         }
 
+        private void bt_TestReports_Click(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new TestReportsView(_currentUserRole);
+        }
+
         private void bt_ManageUsers(object sender, RoutedEventArgs e)
         {
             MainContent.Content = new UserManagementView();
@@ -79,7 +86,6 @@ namespace HouseholdMS
             loginWindow.Show();
             this.Close();
         }
-
 
         private void bt_AllTest_Click(object sender, RoutedEventArgs e)
         {

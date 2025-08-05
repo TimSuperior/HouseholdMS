@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Windows;
-using System.Data.SqlClient;
+using System.Data.SQLite; // Use SQLite!
 using HouseholdMS.Model;
 
 namespace HouseholdMS.View
@@ -30,10 +30,10 @@ namespace HouseholdMS.View
                 {
                     conn.Open();
 
-                    using (var checkCmd = new SqlCommand("SELECT COUNT(*) FROM Users WHERE LOWER(Username) = LOWER(@username)", conn))
+                    using (var checkCmd = new SQLiteCommand("SELECT COUNT(*) FROM Users WHERE LOWER(Username) = LOWER(@username)", conn))
                     {
                         checkCmd.Parameters.AddWithValue("@username", username);
-                        int existing = (int)checkCmd.ExecuteScalar();
+                        int existing = Convert.ToInt32(checkCmd.ExecuteScalar());
 
                         if (existing > 0)
                         {
@@ -42,7 +42,7 @@ namespace HouseholdMS.View
                         }
                     }
 
-                    using (var insertCmd = new SqlCommand("INSERT INTO Users (Name, Username, PasswordHash, Role) VALUES (@name, @username, @password, 'User')", conn))
+                    using (var insertCmd = new SQLiteCommand("INSERT INTO Users (Name, Username, PasswordHash, Role) VALUES (@name, @username, @password, 'User')", conn))
                     {
                         insertCmd.Parameters.AddWithValue("@name", name);
                         insertCmd.Parameters.AddWithValue("@username", username);
@@ -57,6 +57,10 @@ namespace HouseholdMS.View
                 var loginWindow = new Login();
                 loginWindow.Show();
                 this.Close();
+            }
+            catch (SQLiteException ex)
+            {
+                MessageBox.Show($"Database error: {ex.Message}", "Registration Failed", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {

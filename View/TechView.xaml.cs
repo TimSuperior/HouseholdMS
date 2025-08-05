@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -8,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using HouseholdMS.View.UserControls;
 using HouseholdMS.Model;
+using System.Data.SQLite; // <-- Use SQLite
 
 namespace HouseholdMS.View
 {
@@ -46,20 +46,21 @@ namespace HouseholdMS.View
             using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
-                var cmd = new SqlCommand("SELECT * FROM Technicians", conn);
-                var reader = cmd.ExecuteReader();
-
-                while (reader.Read())
+                using (var cmd = new SQLiteCommand("SELECT * FROM Technicians", conn))
+                using (var reader = cmd.ExecuteReader())
                 {
-                    technicianList.Add(new Technician
+                    while (reader.Read())
                     {
-                        TechnicianID = Convert.ToInt32(reader["TechnicianID"]),
-                        Namee = reader["Name"].ToString(),
-                        ContactNumm = reader["ContactNum"].ToString(),
-                        Addresss = reader["Address"].ToString(),
-                        AssignedAreaa = reader["AssignedArea"].ToString(),
-                        Notee = reader["Note"]?.ToString()
-                    });
+                        technicianList.Add(new Technician
+                        {
+                            TechnicianID = Convert.ToInt32(reader["TechnicianID"]),
+                            Namee = reader["Name"].ToString(),
+                            ContactNumm = reader["ContactNum"].ToString(),
+                            Addresss = reader["Address"].ToString(),
+                            AssignedAreaa = reader["AssignedArea"].ToString(),
+                            Notee = reader["Note"]?.ToString()
+                        });
+                    }
                 }
             }
         }

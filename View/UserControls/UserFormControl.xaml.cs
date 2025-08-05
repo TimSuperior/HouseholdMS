@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using HouseholdMS.Model;
+using System.Data.SQLite; // Use SQLite
 
 namespace HouseholdMS.View.UserControls
 {
@@ -60,7 +60,7 @@ namespace HouseholdMS.View.UserControls
                 using (var conn = DatabaseHelper.GetConnection())
                 {
                     conn.Open();
-                    using (var cmd = new SqlCommand("UPDATE Users SET Name = @name, Role = @role WHERE UserID = @userId", conn))
+                    using (var cmd = new SQLiteCommand("UPDATE Users SET Name = @name, Role = @role WHERE UserID = @userId", conn))
                     {
                         cmd.Parameters.AddWithValue("@name", newName);
                         cmd.Parameters.AddWithValue("@role", newRole);
@@ -99,7 +99,7 @@ namespace HouseholdMS.View.UserControls
                 using (var conn = DatabaseHelper.GetConnection())
                 {
                     conn.Open();
-                    using (var cmd = new SqlCommand("DELETE FROM Users WHERE UserID = @userId", conn))
+                    using (var cmd = new SQLiteCommand("DELETE FROM Users WHERE UserID = @userId", conn))
                     {
                         cmd.Parameters.AddWithValue("@userId", user.UserID);
                         cmd.ExecuteNonQuery();

@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Data.SqlClient;
 using System.Windows;
 using System.Windows.Controls;
 using HouseholdMS.Model;
+using System.Data.SQLite; // Use SQLite!
 
 namespace HouseholdMS.View.UserControls
 {
@@ -68,7 +68,7 @@ namespace HouseholdMS.View.UserControls
                     : @"INSERT INTO StockInventory (ItemType, TotalQuantity, UsedQuantity, LastRestockedDate, LowStockThreshold, Note)
                        VALUES (@type, @total, 0, @date, @threshold, @note)";
 
-                using (var cmd = new SqlCommand(query, conn))
+                using (var cmd = new SQLiteCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@type", type);
                     cmd.Parameters.AddWithValue("@total", totalQty);
@@ -108,9 +108,11 @@ namespace HouseholdMS.View.UserControls
                     using (var conn = DatabaseHelper.GetConnection())
                     {
                         conn.Open();
-                        var cmd = new SqlCommand("DELETE FROM StockInventory WHERE ItemID = @id", conn);
-                        cmd.Parameters.AddWithValue("@id", _editingItem.ItemID);
-                        cmd.ExecuteNonQuery();
+                        using (var cmd = new SQLiteCommand("DELETE FROM StockInventory WHERE ItemID = @id", conn))
+                        {
+                            cmd.Parameters.AddWithValue("@id", _editingItem.ItemID);
+                            cmd.ExecuteNonQuery();
+                        }
                     }
 
                     MessageBox.Show("Inventory item deleted successfully.", "Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
