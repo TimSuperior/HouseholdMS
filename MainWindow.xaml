@@ -99,6 +99,10 @@
                         Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
                 <Button x:Name="bt_SettingMenu" Content="⚙ Settings" Click="bt_SettingMenu_Click" 
                         Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
+                <Button Content="📊 Measurements" Click="bt_MeasurementMenu" Style="{StaticResource MenuButtonStyle}"/>
+                <Button Content="📈 Oscilloscope" Click="bt_OscilloscopeMenu" Style="{StaticResource MenuButtonStyle}"/>
+
+
 
             </StackPanel>
 

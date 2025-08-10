@@ -1,12 +1,18 @@
-﻿using System;
+﻿using HouseholdMS.Model;
+using Syncfusion.Licensing;
+using System;
 using System.Windows;
-using HouseholdMS.Model;
 
 
 namespace HouseholdMS
 {
     public partial class App : Application
     {
+
+        public App()
+        {
+            SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JEaF5cWWFCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWXdednZUR2dYVEByWUZWYEk=");
+        }
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             // ✅ Optional: Test connection to SQL Server

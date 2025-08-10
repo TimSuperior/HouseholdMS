@@ -1,0 +1,154 @@
+﻿<UserControl x:Class="HouseholdMS.View.Measurement.MeasurementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:HouseholdMS.View.Measurement"
+             Height="700" Width="540">
+    <Border Padding="16" Background="#0F000000">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- Header -->
+                <RowDefinition Height="Auto"/>
+                <!-- Connection Bar -->
+                <RowDefinition Height="Auto"/>
+                <!-- Function/Math/Read -->
+                <RowDefinition Height="*"/>
+                <!-- Readout + Chart -->
+                <RowDefinition Height="Auto"/>
+                <!-- Status -->
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                <TextBlock Text="Measurement Console" FontSize="20" FontWeight="Bold"/>
+                <TextBlock Text="MP730889 · SCPI" Opacity="0.7"/>
+            </StackPanel>
+
+            <!-- Connection Bar -->
+            <Border Grid.Row="1" Padding="10" CornerRadius="10" Background="#12FFFFFF" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,8,0">
+                        <TextBlock Text="COM" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <ComboBox x:Name="PortComboBox" Width="110" />
+                        <Button Content="⟲" Width="32" Margin="6,0,0,0" Click="RefreshPorts_Click" ToolTip="Refresh COM list"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" Margin="8,0">
+                        <TextBlock Text="Baud" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <ComboBox x:Name="BaudComboBox" Width="100"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Grid.Column="2" Margin="8,0">
+                        <TextBlock Text="Parity" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <ComboBox x:Name="ParityComboBox" Width="90"/>
+                        <TextBlock Text="Bits" VerticalAlignment="Center" Margin="12,0,6,0"/>
+                        <ComboBox x:Name="DataBitsComboBox" Width="70"/>
+                    </StackPanel>
+
+                    <Button Grid.Column="3" Content="Connect" Width="90" Margin="8,0,0,0" Click="Connect_Click"/>
+                    <Button Grid.Column="4" Content="Disconnect" Width="100" Margin="8,0,0,0" Click="Disconnect_Click"/>
+                    <Button Grid.Column="5" Content="IDN?" Width="70" Margin="8,0,0,0" Click="ReadIDN_Click"/>
+                </Grid>
+            </Border>
+
+            <!-- Function + Math + Actions -->
+            <Border Grid.Row="2" Padding="10" CornerRadius="10" Background="#12FFFFFF" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Function selector -->
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Function" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <WrapPanel>
+                            <ComboBox x:Name="FunctionCombo" Width="210" Margin="0,0,8,0">
+                                <ComboBoxItem Content="Voltage DC" Tag="volt"/>
+                                <ComboBoxItem Content="Voltage AC" Tag="volt:ac"/>
+                                <ComboBoxItem Content="Current DC" Tag="curr"/>
+                                <ComboBoxItem Content="Current AC" Tag="curr:ac"/>
+                                <ComboBoxItem Content="Resistance (Ω)" Tag="res"/>
+                                <ComboBoxItem Content="Temperature (RTD)" Tag="temp:rtd"/>
+                                <ComboBoxItem Content="Frequency (Hz)" Tag="freq"/>
+                                <ComboBoxItem Content="Period (s)" Tag="period"/>
+                                <ComboBoxItem Content="Capacitance (F)" Tag="cap"/>
+
+                            </ComboBox>
+                            <Button Content="Apply" Width="80" Click="ApplyFunction_Click"/>
+                        </WrapPanel>
+                    </StackPanel>
+
+                    <!-- Math -->
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                        <TextBlock Text="Math" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <CheckBox x:Name="AvgCheck" Content="Average (CALC:FUNC AVER)" Checked="AvgCheck_Checked" Unchecked="AvgCheck_Unchecked"/>
+                    </StackPanel>
+
+                    <!-- Read controls -->
+                    <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                        <TextBlock Text="Acquisition" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <WrapPanel>
+                            <Button Content="Read Once" Width="100" Click="ReadButton_Click"/>
+                            <ToggleButton x:Name="ContToggle" Content="Continuous" Width="110" Margin="8,0,0,0" Checked="ContToggle_Checked" Unchecked="ContToggle_Unchecked"/>
+                        </WrapPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                            <TextBlock Text="Interval" VerticalAlignment="Center"/>
+                            <Slider x:Name="IntervalSlider" Minimum="100" Maximum="2000" Value="500" Width="140" Margin="8,0,8,0"/>
+                            <TextBlock x:Name="IntervalLabel" VerticalAlignment="Center" Text="500 ms"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Readout + Graph -->
+            <Border Grid.Row="3" Padding="12" CornerRadius="10" Background="#12FFFFFF">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,8">
+                        <TextBlock Text="Measured Value:" FontWeight="Bold" Margin="0,0,8,0"/>
+                        <TextBlock x:Name="MeasurementText" FontSize="22" FontWeight="SemiBold"/>
+                    </StackPanel>
+
+                    <UniformGrid Columns="3" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="Voltage" FontWeight="Bold"/>
+                            <TextBlock x:Name="VoltageText" FontSize="16"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Current" FontWeight="Bold"/>
+                            <TextBlock x:Name="CurrentText" FontSize="16"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Resistance" FontWeight="Bold"/>
+                            <TextBlock x:Name="ResistanceText" FontSize="16"/>
+                        </StackPanel>
+                    </UniformGrid>
+                    
+                    <ProgressBar x:Name="BusyBar" Height="6" IsIndeterminate="True" Visibility="Collapsed" Margin="0,12,0,0"/>
+
+
+                    <!-- ⬇ Embedded Plot Component -->
+                    <local:LivePlotControl x:Name="PlotControl" Height="250" />
+                </StackPanel>
+            </Border>
+
+            <!-- Status -->
+            <StackPanel Grid.Row="4" Margin="0,10,0,0">
+                <TextBlock Text="Status" FontWeight="Bold"/>
+                <TextBlock x:Name="StatusBlock" TextWrapping="Wrap"/>
+                <TextBlock x:Name="IdnBlock" Opacity="0.8"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

@@ -1,0 +1,20 @@
+﻿<UserControl x:Class="HouseholdMS.View.Measurement.OscilloscopeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Height="340" Width="430">
+    <Grid Margin="12">
+        <StackPanel>
+            <TextBlock Text="VISA Address:"/>
+            <TextBox x:Name="VisaAddressBox" Width="340" Margin="0,0,0,10"
+                     Text="USB0::0x0699::0x03C4::C044134::INSTR"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <Button Content="Connect" Width="90" Margin="0,0,10,0" Click="Connect_Click"/>
+                <Button Content="Read *IDN?" Width="90" Margin="0,0,10,0" Click="ReadIDN_Click"/>
+                <Button Content="Read Vpp" Width="90" Margin="0,0,10,0" Click="ReadVpp_Click"/>
+                <Button Content="Calibrate" Width="90" Click="Calibrate_Click"/>
+            </StackPanel>
+            <TextBlock x:Name="ResultBlock" FontWeight="Bold" FontSize="15" Margin="0,12,0,0" TextWrapping="Wrap"/>
+            <TextBlock x:Name="StatusBlock" FontSize="12" Foreground="Gray" Margin="0,6,0,0"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
