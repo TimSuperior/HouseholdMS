@@ -12,43 +12,50 @@ namespace HouseholdMS.Model
 
         static DatabaseHelper()
         {
-            // Read connection string from config, else default to LocalAppData
-            connectionString = ConfigurationManager.ConnectionStrings["AppDb"]?.ConnectionString;
+            string cfg = ConfigurationManager.ConnectionStrings["AppDb"]?.ConnectionString;
 
-            if (string.IsNullOrWhiteSpace(connectionString))
+            if (!string.IsNullOrWhiteSpace(cfg))
             {
-                // Default: %LocalAppData%\HouseholdMS\household_management.db
-                var folder = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "HouseholdMS"
-                );
-                Directory.CreateDirectory(folder);
-                dbFilePath = Path.Combine(folder, "household_management.db");
-                connectionString = $"Data Source={dbFilePath};Version=3;";
+                try
+                {
+                    var builder = new SQLiteConnectionStringBuilder(cfg);
+                    dbFilePath = builder.DataSource;
+                    connectionString = builder.ToString();
+                }
+                catch
+                {
+                    // invalid config → fallback
+                    dbFilePath = GetDefaultDbPath();
+                    connectionString = $"Data Source={dbFilePath};Version=3;";
+                }
             }
             else
             {
-                var builder = new SQLiteConnectionStringBuilder(connectionString);
-                dbFilePath = builder.DataSource;
+                // no config → fallback
+                dbFilePath = GetDefaultDbPath();
+                connectionString = $"Data Source={dbFilePath};Version=3;";
             }
 
-            // Always ensure DB file exists
+            // Ensure DB file exists
             if (!File.Exists(dbFilePath))
                 SQLiteConnection.CreateFile(dbFilePath);
 
-            // Always ensure schema exists (tables will only be created if missing)
+            // Ensure schema exists
             EnsureSchema();
         }
 
-        public static SQLiteConnection GetConnection()
+        private static string GetDefaultDbPath()
         {
-            return new SQLiteConnection(connectionString);
+            var folder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "HouseholdMS");
+            Directory.CreateDirectory(folder);
+            return Path.Combine(folder, "household_management.db");
         }
 
-        public static string GetConnectionString()
-        {
-            return connectionString;
-        }
+        public static SQLiteConnection GetConnection() => new SQLiteConnection(connectionString);
+
+        public static string GetConnectionString() => connectionString;
 
         public static bool TestConnection()
         {
@@ -66,12 +73,11 @@ namespace HouseholdMS.Model
             }
         }
 
-        /// <summary>
-        /// Ensures all tables are created. You can add more CREATE TABLE IF NOT EXISTS... below.
-        /// </summary>
         private static void EnsureSchema()
         {
             string schema = @"
+PRAGMA foreign_keys = ON;
+
 CREATE TABLE IF NOT EXISTS Users (
     UserID INTEGER PRIMARY KEY AUTOINCREMENT,
     Name TEXT NOT NULL,
@@ -148,7 +154,7 @@ CREATE TABLE IF NOT EXISTS TestReports (
     FOREIGN KEY (TechnicianID) REFERENCES Technicians(TechnicianID) ON DELETE CASCADE
 );
 
--- Insert root admin if not exists (SQLite syntax)
+-- Insert root admin if not exists
 INSERT OR IGNORE INTO Users (UserID, Name, Username, PasswordHash, Role)
 VALUES (1, 'Root Admin', 'root', 'root', 'Admin');
 ";

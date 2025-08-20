@@ -3,36 +3,37 @@ using Syncfusion.Licensing;
 using System;
 using System.Windows;
 
-
 namespace HouseholdMS
 {
     public partial class App : Application
     {
-
         public App()
         {
             SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JEaF5cWWFCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWXdednZUR2dYVEByWUZWYEk=");
         }
+
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            // ✅ Optional: Test connection to SQL Server
             try
             {
-                if (!DatabaseHelper.TestConnection())
+                using (var conn = DatabaseHelper.GetConnection())
                 {
-                    MessageBox.Show("❌ Cannot connect to the database. Please check SQL Server configuration.", "DB Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    Shutdown(); // Exit app
-                    return;
+                    conn.Open();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Unexpected error during DB connection:\n" + ex.Message);
+                MessageBox.Show(
+                    "❌ Cannot open the SQLite database.\n\n" +
+                    $"Connection: {DatabaseHelper.GetConnectionString()}\n\n" +
+                    ex.ToString(),
+                    "DB Connection Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+
                 Shutdown();
                 return;
             }
 
-            // ✅ Start app
             var loginWindow = new View.Login();
             loginWindow.Show();
         }
