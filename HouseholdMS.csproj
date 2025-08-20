@@ -125,6 +125,7 @@
     <Compile Include="Model\Technician.cs" />
     <Compile Include="Model\TestReport.cs" />
     <Compile Include="Model\User.cs" />
+    <Compile Include="Services\LookupSearch.cs" />
     <Compile Include="Services\OscilloscopeService.cs" />
     <Compile Include="Services\ScpiDevice.cs" />
     <Compile Include="Services\ScpiDeviceVisa.cs" />
@@ -206,6 +207,9 @@
     <Compile Include="View\UserManagementView.xaml.cs">
       <DependentUpon>UserManagementView.xaml</DependentUpon>
     </Compile>
+    <Page Include="Assets\Manuals\PrecautionStep0.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

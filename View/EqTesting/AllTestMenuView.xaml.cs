@@ -1,249 +1,556 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Microsoft.Win32;
-using System.Data.SQLite; // <-- Updated for SQLite!
-using HouseholdMS.Model;
+using System.Windows.Documents;
+using HouseholdMS.Services;
+
+// Force using the WPF MessageBox (not WinForms or any custom class)
+using WpfMessageBox = System.Windows.MessageBox;
+
+using Timer = System.Timers.Timer;
+// (optional if you still need System.Threading types):
+using ThreadingTimer = System.Threading.Timer;
+
 
 namespace HouseholdMS.View.EqTesting
 {
     public partial class AllTestMenuView : UserControl
     {
-        private readonly List<TestStep> steps;
-        private int currentStepIndex = 0;
-        private readonly List<BitmapImage> uploadedImages = new List<BitmapImage>();
+        private enum WizardStep { Precaution = 0, Form = 1, Setup1 = 2, Setup2 = 3, Setup3 = 4, Charging = 5 }
+        private WizardStep _step = WizardStep.Precaution;
+
+        // Reusable lookup service (no MVVM, called from code-behind)
+        private readonly LookupSearch _search;
+
+        // Debounce timers (thread-safe, no async void races)
+        private readonly Timer _hhDebounce = new Timer(220) { AutoReset = false };
+        private readonly Timer _techDebounce = new Timer(220) { AutoReset = false };
+
+        // Popup manual-close flags: avoid auto reopen immediately after user dismissed
+        private bool _hhPopupManualClose;
+        private bool _techPopupManualClose;
+
+        // Optional media for setup pages
+        private readonly List<string> _setup2Media = new List<string>();
+        private readonly List<string> _setup3Media = new List<string>();
+        private readonly List<string> _setup4Media = new List<string>();
+
+        // Selections
+        private int? _householdId;
+        private int? _technicianId;
+        private string _householdDisplay;
+        private string _technicianDisplay;
+
+        // Guard to avoid TextChanged firing while we set Text programmatically
+        private bool _suppressSearchEvents;
+
+        // Charging timestamps
+        private DateTime? _chargingStartUtc;
 
         public AllTestMenuView(string userRole = "Admin")
         {
             InitializeComponent();
-            steps = LoadTestSteps();
-            LoadTechnicians();
-            LoadHouseholds();
-            DisplayCurrentStep();
-        }
+            _search = new LookupSearch(Model.DatabaseHelper.GetConnection);
 
-        private List<TestStep> LoadTestSteps()
-        {
-            return new List<TestStep>
+            // Debounce handlers (Household)
+            _hhDebounce.Elapsed += async (_, __) =>
             {
-                new TestStep("1. 점검 정보 입력 (Input Inspection Info)", "Enter device ID, location, technician name, and inspection date/time."),
-                new TestStep("2. 점검 항목 선택 (Select Inspection Items)", "Select the inspection items to include in this test session."),
-                new TestStep("3. 육안검사 (Visual Inspection)", "Check for corrosion, loose wires, physical damage. Take a photo if needed.", true),
-                new TestStep("4. 수동 점검 (Manual Inspection)", "Follow on-screen steps to check wiring, connections, or specific modules."),
-                new TestStep("5. 접촉 나사 이상 유무 (Contact Screw Check)", "Check if terminals are loose, burnt, or melted. Record results."),
-                new TestStep("6. 절연 상태 점검 (Insulation Status)", "Measure insulation resistance using tools. Confirm safe values."),
-                new TestStep("7. MPPT 이상 유무 (MPPT Check)", "Check the MPPT controller display or connection status.", false, true),
-                new TestStep("8. 설정 확인 (Settings Verification)", "Compare current settings with reference values. Flag mismatches."),
-                new TestStep("9. AC 부하 테스트 (AC Load Test)", "Test AC output. Confirm switching and actual power delivery."),
-                new TestStep("10. 장비 전원 차단 및 케이블 분리 (Shutdown & Disconnect)", "Turn off the device and safely disconnect all test cables."),
-                new TestStep("11. 결과 저장 및 출력 (Save & Export Results)", "Save test data to DB. Optionally export a PDF report.")
+                Dispatcher.Invoke(() => { if (HouseholdSpinner != null) HouseholdSpinner.Visibility = Visibility.Visible; });
+                var query = Dispatcher.Invoke(() => HouseholdSearchBox?.Text?.Trim() ?? "");
+                var results = await SafeSearchHouseholdsAsync(query);
+                Dispatcher.Invoke(() =>
+                {
+                    if (HouseholdSpinner != null) HouseholdSpinner.Visibility = Visibility.Collapsed;
+                    HouseholdPopupList.ItemsSource = results ?? new List<LookupSearch.PickItem>();
+                    HouseholdPopup.IsOpen = (results != null && results.Count > 0 && !_hhPopupManualClose);
+                    _hhPopupManualClose = false;
+                });
             };
+
+            // Debounce handlers (Technician)
+            _techDebounce.Elapsed += async (_, __) =>
+            {
+                Dispatcher.Invoke(() => { if (TechnicianSpinner != null) TechnicianSpinner.Visibility = Visibility.Visible; });
+                var query = Dispatcher.Invoke(() => TechnicianSearchBox?.Text?.Trim() ?? "");
+                var results = await SafeSearchTechniciansAsync(query);
+                Dispatcher.Invoke(() =>
+                {
+                    if (TechnicianSpinner != null) TechnicianSpinner.Visibility = Visibility.Collapsed;
+                    TechnicianPopupList.ItemsSource = results ?? new List<LookupSearch.PickItem>();
+                    TechnicianPopup.IsOpen = (results != null && results.Count > 0 && !_techPopupManualClose);
+                    _techPopupManualClose = false;
+                });
+            };
+
+            // Hook template clear buttons once (works whether styles exist or not)
+            BatterySerialBox.AddHandler(Button.ClickEvent, new RoutedEventHandler(TemplateClear_Click));
+            HouseholdSearchBox.AddHandler(Button.ClickEvent, new RoutedEventHandler(TemplateClear_Click));
+            TechnicianSearchBox.AddHandler(Button.ClickEvent, new RoutedEventHandler(TemplateClear_Click));
+
+            RenderStep();
         }
 
-        private void LoadTechnicians()
+        // ---------- Navigation ----------
+        private void OnStartFromPrecaution(object sender, RoutedEventArgs e)
         {
-            using (var conn = DatabaseHelper.GetConnection())
-            {
-                conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT TechnicianID, Name FROM Technicians", conn))
-                using (var reader = cmd.ExecuteReader())
-                {
-                    List<object> list = new List<object>();
-                    while (reader.Read())
-                    {
-                        list.Add(new { ID = reader.GetInt32(0), Name = reader.GetString(1) });
-                    }
-                    TechnicianComboBox.ItemsSource = list;
-                    TechnicianComboBox.DisplayMemberPath = "Name";
-                    TechnicianComboBox.SelectedValuePath = "ID";
-                }
-            }
-        }
-
-        private void LoadHouseholds()
-        {
-            using (var conn = DatabaseHelper.GetConnection())
-            {
-                conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT HouseholdID, OwnerName FROM Households", conn))
-                using (var reader = cmd.ExecuteReader())
-                {
-                    List<object> list = new List<object>();
-                    while (reader.Read())
-                    {
-                        list.Add(new { ID = reader.GetInt32(0), Name = reader.GetString(1) });
-                    }
-                    HouseholdComboBox.ItemsSource = list;
-                    HouseholdComboBox.DisplayMemberPath = "Name";
-                    HouseholdComboBox.SelectedValuePath = "ID";
-                }
-            }
-        }
-
-        private void DisplayCurrentStep()
-        {
-            TestStep step = steps[currentStepIndex];
-            StepTitle.Text = step.Title;
-            StepInstruction.Text = step.Instruction;
-
-            foreach (UIElement panel in new UIElement[] {
-                UserInfoPanel, InstructionImage, InspectionItemsPanel,
-                MultiImagePanel, AnnotationPanel, AnnotationPanel5, AnnotationPanel6,
-                AnnotationPanel7, AnnotationPanel8, AnnotationPanel9, AnnotationPanel10
-            })
-            {
-                panel.Visibility = Visibility.Collapsed;
-            }
-
-            if (currentStepIndex == 0) { UserInfoPanel.Visibility = Visibility.Visible; InstructionImage.Visibility = Visibility.Visible; }
-            else if (currentStepIndex == 1) InspectionItemsPanel.Visibility = Visibility.Visible;
-            else if (currentStepIndex == 2) MultiImagePanel.Visibility = Visibility.Visible;
-            else if (currentStepIndex == 3) AnnotationPanel.Visibility = Visibility.Visible;
-            else if (currentStepIndex == 4) AnnotationPanel5.Visibility = Visibility.Visible;
-            else if (currentStepIndex == 5) AnnotationPanel6.Visibility = Visibility.Visible;
-            else if (currentStepIndex == 6) AnnotationPanel7.Visibility = Visibility.Visible;
-            else if (currentStepIndex == 7) AnnotationPanel8.Visibility = Visibility.Visible;
-            else if (currentStepIndex == 8) AnnotationPanel9.Visibility = Visibility.Visible;
-            else if (currentStepIndex == 9) AnnotationPanel10.Visibility = Visibility.Visible;
-
-            DeviceStatus.Visibility = step.RequiresDeviceStatus ? Visibility.Visible : Visibility.Collapsed;
-            if (step.RequiresDeviceStatus) DeviceStatus.Text = "MPPT Controller Connected ✅";
-        }
-
-        private void OnNextStep(object sender, RoutedEventArgs e)
-        {
-            if (currentStepIndex == 0)
-            {
-                if (TechnicianComboBox.SelectedValue == null || HouseholdComboBox.SelectedValue == null)
-                {
-                    MessageBox.Show("Please select Technician and Household.", "Missing Info", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                int techId = Convert.ToInt32(TechnicianComboBox.SelectedValue);
-                int houseId = Convert.ToInt32(HouseholdComboBox.SelectedValue);
-
-                using (var conn = DatabaseHelper.GetConnection())
-                {
-                    conn.Open();
-                    using (var cmd1 = new SQLiteCommand("SELECT COUNT(*) FROM Technicians WHERE TechnicianID = @id", conn))
-                    {
-                        cmd1.Parameters.AddWithValue("@id", techId);
-                        if (Convert.ToInt32(cmd1.ExecuteScalar()) == 0)
-                        {
-                            MessageBox.Show("Technician does not exist in DB.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                            return;
-                        }
-                    }
-
-                    using (var cmd2 = new SQLiteCommand("SELECT COUNT(*) FROM Households WHERE HouseholdID = @id", conn))
-                    {
-                        cmd2.Parameters.AddWithValue("@id", houseId);
-                        if (Convert.ToInt32(cmd2.ExecuteScalar()) == 0)
-                        {
-                            MessageBox.Show("Household does not exist in DB.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                            return;
-                        }
-                    }
-                }
-            }
-
-            if (currentStepIndex < steps.Count - 1)
-            {
-                currentStepIndex++;
-                DisplayCurrentStep();
-            }
-            else
-            {
-                SaveTestDataToDatabase();
-                MessageBox.Show("✅ All test steps completed and saved.", "Done", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+            _step = WizardStep.Form;
+            RenderStep();
         }
 
         private void OnPrevStep(object sender, RoutedEventArgs e)
         {
-            if (currentStepIndex > 0)
+            if (_step == WizardStep.Precaution) return;
+            _step = (WizardStep)((int)_step - 1);
+            RenderStep();
+        }
+
+        private async void OnNextStep(object sender, RoutedEventArgs e)
+        {
+            if (_step == WizardStep.Form)
             {
-                currentStepIndex--;
-                DisplayCurrentStep();
+                if (!await ValidateFormAsync()) return;
+
+                string summary =
+                    "Battery: " + (BatterySerialBox.Text ?? "") + "\n" +
+                    "Household: " + (_householdDisplay ?? "") + "\n" +
+                    "Technician: " + (_technicianDisplay ?? "") + "\n\nProceed?";
+                if (WpfMessageBox.Show(summary, "Confirm details", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                    return;
+            }
+
+            if (_step < WizardStep.Charging)
+                _step = (WizardStep)((int)_step + 1);
+
+            if (_step == WizardStep.Charging && !_chargingStartUtc.HasValue)
+                _chargingStartUtc = DateTime.UtcNow;
+
+            RenderStep();
+        }
+
+        private void RenderStep()
+        {
+            // stop any playing media before switching
+            StopSetupMedia();
+
+            // Panels
+            Show(PrecautionPanel, false);
+            Show(FormPanel, false);
+            Show(SetupPanel, false);
+            Show(ChargingPanel, false);
+
+            // Footer
+            Show(ManualButton, false);
+            Show(StartButton, false);
+            Show(BackButton, false);
+            Show(NextButton, false);
+            Show(FinishButton, false);
+
+            switch (_step)
+            {
+                case WizardStep.Precaution:
+                    StepTitle.Text = "Safety & Precautions";
+                    StepInstruction.Text = "Review safety points or open the manual, then Start.";
+                    Show(PrecautionPanel, true);
+                    LoadPrecautionsDocOnce();
+                    Show(ManualButton, true);
+                    Show(StartButton, true);
+                    break;
+
+                case WizardStep.Form:
+                    StepTitle.Text = "1) Fill in details";
+                    StepInstruction.Text = "Enter battery serial and pick Household & Technician using search.";
+                    Show(FormPanel, true);
+
+                    // Chips reflect current selection
+                    HouseholdSelectedChip.Visibility = _householdId.HasValue ? Visibility.Visible : Visibility.Collapsed;
+                    TechnicianSelectedChip.Visibility = _technicianId.HasValue ? Visibility.Visible : Visibility.Collapsed;
+                    HouseholdSelectedText.Text = _householdDisplay ?? "";
+                    TechnicianSelectedText.Text = _technicianDisplay ?? "";
+
+                    _suppressSearchEvents = true;
+                    if (!_householdId.HasValue) HouseholdSearchBox.Text = "";
+                    if (!_technicianId.HasValue) TechnicianSearchBox.Text = "";
+                    _suppressSearchEvents = false;
+
+                    Show(BackButton, true);
+                    Show(NextButton, true);
+                    break;
+
+                case WizardStep.Setup1:
+                    StepTitle.Text = "2) Setup: Connections";
+                    StepInstruction.Text = "Confirm polarity, tight lugs, and ventilation.";
+                    ShowSetup("Connections checklist",
+                              "1) Red to +, black to −\n2) Tighten lugs\n3) Ensure airflow",
+                              _setup2Media);
+                    Show(BackButton, true);
+                    Show(NextButton, true);
+                    break;
+
+                case WizardStep.Setup2:
+                    StepTitle.Text = "3) Setup: Charger Mode";
+                    StepInstruction.Text = "Choose correct chemistry/profile. Verify voltage.";
+                    ShowSetup("Mode selection",
+                              "Pick AGM/GEL/etc. Verify rated voltage.",
+                              _setup3Media);
+                    Show(BackButton, true);
+                    Show(NextButton, true);
+                    break;
+
+                case WizardStep.Setup3:
+                    StepTitle.Text = "4) Setup: Final Checks";
+                    StepInstruction.Text = "Remove jewelry, keep water away, have extinguisher nearby.";
+                    ShowSetup("Final checks",
+                              "Complete all safety checks before starting charge.",
+                              _setup4Media);
+                    Show(BackButton, true);
+                    Show(NextButton, true);
+                    break;
+
+                case WizardStep.Charging:
+                    StepTitle.Text = "5) Charging";
+                    StepInstruction.Text = "Charging started. Monitor until complete.";
+                    Show(ChargingPanel, true);
+                    ChargingSub.Text = _chargingStartUtc.HasValue
+                        ? "Started at " + _chargingStartUtc.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") + "."
+                        : "Starting…";
+                    Show(BackButton, true);
+                    Show(FinishButton, true);
+                    break;
             }
         }
 
-        private void OnClose(object sender, RoutedEventArgs e)
+        private void LoadPrecautionsDocOnce()
         {
-            System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
+            if (PrecautionViewer != null && PrecautionViewer.Document == null)
+            {
+                // relative pack URI (same assembly)
+                var uri = new Uri("/Assets/Manuals/PrecautionStep0.xaml", UriKind.Relative);
+                PrecautionViewer.Document = (FlowDocument)Application.LoadComponent(uri);
+            }
         }
 
-        private void OnUploadMultipleImages(object sender, RoutedEventArgs e)
+        private void ShowSetup(string header, string text, List<string> mediaList)
         {
-            OpenFileDialog dlg = new OpenFileDialog { Filter = "Images|*.png;*.jpg;*.jpeg", Multiselect = true };
-            if (dlg.ShowDialog() == true)
+            Show(SetupPanel, true);
+            SetupHeader.Text = header;
+            SetupText.Text = text;
+
+            var visuals = new List<FrameworkElement>();
+            foreach (var path in mediaList)
             {
-                uploadedImages.Clear();
-                foreach (string file in dlg.FileNames)
+                if (path.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
                 {
-                    uploadedImages.Add(new BitmapImage(new Uri(file)));
+                    var m = new MediaElement
+                    {
+                        Source = new Uri(path, UriKind.RelativeOrAbsolute),
+                        LoadedBehavior = MediaState.Manual,
+                        UnloadedBehavior = MediaState.Stop,
+                        Width = 400,
+                        Height = 280,
+                        Margin = new Thickness(8)
+                    };
+                    m.Play();
+                    visuals.Add(m);
                 }
-                UploadedImageList.ItemsSource = uploadedImages;
-            }
-        }
-
-        private void SaveTestDataToDatabase()
-        {
-            using (var conn = DatabaseHelper.GetConnection())
-            {
-                conn.Open();
-                using (var cmd = new SQLiteCommand(@"INSERT INTO TestReports 
-                    (HouseholdID, TechnicianID, TestDate, InspectionItems, Annotations, SettingsVerification, ImagePaths, DeviceStatus)
-                    VALUES (@HouseholdID, @TechnicianID, @TestDate, @InspectionItems, @Annotations, @SettingsVerification, @ImagePaths, @DeviceStatus)", conn))
+                else
                 {
-                    cmd.Parameters.AddWithValue("@HouseholdID", HouseholdComboBox.SelectedValue);
-                    cmd.Parameters.AddWithValue("@TechnicianID", TechnicianComboBox.SelectedValue);
-                    cmd.Parameters.AddWithValue("@TestDate", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                    cmd.Parameters.AddWithValue("@InspectionItems", string.Join(", ", GetSelectedItems()));
-                    cmd.Parameters.AddWithValue("@Annotations", CombineAnnotations());
-                    cmd.Parameters.AddWithValue("@SettingsVerification", "Voltage=220V, Freq=60Hz, PowerLimit=5000W");
-                    cmd.Parameters.AddWithValue("@ImagePaths", string.Join(",", uploadedImages.Select(i => i.UriSource != null ? i.UriSource.LocalPath : "")));
-                    cmd.Parameters.AddWithValue("@DeviceStatus", DeviceStatus.Text);
-                    cmd.ExecuteNonQuery();
+                    var img = new Image
+                    {
+                        Source = new BitmapImage(new Uri(path, UriKind.RelativeOrAbsolute)),
+                        Width = 220,
+                        Height = 160,
+                        Stretch = Stretch.Uniform,
+                        Margin = new Thickness(8)
+                    };
+                    img.MouseLeftButtonDown += OnImageClicked;
+                    visuals.Add(img);
+                }
+            }
+            SetupMedia.ItemsSource = visuals;
+        }
+
+        private void StopSetupMedia()
+        {
+            if (SetupMedia.ItemsSource is IEnumerable<FrameworkElement> els)
+            {
+                foreach (var el in els)
+                    if (el is MediaElement me) me.Stop();
+            }
+        }
+
+        // ---------- Validation ----------
+        private async Task<bool> ValidateFormAsync()
+        {
+            if (string.IsNullOrWhiteSpace(BatterySerialBox.Text))
+            {
+                WpfMessageBox.Show("Enter battery serial.", "Missing", MessageBoxButton.OK, MessageBoxImage.Warning);
+                BatterySerialBox.Focus();
+                return false;
+            }
+            if (_householdId == null)
+            {
+                WpfMessageBox.Show("Select a household from search results.", "Missing", MessageBoxButton.OK, MessageBoxImage.Warning);
+                HouseholdSearchBox.Focus();
+                return false;
+            }
+            if (_technicianId == null)
+            {
+                WpfMessageBox.Show("Select a technician from search results.", "Missing", MessageBoxButton.OK, MessageBoxImage.Warning);
+                TechnicianSearchBox.Focus();
+                return false;
+            }
+
+            using (var conn = Model.DatabaseHelper.GetConnection())
+            {
+                await conn.OpenAsync();
+
+                using (var c1 = new SQLiteCommand("SELECT EXISTS(SELECT 1 FROM Households WHERE HouseholdID=@id);", conn))
+                {
+                    c1.Parameters.AddWithValue("@id", _householdId);
+                    var ok1 = Convert.ToInt32(await c1.ExecuteScalarAsync()) == 1;
+                    if (!ok1)
+                    {
+                        WpfMessageBox.Show("Household not found in DB.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return false;
+                    }
+                }
+                using (var c2 = new SQLiteCommand("SELECT EXISTS(SELECT 1 FROM Technicians WHERE TechnicianID=@id);", conn))
+                {
+                    c2.Parameters.AddWithValue("@id", _technicianId);
+                    var ok2 = Convert.ToInt32(await c2.ExecuteScalarAsync()) == 1;
+                    if (!ok2)
+                    {
+                        WpfMessageBox.Show("Technician not found in DB.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        // ---------- Household search (debounced + popup) ----------
+        private void OnHouseholdSearchChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_suppressSearchEvents) return;
+
+            // Clear selection when user edits
+            _householdId = null;
+            _householdDisplay = null;
+            HouseholdSelectedChip.Visibility = Visibility.Collapsed;
+
+            // If empty -> close popup
+            if (string.IsNullOrWhiteSpace(HouseholdSearchBox.Text))
+            {
+                _hhDebounce.Stop();
+                CloseHouseholdPopup();
+                HouseholdPopupList.ItemsSource = null;
+                return;
+            }
+
+            _hhDebounce.Stop();
+            _hhDebounce.Start();
+        }
+
+        private void HouseholdSearchBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            _hhPopupManualClose = false;
+            if (HouseholdPopupList.Items.Count > 0)
+                HouseholdPopup.IsOpen = true;
+        }
+
+        private void HouseholdSearchBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            // if focus moved into popup, keep it open
+            if (!IsFocusWithin(HouseholdPopup)) CloseHouseholdPopup();
+        }
+
+        private void HouseholdSearchBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Down && HouseholdPopupList.Items.Count > 0)
+            {
+                HouseholdPopup.IsOpen = true;
+                HouseholdPopupList.SelectedIndex = Math.Max(0, HouseholdPopupList.SelectedIndex);
+                (HouseholdPopupList.ItemContainerGenerator.ContainerFromIndex(HouseholdPopupList.SelectedIndex) as ListBoxItem)?.Focus();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                CloseHouseholdPopup(); e.Handled = true;
+            }
+            else if (e.Key == Key.Enter)
+            {
+                if (HouseholdPopup.IsOpen && HouseholdPopupList.SelectedItem != null)
+                {
+                    CommitHouseholdSelection(); e.Handled = true;
                 }
             }
         }
 
-        private IEnumerable<string> GetSelectedItems()
+        private void HouseholdList_KeyDown(object sender, KeyEventArgs e)
         {
-            if (BatteryCheckBox.IsChecked == true) yield return "Battery";
-            if (InverterCheckBox.IsChecked == true) yield return "Inverter";
-            if (WiringCheckBox.IsChecked == true) yield return "Wiring";
-            if (MPPTCheckBox.IsChecked == true) yield return "MPPT";
+            if (e.Key == Key.Enter) { CommitHouseholdSelection(); e.Handled = true; }
+            else if (e.Key == Key.Escape) { CloseHouseholdPopup(); e.Handled = true; }
         }
 
-        private string CombineAnnotations()
+        private void OnHouseholdPick(object sender, MouseButtonEventArgs e) => CommitHouseholdSelection();
+
+        private void CommitHouseholdSelection()
         {
-            List<string> list = new List<string>();
-            if (!string.IsNullOrWhiteSpace(AnnotationBox.Text)) list.Add(AnnotationBox.Text);
-            if (!string.IsNullOrWhiteSpace(AnnotationBox5.Text)) list.Add(AnnotationBox5.Text);
-            if (!string.IsNullOrWhiteSpace(AnnotationBox6.Text)) list.Add(AnnotationBox6.Text);
-            if (!string.IsNullOrWhiteSpace(AnnotationBox7.Text)) list.Add(AnnotationBox7.Text);
-            if (!string.IsNullOrWhiteSpace(AnnotationBox9.Text)) list.Add(AnnotationBox9.Text);
-            if (!string.IsNullOrWhiteSpace(AnnotationBox10.Text)) list.Add(AnnotationBox10.Text);
-            return string.Join("\n", list);
+            if (HouseholdPopupList.SelectedItem is LookupSearch.PickItem it)
+            {
+                _householdId = it.Id;
+                _householdDisplay = it.Display;
+
+                HouseholdSelectedText.Text = it.Display;
+                HouseholdSelectedChip.Visibility = Visibility.Visible;
+
+                _suppressSearchEvents = true;
+                HouseholdSearchBox.Text = ""; // clear box after commit; chip shows selection
+                _suppressSearchEvents = false;
+
+                CloseHouseholdPopup();
+                if (NextButton.IsVisible) NextButton.Focus();
+            }
         }
 
+        private void OnHouseholdChangeClick(object sender, RoutedEventArgs e)
+        {
+            _householdId = null;
+            _householdDisplay = null;
+
+            HouseholdSelectedChip.Visibility = Visibility.Collapsed;
+            HouseholdSearchBox.Focus();
+            _hhPopupManualClose = false;
+            if (HouseholdPopupList.Items.Count > 0) HouseholdPopup.IsOpen = true;
+        }
+
+        private void CloseHouseholdPopup()
+        {
+            _hhPopupManualClose = true;
+            HouseholdPopup.IsOpen = false;
+        }
+
+        // ---------- Technician search (debounced + popup) ----------
+        private void OnTechnicianSearchChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_suppressSearchEvents) return;
+
+            _technicianId = null;
+            _technicianDisplay = null;
+            TechnicianSelectedChip.Visibility = Visibility.Collapsed;
+
+            if (string.IsNullOrWhiteSpace(TechnicianSearchBox.Text))
+            {
+                _techDebounce.Stop();
+                CloseTechnicianPopup();
+                TechnicianPopupList.ItemsSource = null;
+                return;
+            }
+
+            _techDebounce.Stop();
+            _techDebounce.Start();
+        }
+
+        private void TechnicianSearchBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            _techPopupManualClose = false;
+            if (TechnicianPopupList.Items.Count > 0)
+                TechnicianPopup.IsOpen = true;
+        }
+
+        private void TechnicianSearchBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            if (!IsFocusWithin(TechnicianPopup)) CloseTechnicianPopup();
+        }
+
+        private void TechnicianSearchBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Down && TechnicianPopupList.Items.Count > 0)
+            {
+                TechnicianPopup.IsOpen = true;
+                TechnicianPopupList.SelectedIndex = Math.Max(0, TechnicianPopupList.SelectedIndex);
+                (TechnicianPopupList.ItemContainerGenerator.ContainerFromIndex(TechnicianPopupList.SelectedIndex) as ListBoxItem)?.Focus();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                CloseTechnicianPopup(); e.Handled = true;
+            }
+            else if (e.Key == Key.Enter)
+            {
+                if (TechnicianPopup.IsOpen && TechnicianPopupList.SelectedItem != null)
+                {
+                    CommitTechnicianSelection(); e.Handled = true;
+                }
+            }
+        }
+
+        private void TechnicianList_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter) { CommitTechnicianSelection(); e.Handled = true; }
+            else if (e.Key == Key.Escape) { CloseTechnicianPopup(); e.Handled = true; }
+        }
+
+        private void OnTechnicianPick(object sender, MouseButtonEventArgs e) => CommitTechnicianSelection();
+
+        private void CommitTechnicianSelection()
+        {
+            if (TechnicianPopupList.SelectedItem is LookupSearch.PickItem it)
+            {
+                _technicianId = it.Id;
+                _technicianDisplay = it.Display;
+
+                TechnicianSelectedText.Text = it.Display;
+                TechnicianSelectedChip.Visibility = Visibility.Visible;
+
+                _suppressSearchEvents = true;
+                TechnicianSearchBox.Text = "";
+                _suppressSearchEvents = false;
+
+                CloseTechnicianPopup();
+                if (NextButton.IsVisible) NextButton.Focus();
+            }
+        }
+
+        private void OnTechnicianChangeClick(object sender, RoutedEventArgs e)
+        {
+            _technicianId = null;
+            _technicianDisplay = null;
+
+            TechnicianSelectedChip.Visibility = Visibility.Collapsed;
+            TechnicianSearchBox.Focus();
+            _techPopupManualClose = false;
+            if (TechnicianPopupList.Items.Count > 0) TechnicianPopup.IsOpen = true;
+        }
+
+        private void CloseTechnicianPopup()
+        {
+            _techPopupManualClose = true;
+            TechnicianPopup.IsOpen = false;
+        }
+
+        // ---------- Media helper for setup images ----------
         private void OnImageClicked(object sender, MouseButtonEventArgs e)
         {
-            if (sender is Image img && img.Source is BitmapImage bmp)
+            var img = sender as Image;
+            var bmp = img != null ? img.Source as BitmapImage : null;
+            if (bmp != null)
             {
-                Window win = new Window
+                var win = new Window
                 {
                     Title = "Image Preview",
-                    Width = 800,
-                    Height = 600,
+                    Width = 900,
+                    Height = 650,
                     Background = Brushes.Black,
                     Content = CreateZoomViewer(bmp)
                 };
@@ -253,45 +560,113 @@ namespace HouseholdMS.View.EqTesting
 
         private UIElement CreateZoomViewer(BitmapImage imgSrc)
         {
-            Image img = new Image { Source = imgSrc, Stretch = Stretch.Uniform };
-            ScaleTransform scale = new ScaleTransform(1.0, 1.0);
+            var img = new Image { Source = imgSrc, Stretch = Stretch.Uniform };
+            var scale = new ScaleTransform(1.0, 1.0);
             img.RenderTransform = scale;
             img.RenderTransformOrigin = new Point(0.5, 0.5);
-
             img.MouseWheel += (s, e) =>
             {
                 double delta = e.Delta > 0 ? 0.1 : -0.1;
                 scale.ScaleX = Clamp(scale.ScaleX + delta, 0.5, 5);
                 scale.ScaleY = Clamp(scale.ScaleY + delta, 0.5, 5);
             };
-
-            return new ScrollViewer
-            {
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                Content = img
-            };
+            return new ScrollViewer { Content = img };
         }
 
-        private double Clamp(double value, double min, double max)
+        // ---------- Finish / Save ----------
+        private async void OnFinishCharging(object sender, RoutedEventArgs e)
         {
-            return (value < min) ? min : (value > max) ? max : value;
-        }
-
-        private class TestStep
-        {
-            public string Title { get; }
-            public string Instruction { get; }
-            public bool RequiresImage { get; }
-            public bool RequiresDeviceStatus { get; }
-
-            public TestStep(string title, string instruction, bool requiresImage = false, bool requiresDeviceStatus = false)
+            try
             {
-                Title = title;
-                Instruction = instruction;
-                RequiresImage = requiresImage;
-                RequiresDeviceStatus = requiresDeviceStatus;
+                await SaveReportAsync();
+                WpfMessageBox.Show("Charging session saved.", "Done", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                WpfMessageBox.Show("Failed to save: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        private async Task SaveReportAsync()
+        {
+            var annotationsLines = new List<string>
+            {
+                "BatterySerial=" + (BatterySerialBox.Text == null ? "" : BatterySerialBox.Text.Trim())
+            };
+            if (!string.IsNullOrWhiteSpace(_householdDisplay)) annotationsLines.Add("Household=" + _householdDisplay);
+            if (!string.IsNullOrWhiteSpace(_technicianDisplay)) annotationsLines.Add("Technician=" + _technicianDisplay);
+            if (_chargingStartUtc.HasValue) annotationsLines.Add("ChargingStartUtc=" + _chargingStartUtc.Value.ToString("o"));
+            // ... persist as needed
+            await Task.CompletedTask;
+        }
+
+        #region Helpers
+
+        private void TemplateClear_Click(object sender, RoutedEventArgs e)
+        {
+            // Works with the clear button from the TextBox template (named PART_ClearBtn).
+            if (e.OriginalSource is Button btn && btn.Name == "PART_ClearBtn")
+            {
+                if (btn.TemplatedParent is TextBox tb)
+                {
+                    tb.Clear();
+
+                    // Close popups if clearing a search box
+                    if (tb == HouseholdSearchBox) CloseHouseholdPopup();
+                    else if (tb == TechnicianSearchBox) CloseTechnicianPopup();
+                }
+                e.Handled = true;
+            }
+        }
+
+        private async Task<List<LookupSearch.PickItem>> SafeSearchHouseholdsAsync(string q)
+        {
+            if (string.IsNullOrWhiteSpace(q)) return new List<LookupSearch.PickItem>();
+            try { return await _search.SearchHouseholdPicksAsync(q); }
+            catch { return new List<LookupSearch.PickItem>(); }
+        }
+
+        private async Task<List<LookupSearch.PickItem>> SafeSearchTechniciansAsync(string q)
+        {
+            if (string.IsNullOrWhiteSpace(q)) return new List<LookupSearch.PickItem>();
+            try { return await _search.SearchTechnicianPicksAsync(q); }
+            catch { return new List<LookupSearch.PickItem>(); }
+        }
+
+        /// <summary>Shows or hides a UI element by setting its Visibility.</summary>
+        private void Show(UIElement element, bool show)
+        {
+            if (element != null) element.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        /// <summary>Constrain value to [min, max].</summary>
+        private double Clamp(double value, double min, double max)
+            => Math.Min(max, Math.Max(min, value));
+
+        private static bool IsFocusWithin(Popup p)
+            => p.IsOpen && p.Child != null && (p.Child.IsKeyboardFocusWithin || p.Child.IsMouseOver);
+
+        private void OnOpenManual(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("This will open the user manual.",
+                            "Open Manual",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+        }
+
+        // Battery serial constraints + inline validation
+        private void BatterySerialBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            foreach (var ch in e.Text)
+                if (!(char.IsLetterOrDigit(ch) || ch == '-' || ch == '_')) { e.Handled = true; return; }
+        }
+        private void BatterySerialBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var ok = !string.IsNullOrWhiteSpace(BatterySerialBox.Text) && BatterySerialBox.Text.Length >= 6;
+            BatterySerialError.Text = ok ? "" : "Serial must be ≥ 6 characters.";
+            BatterySerialError.Visibility = ok ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        #endregion
     }
 }

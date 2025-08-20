@@ -1,11 +1,141 @@
 ﻿<UserControl x:Class="HouseholdMS.View.EqTesting.AllTestMenuView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800">
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d"
+             d:DesignHeight="600"
+             d:DesignWidth="900">
 
+        <UserControl.Resources>
+            <!-- Converters -->
+            <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+            <!-- Watermark TextBox (yours, unchanged) -->
+            <Style x:Key="WatermarkedTextBox" TargetType="TextBox">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TextBox">
+                            <Grid>
+                                <ScrollViewer x:Name="PART_ContentHost"/>
+                                <TextBlock Text="{TemplateBinding Tag}"
+                                       Margin="4,0,0,0"
+                                       Foreground="#9AA0A6"
+                                       IsHitTestVisible="False"
+                                       VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value=""/>
+                                                        <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource TemplatedParent}}" Value="False"/>
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </MultiDataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Label that actually targets its control -->
+            <Style x:Key="FormLabel" TargetType="Label">
+                <Setter Property="Foreground" Value="#222"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Margin" Value="0,6,12,0"/>
+            </Style>
+
+            <!-- TextBox with watermark + inline clear button -->
+            <Style x:Key="ClearableWatermarkedTextBox" BasedOn="{StaticResource WatermarkedTextBox}" TargetType="TextBox">
+                <Setter Property="Padding" Value="8,0,28,0"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TextBox">
+                            <Grid>
+                                <ScrollViewer x:Name="PART_ContentHost"/>
+                                <!-- Watermark -->
+                                <TextBlock Text="{TemplateBinding Tag}"
+                                       Margin="8,0,0,0"
+                                       Foreground="#9AA0A6"
+                                       IsHitTestVisible="False"
+                                       VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value=""/>
+                                                        <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource TemplatedParent}}" Value="False"/>
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </MultiDataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <!-- Clear button (default Visible; collapse via triggers below) -->
+                                <Button x:Name="PART_ClearBtn"
+                                    Content="✕"
+                                    Width="18" Height="18"
+                                    FontSize="11"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,6,0"
+                                    Cursor="Hand"
+                                    Focusable="False"
+                                    Visibility="Visible"
+                                    Background="#FFF0F0F0"
+                                    BorderBrush="#DDD"
+                                    BorderThickness="1"
+                                    Padding="0"/>
+                            </Grid>
+
+                            <!-- Collapse clear when empty or disabled -->
+                            <ControlTemplate.Triggers>
+                                <!-- If Text.Length == 0 => collapse -->
+                                <DataTrigger Binding="{Binding Text.Length, RelativeSource={RelativeSource TemplatedParent}}" Value="0">
+                                    <Setter TargetName="PART_ClearBtn" Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <!-- If not enabled => collapse -->
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="PART_ClearBtn" Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Small inline indeterminate progress bar -->
+            <Style x:Key="InlineSpinner" TargetType="ProgressBar">
+                <Setter Property="Height" Value="3"/>
+                <Setter Property="IsIndeterminate" Value="True"/>
+                <Setter Property="Foreground" Value="#3B82F6"/>
+                <Setter Property="Margin" Value="0,4,0,0"/>
+                <Setter Property="Visibility" Value="Collapsed"/>
+            </Style>
+
+            <!-- Suggestion list look -->
+            <Style x:Key="SuggestListBox" TargetType="ListBox">
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+                <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="True"/>
+                <Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling"/>
+            </Style>
+        </UserControl.Resources>
+
+
+        <!-- SINGLE root content -->
     <Grid Background="#F4F6F8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -13,248 +143,250 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <TextBlock Text="🔧 종합 점검 (All Test Module)" 
-                   FontSize="24" FontWeight="Bold" Foreground="#222" Margin="0 0 0 20"/>
+        <!-- Top header -->
+        <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
+            <TextBlock Text="Blue Smart Charger" FontSize="24" FontWeight="Bold" Foreground="#222"/>
+            <TextBlock Text="{Binding ElementName=StepTitle, Path=Text}" Margin="16,6,0,0" Foreground="#666"/>
+        </StackPanel>
 
-        <!-- Content -->
-        <Border Grid.Row="1" Background="#FFFFFF" BorderBrush="#CCC" BorderThickness="1" CornerRadius="10" Padding="20">
-            <StackPanel>
+        <!-- Main card -->
+        <Border Grid.Row="1" Background="White" BorderBrush="#DDD" BorderThickness="1" CornerRadius="10" Padding="24">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-                <!-- Step Title and Instruction -->
-                <TextBlock x:Name="StepTitle" FontSize="18" FontWeight="SemiBold" Foreground="#222"/>
-                <TextBlock x:Name="StepInstruction" FontSize="14" Foreground="#555" TextWrapping="Wrap" Margin="0 10 0 20"/>
-
-                <!-- Step 1: Info Entry -->
-                <StackPanel x:Name="UserInfoPanel" Visibility="Collapsed" Margin="0 10 0 20">
-                    <TextBlock Text="Device ID:" FontWeight="Bold" Foreground="#444" Margin="0 5 0 2"/>
-                    <TextBox x:Name="DeviceIdBox" Margin="0 0 0 10" Height="30"/>
-
-                    <TextBlock Text="Location:" FontWeight="Bold" Foreground="#444" Margin="0 5 0 2"/>
-                    <TextBox x:Name="LocationBox" Margin="0 0 0 10" Height="30"/>
-
-                    <TextBlock Text="Technician:" FontWeight="Bold" Foreground="#444" Margin="0 5 0 2"/>
-                    <ComboBox x:Name="TechnicianComboBox" Margin="0 0 0 10" Height="30"/>
-
-                    <TextBlock Text="Household:" FontWeight="Bold" Foreground="#444" Margin="0 5 0 2"/>
-                    <ComboBox x:Name="HouseholdComboBox" Margin="0 0 0 10" Height="30"/>
-
-                    <Image x:Name="InstructionImage" 
-                           Source="pack://application:,,,/Assets/id_sample.jpg"
-                           Width="300" Height="200" Stretch="Uniform" Visibility="Collapsed" Margin="0 10"/>
+                <!-- Step header -->
+                <StackPanel Grid.Row="0">
+                    <TextBlock x:Name="StepTitle" FontSize="18" FontWeight="SemiBold" Foreground="#222"/>
+                    <TextBlock x:Name="StepInstruction" FontSize="14" Foreground="#555" TextWrapping="Wrap" Margin="0 8 0 16"/>
                 </StackPanel>
 
-                <!-- Step 2: Select Inspection Items -->
-                <StackPanel x:Name="InspectionItemsPanel" Visibility="Collapsed"  Margin="0 10 0 10">
-                    <TextBlock Text="✅ Select Inspection Items:" FontSize="16" FontWeight="Bold" Margin="0 0 0 10"/>
+                <!-- Content host -->
+                <Grid Grid.Row="1">
+                    <!-- Safety & Precautions -->
+                    <Grid x:Name="PrecautionPanel" Visibility="Collapsed" Margin="0 8 0 8">
+                        <FlowDocumentScrollViewer x:Name="PrecautionViewer"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  Margin="0,0,0,8"/>
+                    </Grid>
 
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Height="400">
-                        <StackPanel Orientation="Vertical" Margin="0 0 10 0">
+                    <!-- Form -->
+                    <ScrollViewer x:Name="FormPanel" Visibility="Collapsed" Margin="0 8 0 8" VerticalScrollBarVisibility="Auto">
+                        <Grid Grid.IsSharedSizeScope="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="LabelCol"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                            <!-- Inspection Item: Battery -->
-                            <StackPanel Orientation="Vertical" Margin="0 0 20 10">
-                                <CheckBox x:Name="BatteryCheckBox" Content="🔋 Battery Check" Margin="0 0 0 5"/>
-                                <Image Source="pack://application:,,,/Assets/bat_insp.jpg" Width="250" Height="150" Stretch="Uniform"/>
+                            <!-- Battery Serial -->
+                            <Label Grid.Row="0" Grid.Column="0"
+                                   Content="Battery Serial:"
+                                   Style="{StaticResource FormLabel}"
+                                   Target="{Binding ElementName=BatterySerialBox}"/>
+                            <StackPanel Grid.Row="0" Grid.Column="1">
+                                <TextBox x:Name="BatterySerialBox"
+                                         Height="32"
+                                         Style="{StaticResource ClearableWatermarkedTextBox}"
+                                         Tag="Enter battery serial"
+                                         HorizontalAlignment="Stretch"
+                                         PreviewTextInput="BatterySerialBox_PreviewTextInput"
+                                         TextChanged="BatterySerialBox_TextChanged"/>
+                                <TextBlock x:Name="BatterySerialError" Foreground="#C62828" FontSize="12" Visibility="Collapsed"/>
                             </StackPanel>
 
-                            <!-- Inspection Item: Inverter -->
-                            <StackPanel Orientation="Vertical" Margin="0 0 20 10">
-                                <CheckBox x:Name="InverterCheckBox" Content="⚡ Inverter Test" Margin="0 0 0 5"/>
-                                <Image Source="pack://application:,,,/Assets/inverter_insp.jpg" Width="250" Height="150" Stretch="Uniform"/>
+                            <!-- Household -->
+                            <Label Grid.Row="2" Grid.Column="0"
+                                   Content="Household:"
+                                   Style="{StaticResource FormLabel}"
+                                   Target="{Binding ElementName=HouseholdSearchBox}"/>
+                            <StackPanel Grid.Row="2" Grid.Column="1">
+                                <Grid>
+                                    <TextBox x:Name="HouseholdSearchBox"
+                                             Height="32"
+                                             Style="{StaticResource ClearableWatermarkedTextBox}"
+                                             Tag="Type name / phone / municipality / district / username"
+                                             HorizontalAlignment="Stretch"
+                                             TextChanged="OnHouseholdSearchChanged"
+                                             KeyDown="HouseholdSearchBox_KeyDown"
+                                             GotFocus="HouseholdSearchBox_GotFocus"
+                                             LostKeyboardFocus="HouseholdSearchBox_LostKeyboardFocus"/>
+                                    <ProgressBar x:Name="HouseholdSpinner"
+                                                 Style="{StaticResource InlineSpinner}"
+                                                 VerticalAlignment="Bottom"/>
+                                </Grid>
+
+                                <!-- Selected chip -->
+                                <Border x:Name="HouseholdSelectedChip"
+                                        Background="#EEF6FF"
+                                        BorderBrush="#BFDBFE"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Padding="6,4"
+                                        Margin="0,6,0,0"
+                                        Visibility="Collapsed">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock x:Name="HouseholdSelectedText" Foreground="#1E40AF"/>
+                                        <Button Content="Change" Margin="8,0,0,0" Padding="8,2" Click="OnHouseholdChangeClick"/>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
 
-                            <!-- Inspection Item: Wiring -->
-                            <StackPanel Orientation="Vertical" Margin="0 0 20 10">
-                                <CheckBox x:Name="WiringCheckBox" Content="🔌 Wiring" Margin="0 0 0 5"/>
-                                <Image Source="pack://application:,,,/Assets/wiring_insp.jpg" Width="250" Height="150" Stretch="Uniform"/>
+                            <!-- Spacer / legacy column -->
+                            <TextBlock Grid.Row="2" Grid.Column="2" Margin="8,8,0,0" Visibility="Collapsed"/>
+
+                            <!-- Household popup -->
+                            <Popup x:Name="HouseholdPopup"
+                                   PlacementTarget="{Binding ElementName=HouseholdSearchBox}"
+                                   Placement="Bottom"
+                                   StaysOpen="False"
+                                   AllowsTransparency="True"
+                                   PopupAnimation="Slide">
+                                <Border Background="White" BorderBrush="#DDD" BorderThickness="1" CornerRadius="6" Padding="0" MaxHeight="220">
+                                    <ListBox x:Name="HouseholdPopupList"
+                                             Style="{StaticResource SuggestListBox}"
+                                             MouseDoubleClick="OnHouseholdPick"
+                                             KeyDown="HouseholdList_KeyDown">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Display}" FontWeight="SemiBold"/>
+                                                        <TextBlock Text="{Binding Sub}" Foreground="#666" FontSize="12"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Right}" Foreground="#666" FontSize="12" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Border>
+                            </Popup>
+
+                            <!-- Technician -->
+                            <Label Grid.Row="5" Grid.Column="0"
+                                   Content="Technician:"
+                                   Style="{StaticResource FormLabel}"
+                                   Target="{Binding ElementName=TechnicianSearchBox}"/>
+                            <StackPanel Grid.Row="5" Grid.Column="1">
+                                <Grid>
+                                    <TextBox x:Name="TechnicianSearchBox"
+                                             Height="32"
+                                             Style="{StaticResource ClearableWatermarkedTextBox}"
+                                             Tag="Type name / phone"
+                                             HorizontalAlignment="Stretch"
+                                             TextChanged="OnTechnicianSearchChanged"
+                                             KeyDown="TechnicianSearchBox_KeyDown"
+                                             GotFocus="TechnicianSearchBox_GotFocus"
+                                             LostKeyboardFocus="TechnicianSearchBox_LostKeyboardFocus"/>
+                                    <ProgressBar x:Name="TechnicianSpinner"
+                                                 Style="{StaticResource InlineSpinner}"
+                                                 VerticalAlignment="Bottom"/>
+                                </Grid>
+
+                                <!-- Selected chip -->
+                                <Border x:Name="TechnicianSelectedChip"
+                                        Background="#EEF6FF"
+                                        BorderBrush="#BFDBFE"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Padding="6,4"
+                                        Margin="0,6,0,0"
+                                        Visibility="Collapsed">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock x:Name="TechnicianSelectedText" Foreground="#1E40AF"/>
+                                        <Button Content="Change" Margin="8,0,0,0" Padding="8,2" Click="OnTechnicianChangeClick"/>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
 
-                            <!-- Inspection Item: MPPT -->
-                            <StackPanel Orientation="Vertical" Margin="0 0 20 10">
-                                <CheckBox x:Name="MPPTCheckBox" Content="📟 MPPT Status" Margin="0 0 0 5"/>
-                                <Image Source="pack://application:,,,/Assets/mmpt_insp.jpg" Width="250" Height="150" Stretch="Uniform"/>
-                            </StackPanel>
+                            <!-- Technician popup -->
+                            <Popup x:Name="TechnicianPopup"
+                                   PlacementTarget="{Binding ElementName=TechnicianSearchBox}"
+                                   Placement="Bottom"
+                                   StaysOpen="False"
+                                   AllowsTransparency="True"
+                                   PopupAnimation="Slide">
+                                <Border Background="White" BorderBrush="#DDD" BorderThickness="1" CornerRadius="6" Padding="0" MaxHeight="220">
+                                    <ListBox x:Name="TechnicianPopupList"
+                                             Style="{StaticResource SuggestListBox}"
+                                             MouseDoubleClick="OnTechnicianPick"
+                                             KeyDown="TechnicianList_KeyDown">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Display}" FontWeight="SemiBold"/>
+                                                        <TextBlock Text="{Binding Sub}" Foreground="#666" FontSize="12"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Right}" Foreground="#666" FontSize="12" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ScrollViewer>
 
+                    <!-- Setup -->
+                    <ScrollViewer x:Name="SetupPanel" Visibility="Collapsed" Margin="0 8 0 8" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock x:Name="SetupHeader" FontSize="16" FontWeight="Bold"/>
+                            <TextBlock x:Name="SetupText" Margin="0,6,0,8" TextWrapping="Wrap"/>
+                            <ItemsControl x:Name="SetupMedia" Margin="0,6,0,0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <ContentPresenter Content="{Binding}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </ScrollViewer>
-                </StackPanel>
 
-
-
-                <!-- Step 3: Upload & Preview Multiple Images -->
-                <StackPanel x:Name="MultiImagePanel" Visibility="Collapsed" Margin="0 10 0 10">
-                    <Button Content="📷 Upload Images" Click="OnUploadMultipleImages" Width="150" Margin="0 5"/>
-                    <ItemsControl x:Name="UploadedImageList">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border BorderBrush="Gray" BorderThickness="1" Margin="5">
-                                    <Image Source="{Binding}" Width="100" Height="100" Stretch="Uniform"
-                       MouseLeftButtonDown="OnImageClicked"/>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                </StackPanel>
-
-                <!-- Step 4: Annotate Uploaded Image -->
-                <StackPanel x:Name="AnnotationPanel" Visibility="Collapsed" Margin="0 10 0 10">
-                    
-                    <StackPanel Orientation="Horizontal" Margin="0 5">
-                        <Image Source="/Assets/1st.png"
-Width="200" Height="200" Margin="20 0 0 0"/>
-                        <Image Source="/Assets/2st.png"
-Width="200" Height="200" Margin="20 0 0 0"/>
-                        <Image Source="/Assets/3st.png"
-Width="200" Height="200" Margin="20 0 0 0"/>
-                    </StackPanel>
-
-                    <TextBlock Text="📄 Describe the issue if founded:" FontWeight="Bold" Margin="0 10 0 2"/>
-                    <TextBox x:Name="AnnotationBox" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
-                </StackPanel>
-
-                <!-- Annotation Panel for Step 5 -->
-                <StackPanel x:Name="AnnotationPanel5" Visibility="Collapsed" Margin="0 10 0 10">
-                    <StackPanel Orientation="Horizontal" Margin="0 5">
-                        <MediaElement Source="pack://siteoforigin:,,,/Assets/cont_check.mp4"
-              Width="400" Height="300"
-              LoadedBehavior="Play"
-              UnloadedBehavior="Stop"
-              Stretch="Uniform"
-              Volume="0.8"
-              Margin="10"/>
-
-
-                    </StackPanel>
-                    <TextBlock Text="📄 Describe the issue if found:" FontWeight="Bold" Margin="0 10 0 2"/>
-                    <TextBox x:Name="AnnotationBox5" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
-                </StackPanel>
-
-                <!-- Annotation Panel for Step 6 -->
-                <StackPanel x:Name="AnnotationPanel6" Visibility="Collapsed" Margin="0 10 0 10">
-                    <StackPanel Orientation="Horizontal" Margin="0 5">
-                        <Image Source="/Assets/1st.png" Width="200" Height="200" Margin="20 0 0 0"/>
-                        <MediaElement Source="pack://siteoforigin:,,,/Assets/cont_check.mp4"
-              Width="400" Height="300"
-              LoadedBehavior="Play"
-              UnloadedBehavior="Stop"
-              Stretch="Uniform"
-              Volume="0.8"
-              Margin="10"/>
-
-                    </StackPanel>
-                    <TextBlock Text="📄 Describe the issue if found:" FontWeight="Bold" Margin="0 10 0 2"/>
-                    <TextBox x:Name="AnnotationBox6" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
-                </StackPanel>
-
-                <!-- Annotation Panel for Step 7 -->
-                <StackPanel x:Name="AnnotationPanel7" Visibility="Collapsed" Margin="0 10 0 10">
-                    <StackPanel Orientation="Horizontal" Margin="0 5">
-                        <MediaElement Source="pack://siteoforigin:,,,/Assets/mmpt_check.mp4"
-                                    Width="400" Height="300"
-                                    LoadedBehavior="Play"
-                                    UnloadedBehavior="Stop"
-                                    Stretch="Uniform"
-                                    Volume="0.8"
-                                    Margin="10"/>
-                    </StackPanel>
-                    <TextBlock Text="📄 Describe the issue if found:" FontWeight="Bold" Margin="0 10 0 2"/>
-                    <TextBox x:Name="AnnotationBox7" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
-                </StackPanel>
-
-                <!-- Annotation Panel for Step 8 -->
-                <StackPanel x:Name="AnnotationPanel8" Visibility="Collapsed" Margin="0 10 0 10">
-                    <TextBlock Text="⚙ Compare Current Settings with Reference Values" 
-               FontSize="16" FontWeight="Bold" Margin="0 0 0 10"/>
-
-                    <!-- Voltage Comparison -->
-                    <Border BorderBrush="DarkGray" BorderThickness="1" Padding="5" Margin="0 5 0 5">
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="Voltage (V)" FontWeight="Bold"/>
-                            <StackPanel Orientation="Horizontal" Margin="0 5 0 0">
-                                <TextBlock Text="Current: " VerticalAlignment="Center"/>
-                                <TextBox Width="100" Height="25" Margin="5 0"/>
-                                <TextBlock Text="Reference: 220 V" VerticalAlignment="Center" Margin="10 0"/>
-                            </StackPanel>
+                    <!-- Charging -->
+                    <ScrollViewer x:Name="ChargingPanel" Visibility="Collapsed" Margin="0 8 0 8" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="Charging started. Please wait…" FontSize="16" FontWeight="Bold"/>
+                            <TextBlock x:Name="ChargingSub" Text="Monitoring in progress…" Margin="0,6,0,0"/>
                         </StackPanel>
-                    </Border>
-
-                    <!-- Frequency Comparison -->
-                    <Border BorderBrush="DarkGray" BorderThickness="1" Padding="5" Margin="0 5 0 5">
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="Frequency (Hz)" FontWeight="Bold"/>
-                            <StackPanel Orientation="Horizontal" Margin="0 5 0 0">
-                                <TextBlock Text="Current: " VerticalAlignment="Center"/>
-                                <TextBox Width="100" Height="25" Margin="5 0"/>
-                                <TextBlock Text="Reference: 60 Hz" VerticalAlignment="Center" Margin="10 0"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Power Limit Comparison -->
-                    <Border BorderBrush="DarkGray" BorderThickness="1" Padding="5" Margin="0 5 0 5">
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="Power Limit (W)" FontWeight="Bold"/>
-                            <StackPanel Orientation="Horizontal" Margin="0 5 0 0">
-                                <TextBlock Text="Current: " VerticalAlignment="Center"/>
-                                <TextBox Width="100" Height="25" Margin="5 0"/>
-                                <TextBlock Text="Reference: 5000 W" VerticalAlignment="Center" Margin="10 0"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Note -->
-                    <TextBlock Text="🔍 Please visually compare the current values with the reference values above. Flag mismatches manually." 
-               Foreground="Gray" FontStyle="Italic" Margin="0 10 0 0"/>
-                </StackPanel>
-
-
-                <!-- Annotation Panel for Step 9 -->
-                <StackPanel x:Name="AnnotationPanel9" Visibility="Collapsed" Margin="0 10 0 10">
-                    <StackPanel Orientation="Horizontal" Margin="0 5">
-                        <MediaElement Source="pack://siteoforigin:,,,/Assets/ac_check.mp4"
-            Width="400" Height="300"
-            LoadedBehavior="Play"
-            UnloadedBehavior="Stop"
-            Stretch="Uniform"
-            Volume="0.8"
-            Margin="10"/>
-                    </StackPanel>
-                    <TextBlock Text="📄 Describe the issue if found:" FontWeight="Bold" Margin="0 10 0 2"/>
-                    <TextBox x:Name="AnnotationBox9" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
-                </StackPanel>
-
-                <!-- Annotation Panel for Step 10 -->
-                <StackPanel x:Name="AnnotationPanel10" Visibility="Collapsed" Margin="0 10 0 10">
-                    <StackPanel Orientation="Horizontal" Margin="0 5">
-                        <MediaElement Source="pack://siteoforigin:,,,/Assets/finish_check.mp4"
-                Width="400" Height="300"
-                LoadedBehavior="Play"
-                UnloadedBehavior="Stop"
-                Stretch="Uniform"
-                Volume="0.8"
-                Margin="10"/>
-                    </StackPanel>
-                    <TextBlock Text="📄 Describe the issue if found:" FontWeight="Bold" Margin="0 10 0 2"/>
-                    <TextBox x:Name="AnnotationBox10" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
-                </StackPanel>
-
-
-                <!-- Optional Device Status -->
-                <TextBlock x:Name="DeviceStatus" FontSize="14" Foreground="Green" Visibility="Collapsed" Margin="0 10 0 0"/>
-            </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
         </Border>
 
-        <!-- Footer -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 20 0 0">
-            <Button Content="⬅ Prev" Width="100" Margin="5" Click="OnPrevStep"/>
-            <Button Content="Next ➡" Width="100" Margin="5" Click="OnNextStep"/>
-            <Button Content="❌ Close" Width="100" Margin="5" Click="OnClose"/>
+        <!-- Footer buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 16 0 0">
+            <Button x:Name="ManualButton" Content="📄 Manual" Width="120" Margin="4" Click="OnOpenManual" Visibility="Collapsed"/>
+            <Button x:Name="StartButton" Content="▶ Start" Width="120" Margin="4" Click="OnStartFromPrecaution" Visibility="Collapsed"/>
+
+            <Button x:Name="BackButton" Content="⬅ Back" Width="110" Margin="4" Click="OnPrevStep" Visibility="Collapsed"/>
+            <Button x:Name="NextButton" Content="Next ➡" Width="110" Margin="4" Click="OnNextStep" Visibility="Collapsed"/>
+
+            <Button x:Name="FinishButton" Content="Finish Charging" Width="140" Margin="4" Click="OnFinishCharging" Visibility="Collapsed"/>
         </StackPanel>
     </Grid>
 </UserControl>
