@@ -207,7 +207,17 @@
     <Compile Include="View\UserManagementView.xaml.cs">
       <DependentUpon>UserManagementView.xaml</DependentUpon>
     </Compile>
+    <Page Include="Assets\Manuals\Charger.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Assets\Manuals\PrecautionStep0.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Assets\Manuals\Victron.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Assets\Manuals\Wiring.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Include="MainWindow.xaml">
@@ -397,6 +407,15 @@
     <Content Include="Assets\finish_check.mp4">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Assets\Manuals\batchar1.png" />
+    <Resource Include="Assets\Manuals\batchar2.png" />
+    <Resource Include="Assets\Manuals\batchar3.png" />
+    <Resource Include="Assets\Manuals\batchar4.png" />
+    <Resource Include="Assets\Manuals\batchar5.png" />
+    <Resource Include="Assets\Manuals\batchar6.png" />
+    <Resource Include="Assets\Manuals\setup1.png" />
+    <Resource Include="Assets\Manuals\setup2.png" />
+    <Resource Include="Assets\Manuals\setup3.png" />
     <Content Include="Assets\mmpt_check.mp4">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

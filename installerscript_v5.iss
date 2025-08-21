@@ -1,5 +1,5 @@
 #define MyAppName     "HouseholdMS"
-#define MyAppVersion  "6"
+#define MyAppVersion  "7"
 #define MyAppPublisher "Timur"
 #define MyAppURL      "https://www.example.com/"
 #define MyAppExeName  "HouseholdMS.exe"

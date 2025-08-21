@@ -1,26 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Documents;
 using HouseholdMS.Services;
 
 // Force using the WPF MessageBox (not WinForms or any custom class)
 using WpfMessageBox = System.Windows.MessageBox;
 
 using Timer = System.Timers.Timer;
-// (optional if you still need System.Threading types):
-using ThreadingTimer = System.Threading.Timer;
-
 
 namespace HouseholdMS.View.EqTesting
 {
@@ -40,11 +34,6 @@ namespace HouseholdMS.View.EqTesting
         private bool _hhPopupManualClose;
         private bool _techPopupManualClose;
 
-        // Optional media for setup pages
-        private readonly List<string> _setup2Media = new List<string>();
-        private readonly List<string> _setup3Media = new List<string>();
-        private readonly List<string> _setup4Media = new List<string>();
-
         // Selections
         private int? _householdId;
         private int? _technicianId;
@@ -57,6 +46,12 @@ namespace HouseholdMS.View.EqTesting
         // Charging timestamps
         private DateTime? _chargingStartUtc;
 
+        // FlowDocs for Setup steps (Build Action = Page).
+        // If you only have Wiring.xaml now, point all three to the same path.
+        
+        private const string Setup1DocPath = "/Assets/Manuals/Wiring.xaml";
+        private const string Setup2DocPath = "/Assets/Manuals/Charger.xaml";
+        private const string Setup3DocPath = "/Assets/Manuals/Wiring.xaml";
         public AllTestMenuView(string userRole = "Admin")
         {
             InitializeComponent();
@@ -139,9 +134,6 @@ namespace HouseholdMS.View.EqTesting
 
         private void RenderStep()
         {
-            // stop any playing media before switching
-            StopSetupMedia();
-
             // Panels
             Show(PrecautionPanel, false);
             Show(FormPanel, false);
@@ -167,7 +159,7 @@ namespace HouseholdMS.View.EqTesting
                     break;
 
                 case WizardStep.Form:
-                    StepTitle.Text = "1) Fill in details";
+                    StepTitle.Text = "Fill in details";
                     StepInstruction.Text = "Enter battery serial and pick Household & Technician using search.";
                     Show(FormPanel, true);
 
@@ -187,31 +179,25 @@ namespace HouseholdMS.View.EqTesting
                     break;
 
                 case WizardStep.Setup1:
-                    StepTitle.Text = "2) Setup: Connections";
-                    StepInstruction.Text = "Confirm polarity, tight lugs, and ventilation.";
-                    ShowSetup("Connections checklist",
-                              "1) Red to +, black to −\n2) Tighten lugs\n3) Ensure airflow",
-                              _setup2Media);
+                    StepTitle.Text = "Setup";
+                    StepInstruction.Text = "Follow the wiring instructions carefully.";
+                    ShowSetupDoc(Setup1DocPath);
                     Show(BackButton, true);
                     Show(NextButton, true);
                     break;
 
                 case WizardStep.Setup2:
-                    StepTitle.Text = "3) Setup: Charger Mode";
-                    StepInstruction.Text = "Choose correct chemistry/profile. Verify voltage.";
-                    ShowSetup("Mode selection",
-                              "Pick AGM/GEL/etc. Verify rated voltage.",
-                              _setup3Media);
+                    StepTitle.Text = "Setup";
+                    StepInstruction.Text = "Setup using the charger";
+                    ShowSetupDoc(Setup2DocPath);
                     Show(BackButton, true);
                     Show(NextButton, true);
                     break;
 
                 case WizardStep.Setup3:
-                    StepTitle.Text = "4) Setup: Final Checks";
-                    StepInstruction.Text = "Remove jewelry, keep water away, have extinguisher nearby.";
-                    ShowSetup("Final checks",
-                              "Complete all safety checks before starting charge.",
-                              _setup4Media);
+                    StepTitle.Text = "Setup: Final Checks";
+                    StepInstruction.Text = "Complete all safety checks before starting charge.";
+                    ShowSetupDoc(Setup3DocPath);
                     Show(BackButton, true);
                     Show(NextButton, true);
                     break;
@@ -239,52 +225,27 @@ namespace HouseholdMS.View.EqTesting
             }
         }
 
-        private void ShowSetup(string header, string text, List<string> mediaList)
+        private void ShowSetupDoc(string relativePackUri)
         {
             Show(SetupPanel, true);
-            SetupHeader.Text = header;
-            SetupText.Text = text;
 
-            var visuals = new List<FrameworkElement>();
-            foreach (var path in mediaList)
+            // Only reload when different doc (store the path in Tag)
+            var current = SetupViewer.Document?.Tag as string;
+            if (!string.Equals(current, relativePackUri, StringComparison.OrdinalIgnoreCase))
             {
-                if (path.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    var m = new MediaElement
-                    {
-                        Source = new Uri(path, UriKind.RelativeOrAbsolute),
-                        LoadedBehavior = MediaState.Manual,
-                        UnloadedBehavior = MediaState.Stop,
-                        Width = 400,
-                        Height = 280,
-                        Margin = new Thickness(8)
-                    };
-                    m.Play();
-                    visuals.Add(m);
+                    var uri = new Uri(relativePackUri, UriKind.Relative);
+                    var doc = (FlowDocument)Application.LoadComponent(uri);
+                    doc.Tag = relativePackUri;
+                    SetupViewer.Document = doc;
                 }
-                else
+                catch (Exception ex)
                 {
-                    var img = new Image
-                    {
-                        Source = new BitmapImage(new Uri(path, UriKind.RelativeOrAbsolute)),
-                        Width = 220,
-                        Height = 160,
-                        Stretch = Stretch.Uniform,
-                        Margin = new Thickness(8)
-                    };
-                    img.MouseLeftButtonDown += OnImageClicked;
-                    visuals.Add(img);
+                    SetupViewer.Document = new FlowDocument(
+                        new Paragraph(new Run("Failed to load setup document: " + relativePackUri + " — " + ex.Message)));
+                    SetupViewer.Document.Tag = relativePackUri;
                 }
-            }
-            SetupMedia.ItemsSource = visuals;
-        }
-
-        private void StopSetupMedia()
-        {
-            if (SetupMedia.ItemsSource is IEnumerable<FrameworkElement> els)
-            {
-                foreach (var el in els)
-                    if (el is MediaElement me) me.Stop();
             }
         }
 
@@ -343,12 +304,10 @@ namespace HouseholdMS.View.EqTesting
         {
             if (_suppressSearchEvents) return;
 
-            // Clear selection when user edits
             _householdId = null;
             _householdDisplay = null;
             HouseholdSelectedChip.Visibility = Visibility.Collapsed;
 
-            // If empty -> close popup
             if (string.IsNullOrWhiteSpace(HouseholdSearchBox.Text))
             {
                 _hhDebounce.Stop();
@@ -370,7 +329,6 @@ namespace HouseholdMS.View.EqTesting
 
         private void HouseholdSearchBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
-            // if focus moved into popup, keep it open
             if (!IsFocusWithin(HouseholdPopup)) CloseHouseholdPopup();
         }
 
@@ -539,40 +497,6 @@ namespace HouseholdMS.View.EqTesting
             TechnicianPopup.IsOpen = false;
         }
 
-        // ---------- Media helper for setup images ----------
-        private void OnImageClicked(object sender, MouseButtonEventArgs e)
-        {
-            var img = sender as Image;
-            var bmp = img != null ? img.Source as BitmapImage : null;
-            if (bmp != null)
-            {
-                var win = new Window
-                {
-                    Title = "Image Preview",
-                    Width = 900,
-                    Height = 650,
-                    Background = Brushes.Black,
-                    Content = CreateZoomViewer(bmp)
-                };
-                win.ShowDialog();
-            }
-        }
-
-        private UIElement CreateZoomViewer(BitmapImage imgSrc)
-        {
-            var img = new Image { Source = imgSrc, Stretch = Stretch.Uniform };
-            var scale = new ScaleTransform(1.0, 1.0);
-            img.RenderTransform = scale;
-            img.RenderTransformOrigin = new Point(0.5, 0.5);
-            img.MouseWheel += (s, e) =>
-            {
-                double delta = e.Delta > 0 ? 0.1 : -0.1;
-                scale.ScaleX = Clamp(scale.ScaleX + delta, 0.5, 5);
-                scale.ScaleY = Clamp(scale.ScaleY + delta, 0.5, 5);
-            };
-            return new ScrollViewer { Content = img };
-        }
-
         // ---------- Finish / Save ----------
         private async void OnFinishCharging(object sender, RoutedEventArgs e)
         {
@@ -638,10 +562,6 @@ namespace HouseholdMS.View.EqTesting
         {
             if (element != null) element.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
         }
-
-        /// <summary>Constrain value to [min, max].</summary>
-        private double Clamp(double value, double min, double max)
-            => Math.Min(max, Math.Max(min, value));
 
         private static bool IsFocusWithin(Popup p)
             => p.IsOpen && p.Child != null && (p.Child.IsKeyboardFocusWithin || p.Child.IsMouseOver);

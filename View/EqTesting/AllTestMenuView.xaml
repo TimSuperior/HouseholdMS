@@ -8,83 +8,83 @@
              d:DesignHeight="600"
              d:DesignWidth="900">
 
-        <UserControl.Resources>
-            <!-- Converters -->
-            <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    <UserControl.Resources>
+        <!-- Converters -->
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
-            <!-- Watermark TextBox (yours, unchanged) -->
-            <Style x:Key="WatermarkedTextBox" TargetType="TextBox">
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="TextBox">
-                            <Grid>
-                                <ScrollViewer x:Name="PART_ContentHost"/>
-                                <TextBlock Text="{TemplateBinding Tag}"
+        <!-- Watermark TextBox -->
+        <Style x:Key="WatermarkedTextBox" TargetType="TextBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Grid>
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                            <TextBlock Text="{TemplateBinding Tag}"
                                        Margin="4,0,0,0"
                                        Foreground="#9AA0A6"
                                        IsHitTestVisible="False"
                                        VerticalAlignment="Center">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                            <Style.Triggers>
-                                                <MultiDataTrigger>
-                                                    <MultiDataTrigger.Conditions>
-                                                        <Condition Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value=""/>
-                                                        <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource TemplatedParent}}" Value="False"/>
-                                                    </MultiDataTrigger.Conditions>
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                </MultiDataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </Grid>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value=""/>
+                                                    <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource TemplatedParent}}" Value="False"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-            <!-- Label that actually targets its control -->
-            <Style x:Key="FormLabel" TargetType="Label">
-                <Setter Property="Foreground" Value="#222"/>
-                <Setter Property="FontWeight" Value="Bold"/>
-                <Setter Property="VerticalAlignment" Value="Center"/>
-                <Setter Property="Margin" Value="0,6,12,0"/>
-            </Style>
+        <!-- Label that actually targets its control -->
+        <Style x:Key="FormLabel" TargetType="Label">
+            <Setter Property="Foreground" Value="#222"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,6,12,0"/>
+        </Style>
 
-            <!-- TextBox with watermark + inline clear button -->
-            <Style x:Key="ClearableWatermarkedTextBox" BasedOn="{StaticResource WatermarkedTextBox}" TargetType="TextBox">
-                <Setter Property="Padding" Value="8,0,28,0"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="TextBox">
-                            <Grid>
-                                <ScrollViewer x:Name="PART_ContentHost"/>
-                                <!-- Watermark -->
-                                <TextBlock Text="{TemplateBinding Tag}"
+        <!-- TextBox with watermark + inline clear button -->
+        <Style x:Key="ClearableWatermarkedTextBox" BasedOn="{StaticResource WatermarkedTextBox}" TargetType="TextBox">
+            <Setter Property="Padding" Value="8,0,28,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Grid>
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                            <!-- Watermark -->
+                            <TextBlock Text="{TemplateBinding Tag}"
                                        Margin="8,0,0,0"
                                        Foreground="#9AA0A6"
                                        IsHitTestVisible="False"
                                        VerticalAlignment="Center">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                            <Style.Triggers>
-                                                <MultiDataTrigger>
-                                                    <MultiDataTrigger.Conditions>
-                                                        <Condition Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value=""/>
-                                                        <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource TemplatedParent}}" Value="False"/>
-                                                    </MultiDataTrigger.Conditions>
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                </MultiDataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value=""/>
+                                                    <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource TemplatedParent}}" Value="False"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
 
-                                <!-- Clear button (default Visible; collapse via triggers below) -->
-                                <Button x:Name="PART_ClearBtn"
+                            <!-- Clear button -->
+                            <Button x:Name="PART_ClearBtn"
                                     Content="✕"
                                     Width="18" Height="18"
                                     FontSize="11"
@@ -98,44 +98,41 @@
                                     BorderBrush="#DDD"
                                     BorderThickness="1"
                                     Padding="0"/>
-                            </Grid>
+                        </Grid>
 
-                            <!-- Collapse clear when empty or disabled -->
-                            <ControlTemplate.Triggers>
-                                <!-- If Text.Length == 0 => collapse -->
-                                <DataTrigger Binding="{Binding Text.Length, RelativeSource={RelativeSource TemplatedParent}}" Value="0">
-                                    <Setter TargetName="PART_ClearBtn" Property="Visibility" Value="Collapsed"/>
-                                </DataTrigger>
-                                <!-- If not enabled => collapse -->
-                                <Trigger Property="IsEnabled" Value="False">
-                                    <Setter TargetName="PART_ClearBtn" Property="Visibility" Value="Collapsed"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
+                        <!-- Collapse clear when empty or disabled -->
+                        <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding Text.Length, RelativeSource={RelativeSource TemplatedParent}}" Value="0">
+                                <Setter TargetName="PART_ClearBtn" Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="PART_ClearBtn" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-            <!-- Small inline indeterminate progress bar -->
-            <Style x:Key="InlineSpinner" TargetType="ProgressBar">
-                <Setter Property="Height" Value="3"/>
-                <Setter Property="IsIndeterminate" Value="True"/>
-                <Setter Property="Foreground" Value="#3B82F6"/>
-                <Setter Property="Margin" Value="0,4,0,0"/>
-                <Setter Property="Visibility" Value="Collapsed"/>
-            </Style>
+        <!-- Small inline indeterminate progress bar -->
+        <Style x:Key="InlineSpinner" TargetType="ProgressBar">
+            <Setter Property="Height" Value="3"/>
+            <Setter Property="IsIndeterminate" Value="True"/>
+            <Setter Property="Foreground" Value="#3B82F6"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
+        </Style>
 
-            <!-- Suggestion list look -->
-            <Style x:Key="SuggestListBox" TargetType="ListBox">
-                <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
-                <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="True"/>
-                <Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling"/>
-            </Style>
-        </UserControl.Resources>
+        <!-- Suggestion list look -->
+        <Style x:Key="SuggestListBox" TargetType="ListBox">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+            <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="True"/>
+            <Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling"/>
+        </Style>
+    </UserControl.Resources>
 
-
-        <!-- SINGLE root content -->
+    <!-- SINGLE root content -->
     <Grid Background="#F4F6F8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -347,25 +344,13 @@
                         </Grid>
                     </ScrollViewer>
 
-                    <!-- Setup -->
-                    <ScrollViewer x:Name="SetupPanel" Visibility="Collapsed" Margin="0 8 0 8" VerticalScrollBarVisibility="Auto">
-                        <StackPanel>
-                            <TextBlock x:Name="SetupHeader" FontSize="16" FontWeight="Bold"/>
-                            <TextBlock x:Name="SetupText" Margin="0,6,0,8" TextWrapping="Wrap"/>
-                            <ItemsControl x:Name="SetupMedia" Margin="0,6,0,0">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <WrapPanel/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <ContentPresenter Content="{Binding}"/>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </ScrollViewer>
+                    <!-- Setup (FlowDocument-only) -->
+                    
+                    <Grid x:Name="SetupPanel" Visibility="Collapsed" Margin="0 8 0 8">
+                        <FlowDocumentScrollViewer x:Name="SetupViewer"
+                              VerticalScrollBarVisibility="Auto"
+                              Margin="0,0,0,8"/>
+                    </Grid>
 
                     <!-- Charging -->
                     <ScrollViewer x:Name="ChargingPanel" Visibility="Collapsed" Margin="0 8 0 8" VerticalScrollBarVisibility="Auto">
