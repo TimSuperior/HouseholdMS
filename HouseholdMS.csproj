@@ -355,6 +355,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <Content Include="Assets\Manuals\VictronConnect_Manual.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -416,6 +419,15 @@
     <Resource Include="Assets\Manuals\setup1.png" />
     <Resource Include="Assets\Manuals\setup2.png" />
     <Resource Include="Assets\Manuals\setup3.png" />
+    <Resource Include="Assets\Manuals\viccon1.png" />
+    <Resource Include="Assets\Manuals\viccon2.png" />
+    <Resource Include="Assets\Manuals\viccon3.png" />
+    <Resource Include="Assets\Manuals\viccon4.png" />
+    <Resource Include="Assets\Manuals\viccon5.png" />
+    <Resource Include="Assets\Manuals\viccon6.png" />
+    <Resource Include="Assets\Manuals\viccon7.png" />
+    <Resource Include="Assets\Manuals\viccon8.png" />
+    <Resource Include="Assets\Manuals\viccon9.png" />
     <Content Include="Assets\mmpt_check.mp4">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

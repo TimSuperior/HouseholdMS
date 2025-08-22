@@ -1,7 +1,212 @@
 ﻿<FlowDocument xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-              xmlns:local="clr-namespace:HouseholdMS.Assets.Manuals"
-              ColumnWidth="400" FontSize="14" FontFamily="Georgia">
-    <Paragraph>
-        
-    </Paragraph>
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              PagePadding="16"
+              FontFamily="Segoe UI"
+              FontSize="14">
+
+    <Section>
+        <Paragraph FontSize="20" FontWeight="Bold" Margin="0,0,0,8">
+            Setup using the charger
+        </Paragraph>
+
+        <Paragraph>
+            The charge mode and charge current limit most appropriate for the battery type and capacity can also be selected using a
+      Bluetooth enabled device (mobile phone or tablet) with the VictronConnect app.
+        </Paragraph>
+
+        <!-- 1st image -->
+        <BlockUIContainer Margin="0,8,0,12">
+            <Image Source="pack://application:,,,/Assets/Manuals/viccon1.png"
+             Stretch="Uniform"
+             MaxWidth="800"/>
+        </BlockUIContainer>
+
+        <Paragraph>
+            For further information about the VictronConnect app refer to the VictronConnect manual
+  (
+            <Hyperlink NavigateUri="Assets/Manuals/VictronConnect_Manual.pdf">open PDF</Hyperlink>
+            ).
+        </Paragraph>
+
+
+        <Paragraph FontWeight="Bold" Margin="0,10,0,6">To setup using Bluetooth:</Paragraph>
+
+        <List MarkerStyle="Decimal" Margin="0,2,0,0">
+            <!-- 1 -->
+            <ListItem>
+                <Paragraph>
+                    Download and install the VictronConnect app onto the Bluetooth enabled device (mobile phone or tablet).
+          The VictronConnect app can be downloaded from:
+                </Paragraph>
+                <List MarkerStyle="UpperLatin" Margin="16,4,0,8">
+                    <ListItem>
+                        <Paragraph>Android — Google Play Store</Paragraph>
+                    </ListItem>
+                    <ListItem>
+                        <Paragraph>iOS/Mac — Apple App Store</Paragraph>
+                    </ListItem>
+                </List>
+            </ListItem>
+
+            <!-- 2 -->
+            <ListItem>
+                <Paragraph>
+                    Enable Bluetooth on the device if not already enabled, but do not attempt to pair with the Blue Smart IP22 Charger.
+                </Paragraph>
+            </ListItem>
+
+            <!-- 3 -->
+            <ListItem>
+                <Paragraph>
+                    Connect the Blue Smart IP22 Charger AC power cable to a mains power outlet; after a short delay the LEDs indicating
+          the current charge mode and charge state will illuminate.
+                </Paragraph>
+                <!-- 2nd image -->
+                <BlockUIContainer Margin="0,8,0,12">
+                    <Image Source="pack://application:,,,/Assets/Manuals/viccon2.png"
+                 Stretch="Uniform"
+                 MaxWidth="800"/>
+                </BlockUIContainer>
+            </ListItem>
+
+            <!-- 4 -->
+            <ListItem>
+                <Paragraph>
+                    Open the VictronConnect app and locate the Blue Smart IP22 Charger in the Device list &quot;Local&quot; page, under &quot;Other devices&quot;.
+          If it doesn’t appear, ensure Bluetooth is enabled and you are close to the charger, then tap the
+                    <Bold>Scan</Bold> button
+          (round orange button with circular arrow) in the bottom-right corner.
+                </Paragraph>
+                <!-- 3rd image -->
+                <BlockUIContainer Margin="0,8,0,12">
+                    <Image Source="pack://application:,,,/Assets/Manuals/viccon3.png"
+                 Stretch="Uniform"
+                 MaxWidth="800"/>
+                </BlockUIContainer>
+            </ListItem>
+
+            <!-- 5 -->
+            <ListItem>
+                <Paragraph>
+                    Select the Blue Smart IP22 Charger from the Device list &quot;Local&quot; page, under &quot;Other devices&quot;.
+                </Paragraph>
+                <!-- 4th image -->
+                <BlockUIContainer Margin="0,8,0,12">
+                    <Image Source="pack://application:,,,/Assets/Manuals/viccon4.png"
+                 Stretch="Uniform"
+                 MaxWidth="800"/>
+                </BlockUIContainer>
+            </ListItem>
+
+            <!-- 6 -->
+            <ListItem>
+                <Paragraph>
+                    VictronConnect will attempt to establish a Bluetooth connection with the charger and display the connection progress
+          in the
+                    <Bold>Connecting</Bold> pop-up dialog box.
+                </Paragraph>
+                <!-- 5th image -->
+                <BlockUIContainer Margin="0,8,0,12">
+                    <Image Source="pack://application:,,,/Assets/Manuals/viccon5.png"
+                 Stretch="Uniform"
+                 MaxWidth="800"/>
+                </BlockUIContainer>
+            </ListItem>
+
+            <!-- 7 -->
+            <ListItem>
+                <Paragraph>
+                    On first connection to a new/unpaired device, a Bluetooth pairing request pop-up will appear; enter the default PIN code
+          stated on the label on the back of the charger (or try
+                    <Bold>000000</Bold> if there is no label), then select
+                    <Bold>Pair</Bold> .
+                </Paragraph>
+                <!-- 6th image -->
+                <BlockUIContainer Margin="0,8,0,12">
+                    <Image Source="pack://application:,,,/Assets/Manuals/viccon6.png"
+                 Stretch="Uniform"
+                 MaxWidth="800"/>
+                </BlockUIContainer>
+            </ListItem>
+
+            <!-- 8 -->
+            <ListItem>
+                <Paragraph>
+                    Select the
+                    <Bold>Settings</Bold> icon (gear in the top-right corner) to open the Settings page.
+                </Paragraph>
+                <!-- 7th image -->
+                <BlockUIContainer Margin="0,8,0,12">
+                    <Image Source="pack://application:,,,/Assets/Manuals/viccon7.png"
+                 Stretch="Uniform"
+                 MaxWidth="800"/>
+                </BlockUIContainer>
+            </ListItem>
+
+            <!-- 9 -->
+            <ListItem>
+                <Paragraph>
+                    From
+                    <Bold>Charge preset</Bold> , choose the appropriate integrated charge mode (Normal, Normal + Recondition, High,
+          High + Recondition, or Li-ion). Ensure recondition is enabled only when required, as unnecessary use reduces battery life.
+                </Paragraph>
+                <!-- 8th image -->
+                <BlockUIContainer Margin="0,8,0,12">
+                    <Image Source="pack://application:,,,/Assets/Manuals/viccon8.png"
+                 Stretch="Uniform"
+                 MaxWidth="800"/>
+                </BlockUIContainer>
+            </ListItem>
+
+            <!-- 10 -->
+            <ListItem>
+                <Paragraph>
+                    If the maximum rated charge current is excessive, enable
+                    <Bold>Low current mode</Bold> (limits charge current to 50%).
+          Set this via the
+                    <Bold>Charge current</Bold> menu; when enabled the
+                    <Bold>NIGHT</Bold> LED will blink.
+                </Paragraph>
+                <Paragraph>
+                    Alternatively, enable
+                    <Bold>Night mode</Bold> to temporarily activate low current for 8 hours (to reduce fan noise).
+          Toggle the
+                    <Bold>Night mode</Bold> switch on; when enabled the
+                    <Bold>NIGHT</Bold> LED will illuminate.
+                </Paragraph>
+                <!-- 9th image -->
+                <BlockUIContainer Margin="0,8,0,12">
+                    <Image Source="pack://application:,,,/Assets/Manuals/viccon9.png"
+                 Stretch="Uniform"
+                 MaxWidth="800"/>
+                </BlockUIContainer>
+            </ListItem>
+
+            <!-- 11 -->
+            <ListItem>
+                <Paragraph>
+                    <Bold>Lock Mode Button</Bold> — When enabled, the physical mode button is locked and cannot change the charger’s configuration.
+          The following functions still work:
+                </Paragraph>
+                <List MarkerStyle="Disc" Margin="16,4,0,8">
+                    <ListItem>
+                        <Paragraph>Restart charge cycle to Bulk</Paragraph>
+                    </ListItem>
+                    <ListItem>
+                        <Paragraph>Enable Night mode</Paragraph>
+                    </ListItem>
+                    <ListItem>
+                        <Paragraph>Reset Bluetooth</Paragraph>
+                    </ListItem>
+                </List>
+                <Paragraph>
+                    When locked, pressing or holding the button causes all LEDs to flash to indicate the lock is active.
+                </Paragraph>
+            </ListItem>
+        </List>
+
+        <Paragraph Margin="8,8,0,0">
+            All settings are stored and will not be lost when the charger is disconnected from mains power or the battery.
+        </Paragraph>
+    </Section>
 </FlowDocument>

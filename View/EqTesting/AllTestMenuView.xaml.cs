@@ -10,6 +10,10 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using HouseholdMS.Services;
+using System.Diagnostics;
+using System.IO;
+using System.Windows.Navigation;
+
 
 // Force using the WPF MessageBox (not WinForms or any custom class)
 using WpfMessageBox = System.Windows.MessageBox;
@@ -51,10 +55,15 @@ namespace HouseholdMS.View.EqTesting
         
         private const string Setup1DocPath = "/Assets/Manuals/Wiring.xaml";
         private const string Setup2DocPath = "/Assets/Manuals/Charger.xaml";
-        private const string Setup3DocPath = "/Assets/Manuals/Wiring.xaml";
+        private const string Setup3DocPath = "/Assets/Manuals/Victron.xaml";
         public AllTestMenuView(string userRole = "Admin")
         {
             InitializeComponent();
+
+            this.AddHandler(Hyperlink.RequestNavigateEvent,
+                new RequestNavigateEventHandler(Hyperlink_RequestNavigate));
+
+
             _search = new LookupSearch(Model.DatabaseHelper.GetConnection);
 
             // Debounce handlers (Household)
@@ -195,15 +204,15 @@ namespace HouseholdMS.View.EqTesting
                     break;
 
                 case WizardStep.Setup3:
-                    StepTitle.Text = "Setup: Final Checks";
-                    StepInstruction.Text = "Complete all safety checks before starting charge.";
+                    StepTitle.Text = "Setup";
+                    StepInstruction.Text = "Setup using VictronConnect";
                     ShowSetupDoc(Setup3DocPath);
                     Show(BackButton, true);
                     Show(NextButton, true);
                     break;
 
                 case WizardStep.Charging:
-                    StepTitle.Text = "5) Charging";
+                    StepTitle.Text = "Charging";
                     StepInstruction.Text = "Charging started. Monitor until complete.";
                     Show(ChargingPanel, true);
                     ChargingSub.Text = _chargingStartUtc.HasValue
@@ -500,29 +509,100 @@ namespace HouseholdMS.View.EqTesting
         // ---------- Finish / Save ----------
         private async void OnFinishCharging(object sender, RoutedEventArgs e)
         {
+            var confirm = WpfMessageBox.Show(
+                "Finish charging now and save a report?",
+                "Finish Charging",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (confirm != MessageBoxResult.Yes)
+                return;
+
             try
             {
                 await SaveReportAsync();
-                WpfMessageBox.Show("Charging session saved.", "Done", MessageBoxButton.OK, MessageBoxImage.Information);
+                WpfMessageBox.Show("Charging session saved to Reports.", "Saved",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+
+                CloseHostWindow(); // closes the charger content window
             }
             catch (Exception ex)
             {
-                WpfMessageBox.Show("Failed to save: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                WpfMessageBox.Show("Failed to save: " + ex.Message, "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
+
+
         private async Task SaveReportAsync()
         {
-            var annotationsLines = new List<string>
+            if (_householdId == null || _technicianId == null)
+                throw new InvalidOperationException("Household and Technician must be selected before saving.");
+
+            var endUtc = DateTime.UtcNow;
+
+            // Build annotation blob: keeps details that do NOT have dedicated columns in your schema
+            // (BatterySerial, ChargingStartUtc, ChargingEndUtc)
+            var lines = new List<string>
+    {
+        // NOTE: BatterySerial is NOT a column in TestReports; we keep it in Annotations.
+        "BatterySerial=" + (BatterySerialBox.Text ?? string.Empty).Trim(),
+        "ChargingStartUtc=" + (_chargingStartUtc?.ToString("o") ?? string.Empty),
+        "ChargingEndUtc=" + endUtc.ToString("o")
+    };
+
+            // Add free-form notes written during Charging step
+            var userNotes = (ChargingNotesBox?.Text ?? string.Empty).Trim();
+            if (!string.IsNullOrEmpty(userNotes))
+                lines.Add("UserNotes=" + userNotes.Replace(Environment.NewLine, " \\n "));
+
+            var annotations = string.Join(Environment.NewLine, lines);
+
+            // DeviceStatus is in your schema; we can store a simple terminal state here.
+            var deviceStatus = "ChargingCompleted"; // or "ChargingStopped", etc.
+
+            using (var conn = Model.DatabaseHelper.GetConnection())
             {
-                "BatterySerial=" + (BatterySerialBox.Text == null ? "" : BatterySerialBox.Text.Trim())
-            };
-            if (!string.IsNullOrWhiteSpace(_householdDisplay)) annotationsLines.Add("Household=" + _householdDisplay);
-            if (!string.IsNullOrWhiteSpace(_technicianDisplay)) annotationsLines.Add("Technician=" + _technicianDisplay);
-            if (_chargingStartUtc.HasValue) annotationsLines.Add("ChargingStartUtc=" + _chargingStartUtc.Value.ToString("o"));
-            // ... persist as needed
-            await Task.CompletedTask;
+                await conn.OpenAsync();
+
+                // Your schema already creates TestReports. No CREATE TABLE here.
+                using (var cmd = new SQLiteCommand(@"
+            INSERT INTO TestReports
+                (HouseholdID, TechnicianID, TestDate, Annotations, DeviceStatus
+                 -- , InspectionItems
+                 -- , SettingsVerification
+                 -- , ImagePaths
+                )
+            VALUES
+                (@hh, @tech, @testDate, @annotations, @status
+                 -- , @insp
+                 -- , @settings
+                 -- , @imgs
+                );
+        ", conn))
+                {
+                    cmd.Parameters.AddWithValue("@hh", _householdId.Value);
+                    cmd.Parameters.AddWithValue("@tech", _technicianId.Value);
+
+                    // TestDate exists in your schema; we set it explicitly to end time.
+                    cmd.Parameters.AddWithValue("@testDate", endUtc.ToString("o"));
+
+                    // Only columns that exist:
+                    cmd.Parameters.AddWithValue("@annotations", annotations);
+                    cmd.Parameters.AddWithValue("@status", deviceStatus);
+
+                    // Not used now (commented because they exist but we have no data in this flow):
+                    // cmd.Parameters.AddWithValue("@insp", DBNull.Value);       // InspectionItems
+                    // cmd.Parameters.AddWithValue("@settings", DBNull.Value);   // SettingsVerification
+                    // cmd.Parameters.AddWithValue("@imgs", DBNull.Value);       // ImagePaths
+
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
         }
+
+
 
         #region Helpers
 
@@ -586,6 +666,38 @@ namespace HouseholdMS.View.EqTesting
             BatterySerialError.Text = ok ? "" : "Serial must be ≥ 6 characters.";
             BatterySerialError.Visibility = ok ? Visibility.Collapsed : Visibility.Visible;
         }
+
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            string target = e.Uri.IsAbsoluteUri
+                ? e.Uri.AbsoluteUri
+                : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, e.Uri.OriginalString);
+
+            try
+            {
+                Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                WpfMessageBox.Show($"Couldn't open:\n{target}\n\n{ex.Message}",
+                    "Open Link", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            e.Handled = true;
+        }
+
+        private void CloseHostWindow()
+        {
+            var host = Window.GetWindow(this);
+
+            // Close if hosted in a separate tool window. If embedded in the main window,
+            // don't kill the app—hide the control instead.
+            if (host != null && host != Application.Current.MainWindow)
+                host.Close();
+            else
+                this.Visibility = Visibility.Collapsed; // or notify parent via event if you prefer
+        }
+
+
 
         #endregion
     }
