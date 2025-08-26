@@ -1,0 +1,132 @@
+﻿<!-- Wiring.xaml -->
+<FlowDocument xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Defaults -->
+    <FlowDocument.Resources>
+        <Style TargetType="Paragraph">
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+        <Style TargetType="Image">
+            <Setter Property="Width" Value="360"/>
+            <Setter Property="Stretch" Value="Uniform"/>
+            <Setter Property="Margin" Value="0,6,0,12"/>
+        </Style>
+    </FlowDocument.Resources>
+
+    <Paragraph FontSize="18" FontWeight="Bold" Margin="0,0,0,8">Wiring</Paragraph>
+
+    <List MarkerStyle="Decimal">
+        <!-- 1 -->
+        <ListItem>
+            <Paragraph>
+                Connect suitable DC power cabling to the Blue Smart IP22 Charger’s BATTERY terminals.
+            </Paragraph>
+
+            <List MarkerStyle="UpperLatin" Margin="24,0,0,6">
+                <!-- A -->
+                <ListItem>
+                    <Paragraph>
+                        Remove the terminal cover by gently applying outward pressure on the cover upper face.
+                    </Paragraph>
+                    <BlockUIContainer>
+                        <!-- Image 1 -->
+                        <Image Source="pack://application:,,,/Assets/Manuals/batchar1.png"/>
+                    </BlockUIContainer>
+                </ListItem>
+
+                <!-- B -->
+                <ListItem>
+                    <Paragraph>
+                        Prepare flexible multi-stranded copper DC power cable with sufficient cross-sectional area;
+            refer to the ‘Installation &gt; Wiring &gt; DC power cable’ section for more information.
+                    </Paragraph>
+                </ListItem>
+
+                <!-- C -->
+                <ListItem>
+                    <Paragraph>
+                        Connect the positive DC cable (red insulation) to the positive (+) terminal and the negative DC cable
+            (black insulation) to the negative (−) terminal connection; ensure that the cable connection polarity is correct.
+                    </Paragraph>
+                    <BlockUIContainer>
+                        <!-- Image 2 -->
+                        <Image Source="pack://application:,,,/Assets/Manuals/batchar2.png"/>
+                    </BlockUIContainer>
+                </ListItem>
+
+                <!-- D -->
+                <ListItem>
+                    <Paragraph>
+                        Torque the terminal screws to 2.4 N·m using a suitable torque wrench and screwdriver bit, then reinstall the terminal cover.
+                    </Paragraph>
+                    <BlockUIContainer>
+                        <!-- Image 3 -->
+                        <Image Source="pack://application:,,,/Assets/Manuals/batchar3.png"/>
+                    </BlockUIContainer>
+                </ListItem>
+            </List>
+        </ListItem>
+
+        <!-- 2 -->
+        <ListItem>
+            <Paragraph>
+                Install a suitably rated inline fuse or circuit breaker within the DC power cabling between the Blue Smart IP22 Charger
+        and battery/batteries, located as close as practical to the battery/batteries; refer to the
+        ‘Installation &gt; Wiring &gt; Overcurrent protection’ section for more information.
+            </Paragraph>
+            <BlockUIContainer>
+                <!-- Image 4 -->
+                <Image Source="pack://application:,,,/Assets/Manuals/batchar4.png"/>
+            </BlockUIContainer>
+        </ListItem>
+
+        <!-- 3 -->
+        <ListItem>
+            <Paragraph>
+                Connect the DC power cabling to the battery/batteries or DC system distribution bus — follow the instructions relevant to the installation type.
+            </Paragraph>
+
+            <List MarkerStyle="UpperLatin" Margin="24,0,0,6">
+                <ListItem>
+                    <Paragraph>
+                        For hardwired installations, or when charging a battery outside of a vehicle/installation:
+                    </Paragraph>
+
+                    <List MarkerStyle="LowerRoman" Margin="24,0,0,0">
+                        <ListItem>
+                            <Paragraph>
+                                Ensure that the DC system is shut down (all DC loads and charge sources off/isolated) prior to disconnection of
+                any existing battery/DC system distribution bus cabling and connection of the charger to the battery terminals/DC system distribution bus.
+                            </Paragraph>
+                        </ListItem>
+                        <ListItem>
+                            <Paragraph>
+                                Connect the positive DC cable (red insulation) to the positive (+) terminal and the negative DC cable (black insulation)
+                to the negative (−) terminal connection; ensure that the cable connection polarity is correct.
+                            </Paragraph>
+                        </ListItem>
+                        <ListItem>
+                            <Paragraph>
+                                Torque all wiring termination hardware to manufacturers’ torque specifications using a suitable torque wrench
+                and socket/screwdriver bit.
+                            </Paragraph>
+                        </ListItem>
+                    </List>
+                </ListItem>
+            </List>
+
+            <BlockUIContainer>
+                <!-- Image 4 -->
+                
+                <Image Source="pack://application:,,,/Assets/Manuals/batchar5.png"/>
+            </BlockUIContainer>
+            <BlockUIContainer>
+                <!-- Image 4 -->
+                <Image Source="pack://application:,,,/Assets/Manuals/batchar6.png"/>
+            </BlockUIContainer>
+
+        </ListItem>
+    </List>
+
+</FlowDocument>

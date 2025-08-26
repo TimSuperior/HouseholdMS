@@ -56,9 +56,9 @@ namespace HouseholdMS.View.EqTesting
         // FlowDocs for Setup steps (Build Action = Page).
         // If you only have Wiring.xaml now, point all three to the same path.
         
-        private const string Setup1DocPath = "/Assets/Manuals/Wiring.xaml";
-        private const string Setup2DocPath = "/Assets/Manuals/Charger.xaml";
-        private const string Setup3DocPath = "/Assets/Manuals/Victron.xaml";
+        private const string Setup1DocPath = "/Assets/Manuals/2_Wiring.xaml";
+        private const string Setup2DocPath = "/Assets/Manuals/3_Charger.xaml";
+        private const string Setup3DocPath = "/Assets/Manuals/4_Victron.xaml";
         public AllTestMenuView(string userRole = "Admin")
         {
             InitializeComponent();
@@ -232,7 +232,7 @@ namespace HouseholdMS.View.EqTesting
             if (PrecautionViewer != null && PrecautionViewer.Document == null)
             {
                 // relative pack URI (same assembly)
-                var uri = new Uri("/Assets/Manuals/PrecautionStep0.xaml", UriKind.Relative);
+                var uri = new Uri("/Assets/Manuals/1_PrecautionStep0.xaml", UriKind.Relative);
                 PrecautionViewer.Document = (FlowDocument)Application.LoadComponent(uri);
             }
         }

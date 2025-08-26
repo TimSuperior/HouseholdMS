@@ -26,7 +26,6 @@ namespace HouseholdMS
                 bt_ControllerTest.Visibility = Visibility.Visible;
                 bt_InverterTest.Visibility = Visibility.Visible;
                 bt_SwitchTest.Visibility = Visibility.Visible;
-                bt_SPDTest.Visibility = Visibility.Visible;
                 bt_TestReports.Visibility = Visibility.Visible;
 
                 if (_currentUserRole == "Admin")
@@ -42,7 +41,6 @@ namespace HouseholdMS
                 bt_ControllerTest.Visibility = Visibility.Collapsed;
                 bt_InverterTest.Visibility = Visibility.Collapsed;
                 bt_SwitchTest.Visibility = Visibility.Collapsed;
-                bt_SPDTest.Visibility = Visibility.Collapsed;
                 bt_SettingMenu.Visibility = Visibility.Collapsed;
                 bt_TestReports.Visibility = Visibility.Collapsed;
                 ManageUsersButton.Visibility = Visibility.Collapsed;
@@ -117,11 +115,6 @@ namespace HouseholdMS
             MainContent.Content = new SwitchTestMenuView(_currentUserRole);
         }
 
-        private void bt_SPDTest_Click(object sender, RoutedEventArgs e)
-        {
-            MainContent.Content = new SPDTestMenuView(_currentUserRole);
-        }
-
         private void bt_SettingMenu_Click(object sender, RoutedEventArgs e)
         {
             MainContent.Content = new SettingMenuView(_currentUserRole);
@@ -133,6 +126,10 @@ namespace HouseholdMS
         private void bt_OscilloscopeMenu(object sender, RoutedEventArgs e)
         {
             MainContent.Content = new HouseholdMS.View.Measurement.OscilloscopeView();
+        }
+        private void bt_Template_Click(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new TemplateView();
         }
 
         private void AllTest_CloseRequested(object sender, EventArgs e)
@@ -147,7 +144,6 @@ namespace HouseholdMS
             //MainContent.Content = null;
         }
 
-
-
+       
     }
 }

@@ -141,11 +141,11 @@
     <Compile Include="View\EqTesting\InverterTestMenuView.xaml.cs">
       <DependentUpon>InverterTestMenuView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\EqTesting\SPDTestMenuView.xaml.cs">
-      <DependentUpon>SPDTestMenuView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\EqTesting\SwitchTestMenuView.xaml.cs">
       <DependentUpon>SwitchTestMenuView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\EqTesting\TemplateView.xaml.cs">
+      <DependentUpon>TemplateView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\InputDialogWindow.xaml.cs">
       <DependentUpon>InputDialogWindow.xaml</DependentUpon>
@@ -207,17 +207,17 @@
     <Compile Include="View\UserManagementView.xaml.cs">
       <DependentUpon>UserManagementView.xaml</DependentUpon>
     </Compile>
-    <Page Include="Assets\Manuals\Charger.xaml">
+    <Page Include="Assets\Manuals\3_Charger.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Assets\Manuals\PrecautionStep0.xaml">
+    <Page Include="Assets\Manuals\1_PrecautionStep0.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Assets\Manuals\Victron.xaml">
+    <Page Include="Assets\Manuals\4_Victron.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Assets\Manuals\Wiring.xaml">
+    <Page Include="Assets\Manuals\2_Wiring.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Include="MainWindow.xaml">
@@ -248,11 +248,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\EqTesting\SPDTestMenuView.xaml">
+    <Page Include="View\EqTesting\SwitchTestMenuView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\EqTesting\SwitchTestMenuView.xaml">
+    <Page Include="View\EqTesting\TemplateView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -368,7 +368,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="ViewModel\" />
+    <Folder Include="Assets\Template\" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.8">
@@ -383,33 +383,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\id_sample.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\bat_insp.jpg" />
-    <Resource Include="Assets\inverter_insp.jpg" />
-    <Resource Include="Assets\mmpt_insp.jpg" />
-    <Resource Include="Assets\wiring_insp.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\1st.png" />
-    <Resource Include="Assets\2st.png" />
-    <Resource Include="Assets\3st.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Assets\ac_check.mp4">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Resource Include="Assets\bat_test1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\broken1.jpg" />
-    <Content Include="Assets\cont_check.mp4">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\finish_check.mp4">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Resource Include="Assets\Manuals\batchar1.png" />
     <Resource Include="Assets\Manuals\batchar2.png" />
     <Resource Include="Assets\Manuals\batchar3.png" />
@@ -428,9 +401,6 @@
     <Resource Include="Assets\Manuals\viccon7.png" />
     <Resource Include="Assets\Manuals\viccon8.png" />
     <Resource Include="Assets\Manuals\viccon9.png" />
-    <Content Include="Assets\mmpt_check.mp4">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="TVCLib">

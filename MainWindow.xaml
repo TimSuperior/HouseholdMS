@@ -95,8 +95,8 @@
                         Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
                 <Button x:Name="bt_SwitchTest" Content="⚡ Switch Test" Click="bt_SwitchTest_Click" 
                         Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
-                <Button x:Name="bt_SPDTest" Content="⚡ SPD Test" Click="bt_SPDTest_Click" 
-                        Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
+                <Button x:Name="bt_Template" Content="Template" Click="bt_Template_Click"
+                        Style="{StaticResource MenuButtonStyle}" />
                 <Button x:Name="bt_SettingMenu" Content="⚙ Settings" Click="bt_SettingMenu_Click" 
                         Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
                 <Button Content="📊 Measurements" Click="bt_MeasurementMenu" Style="{StaticResource MenuButtonStyle}"/>
