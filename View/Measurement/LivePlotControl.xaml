@@ -2,31 +2,160 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
-             Height="250" Width="Auto">
-    <StackPanel>
-        <syncfusion:SfChart x:Name="Chart" Height="180">
-            <syncfusion:SfChart.PrimaryAxis>
-                <syncfusion:DateTimeAxis Header="Time" IntervalType="Seconds" Interval="1"/>
-            </syncfusion:SfChart.PrimaryAxis>
-            <syncfusion:SfChart.SecondaryAxis>
-                <syncfusion:NumericalAxis Header="Value"/>
-            </syncfusion:SfChart.SecondaryAxis>
+             MinHeight="260"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             SnapsToDevicePixels="True"
+             UseLayoutRounding="True"
+             TextOptions.TextFormattingMode="Display"
+             TextOptions.TextRenderingMode="ClearType">
 
-            <syncfusion:LineSeries x:Name="LineSeries"
-                                   XBindingPath="Timestamp"
-                                   YBindingPath="Value"
-                                   StrokeThickness="2"/>
-        </syncfusion:SfChart>
+    <UserControl.Resources>
+        <!-- Palette -->
+        <SolidColorBrush x:Key="Surface" Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="BorderBrushSoft" Color="#E5E7EB"/>
+        <SolidColorBrush x:Key="TextSubtle" Color="#6B7280"/>
+        <SolidColorBrush x:Key="Accent" Color="#3B82F6"/>
+        <SolidColorBrush x:Key="AccentHover" Color="#2563EB"/>
+        <SolidColorBrush x:Key="ChipBg" Color="#F3F4F6"/>
 
-        <StackPanel Orientation="Horizontal" Margin="4">
-            <Button Content="Start Plot" Width="90" Click="StartPlot_Click"/>
-            <Button Content="Stop Plot" Width="90" Margin="6,0,0,0" Click="StopPlot_Click"/>
-            <TextBlock Text="Min:" FontWeight="Bold" Margin="20,0,4,0"/>
-            <TextBlock x:Name="MinText" Width="70"/>
-            <TextBlock Text="Max:" FontWeight="Bold" Margin="12,0,4,0"/>
-            <TextBlock x:Name="MaxText" Width="70"/>
-            <TextBlock Text="Avg:" FontWeight="Bold" Margin="12,0,4,0"/>
-            <TextBlock x:Name="AvgText" Width="70"/>
-        </StackPanel>
-    </StackPanel>
+        <!-- Buttons -->
+        <Style x:Key="SoftButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource Accent}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="6,2"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource AccentHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.55"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="GhostButton" BasedOn="{StaticResource SoftButton}" TargetType="Button">
+            <Setter Property="Background" Value="#111F2937"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="6,2"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#141F2937"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.55"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Gridlines -->
+        <Style x:Key="MajorGridLineStyle" TargetType="Line">
+            <Setter Property="Stroke" Value="#11000000"/>
+            <Setter Property="StrokeThickness" Value="1"/>
+            <Setter Property="StrokeDashArray" Value="2,3"/>
+        </Style>
+
+        <!-- Stat chip -->
+        <Style x:Key="Chip" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource ChipBg}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="6,0,0,0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource Surface}" CornerRadius="12" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" Padding="12">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Chart -->
+            <syncfusion:SfChart x:Name="Chart" Grid.Row="0" Margin="0,0,0,10">
+                <!-- Primary axis = seconds since start -->
+                <syncfusion:SfChart.PrimaryAxis>
+                    <syncfusion:NumericalAxis Header="Time (s)"
+                                              LabelFormat="0"
+                                              Interval="1"
+                                              MajorGridLineStyle="{StaticResource MajorGridLineStyle}"/>
+                </syncfusion:SfChart.PrimaryAxis>
+
+                <syncfusion:SfChart.SecondaryAxis>
+                    <syncfusion:NumericalAxis Header="Value"
+                                              LabelFormat="0.###"
+                                              RangePadding="Round"
+                                              MajorGridLineStyle="{StaticResource MajorGridLineStyle}"/>
+                </syncfusion:SfChart.SecondaryAxis>
+
+                <!-- Behaviors -->
+                <syncfusion:SfChart.Behaviors>
+                    <syncfusion:ChartTooltipBehavior/>
+                    <syncfusion:ChartTrackBallBehavior ShowLine="True"/>
+                    <syncfusion:ChartZoomPanBehavior EnableMouseWheelZooming="True"
+                                                     EnablePanning="True"
+                                                     ZoomMode="X"/>
+                </syncfusion:SfChart.Behaviors>
+
+                <syncfusion:LineSeries x:Name="LineSeries"
+                                       XBindingPath="ElapsedSeconds"
+                                       YBindingPath="Value"
+                                       StrokeThickness="2"
+                                       EnableAnimation="True"
+                                       AnimationDuration="0:0:0.25"/>
+            </syncfusion:SfChart>
+
+            <!-- Controls & stats -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal" Grid.Column="0">
+                    <Button Content="Start Plot" Width="110" Style="{StaticResource SoftButton}" Click="StartPlot_Click"/>
+                    <Button Content="Stop Plot" Width="110" Margin="8,0,0,0" Style="{StaticResource GhostButton}" Click="StopPlot_Click"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <TextBlock Text="Min:" Foreground="{StaticResource TextSubtle}" Margin="12,0,4,0" FontWeight="SemiBold"/>
+                    <Border Style="{StaticResource Chip}">
+                        <TextBlock x:Name="MinText" FontFamily="Consolas" MinWidth="70"/>
+                    </Border>
+
+                    <TextBlock Text="Max:" Foreground="{StaticResource TextSubtle}" Margin="12,0,4,0" FontWeight="SemiBold"/>
+                    <Border Style="{StaticResource Chip}">
+                        <TextBlock x:Name="MaxText" FontFamily="Consolas" MinWidth="70"/>
+                    </Border>
+
+                    <TextBlock Text="Avg:" Foreground="{StaticResource TextSubtle}" Margin="12,0,4,0" FontWeight="SemiBold"/>
+                    <Border Style="{StaticResource Chip}">
+                        <TextBlock x:Name="AvgText" FontFamily="Consolas" MinWidth="70"/>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
 </UserControl>

@@ -24,6 +24,9 @@ namespace HouseholdMS.View.EqTesting
 {
     public partial class AllTestMenuView : UserControl
     {
+        public event EventHandler CloseRequested;
+
+
         private enum WizardStep { Precaution = 0, Form = 1, Setup1 = 2, Setup2 = 3, Setup3 = 4, Charging = 5 }
         private WizardStep _step = WizardStep.Precaution;
 
@@ -506,7 +509,6 @@ namespace HouseholdMS.View.EqTesting
             TechnicianPopup.IsOpen = false;
         }
 
-        // ---------- Finish / Save ----------
         private async void OnFinishCharging(object sender, RoutedEventArgs e)
         {
             var confirm = WpfMessageBox.Show(
@@ -524,7 +526,11 @@ namespace HouseholdMS.View.EqTesting
                 WpfMessageBox.Show("Charging session saved to Reports.", "Saved",
                     MessageBoxButton.OK, MessageBoxImage.Information);
 
-                CloseHostWindow(); // closes the charger content window
+                // ✅ Ask parent (MainWindow) to close this content
+                CloseRequested?.Invoke(this, EventArgs.Empty);
+
+                // ❌ Remove or comment out any direct window closing:
+                // CloseHostWindow();
             }
             catch (Exception ex)
             {
@@ -532,6 +538,7 @@ namespace HouseholdMS.View.EqTesting
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
 
 

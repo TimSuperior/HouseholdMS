@@ -4,24 +4,55 @@ using System.IO.Ports;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Globalization;
 
 namespace HouseholdMS.Services
 {
+    public enum ConnectionState { Disconnected, Connecting, Connected, Faulted }
+
     public interface IScpiDevice : IDisposable
     {
+        // Connection & state
         void Connect();
         void Disconnect();
         bool IsConnected { get; }
+        ConnectionState State { get; }
+        event EventHandler<ConnectionState> ConnectionStateChanged;
+
+        // Core I/O (may throw; high-level wrappers below avoid it)
         string Query(string command);
         Task<string> QueryAsync(string command);
         void Write(string command);
         Task WriteAsync(string command);
+
+        // Basics (safe: never throw on I/O; return null/empty)
         string ReadMeasurement();
         Task<string> ReadMeasurementAsync();
         string ReadDeviceID();
         Task<string> ReadDeviceIDAsync();
+
+        // Mode/Function (safe)
         void SetFunction(string function);
         Task SetFunctionAsync(string function);
+
+        // UX helpers (safe)
+        void SetRate(char speedF_M_L);         // 'F','M','L'
+        void SetAveraging(bool on);            // CALC:FUNC AVER / CALC:STAT OFF
+        void SetAutoRange(bool on);            // AUTO 1|0
+        void SetRange(string rangeToken);      // RANGE <token>
+        string GetFunction();                  // FUNC? (safe)
+        AveragingStats TryQueryAveragingAll(); // May return null if unsupported
+        void SetLineEnding(string newEnding);
+    }
+
+    public sealed class AveragingStats
+    {
+        public double Min;
+        public double Max;
+        public double Avg;
+        public int Count;
+        public override string ToString()
+            => string.Format(CultureInfo.InvariantCulture, "avg={0:G6}, min={1:G6}, max={2:G6}, n={3}", Avg, Min, Max, Count);
     }
 
     public class ScpiDevice : IScpiDevice
@@ -39,6 +70,17 @@ namespace HouseholdMS.Services
 
         public bool IsConnected => _port != null && _port.IsOpen;
 
+        private volatile ConnectionState _state = ConnectionState.Disconnected;
+        public ConnectionState State => _state;
+        public event EventHandler<ConnectionState> ConnectionStateChanged;
+
+        private void SetState(ConnectionState s)
+        {
+            if (_state == s) return;
+            _state = s;
+            try { ConnectionStateChanged?.Invoke(this, s); } catch { /* swallow */ }
+        }
+
         public ScpiDevice(
             string portName,
             int baudRate = 9600,
@@ -48,7 +90,10 @@ namespace HouseholdMS.Services
             Handshake handshake = Handshake.None,
             string lineEnding = "\n")
         {
-            PortName = portName ?? throw new ArgumentNullException(nameof(portName));
+            if (string.IsNullOrWhiteSpace(portName))
+                throw new ArgumentNullException(nameof(portName));
+
+            PortName = portName;
             BaudRate = baudRate;
             Parity = parity;
             DataBits = dataBits;
@@ -63,6 +108,8 @@ namespace HouseholdMS.Services
 
             try
             {
+                SetState(ConnectionState.Connecting);
+
                 _port?.Dispose();
 
                 _port = new SerialPort(PortName, BaudRate, Parity, DataBits)
@@ -81,15 +128,20 @@ namespace HouseholdMS.Services
 
                 try
                 {
-                    EnsureDeviceResponds(); // Try reading ID
+                    // Soft sanity check — will only warn if weird
+                    EnsureDeviceResponds();
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Warning: Device not responding properly. " + ex.Message);
+                    Console.WriteLine("Warning: device may not be responding yet. " + ex.Message);
                 }
+
+                SetState(ConnectionState.Connected);
             }
             catch (Exception ex)
             {
+                SetState(ConnectionState.Faulted);
+                // Bubble only as InvalidOperation — caught by your Connect_Click handler
                 throw new InvalidOperationException($"Failed to open port {PortName}: {ex.Message}", ex);
             }
         }
@@ -102,8 +154,13 @@ namespace HouseholdMS.Services
                     _port.Close();
             }
             catch { }
+            finally
+            {
+                SetState(ConnectionState.Disconnected);
+            }
         }
 
+        // -------- Low-level I/O (can throw) --------
         public virtual void Write(string command)
         {
             Console.WriteLine("Writing SCPI: " + command);
@@ -120,15 +177,13 @@ namespace HouseholdMS.Services
                 }
                 catch (Exception ex)
                 {
+                    SetState(ConnectionState.Faulted);
                     throw new IOException($"Write failed: {ex.Message}", ex);
                 }
             }
         }
 
-        public Task WriteAsync(string command)
-        {
-            return Task.Run(() => Write(command));
-        }
+        public Task WriteAsync(string command) => Task.Run(() => Write(command));
 
         public virtual string Query(string command)
         {
@@ -146,20 +201,20 @@ namespace HouseholdMS.Services
                 }
                 catch (TimeoutException ex)
                 {
+                    SetState(ConnectionState.Faulted);
                     throw new TimeoutException($"Timeout on command '{command}'", ex);
                 }
                 catch (Exception ex)
                 {
+                    SetState(ConnectionState.Faulted);
                     throw new IOException($"Query failed on command '{command}': {ex.Message}", ex);
                 }
             }
         }
 
-        public Task<string> QueryAsync(string command)
-        {
-            return Task.Run(() => Query(command));
-        }
+        public Task<string> QueryAsync(string command) => Task.Run(() => Query(command));
 
+        // -------- Safe wrappers (never throw) --------
         private string QuerySafe(string command)
         {
             try
@@ -171,120 +226,288 @@ namespace HouseholdMS.Services
                 string original = LineEnding;
                 try
                 {
+                    // Some devices expect CRLF
                     SetLineEnding("\r\n");
                     return Query(command);
                 }
                 catch
                 {
-                    throw;
+                    SetState(ConnectionState.Faulted);
+                    return null;   // swallow for UI safety
                 }
                 finally
                 {
                     SetLineEnding(original);
                 }
             }
+            catch
+            {
+                SetState(ConnectionState.Faulted);
+                return null;       // swallow for UI safety
+            }
         }
 
         private string QueryFirstAvailable(params string[] queries)
         {
-            TimeoutException lastTimeout = null;
-
             foreach (var cmd in queries)
             {
-                try { return QuerySafe(cmd); }
-                catch (TimeoutException tex) { lastTimeout = tex; }
+                var r = QuerySafe(cmd);
+                if (!string.IsNullOrWhiteSpace(r))
+                    return r;
             }
-
-            throw lastTimeout ?? new TimeoutException("All SCPI queries failed.");
+            return null; // safe: caller decides what to do
         }
 
         private void EnsureDeviceResponds()
         {
-            string id = ReadDeviceID();
-
+            var id = ReadDeviceID(); // safe call
             if (string.IsNullOrWhiteSpace(id))
                 throw new IOException("Device returned empty ID.");
-
             if (!id.ToLowerInvariant().Contains("mp730889"))
                 throw new IOException("Unexpected device ID: " + id);
         }
 
-        public virtual string ReadMeasurement()
-        {
-            return QuerySafe("MEAS?");
-        }
+        // ---------- High-level ops (safe) ----------
 
-        public virtual Task<string> ReadMeasurementAsync()
-        {
-            return Task.Run(() => ReadMeasurement());
-        }
+        public virtual string ReadMeasurement() => QuerySafe("MEAS?");
 
-        public virtual string ReadDeviceID()
-        {
-            return QuerySafe("*IDN?");
-        }
+        public virtual Task<string> ReadMeasurementAsync() => Task.Run(() => ReadMeasurement());
 
-        public virtual Task<string> ReadDeviceIDAsync()
-        {
-            return Task.Run(() => ReadDeviceID());
-        }
+        public virtual string ReadDeviceID() => QuerySafe("*IDN?") ?? string.Empty;
 
+        public virtual Task<string> ReadDeviceIDAsync() => Task.Run(() => ReadDeviceID());
+
+        // --------- Function setting (tolerant, safe) ---------
         public virtual void SetFunction(string function)
         {
-            Console.WriteLine("Setting function: " + function);
             if (string.IsNullOrWhiteSpace(function))
-                throw new ArgumentException("Function cannot be null or empty.");
+                return;
 
-            string scpi;
+            string token = NormalizeTokenNoSense(function); // e.g., "VOLT:AC"
 
-
-            if (function.Contains(":"))
+            string[] tryWrites =
             {
-                scpi = function;
-            }
-            else
-            {
-                string f = function.ToLowerInvariant();
+                $"FUNC \"{token}\"",
+                $"CONF:{TokenToConfNoSense(token)}"
+            };
 
-                switch (f)
+            lock (_ioLock)
+            {
+                try { Write("SYST:REM"); } catch { /* ignore */ }
+
+                bool anyWriteSucceeded = false;
+
+                foreach (var cmd in tryWrites)
                 {
-                    case "volt": scpi = "CONFigure:VOLTage:DC"; break;
-                    case "volt:ac": scpi = "CONFigure:VOLTage:AC"; break;
-                    case "curr": scpi = "CONFigure:CURRent:DC"; break;
-                    case "curr:ac": scpi = "CONFigure:CURRent:AC"; break;
-                    case "res": scpi = "CONFigure:RESistance"; break;
-                    case "cont": scpi = "CONFigure:CONTinuity"; break;
-                    case "dio":
-                    case "diode": scpi = "CONFigure:DIODe"; break;
-                    case "cap": scpi = "CONFigure:CAPacitance"; break;
-                    case "freq": scpi = "CONFigure:FREQuency"; break;
-                    case "per":
-                    case "period": scpi = "CONFigure:PERiod"; break;
-                    case "temp:rtd": scpi = "CONFigure:TEMPerature:RTD"; break;
-                    default: throw new ArgumentException("Unknown function: " + function);
-                }
-            }
+                    try
+                    {
+                        Write(cmd);
+                        anyWriteSucceeded = true;
 
+                        if (token.StartsWith("TEMP", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string[] tempCfg =
+                            {
+                                "CONF:TEMP:RTD PT100",
+                                "TEMP:RTD:TYPE PT100",
+                                "TEMP:UNIT C"
+                            };
+                            foreach (var t in tempCfg) { try { Write(t); } catch { } }
+                        }
+
+                        // fast confirmation (short timeout, few attempts)
+                        if (ConfirmFunctionWithRetry(token, attempts: 2, perAttemptTimeoutMs: 250))
+                            return; // confirmed OK
+                    }
+                    catch
+                    {
+                        // try next form
+                    }
+                }
+
+                // Couldn’t confirm, but at least one write went out — don’t crash the app.
+                if (anyWriteSucceeded)
+                {
+                    Console.WriteLine($"[WARN] Could not confirm FUNC '{token}' via readback.");
+                    return;
+                }
+
+                Console.WriteLine($"[ERR] Could not send function '{token}'.");
+            }
+        }
+
+        public Task SetFunctionAsync(string function) => Task.Run(() => SetFunction(function));
+
+        public string GetFunction() => QueryFirstAvailable("FUNC?", "CONF?") ?? string.Empty;
+
+        private bool ConfirmFunctionWithRetry(string token, int attempts = 2, int perAttemptTimeoutMs = 250)
+        {
+            for (int i = 0; i < attempts; i++)
+            {
+                var r1 = QueryFast("FUNC?", perAttemptTimeoutMs);
+                if (ReadbackMatches(r1, token)) return true;
+
+                var r2 = QueryFast("CONF?", perAttemptTimeoutMs);
+                if (ReadbackMatches(r2, token)) return true;
+
+                Thread.Sleep(60 + i * 40); // short backoff
+            }
+            return false;
+        }
+
+        private string QueryFast(string command, int timeoutMs)
+        {
+            if (!IsConnected) return null;
+
+            lock (_ioLock)
+            {
+                int old = _port.ReadTimeout;
+                try
+                {
+                    _port.ReadTimeout = timeoutMs;
+                    _port.DiscardInBuffer();
+                    _port.DiscardOutBuffer();
+                    _port.Write(command + LineEnding);
+                    return _port.ReadLine();
+                }
+                catch { return null; }
+                finally { _port.ReadTimeout = old; }
+            }
+        }
+
+        private static bool ReadbackMatches(string resp, string token)
+        {
+            if (string.IsNullOrWhiteSpace(resp)) return false;
+
+            string norm = NormalizeReadback(resp);
+            token = token.ToUpperInvariant();
+
+            if (norm.Contains(token)) return true;
+            foreach (var alias in AliasesFor(token))
+                if (norm.Contains(alias)) return true;
+
+            return false;
+        }
+
+        private static string NormalizeReadback(string s)
+        {
+            s = s.Trim().ToUpperInvariant();
+            s = s.Replace("\"", "").Replace(" ", "");
+            s = s.Replace(',', ':');
+            while (s.Contains("::")) s = s.Replace("::", ":");
+            return s;
+        }
+
+        private static string[] AliasesFor(string token)
+        {
+            switch (token)
+            {
+                case "VOLT:DC": return new[] { "VDC", "DCV", "V:DC" };
+                case "VOLT:AC": return new[] { "VAC", "ACV", "V:AC" };
+                case "CURR:DC": return new[] { "ADC", "DCA", "A:DC" };
+                case "CURR:AC": return new[] { "AAC", "ACA", "A:AC" };
+                case "RES": return new[] { "OHM", "RESISTANCE" };
+                case "FREQ": return new[] { "HZ", "FREQUENCY" };
+                case "PER": return new[] { "PERIOD" };
+                case "CAP": return new[] { "CAPACITANCE" };
+                case "CONT": return new[] { "CONTINUITY" };
+                case "DIOD": return new[] { "DIODE" };
+                case "TEMP": return new[] { "TEMP:RTD", "RTD" };
+                default: return Array.Empty<string>();
+            }
+        }
+
+        // ---------- Math/Averaging (safe) ----------
+
+        public void SetAveraging(bool on)
+        {
             try
             {
-                Console.WriteLine("[DEBUG] Setting SCPI function: " + scpi);
-                Write("SYST:REM"); // ← force remote mode
-                Thread.Sleep(100);
-                Write(scpi);
-                Thread.Sleep(200); // ← allow switch delay
-                var resp = QueryFirstAvailable("FUNC?", "FUNCtion?");
-                Console.WriteLine("[DEBUG] Device confirmed: " + resp);
+                if (on) Write("CALC:FUNC AVER");
+                else Write("CALC:STAT OFF");
             }
-            catch (Exception ex)
+            catch { }
+        }
+
+        /// <summary>Best-effort query for avg/min/max/count. Returns null if unsupported.</summary>
+        public AveragingStats TryQueryAveragingAll()
+        {
+            try
             {
-                throw new InvalidOperationException($"Failed to set function '{function}': {ex.Message}", ex);
+                var s = QuerySafe("CALC:AVER:ALL?");
+                if (string.IsNullOrWhiteSpace(s)) return null;
+
+                var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 4) return null;
+
+                double a = ParseDouble(parts[0]);
+                double b = ParseDouble(parts[1]);
+                double c = ParseDouble(parts[2]);
+                double d = ParseDouble(parts[3]);
+
+                var stats = new AveragingStats();
+
+                int countCandidate = -1, which = -1;
+                for (int i = 0; i < 4; i++)
+                {
+                    if (TryParseInt(parts[i], out int cnt) && cnt > countCandidate)
+                    {
+                        countCandidate = cnt; which = i;
+                    }
+                }
+                if (which >= 0)
+                {
+                    stats.Count = countCandidate;
+                    double[] vals = new double[3];
+                    int idx = 0;
+                    for (int i = 0; i < 4; i++)
+                        if (i != which) vals[idx++] = ParseDouble(parts[i]);
+                    Array.Sort(vals);
+                    stats.Min = vals[0];
+                    stats.Max = vals[2];
+                    stats.Avg = vals[1];
+                }
+                else
+                {
+                    stats.Min = a; stats.Max = b; stats.Avg = c; stats.Count = (int)Math.Round(d);
+                }
+
+                return stats;
+            }
+            catch
+            {
+                return null;
             }
         }
 
-        public Task SetFunctionAsync(string function)
+        // ---------- Speed/Rate (safe) ----------
+
+        public void SetRate(char speedF_M_L)
         {
-            return Task.Run(() => SetFunction(function));
+            try
+            {
+                char v = char.ToUpperInvariant(speedF_M_L);
+                if (v != 'F' && v != 'M' && v != 'L') return;
+                Write("RATE " + v);
+                Thread.Sleep(50);
+            }
+            catch { }
         }
+
+        // ---------- Range/Auto (safe) ----------
+
+        public void SetAutoRange(bool on)
+        {
+            try { Write(on ? "AUTO 1" : "AUTO 0"); } catch { }
+        }
+
+        public void SetRange(string rangeToken)
+        {
+            if (string.IsNullOrWhiteSpace(rangeToken)) return;
+            try { Write("RANGE " + rangeToken); } catch { }
+        }
+
+        // ---------- Utilities ----------
 
         public void SetLineEnding(string newEnding)
         {
@@ -302,6 +525,68 @@ namespace HouseholdMS.Services
                 _port = null;
             }
             catch { }
+        }
+
+        // ---------- Private helpers ----------
+
+        private static double ParseDouble(string s)
+        {
+            return double.Parse(s, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
+        }
+
+        private static bool TryParseInt(string s, out int value)
+        {
+            if (s.IndexOfAny(new[] { 'e', 'E', '.', ',' }) >= 0)
+            {
+                value = 0; return false;
+            }
+            return int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
+        }
+
+        private static string NormalizeTokenNoSense(string f)
+        {
+            f = (f ?? "").Trim().ToUpperInvariant();
+            if (f == "VOLT") f = "VOLT:DC";
+            if (f == "CURR") f = "CURR:DC";
+            if (f == "PERIOD") f = "PER";
+            if (f == "DIODE") f = "DIOD";
+            switch (f)
+            {
+                case "VOLT:DC":
+                case "VOLT:AC":
+                case "CURR:DC":
+                case "CURR:AC":
+                case "RES":
+                case "FRES":
+                case "FREQ":
+                case "PER":
+                case "CAP":
+                case "CONT":
+                case "DIOD":
+                case "TEMP":
+                    return f;
+            }
+            return "VOLT:DC"; // safest fallback
+        }
+
+        private static string TokenToConfNoSense(string token)
+        {
+            switch (token)
+            {
+                case "VOLT:DC": return "VOLT:DC";
+                case "VOLT:AC": return "VOLT:AC";
+                case "CURR:DC": return "CURR:DC";
+                case "CURR:AC": return "CURR:AC";
+                case "RES": return "RES";
+                case "FRES": return "FRES";
+                case "FREQ": return "FREQ";
+                case "PER": return "PER";
+                case "CAP": return "CAP";
+                case "CONT": return "CONT";
+                case "DIOD": return "DIOD";
+                case "TEMP": return "TEMP:RTD";
+                default: return "VOLT:DC";
+            }
         }
     }
 }

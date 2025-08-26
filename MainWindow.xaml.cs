@@ -91,8 +91,11 @@ namespace HouseholdMS
 
         private void bt_AllTest_Click(object sender, RoutedEventArgs e)
         {
-            MainContent.Content = new AllTestMenuView(_currentUserRole);
+            var view = new AllTestMenuView(_currentUserRole);
+            view.CloseRequested += AllTest_CloseRequested;
+            MainContent.Content = view;
         }
+
 
         private void bt_BatteryTest_Click(object sender, RoutedEventArgs e)
         {
@@ -131,6 +134,19 @@ namespace HouseholdMS
         {
             MainContent.Content = new HouseholdMS.View.Measurement.OscilloscopeView();
         }
+
+        private void AllTest_CloseRequested(object sender, EventArgs e)
+        {
+            // Option 1: go to Reports so the user sees the saved entry
+            MainContent.Content = new TestReportsView(_currentUserRole);
+
+            // Option 2: or return to the default menu (uncomment if preferred)
+            MainContent.Content = new HouseholdsView(_currentUserRole);
+
+            // Option 3: or just clear the content
+            //MainContent.Content = null;
+        }
+
 
 
     }
