@@ -5,7 +5,90 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              d:DesignHeight="520" d:DesignWidth="900"
-             MinWidth="720" MinHeight="480">
+             MinWidth="720" MinHeight="480"
+             Focusable="True"
+             KeyDown="Root_KeyDown">
+
+    <UserControl.Resources>
+        <!-- Album "card" button -->
+        <Style x:Key="AlbumButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="MinWidth" Value="260"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                    Background="#FFFFFFFF"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="1"
+                    CornerRadius="16"
+                    SnapsToDevicePixels="True">
+                            <Grid Margin="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter VerticalAlignment="Center" />
+                                <!-- Right arrow glyph (Segoe MDL2 Assets) -->
+                                <TextBlock Grid.Column="1"
+                           VerticalAlignment="Center"
+                           FontFamily="Segoe MDL2 Assets"
+                           Text="" FontSize="16" Foreground="#6B7280" Margin="12,0,0,0"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#F8FAFF"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#C7D2FE"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#EEF2FF"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#A5B4FC"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Navigation buttons -->
+        <Style x:Key="NavButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="MinWidth" Value="96"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                    Background="#111827"
+                    CornerRadius="10"
+                    Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                RecognizesAccessKey="True"
+                                TextElement.Foreground="White"
+                                TextElement.FontWeight="SemiBold"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1F2937"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#374151"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Background" Value="#9CA3AF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -27,27 +110,48 @@
                 <TextBlock x:Name="HeaderStep"
                    DockPanel.Dock="Right"
                    VerticalAlignment="Center"
-                   Foreground="#6B7280"/>
+                   Foreground="#6B7280" Margin="20,0,0,0"/>
             </DockPanel>
         </Border>
 
         <!-- MAIN -->
-        <ScrollViewer Grid.Row="1" Padding="16" VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                <TextBlock x:Name="PageTitle" FontSize="20" FontWeight="Bold" Margin="0,0,0,8"/>
-                <Image x:Name="PageImage" Stretch="Uniform" MaxHeight="420" Margin="0,0,0,12"/>
-                <StackPanel x:Name="StepsHost"/>
-            </StackPanel>
-        </ScrollViewer>
+        <Grid Grid.Row="1">
+            <!-- Home / Album menu -->
+            <ScrollViewer x:Name="HomeScroll" Visibility="Visible" Padding="16" VerticalScrollBarVisibility="Auto">
+                <WrapPanel x:Name="AlbumList" Margin="0" />
+            </ScrollViewer>
+
+            <!-- Image viewer -->
+            <ScrollViewer x:Name="ImageScroll" Visibility="Collapsed" Padding="16"
+                    VerticalScrollBarVisibility="Auto"
+                    SizeChanged="ImageScroll_SizeChanged">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock x:Name="PageTitle" FontSize="20" FontWeight="Bold" Margin="0,0,0,8"/>
+
+                    <!-- Responsive image: auto-fits container; we cap via MaxWidth/MaxHeight in code-behind -->
+                    <Border Grid.Row="1" Background="#FFF" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="12" Padding="8">
+                        <Viewbox x:Name="ImageViewbox" Stretch="Uniform">
+                            <Image x:Name="PageImage" Stretch="Uniform" RenderOptions.BitmapScalingMode="Fant"/>
+                        </Viewbox>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
 
         <!-- FOOTER -->
         <Border Grid.Row="2" Background="#F7F9FC" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0" Padding="10">
             <DockPanel>
-                <TextBlock x:Name="StatusText" VerticalAlignment="Center" Opacity="0.8"/>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="HomeBtn" Content="Home" Style="{StaticResource NavButtonStyle}" Click="HomeBtn_Click"/>
+                </StackPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                    <Button x:Name="PrevBtn"   Content="Prev"   Width="96" Margin="0,0,8,0" Click="PrevBtn_Click"/>
-                    <Button x:Name="NextBtn"   Content="Next"   Width="96" Margin="0,0,8,0" Click="NextBtn_Click"/>
-                    <Button x:Name="FinishBtn" Content="Finish" Width="96" Click="FinishBtn_Click" Visibility="Collapsed"/>
+                    <Button x:Name="PrevBtn" Content="◀ Prev" Style="{StaticResource NavButtonStyle}" Click="PrevBtn_Click"/>
+                    <Button x:Name="NextBtn" Content="Next ▶" Style="{StaticResource NavButtonStyle}" Margin="0" Click="NextBtn_Click"/>
                 </StackPanel>
             </DockPanel>
         </Border>

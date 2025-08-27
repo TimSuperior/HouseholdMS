@@ -1,7 +1,41 @@
-﻿<Application x:Class="HouseholdMS.App"
+﻿<Application x:Class="HouseholdMS.App" 
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              Startup="Application_Startup">
     <Application.Resources>
+
+        <!-- Typography (design-time defaults; runtime overridden by AppTypographySettings) -->
+        <sys:Double x:Key="AppFontSize">14</sys:Double>
+        <sys:Double x:Key="AppFontSizeTitle">22</sys:Double>
+        <sys:Double x:Key="AppFontSizeLabel">13</sys:Double>
+
+        <!-- Global UI scale (visual zoom for everything) -->
+        <sys:Double x:Key="AppUiScale">1.00</sys:Double>
+
+        <FontFamily x:Key="AppFontFamily">Segoe UI</FontFamily>
+
+        <!-- Global styles so everything inherits the dynamic font -->
+        <Style TargetType="{x:Type Control}">
+            <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+            <Setter Property="FontSize"   Value="{DynamicResource AppFontSize}" />
+        </Style>
+
+        <!-- TextBlock is not a Control -->
+        <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+            <Setter Property="FontSize"   Value="{DynamicResource AppFontSize}" />
+        </Style>
+
+        <!-- Optional: FlowDocument/RichTextBox content -->
+        <Style TargetType="{x:Type FlowDocument}">
+            <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+            <Setter Property="FontSize"   Value="{DynamicResource AppFontSize}" />
+        </Style>
+        <Style TargetType="{x:Type RichTextBox}">
+            <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+            <Setter Property="FontSize"   Value="{DynamicResource AppFontSize}" />
+        </Style>
+
     </Application.Resources>
 </Application>

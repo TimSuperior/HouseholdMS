@@ -7,216 +7,254 @@ using System.Windows.Media.Imaging;
 namespace HouseholdMS.View.EqTesting
 {
     /// <summary>
-    /// Reusable, non-MVVM checklist wizard.
-    /// Another dev edits only the constructor "EDIT REGION" or calls the public LoadProcedure overload.
+    /// Image-only gallery with album "cards" and responsive image viewer.
+    /// Edit the constructor's EDIT REGION or call LoadGallery(...) programmatically.
+    /// Arrow keys: Left/Right to navigate images; Home button to go back to album list.
     /// </summary>
     public partial class TemplateView : UserControl
     {
         // ===== Minimal private internals =====
-        private sealed class Step { public readonly string Text; public Step(string t) { Text = t; } }
-
-        private sealed class Page
+        private sealed class Album
         {
             public readonly string Title;
-            public readonly string ImageUri;     // pack:// or file path
-            public readonly Step[] Steps;
-            public readonly bool[] Checked;      // runtime state preserved across nav
-            public Page(string title, string imageUri, params string[] steps)
+            public readonly string[] Images;
+            public Album(string title, params string[] images)
             {
-                Title = title ?? "";
-                ImageUri = imageUri ?? "";
-                Steps = steps.Select(s => new Step(s)).ToArray();
-                Checked = new bool[Steps.Length];
+                if (images == null || images.Length == 0)
+                    throw new ArgumentException("Album must contain at least one image.", nameof(images));
+                Title = title ?? "Album";
+                Images = images;
             }
         }
 
-        private sealed class Procedure
+        private sealed class Gallery
         {
             public readonly string Name;
             public readonly string Version;
-            public readonly Page[] Pages;
-            public Procedure(string name, string version, params Page[] pages)
+            public readonly Album[] Albums;
+            public Gallery(string name, string version, params Album[] albums)
             {
-                if (pages == null || pages.Length == 0)
-                    throw new ArgumentException("At least one page is required.");
-                Name = name ?? "Procedure";
+                if (albums == null || albums.Length == 0)
+                    throw new ArgumentException("At least one album is required.", nameof(albums));
+                Name = name ?? "Gallery";
                 Version = string.IsNullOrWhiteSpace(version) ? "" : version;
-                Pages = pages;
+                Albums = albums;
             }
         }
 
-        // ===== Public result for hosts that want to save to DB =====
-        public sealed class ProcedureResult
-        {
-            public string Name { get; }
-            public string Version { get; }
-            public bool[][] ChecksPerPage { get; }   // [page][step]
-            internal ProcedureResult(string name, string version, bool[][] checks)
-            { Name = name; Version = version; ChecksPerPage = checks; }
-        }
-
-        // ===== Optional simple spec type for public API =====
-        public sealed class PageSpec
+        // Public simple spec so callers don’t touch internals
+        public sealed class AlbumSpec
         {
             public string Title { get; }
-            public string ImageUri { get; }
-            public string[] Steps { get; }
-            public PageSpec(string title, string imageUri, params string[] steps)
-            { Title = title; ImageUri = imageUri; Steps = steps ?? Array.Empty<string>(); }
+            public string[] Images { get; }
+            public AlbumSpec(string title, params string[] images)
+            { Title = title; Images = images ?? Array.Empty<string>(); }
         }
 
         // ===== State =====
-        private Procedure _proc;
-        private int _index = -1;
-
-        // Event host can subscribe to
-        public event Action<ProcedureResult> Finished;
+        private Gallery _gallery;
+        private int _albumIndex = -1; // -1 = Home
+        private int _imageIndex = -1;
 
         public TemplateView()
         {
             InitializeComponent();
 
-            // ---------- EDIT ONLY THIS REGION (or call public LoadProcedure from outside) ----------
-            LoadProcedure(
-                "Battery Maintenance", "1.0",
-                new PageSpec("Battery Visual Inspection", "pack://application:,,,/Assets/Template/1img.png",
-                    "Power off system and disconnect charger.",
-                    "Verify terminals are tight and corrosion-free.",
-                    "Check case for cracks or swelling."),
-                new PageSpec("Wiring Check", "pack://application:,,,/Assets/Template/2img.png",
-                    "Confirm polarity matches diagram.",
-                    "Inspect insulation for damage.",
-                    "Secure all cable ties."),
-                new PageSpec("Voltage Measurement", "pack://application:,,,/Assets/Template/3img.png",
-                    "Set multimeter to DC voltage.",
-                    "Measure voltage at terminals.",
-                    "Record readings for all batteries.")
+            // ensure we can capture arrow keys
+            Loaded += (s, e) => this.Focus();
+
+            // ---------- EDIT ONLY THIS REGION (or call public LoadGallery from outside) ----------
+            LoadGallery(
+                "Battery Charging Procedures", "1.1",
+                new AlbumSpec("Battery Visual Inspection",
+                    "pack://application:,,,/Assets/Template/1img.png",
+                    "pack://application:,,,/Assets/Manuals/batchar1.png"),
+                new AlbumSpec("Wiring Check",
+                    "pack://application:,,,/Assets/Template/2img.png",
+                    "pack://application:,,,/Assets/Manuals/batchar2.png",
+                    "pack://application:,,,/Assets/Manuals/batchar3.png"),
+                new AlbumSpec("Voltage Measurement",
+                    "pack://application:,,,/Assets/Template/3img.png"),
+                new AlbumSpec("Final Setup",
+                    "pack://application:,,,/Assets/Template/1img.png",
+                    "pack://application:,,,/Assets/Manuals/batchar4.png",
+                    "pack://application:,,,/Assets/Manuals/batchar5.png"),
+                new AlbumSpec("Safety Checks",
+                    "pack://application:,,,/Assets/Template/2img.png",
+                    "pack://application:,,,/Assets/Template/3img.png")
             );
             // ---------- END EDIT REGION ----------
         }
 
         /// <summary>
-        /// Public API: define a procedure without exposing internal types.
+        /// Public API: set gallery with name/version and a list of AlbumSpec(title, images...).
         /// </summary>
-        public void LoadProcedure(string name, string version, params PageSpec[] pages)
+        public void LoadGallery(string name, string version, params AlbumSpec[] albums)
         {
-            if (pages == null || pages.Length == 0)
-                throw new ArgumentException("At least one page is required.", nameof(pages));
+            if (albums == null || albums.Length == 0)
+                throw new ArgumentException("At least one album is required.", nameof(albums));
 
-            var pgs = pages.Select(ps => new Page(ps.Title, ps.ImageUri, ps.Steps)).ToArray();
-            _proc = new Procedure(name, version, pgs);
-            _index = 0;
-            Render();
+            var internalAlbums = albums.Select(a =>
+            {
+                if (a.Images == null || a.Images.Length == 0)
+                    throw new ArgumentException($"Album '{a.Title}' must contain at least one image.");
+                return new Album(a.Title, a.Images);
+            }).ToArray();
+
+            _gallery = new Gallery(name, version, internalAlbums);
+            RenderHome();
         }
 
-        // ===== Rendering & navigation =====
-        private void Render()
+        // ===== Rendering =====
+        private void RenderHome()
         {
-            if (_proc == null || _index < 0 || _index >= _proc.Pages.Length) return;
+            _albumIndex = -1;
+            _imageIndex = -1;
 
-            var p = _proc.Pages[_index];
+            // Header
+            HeaderTitle.Text = _gallery?.Name ?? "Gallery";
+            HeaderVersion.Text = string.IsNullOrWhiteSpace(_gallery?.Version) ? "" : "v" + _gallery.Version;
+            HeaderStep.Text = ""; // none on home
 
-            HeaderTitle.Text = _proc.Name;
-            HeaderVersion.Text = string.IsNullOrWhiteSpace(_proc.Version) ? "" : ("v" + _proc.Version);
-            HeaderStep.Text = $"Step {_index + 1} / {_proc.Pages.Length}";
+            // Toggle views
+            HomeScroll.Visibility = Visibility.Visible;
+            ImageScroll.Visibility = Visibility.Collapsed;
 
-            PageTitle.Text = p.Title;
+            // Build album cards
+            AlbumList.Children.Clear();
+            if (_gallery == null) return;
 
+            for (int i = 0; i < _gallery.Albums.Length; i++)
+            {
+                var album = _gallery.Albums[i];
+
+                // Fancy content for the card
+                var content = new StackPanel
+                {
+                    Orientation = Orientation.Vertical
+                };
+                content.Children.Add(new TextBlock
+                {
+                    Text = album.Title,
+                    FontSize = 16,
+                    FontWeight = FontWeights.SemiBold
+                });
+                content.Children.Add(new TextBlock
+                {
+                    Text = $"{album.Images.Length} image(s)",
+                    FontSize = 12,
+                    Foreground = System.Windows.Media.Brushes.Gray
+                });
+
+                var btn = new Button
+                {
+                    Content = content,
+                    Style = (Style)FindResource("AlbumButtonStyle"),
+                    Tag = i
+                };
+                btn.Click += AlbumButton_Click;
+                AlbumList.Children.Add(btn);
+            }
+
+            // Footer state
+            PrevBtn.IsEnabled = false;
+            NextBtn.IsEnabled = false;
+        }
+
+        private void RenderImage()
+        {
+            if (_gallery == null || _albumIndex < 0) return;
+            var album = _gallery.Albums[_albumIndex];
+
+            // Header + page title
+            HeaderTitle.Text = _gallery.Name;
+            HeaderVersion.Text = string.IsNullOrWhiteSpace(_gallery.Version) ? "" : "v" + _gallery.Version;
+            HeaderStep.Text = $"{album.Title} — Step {_imageIndex + 1} / {album.Images.Length}";
+
+            PageTitle.Text = album.Title;
+
+            // Load image
             try
             {
-                PageImage.Source = string.IsNullOrWhiteSpace(p.ImageUri)
+                var uri = album.Images[_imageIndex];
+                PageImage.Source = string.IsNullOrWhiteSpace(uri)
                     ? null
-                    : new BitmapImage(new Uri(p.ImageUri, UriKind.RelativeOrAbsolute));
+                    : new BitmapImage(new Uri(uri, UriKind.RelativeOrAbsolute));
             }
-            catch { PageImage.Source = null; }
-
-            StepsHost.Children.Clear();
-            for (int i = 0; i < p.Steps.Length; i++)
+            catch
             {
-                var cb = new CheckBox
-                {
-                    Content = p.Steps[i].Text,
-                    Margin = new Thickness(0, 6, 0, 0),
-                    IsChecked = p.Checked[i]
-                };
-                cb.Checked += StepChanged;
-                cb.Unchecked += StepChanged;
-                StepsHost.Children.Add(cb);
+                PageImage.Source = null;
             }
 
-            UpdateNav();
+            // Toggle views
+            HomeScroll.Visibility = Visibility.Collapsed;
+            ImageScroll.Visibility = Visibility.Visible;
+
+            // Footer state
+            PrevBtn.IsEnabled = _imageIndex > 0;
+            NextBtn.IsEnabled = _imageIndex < album.Images.Length - 1;
+
+            // Fit image to current viewport
+            UpdateImageViewboxMax();
         }
 
-        private void StepChanged(object sender, RoutedEventArgs e)
+        // ===== Responsive sizing =====
+        private void ImageScroll_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateImageViewboxMax();
+
+        private void UpdateImageViewboxMax()
         {
-            SaveState();
-            UpdateNav();
+            // We cap the viewbox size so the image scales with the window but doesn't overflow
+            if (ImageScroll == null || ImageViewbox == null) return;
+
+            // Account for padding (16 all around in ScrollViewer + Border Padding)
+            double w = Math.Max(0, ImageScroll.ActualWidth - 48);   // approx margins
+            double h = Math.Max(0, ImageScroll.ActualHeight - 80);  // header text + paddings
+
+            ImageViewbox.MaxWidth = w;
+            ImageViewbox.MaxHeight = h;
         }
 
-        private void SaveState()
+        // ===== Events / Navigation =====
+        private void AlbumButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_proc == null || _index < 0) return;
-            var p = _proc.Pages[_index];
-            for (int i = 0; i < p.Checked.Length; i++)
+            if (_gallery == null) return;
+            if (sender is Button b && b.Tag is int idx && idx >= 0 && idx < _gallery.Albums.Length)
             {
-                var cb = (CheckBox)StepsHost.Children[i];
-                p.Checked[i] = cb.IsChecked == true;
+                _albumIndex = idx;
+                _imageIndex = 0;
+                RenderImage();
             }
         }
 
-        private bool PageComplete()
-        {
-            var p = _proc.Pages[_index];
-            for (int i = 0; i < p.Checked.Length; i++)
-                if (!p.Checked[i]) return false;
-            return true;
-        }
+        private void HomeBtn_Click(object sender, RoutedEventArgs e) => RenderHome();
 
-        private void UpdateNav()
-        {
-            if (_proc == null) return;
-            bool first = _index == 0;
-            bool last = _index == _proc.Pages.Length - 1;
-            bool done = PageComplete();
-
-            PrevBtn.IsEnabled = !first;
-            NextBtn.IsEnabled = !last && done;
-            FinishBtn.Visibility = last ? Visibility.Visible : Visibility.Collapsed;
-            FinishBtn.IsEnabled = last && done;
-
-            StatusText.Text = done
-                ? "All steps completed. You can proceed."
-                : "Complete all steps to proceed.";
-        }
-
-        // ===== Buttons =====
         private void PrevBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (_proc == null || _index <= 0) return;
-            SaveState();
-            _index--;
-            Render();
+            if (_gallery == null || _albumIndex < 0) return;
+            if (_imageIndex > 0)
+            {
+                _imageIndex--;
+                RenderImage();
+            }
         }
 
         private void NextBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (_proc == null || _index >= _proc.Pages.Length - 1) return;
-            SaveState();
-            if (!PageComplete()) return;
-            _index++;
-            Render();
+            if (_gallery == null || _albumIndex < 0) return;
+            var album = _gallery.Albums[_albumIndex];
+            if (_imageIndex < album.Images.Length - 1)
+            {
+                _imageIndex++;
+                RenderImage();
+            }
         }
 
-        private void FinishBtn_Click(object sender, RoutedEventArgs e)
+        // Keyboard navigation: Left/Right arrows
+        private void Root_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            SaveState();
-            if (!PageComplete()) return;
-
-            // Build simple result and notify host
-            var checks = _proc.Pages.Select(pg => (bool[])pg.Checked.Clone()).ToArray();
-            Finished?.Invoke(new ProcedureResult(_proc.Name, _proc.Version, checks));
-
-            MessageBox.Show("Procedure completed.");
+            if (_albumIndex < 0) return; // on home
+            if (e.Key == System.Windows.Input.Key.Left) PrevBtn_Click(this, new RoutedEventArgs());
+            if (e.Key == System.Windows.Input.Key.Right) NextBtn_Click(this, new RoutedEventArgs());
         }
     }
 }

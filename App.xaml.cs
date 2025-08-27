@@ -1,4 +1,4 @@
-﻿using HouseholdMS.Model;
+﻿using HouseholdMS.Model;     // AppTypographySettings
 using Syncfusion.Licensing;
 using System;
 using System.Windows;
@@ -14,12 +14,12 @@ namespace HouseholdMS
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            // Load saved base + scale; publishes AppUiScale and font resources
+            AppTypographySettings.Load();
+
             try
             {
-                using (var conn = DatabaseHelper.GetConnection())
-                {
-                    conn.Open();
-                }
+                using (var conn = DatabaseHelper.GetConnection()) { conn.Open(); }
             }
             catch (Exception ex)
             {
