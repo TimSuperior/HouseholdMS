@@ -79,6 +79,7 @@
                 <Button Content="🏠 Households" Click="bt_HouseholdMenu" Style="{StaticResource MenuButtonStyle}"/>
                 <Button Content="👷 Technicians" Click="bt_TechnicianMenu" Style="{StaticResource MenuButtonStyle}"/>
                 <Button Content="📦 Inventory" Click="bt_InventoryMenu" Style="{StaticResource MenuButtonStyle}"/>
+                <Button x:Name="bt_Dashboard" Content="Dashboard" Click="bt_Dashboard_Click" Style="{StaticResource MenuButtonStyle}"/>
                 <Button Content="🔧 Service Records" Click="bt_ServiceMenu" Style="{StaticResource MenuButtonStyle}"/>
                 <Button x:Name="bt_TestReports" Content="📄 Test Reports" Click="bt_TestReports_Click" Style="{StaticResource MenuButtonStyle}"/>
                 <Button x:Name="ManageUsersButton" Content="👥 Manage Users" Click="bt_ManageUsers" Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>

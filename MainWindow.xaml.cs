@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using HouseholdMS.View.EqTesting;
 using HouseholdMS.View.Measurement; // Исправь namespace если нужно
+using HouseholdMS.View.Dashboard;
 
 
 namespace HouseholdMS
@@ -132,6 +133,11 @@ namespace HouseholdMS
             MainContent.Content = new TemplateView();
         }
 
+        private void bt_Dashboard_Click(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new DashboardView();
+        }
+
         private void AllTest_CloseRequested(object sender, EventArgs e)
         {
             // Option 1: go to Reports so the user sees the saved entry
@@ -144,6 +150,6 @@ namespace HouseholdMS
             //MainContent.Content = null;
         }
 
-       
+        
     }
 }
