@@ -487,7 +487,7 @@ namespace HouseholdMS.Services
             try
             {
                 char v = char.ToUpperInvariant(speedF_M_L);
-                if (v != 'F' && v != 'M' && v != 'L') return;
+                if (v != 'F' && v != 'M' && v != 'S') return;
                 Write("RATE " + v);
                 Thread.Sleep(50);
             }

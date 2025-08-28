@@ -95,22 +95,22 @@
 
             <!-- Chart -->
             <syncfusion:SfChart x:Name="Chart" Grid.Row="0" Margin="0,0,0,10">
-                <!-- Primary axis = seconds since start -->
                 <syncfusion:SfChart.PrimaryAxis>
-                    <syncfusion:NumericalAxis Header="Time (s)"
+                    <!-- Numeric seconds (no dates) -->
+                    <syncfusion:NumericalAxis x:Name="TimeAxis"
+                                              Header="Time (s)"
                                               LabelFormat="0"
                                               Interval="1"
+                                              Minimum="0"
                                               MajorGridLineStyle="{StaticResource MajorGridLineStyle}"/>
                 </syncfusion:SfChart.PrimaryAxis>
 
                 <syncfusion:SfChart.SecondaryAxis>
                     <syncfusion:NumericalAxis Header="Value"
                                               LabelFormat="0.###"
-                                              RangePadding="Round"
                                               MajorGridLineStyle="{StaticResource MajorGridLineStyle}"/>
                 </syncfusion:SfChart.SecondaryAxis>
 
-                <!-- Behaviors -->
                 <syncfusion:SfChart.Behaviors>
                     <syncfusion:ChartTooltipBehavior/>
                     <syncfusion:ChartTrackBallBehavior ShowLine="True"/>
@@ -119,12 +119,12 @@
                                                      ZoomMode="X"/>
                 </syncfusion:SfChart.Behaviors>
 
-                <syncfusion:LineSeries x:Name="LineSeries"
-                                       XBindingPath="ElapsedSeconds"
-                                       YBindingPath="Value"
-                                       StrokeThickness="2"
-                                       EnableAnimation="True"
-                                       AnimationDuration="0:0:0.25"/>
+                <!-- Fast line for realtime performance -->
+                <syncfusion:FastLineSeries x:Name="LineSeries"
+                                           XBindingPath="X"
+                                           YBindingPath="Y"
+                                           EnableAnimation="False"
+                                           StrokeThickness="2"/>
             </syncfusion:SfChart>
 
             <!-- Controls & stats -->
@@ -142,17 +142,17 @@
                 <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
                     <TextBlock Text="Min:" Foreground="{StaticResource TextSubtle}" Margin="12,0,4,0" FontWeight="SemiBold"/>
                     <Border Style="{StaticResource Chip}">
-                        <TextBlock x:Name="MinText" FontFamily="Consolas" MinWidth="70"/>
+                        <TextBlock x:Name="MinText" FontFamily="Consolas" MinWidth="90"/>
                     </Border>
 
                     <TextBlock Text="Max:" Foreground="{StaticResource TextSubtle}" Margin="12,0,4,0" FontWeight="SemiBold"/>
                     <Border Style="{StaticResource Chip}">
-                        <TextBlock x:Name="MaxText" FontFamily="Consolas" MinWidth="70"/>
+                        <TextBlock x:Name="MaxText" FontFamily="Consolas" MinWidth="90"/>
                     </Border>
 
                     <TextBlock Text="Avg:" Foreground="{StaticResource TextSubtle}" Margin="12,0,4,0" FontWeight="SemiBold"/>
                     <Border Style="{StaticResource Chip}">
-                        <TextBlock x:Name="AvgText" FontFamily="Consolas" MinWidth="70"/>
+                        <TextBlock x:Name="AvgText" FontFamily="Consolas" MinWidth="90"/>
                     </Border>
                 </StackPanel>
             </Grid>

@@ -1,6 +1,6 @@
-﻿using HouseholdMS.Model;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,55 +9,99 @@ using System.Windows.Controls;
 
 namespace HouseholdMS.View.Measurement
 {
+    /// <summary>
+    /// Numeric-time live plot (seconds only). Plotting happens ONLY when
+    /// Start/Stop is pressed on this control. Stats are fed from device
+    /// via SetDeviceStats(min,max,avg).
+    /// </summary>
     public partial class LivePlotControl : UserControl
     {
-        public ObservableCollection<MeasurementPoint> Points { get; } = new ObservableCollection<MeasurementPoint>();
+        // Public so ItemsSource type is accessible from outside
+        public sealed class PlotPoint
+        {
+            public double X { get; set; }   // time (seconds)
+            public double Y { get; set; }   // value
+        }
+
+        public ObservableCollection<PlotPoint> Points { get; } = new ObservableCollection<PlotPoint>();
 
         private CancellationTokenSource _cts;
         private Func<string> _readFunc;
+        private readonly Stopwatch _sw = new Stopwatch();
 
-        private double _min = double.MaxValue;
-        private double _max = double.MinValue;
-        private double _sum = 0;
-        private int _count = 0;
-
+        /// <summary>Polling interval when this control is self-reading.</summary>
         public int IntervalMs { get; set; } = 500;
-        public int MaxPoints { get; set; } = 1000;
+
+        /// <summary>Maximum number of points kept in the series.</summary>
+        public int MaxPoints { get; set; } = 2000;
 
         public LivePlotControl()
         {
             InitializeComponent();
             LineSeries.ItemsSource = Points;
+
+            ResetStats();
+            SetupAxisForSeconds();
         }
 
-        public void SetReader(Func<string> reader)
+        /// <summary>Provide a function that returns the raw device string.</summary>
+        public void SetReader(Func<string> reader) => _readFunc = reader;
+
+        /// <summary>Clear plot and restart time origin at 0s.</summary>
+        public void ResetPlot()
         {
-            _readFunc = reader;
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                Points.Clear();
+                _sw.Reset();
+                _sw.Start();
+                SetupAxisForSeconds();
+            }));
         }
 
+        private void SetupAxisForSeconds()
+        {
+            if (TimeAxis == null) return;
+            TimeAxis.Header = "Time (s)";
+            TimeAxis.LabelFormat = "0";  // 0,1,2,...
+            TimeAxis.Interval = 1;
+            TimeAxis.Minimum = 0d;
+
+            // NOTE: Some Syncfusion versions don't expose ChartRangePadding in WPF.
+            // If your build supports it, you can set:
+            //   TimeAxis.RangePadding = ChartRangePadding.None;
+        }
+
+        /// <summary>Stop the internal polling loop if running.</summary>
         public void Stop()
+        {
+            try
+            {
+                _cts?.Cancel();
+                _cts?.Dispose();
+                _cts = null;
+            }
+            catch { }
+        }
+
+        // ---- Start/Stop buttons (self-polling ONLY) ----
+        private async void StartPlot_Click(object sender, RoutedEventArgs e)
         {
             if (_cts != null)
             {
-                _cts.Cancel();
-                _cts.Dispose();
-                _cts = null;
+                MessageBox.Show("Plotter is already running.");
+                return;
             }
-        }
-
-        private async void StartPlot_Click(object sender, RoutedEventArgs e)
-        {
-            if (_cts != null || _readFunc == null)
+            if (_readFunc == null)
             {
-                MessageBox.Show("Already running or no reader set.");
+                MessageBox.Show("No reader set. Call SetReader(...) before starting the plot.");
                 return;
             }
 
+            ResetPlot();
+
             _cts = new CancellationTokenSource();
             var token = _cts.Token;
-
-            ResetStats();
-            Points.Clear();
 
             await Task.Run(async () =>
             {
@@ -66,72 +110,63 @@ namespace HouseholdMS.View.Measurement
                     try
                     {
                         var raw = _readFunc.Invoke();
-
-                        if (double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out double val))
-                        {
-                            var point = new MeasurementPoint
-                            {
-                                Timestamp = DateTime.Now,
-                                Value = val
-                            };
-
-                            Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                Points.Add(point);
-                                if (Points.Count > MaxPoints)
-                                    Points.RemoveAt(0);
-
-                                UpdateStats(val);
-                            });
-                        }
+                        if (TryParseFirstDouble(raw, out double val))
+                            AppendSample(val);
                     }
                     catch
                     {
-                        // Optionally log error
+                        // non-fatal read errors
                     }
 
-                    try
-                    {
-                        await Task.Delay(IntervalMs, token);
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        break;
-                    }
+                    try { await Task.Delay(IntervalMs, token); }
+                    catch (TaskCanceledException) { break; }
                 }
             });
         }
 
-        private void StopPlot_Click(object sender, RoutedEventArgs e)
+        private void StopPlot_Click(object sender, RoutedEventArgs e) => Stop();
+
+        /// <summary>Append one sample to the chart immediately (thread-safe).</summary>
+        public void AppendSample(double value)
         {
-            Stop();
+            double t = _sw.Elapsed.TotalSeconds;
+
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                Points.Add(new PlotPoint { X = t, Y = value });
+                if (Points.Count > MaxPoints)
+                    Points.RemoveAt(0);
+            }));
         }
 
-        private void ResetStats()
+        // ---- Stats from device (e.g., via CALC:AVER:ALL?) ----
+        public void SetDeviceStats(double? min, double? max, double? avg)
         {
-            _min = double.MaxValue;
-            _max = double.MinValue;
-            _sum = 0;
-            _count = 0;
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                MinText.Text = min.HasValue ? min.Value.ToString("G6", CultureInfo.InvariantCulture) : "-";
+                MaxText.Text = max.HasValue ? max.Value.ToString("G6", CultureInfo.InvariantCulture) : "-";
+                AvgText.Text = avg.HasValue ? avg.Value.ToString("G6", CultureInfo.InvariantCulture) : "-";
+            }));
+        }
 
-            Application.Current.Dispatcher.Invoke(() =>
+        public void ResetStats()
+        {
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
                 MinText.Text = "-";
                 MaxText.Text = "-";
                 AvgText.Text = "-";
-            });
+            }));
         }
 
-        private void UpdateStats(double value)
+        // tolerant parser: "2.803433E+01,OK" or "  2.80 V"
+        private static bool TryParseFirstDouble(string raw, out double v)
         {
-            _min = Math.Min(_min, value);
-            _max = Math.Max(_max, value);
-            _sum += value;
-            _count++;
-
-            MinText.Text = _min.ToString("F2");
-            MaxText.Text = _max.ToString("F2");
-            AvgText.Text = (_sum / _count).ToString("F2");
+            v = 0;
+            if (string.IsNullOrWhiteSpace(raw)) return false;
+            var first = raw.Trim().Split(new[] { ',', ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries)[0];
+            return double.TryParse(first, NumberStyles.Float, CultureInfo.InvariantCulture, out v);
         }
     }
 }

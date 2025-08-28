@@ -11,16 +11,16 @@
 
     <UserControl.Resources>
         <!-- Palette -->
-        <SolidColorBrush x:Key="PageBg"     Color="#F3F4F6"/>
-        <SolidColorBrush x:Key="AccentBrush"       Color="#3B82F6"/>
-        <SolidColorBrush x:Key="AccentBrushHover"  Color="#2563EB"/>
-        <SolidColorBrush x:Key="HeaderFg"   Color="#111827"/>
-        <SolidColorBrush x:Key="BodyFg"     Color="#374151"/>
-        <SolidColorBrush x:Key="SubtleFg"   Color="#6B7280"/>
+        <SolidColorBrush x:Key="PageBg"             Color="#F3F4F6"/>
+        <SolidColorBrush x:Key="AccentBrush"        Color="#3B82F6"/>
+        <SolidColorBrush x:Key="AccentBrushHover"   Color="#2563EB"/>
+        <SolidColorBrush x:Key="HeaderFg"           Color="#111827"/>
+        <SolidColorBrush x:Key="BodyFg"             Color="#374151"/>
+        <SolidColorBrush x:Key="SubtleFg"           Color="#6B7280"/>
 
-        <!-- Cards: solid, high-contrast, no effect rasterization -->
-        <SolidColorBrush x:Key="CardBg"     Color="#FFFFFFFF"/>
-        <SolidColorBrush x:Key="CardBorder" Color="#E5E7EB"/>
+        <!-- Cards -->
+        <SolidColorBrush x:Key="CardBg"             Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="CardBorder"         Color="#E5E7EB"/>
 
         <Style x:Key="Card" TargetType="Border">
             <Setter Property="Padding" Value="14"/>
@@ -112,22 +112,16 @@
         </Style>
     </UserControl.Resources>
 
-    <!-- Solid page background (ClearType needs opaque behind text) -->
     <Border Background="{StaticResource PageBg}" Padding="20">
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                       SnapsToDevicePixels="True">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <!-- Header -->
                     <RowDefinition Height="Auto"/>
-                    <!-- Connection Bar -->
                     <RowDefinition Height="Auto"/>
-                    <!-- Function/Math/Read -->
                     <RowDefinition Height="*"/>
-                    <!-- Readout + Chart -->
                     <RowDefinition Height="Auto"/>
-                    <!-- Status -->
                 </Grid.RowDefinitions>
 
                 <!-- Header -->
@@ -135,7 +129,8 @@
                     <StackPanel DockPanel.Dock="Left">
                         <TextBlock Text="Measurement Console" FontSize="22" FontWeight="Bold"
                                    Foreground="{StaticResource HeaderFg}"/>
-                        <TextBlock Text="MP730889 · SCPI" Foreground="{StaticResource SubtleFg}"/>
+                        <!-- Full raw *IDN?* appears here -->
+                        <TextBlock x:Name="DeviceNameText" Text="—" Foreground="{StaticResource SubtleFg}" TextWrapping="Wrap"/>
                     </StackPanel>
                 </DockPanel>
 
@@ -234,7 +229,7 @@
 
                             <StackPanel Orientation="Horizontal" Margin="0,8,0,0" VerticalAlignment="Center">
                                 <TextBlock Text="Interval" Margin="0,0,8,0"/>
-                                <Slider x:Name="IntervalSlider" Minimum="100" Maximum="2000" Value="500"
+                                <Slider x:Name="IntervalSlider" Minimum="50" Maximum="2000" Value="500"
                                         Width="180" Margin="0,0,8,0"/>
                                 <TextBlock x:Name="IntervalLabel" Text="500 ms"/>
                             </StackPanel>
@@ -280,7 +275,6 @@
                         <StackPanel Grid.Row="2">
                             <ProgressBar x:Name="BusyBar" Height="6" IsIndeterminate="True"
                                          Visibility="Collapsed" Margin="0,0,0,10"/>
-                            <!-- Keep your plot control exactly as-is -->
                             <local:LivePlotControl x:Name="PlotControl" Height="260" HorizontalAlignment="Stretch"/>
                         </StackPanel>
                     </Grid>
@@ -291,7 +285,7 @@
                     <StackPanel>
                         <TextBlock Text="Status" FontWeight="Bold" Margin="0,0,0,4"/>
                         <TextBlock x:Name="StatusBlock" TextWrapping="Wrap"/>
-                        <TextBlock x:Name="IdnBlock" Foreground="{StaticResource SubtleFg}"/>
+                        <TextBlock x:Name="IdnBlock" Foreground="{StaticResource SubtleFg}" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
             </Grid>
