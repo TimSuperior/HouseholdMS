@@ -118,10 +118,17 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
+                    <!-- 0 Header -->
                     <RowDefinition Height="Auto"/>
+                    <!-- 1 Connection -->
                     <RowDefinition Height="Auto"/>
+                    <!-- 2 Function+Math+Actions -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- 3 Advanced Controls (NEW) -->
                     <RowDefinition Height="*"/>
+                    <!-- 4 Readout+Graph -->
                     <RowDefinition Height="Auto"/>
+                    <!-- 5 Status -->
                 </Grid.RowDefinitions>
 
                 <!-- Header -->
@@ -237,8 +244,124 @@
                     </Grid>
                 </Border>
 
+                <!-- Advanced Controls (NEW, additive) -->
+                <Border Grid.Row="3" Style="{StaticResource Card}" Margin="0,0,0,14">
+                    <StackPanel>
+                        <TextBlock Text="Advanced Controls" Style="{StaticResource SectionTitle}" FontSize="16"/>
+
+                        <!-- Remote / Local & RATE? -->
+                        <WrapPanel Margin="0,4,0,8">
+                            <Button Content="Remote (SYST:REM)" Width="150" Click="Remote_Click"/>
+                            <Button Content="Local (SYST:LOC)"  Width="140" Margin="8,0,0,0" Click="Local_Click"/>
+                            <Button Content="RATE?"             Width="90"  Margin="8,0,0,0" Click="QueryRate_Click"/>
+                            <TextBlock x:Name="RateReadbackText" Margin="8,6,0,0" Foreground="{StaticResource SubtleFg}"/>
+                        </WrapPanel>
+
+                        <!-- Temperature group -->
+                        <GroupBox Header="Temperature (RTD / THER)" Margin="0,0,0,8">
+                            <StackPanel Margin="8">
+                                <WrapPanel>
+                                    <TextBlock Text="Unit:" Margin="0,6,8,0"/>
+                                    <RadioButton x:Name="TempUnitC" Content="°C" IsChecked="True" GroupName="TempUnit"/>
+                                    <RadioButton x:Name="TempUnitF" Content="°F" Margin="8,0,0,0" GroupName="TempUnit"/>
+                                    <RadioButton x:Name="TempUnitK" Content="K"  Margin="8,0,0,0" GroupName="TempUnit"/>
+                                    <Button Content="Apply Unit" Width="110" Margin="12,0,0,0" Click="ApplyTempUnit_Click"/>
+                                    <Button Content="UNIT?" Width="80" Margin="8,0,0,0" Click="QueryTempUnit_Click"/>
+                                </WrapPanel>
+
+                                <WrapPanel Margin="8,8,0,0">
+                                    <Button Content="CONF:TEMP:THER KITS90" Width="210" Click="ApplyTherKits90_Click"
+                                            ToolTip="Configures thermometer standard"/>
+                                    <Button Content="TYPE?" Width="80" Margin="8,0,0,0" Click="QueryTempType_Click"/>
+                                    <Button Content="MEAS:TEMP?" Width="120" Margin="8,0,0,0" Click="ReadTempOnce_Click"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Voltage ranges -->
+                        <GroupBox Header="Voltage (V / mV)" Margin="0,0,0,8">
+                            <StackPanel Margin="8">
+                                <WrapPanel>
+                                    <TextBlock Text="Mode:" Margin="0,6,8,0"/>
+                                    <ComboBox x:Name="VoltModeCombo" Width="120">
+                                        <ComboBoxItem Content="DC" IsSelected="True"/>
+                                        <ComboBoxItem Content="AC"/>
+                                    </ComboBox>
+                                    <TextBlock Text="V Range:" Margin="16,6,8,0"/>
+                                    <ComboBox x:Name="VoltRangeV" Width="100">
+                                        <ComboBoxItem Content="5"/>
+                                        <ComboBoxItem Content="50"/>
+                                        <ComboBoxItem Content="500"/>
+                                        <ComboBoxItem Content="1000"/>
+                                    </ComboBox>
+                                    <TextBlock Text="mV Range:" Margin="16,6,8,0"/>
+                                    <ComboBox x:Name="VoltRange_mV" Width="120">
+                                        <ComboBoxItem Content="50E-3"/>
+                                        <ComboBoxItem Content="500E-3"/>
+                                    </ComboBox>
+                                    <Button Content="Apply V" Width="90" Margin="12,0,0,0" Click="ApplyVoltRange_Click"/>
+                                    <Button Content="RANGE?" Width="90" Margin="8,0,0,0" Click="QueryRange_Click"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Current ranges -->
+                        <GroupBox Header="Current (A / mA/µA)" Margin="0,0,0,8">
+                            <StackPanel Margin="8">
+                                <WrapPanel>
+                                    <TextBlock Text="Mode:" Margin="0,6,8,0"/>
+                                    <ComboBox x:Name="CurrModeCombo" Width="120">
+                                        <ComboBoxItem Content="DC" IsSelected="True"/>
+                                        <ComboBoxItem Content="AC"/>
+                                    </ComboBox>
+                                    <TextBlock Text="A Range:" Margin="16,6,8,0"/>
+                                    <ComboBox x:Name="CurrRangeA" Width="110">
+                                        <ComboBoxItem Content="5"/>
+                                        <ComboBoxItem Content="10"/>
+                                    </ComboBox>
+                                    <TextBlock Text="mA/µA Range:" Margin="16,6,8,0"/>
+                                    <ComboBox x:Name="CurrRange_mA" Width="170"
+                                              ToolTip="500E-6 (500µA), 5E-3 (5mA), 50E-3 (50mA), 500E-3 (500mA)">
+                                        <ComboBoxItem Content="500E-6"/>
+                                        <ComboBoxItem Content="5E-3"/>
+                                        <ComboBoxItem Content="50E-3"/>
+                                        <ComboBoxItem Content="500E-3"/>
+                                    </ComboBox>
+                                    <Button Content="Apply A" Width="90" Margin="12,0,0,0" Click="ApplyCurrRangeA_Click"/>
+                                    <Button Content="Apply mA" Width="100" Margin="8,0,0,0" Click="ApplyCurrRange_mA_Click"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Resistance / Capacitance / Period / Averaging -->
+                        <WrapPanel>
+                            <Button Content="CONF:RES" Width="110" Click="ApplyRes_Click"/>
+                            <TextBlock Text="Cap:" Margin="16,6,8,0"/>
+                            <ComboBox x:Name="CapRangeCombo" Width="140">
+                                <ComboBoxItem Content="50E-9"/>
+                                <ComboBoxItem Content="500E-9"/>
+                                <ComboBoxItem Content="5E-6"/>
+                            </ComboBox>
+                            <Button Content="Apply CAP" Width="110" Margin="8,0,0,0" Click="ApplyCap_Click"/>
+                            <Button Content="CONF:PER" Width="110" Margin="8,0,0,0" Click="ApplyPer_Click"/>
+                            <Button Content="CALC:STAT OFF" Width="130" Margin="16,0,0,0" Click="StopAveraging_Click"/>
+                            <Button Content="FUNC?" Width="90" Margin="8,0,0,0" Click="QueryFunc_Click"/>
+                        </WrapPanel>
+
+                        <!-- Averaging readbacks -->
+                        <WrapPanel Margin="0,8,0,0">
+                            <Button Content="AVG?" Width="80" Click="QueryAverAvg_Click"/>
+                            <TextBlock x:Name="AvgValText" Margin="8,6,0,0"/>
+                            <Button Content="MIN?" Width="80" Margin="16,0,0,0" Click="QueryAverMin_Click"/>
+                            <TextBlock x:Name="MinValText" Margin="8,6,0,0"/>
+                            <Button Content="MAX?" Width="80" Margin="16,0,0,0" Click="QueryAverMax_Click"/>
+                            <TextBlock x:Name="MaxValText" Margin="8,6,0,0"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
                 <!-- Readout + Graph -->
-                <Border Grid.Row="3" Style="{StaticResource Card}">
+                <Border Grid.Row="4" Style="{StaticResource Card}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -281,7 +404,7 @@
                 </Border>
 
                 <!-- Status -->
-                <Border Grid.Row="4" Style="{StaticResource Card}" Margin="0,14,0,0">
+                <Border Grid.Row="5" Style="{StaticResource Card}" Margin="0,14,0,0">
                     <StackPanel>
                         <TextBlock Text="Status" FontWeight="Bold" Margin="0,0,0,4"/>
                         <TextBlock x:Name="StatusBlock" TextWrapping="Wrap"/>

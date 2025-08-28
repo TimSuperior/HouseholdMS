@@ -36,13 +36,69 @@ namespace HouseholdMS.Services
         Task SetFunctionAsync(string function);
 
         // UX helpers (safe)
-        void SetRate(char speedF_M_L);         // 'F','M','L'
+        void SetRate(char speedF_M_L);         // 'F','M','S' (tolerates 'L' as 'S')
         void SetAveraging(bool on);            // CALC:FUNC AVER / CALC:STAT OFF
         void SetAutoRange(bool on);            // AUTO 1|0
         void SetRange(string rangeToken);      // RANGE <token>
         string GetFunction();                  // FUNC? (safe)
         AveragingStats TryQueryAveragingAll(); // May return null if unsupported
         void SetLineEnding(string newEnding);
+
+        // ------------- ADDITIVE: cover your listed SCPI -------------
+
+        // (1) temp:rtd:type?
+        string QueryTempType();
+
+        // (2) CONF:TEMP:THER KITS90
+        void ConfigureTempTherKITS90();
+
+        // (3) MEAS:TEMP?
+        string ReadTempOnce();
+
+        // (4) temp:rtd:unit?
+        string QueryTempUnit();
+
+        // (5/6/7) temp:rtd:unit K|F|C
+        void SetTempUnit(char unitK_F_C);
+
+        // (8) rate?
+        string QueryRate();
+
+        // (12/13/14) calc:aver:max?/min?/aver?
+        string QueryAverMax();
+        string QueryAverMin();
+        string QueryAverAvg();
+
+        // (15/16) syst:rem / syst:loc
+        void SetRemote();
+        void SetLocal();
+
+        // (17) range?
+        string QueryRange();
+
+        // (18/18b) CONF:VOLT:{DC|AC} [ranges] (V and mV)
+        void ConfVoltDC(string range);
+        void ConfVoltAC(string range);
+        void ConfMilliVoltDC(string range);
+        void ConfMilliVoltAC(string range);
+
+        // (19) func?
+        string QueryFunction();
+
+        // (20/21) conf:curr:{DC|AC} [A or mA/µA ranges]
+        void ConfCurrDC_Amps(string range); // 5|10
+        void ConfCurrAC_Amps(string range); // 5|10
+        void ConfCurrDC_mA(string range);   // 500E-6|5E-3|50E-3|500E-3
+        void ConfCurrAC_mA(string range);   // 500E-6|5E-3|50E-3|500E-3
+
+        // (22) conf:res
+        void ConfRes();
+
+        // (23) conf:cap [50E-9|500E-9|5E-6]
+        void ConfCap(string range);
+
+        // (24) conf:per
+        void ConfPer();
     }
 
     public sealed class AveragingStats
@@ -486,7 +542,9 @@ namespace HouseholdMS.Services
         {
             try
             {
+                // Tolerate UI 'L' by mapping to device 'S'
                 char v = char.ToUpperInvariant(speedF_M_L);
+                if (v == 'L') v = 'S';
                 if (v != 'F' && v != 'M' && v != 'S') return;
                 Write("RATE " + v);
                 Thread.Sleep(50);
@@ -527,8 +585,59 @@ namespace HouseholdMS.Services
             catch { }
         }
 
-        // ---------- Private helpers ----------
+        // ---------- ADDITIVE IMPLEMENTATIONS FOR YOUR COMMANDS ----------
 
+        // Temperature
+        public string QueryTempType() => QuerySafe("TEMP:RTD:TYPE?");
+        public void ConfigureTempTherKITS90() { TryWrite("CONF:TEMP:THER KITS90"); }
+        public string ReadTempOnce() => QuerySafe("MEAS:TEMP?");
+        public string QueryTempUnit() => QuerySafe("TEMP:RTD:UNIT?");
+        public void SetTempUnit(char unitK_F_C)
+        {
+            try
+            {
+                char u = char.ToUpperInvariant(unitK_F_C);
+                if (u == 'K' || u == 'F' || u == 'C') Write($"TEMP:RTD:UNIT {u}");
+            }
+            catch { }
+        }
+
+        // Rate
+        public string QueryRate() => QuerySafe("RATE?");
+
+        // Averaging individual readbacks
+        public string QueryAverMax() => QuerySafe("CALC:AVER:MAX?");
+        public string QueryAverMin() => QuerySafe("CALC:AVER:MIN?");
+        public string QueryAverAvg() => QuerySafe("CALC:AVER:AVER?");
+
+        // Remote/Local
+        public void SetRemote() { TryWrite("SYST:REM"); }
+        public void SetLocal() { TryWrite("SYST:LOC"); }
+
+        // Range query
+        public string QueryRange() => QuerySafe("RANGE?");
+
+        // Voltage CONF (V and mV)
+        public void ConfVoltDC(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:VOLT:DC {range}"); }
+        public void ConfVoltAC(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:VOLT:AC {range}"); }
+        public void ConfMilliVoltDC(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:VOLT:DC {range}"); }
+        public void ConfMilliVoltAC(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:VOLT:AC {range}"); }
+
+        // Function query (explicit)
+        public string QueryFunction() => QuerySafe("FUNC?") ?? string.Empty;
+
+        // Current CONF (Amps and mA/µA)
+        public void ConfCurrDC_Amps(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:CURR:DC {range}"); }
+        public void ConfCurrAC_Amps(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:CURR:AC {range}"); }
+        public void ConfCurrDC_mA(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:CURR:DC {range}"); }
+        public void ConfCurrAC_mA(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:CURR:AC {range}"); }
+
+        // Resistance / Capacitance / Period
+        public void ConfRes() { TryWrite("CONF:RES"); }
+        public void ConfCap(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:CAP {range}"); }
+        public void ConfPer() { TryWrite("CONF:PER"); }
+
+        // ---------- Private helpers ----------
         private static double ParseDouble(string s)
         {
             return double.Parse(s, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
@@ -588,5 +697,7 @@ namespace HouseholdMS.Services
                 default: return "VOLT:DC";
             }
         }
+
+        private void TryWrite(string cmd) { try { Write(cmd); } catch { } }
     }
 }

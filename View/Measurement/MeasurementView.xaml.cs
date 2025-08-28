@@ -548,8 +548,8 @@ namespace HouseholdMS.View.Measurement
                 var rateCombo = this.FindName("RateCombo") as ComboBox;
                 if (rateCombo != null && rateCombo.SelectedItem is ComboBoxItem cbi && cbi.Tag != null)
                 {
-                    var tag = cbi.Tag.ToString(); // "F","M","L"
-                    rate = (!string.IsNullOrEmpty(tag)) ? char.ToUpperInvariant(tag[0]) : 'M';
+                    var tag = (cbi.Tag.ToString() ?? "").ToUpperInvariant(); // "F","M","L"
+                    rate = (tag == "L") ? 'S' : (!string.IsNullOrEmpty(tag) ? tag[0] : 'M'); // map L→S
                 }
                 else
                 {
@@ -563,6 +563,252 @@ namespace HouseholdMS.View.Measurement
             {
                 // Non-fatal if RATE not supported
             }
+        }
+
+        // ============================================================
+        // ================ Advanced Controls Handlers ================
+        // ============================================================
+
+        // Helper to pause/resume continuous reads around config changes
+        private async Task<bool> PauseContinuousIfRunningAsync()
+        {
+            bool wasContinuous = ContToggle?.IsChecked == true;
+            if (wasContinuous)
+            {
+                ContToggle.IsChecked = false;
+                await Task.Delay(80);
+            }
+            return wasContinuous;
+        }
+
+        private void ResumeContinuousIf(bool shouldResume)
+        {
+            if (shouldResume && ContToggle != null)
+                ContToggle.IsChecked = true;
+        }
+
+        // --- Remote/Local ---
+        private void Remote_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            _device.SetRemote();
+            SetStatus("Remote mode requested (SYST:REM).");
+        }
+
+        private void Local_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            _device.SetLocal();
+            SetStatus("Local mode requested (SYST:LOC).");
+        }
+
+        // --- RATE? ---
+        private void QueryRate_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            var r = _device.QueryRate();
+            var tb = this.FindName("RateReadbackText") as TextBlock;
+            if (tb != null) tb.Text = string.IsNullOrWhiteSpace(r) ? "—" : r.Trim();
+            SetStatus("RATE? queried.");
+        }
+
+        // --- TEMP unit/type/actions ---
+        private async void ApplyTempUnit_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            char u = (TempUnitC?.IsChecked == true) ? 'C' : (TempUnitF?.IsChecked == true) ? 'F' : 'K';
+
+            var was = await PauseContinuousIfRunningAsync();
+            try
+            {
+                _device.SetTempUnit(u);
+                SetStatus($"TEMP:RTD:UNIT {u}");
+            }
+            finally { ResumeContinuousIf(was); }
+        }
+
+        private void QueryTempUnit_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            var r = _device.QueryTempUnit()?.Trim().ToUpperInvariant();
+            if (r?.Contains("C") == true) TempUnitC.IsChecked = true;
+            else if (r?.Contains("F") == true) TempUnitF.IsChecked = true;
+            else if (r?.Contains("K") == true) TempUnitK.IsChecked = true;
+            SetStatus($"TEMP:RTD:UNIT? → {r}");
+        }
+
+        private async void ApplyTherKits90_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            var was = await PauseContinuousIfRunningAsync();
+            try
+            {
+                _device.ConfigureTempTherKITS90();
+                SetStatus("CONF:TEMP:THER KITS90 sent.");
+            }
+            finally { ResumeContinuousIf(was); }
+        }
+
+        private void QueryTempType_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            var r = _device.QueryTempType();
+            SetStatus($"TEMP:RTD:TYPE? → {r}");
+        }
+
+        private void ReadTempOnce_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            var r = _device.ReadTempOnce();
+            if (r != null)
+            {
+                var display = FormatMeasurementFromResponse(r);
+                if (MeasurementText != null) MeasurementText.Text = display;
+                UpdateMeasurementFields(r);
+            }
+            SetStatus("MEAS:TEMP? complete.");
+        }
+
+        // --- VOLT ranges ---
+        private async void ApplyVoltRange_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+
+            var mode = ((VoltModeCombo?.SelectedItem as ComboBoxItem)?.Content as string ?? "DC").ToUpperInvariant();
+            var vSel = (VoltRangeV?.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            var mvSel = (VoltRange_mV?.SelectedItem as ComboBoxItem)?.Content?.ToString();
+
+            var was = await PauseContinuousIfRunningAsync();
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(vSel))
+                {
+                    if (mode == "DC") _device.ConfVoltDC(vSel);
+                    else _device.ConfVoltAC(vSel);
+                    SetStatus($"CONF:VOLT:{mode} {vSel}");
+                }
+                if (!string.IsNullOrWhiteSpace(mvSel))
+                {
+                    if (mode == "DC") _device.ConfMilliVoltDC(mvSel);
+                    else _device.ConfMilliVoltAC(mvSel);
+                    SetStatus($"CONF:VOLT:{mode} {mvSel}");
+                }
+            }
+            finally { ResumeContinuousIf(was); }
+        }
+
+        private void QueryRange_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            var r = _device.QueryRange();
+            SetStatus($"RANGE? → {r}");
+        }
+
+        // --- CURR ranges ---
+        private async void ApplyCurrRangeA_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            var mode = ((CurrModeCombo?.SelectedItem as ComboBoxItem)?.Content as string ?? "DC").ToUpperInvariant();
+            var aSel = (CurrRangeA?.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            if (string.IsNullOrWhiteSpace(aSel)) return;
+
+            var was = await PauseContinuousIfRunningAsync();
+            try
+            {
+                if (mode == "DC") _device.ConfCurrDC_Amps(aSel);
+                else _device.ConfCurrAC_Amps(aSel);
+                SetStatus($"CONF:CURR:{mode} {aSel}");
+            }
+            finally { ResumeContinuousIf(was); }
+        }
+
+        private async void ApplyCurrRange_mA_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            var mode = ((CurrModeCombo?.SelectedItem as ComboBoxItem)?.Content as string ?? "DC").ToUpperInvariant();
+            var mSel = (CurrRange_mA?.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            if (string.IsNullOrWhiteSpace(mSel)) return;
+
+            var was = await PauseContinuousIfRunningAsync();
+            try
+            {
+                if (mode == "DC") _device.ConfCurrDC_mA(mSel);
+                else _device.ConfCurrAC_mA(mSel);
+                SetStatus($"CONF:CURR:{mode} {mSel}");
+            }
+            finally { ResumeContinuousIf(was); }
+        }
+
+        // --- RES / CAP / PER / Averaging STOP ---
+        private async void ApplyRes_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            var was = await PauseContinuousIfRunningAsync();
+            try { _device.ConfRes(); SetStatus("CONF:RES"); }
+            finally { ResumeContinuousIf(was); }
+        }
+
+        private async void ApplyCap_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            var sel = (CapRangeCombo?.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            if (string.IsNullOrWhiteSpace(sel)) return;
+
+            var was = await PauseContinuousIfRunningAsync();
+            try { _device.ConfCap(sel); SetStatus($"CONF:CAP {sel}"); }
+            finally { ResumeContinuousIf(was); }
+        }
+
+        private async void ApplyPer_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            var was = await PauseContinuousIfRunningAsync();
+            try { _device.ConfPer(); SetStatus("CONF:PER"); }
+            finally { ResumeContinuousIf(was); }
+        }
+
+        private void StopAveraging_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            _device.SetAveraging(false); // emits CALC:STAT OFF
+            if (AvgCheck != null) AvgCheck.IsChecked = false;
+            SetStatus("CALC:STAT OFF");
+        }
+
+        // --- Averaging explicit readbacks ---
+        private void QueryAverAvg_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            var r = _device.QueryAverAvg();
+            var tb = this.FindName("AvgValText") as TextBlock;
+            if (tb != null) tb.Text = r ?? "—";
+            SetStatus("CALC:AVER:AVER?");
+        }
+
+        private void QueryAverMin_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            var r = _device.QueryAverMin();
+            var tb = this.FindName("MinValText") as TextBlock;
+            if (tb != null) tb.Text = r ?? "—";
+            SetStatus("CALC:AVER:MIN?");
+        }
+
+        private void QueryAverMax_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            var r = _device.QueryAverMax();
+            var tb = this.FindName("MaxValText") as TextBlock;
+            if (tb != null) tb.Text = r ?? "—";
+            SetStatus("CALC:AVER:MAX?");
+        }
+
+        // --- FUNC? explicit ---
+        private void QueryFunc_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureConnected()) return;
+            var f = _device.QueryFunction();
+            SetStatus($"FUNC? → {f}");
         }
     }
 }
