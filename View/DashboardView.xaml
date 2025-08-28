@@ -17,7 +17,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="bd"
-                                Background="#FFFFFF"
+                                Background="{TemplateBinding Background}"
                                 CornerRadius="16"
                                 BorderBrush="#DDDDDD"
                                 BorderThickness="1"
@@ -45,12 +45,34 @@
             </Setter>
         </Style>
 
-        <!-- Inventory tile = TileButton + low-stock trigger -->
+        <!-- Inventory tile = TileButton + three-state stock highlight -->
         <Style x:Key="InventoryTileButtonStyle" TargetType="Button" BasedOn="{StaticResource TileButton}">
             <Style.Triggers>
-                <DataTrigger Binding="{Binding IsLowStock}" Value="True">
+                <!-- 1) OUT OF STOCK -->
+                <DataTrigger Binding="{Binding IsZero}" Value="True">
+                    <Setter Property="Background" Value="#FFEBEE"/>
+                    <!-- light red -->
                     <Setter Property="BorderBrush" Value="#E57373"/>
+                    <!-- red -->
                     <Setter Property="BorderThickness" Value="2"/>
+                </DataTrigger>
+
+                <!-- 2) LOW (below threshold, but > 0) -->
+                <DataTrigger Binding="{Binding IsBelowThreshold}" Value="True">
+                    <Setter Property="Background" Value="#FFF8E1"/>
+                    <!-- light amber -->
+                    <Setter Property="BorderBrush" Value="#FFB300"/>
+                    <!-- amber -->
+                    <Setter Property="BorderThickness" Value="2"/>
+                </DataTrigger>
+
+                <!-- 3) OK (>= threshold) -->
+                <DataTrigger Binding="{Binding IsOk}" Value="True">
+                    <Setter Property="Background" Value="#E8F5E9"/>
+                    <!-- light green -->
+                    <Setter Property="BorderBrush" Value="#81C784"/>
+                    <!-- green -->
+                    <Setter Property="BorderThickness" Value="1.5"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -65,9 +87,16 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="18"/>
-                    <TextBlock Grid.Row="1" Margin="0,6,0,0"
-                               Text="{Binding Remaining, StringFormat=Remaining: {0}}"/>
+                    <!-- Item name -->
+                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16"/>
+
+                    <!-- BIG number: same size as household count -->
+                    <StackPanel Grid.Row="1" Margin="0,6,0,0">
+                        <TextBlock Text="Remaining" Foreground="#666" FontSize="12"/>
+                        <TextBlock Text="{Binding Remaining}" FontSize="30" FontWeight="SemiBold"/>
+                    </StackPanel>
+
+                    <!-- Small meta -->
                     <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0">
                         <TextBlock Text="{Binding LowStockThreshold, StringFormat=Threshold: {0}}" Margin="0,0,12,0"/>
                         <TextBlock Text="{Binding LastRestockedDate, StringFormat=Restocked: {0:yyyy-MM-dd}}"/>
@@ -83,7 +112,7 @@
             <RowDefinition Height="Auto"/>
             <!-- Header -->
             <RowDefinition Height="Auto"/>
-            <!-- Row 1: Households -->
+            <!-- Row 1: Household title + tiles -->
             <RowDefinition Height="Auto"/>
             <!-- Row 2: Inventory -->
             <RowDefinition Height="*"/>
@@ -95,29 +124,32 @@
             <TextBlock Text="Dashboard" FontSize="22" FontWeight="Bold" VerticalAlignment="Center"/>
         </DockPanel>
 
-        <!-- Row 1: Households (exactly 3 tiles) -->
-        <UniformGrid Grid.Row="1" Columns="3" Margin="12,0,12,4">
-            <Button Style="{StaticResource TileButton}" Click="OpenOperational_Click">
-                <StackPanel>
-                    <TextBlock Text="Household Operational" FontWeight="Bold"/>
-                    <TextBlock x:Name="OperationalCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
-                </StackPanel>
-            </Button>
+        <!-- Row 1: Household (title + 3 tiles) -->
+        <StackPanel Grid.Row="1" Margin="12,0,12,4">
+            <TextBlock Text="Household" FontSize="18" FontWeight="Bold" Margin="0,0,0,6"/>
+            <UniformGrid Columns="3">
+                <Button Style="{StaticResource TileButton}" Click="OpenOperational_Click">
+                    <StackPanel>
+                        <TextBlock Text="Household Operational" FontWeight="Bold"/>
+                        <TextBlock x:Name="OperationalCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Button>
 
-            <Button Style="{StaticResource TileButton}" Click="OpenInService_Click">
-                <StackPanel>
-                    <TextBlock Text="Household In Service" FontWeight="Bold"/>
-                    <TextBlock x:Name="InServiceCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
-                </StackPanel>
-            </Button>
+                <Button Style="{StaticResource TileButton}" Click="OpenInService_Click">
+                    <StackPanel>
+                        <TextBlock Text="Household In Service" FontWeight="Bold"/>
+                        <TextBlock x:Name="InServiceCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Button>
 
-            <Button Style="{StaticResource TileButton}" Click="OpenNotOperational_Click">
-                <StackPanel>
-                    <TextBlock Text="Household Not Operational" FontWeight="Bold"/>
-                    <TextBlock x:Name="NotOperationalCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
-                </StackPanel>
-            </Button>
-        </UniformGrid>
+                <Button Style="{StaticResource TileButton}" Click="OpenNotOperational_Click">
+                    <StackPanel>
+                        <TextBlock Text="Household Not Operational" FontWeight="Bold"/>
+                        <TextBlock x:Name="NotOperationalCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Button>
+            </UniformGrid>
+        </StackPanel>
 
         <!-- Row 2: Inventory (wrap tiles) -->
         <StackPanel Grid.Row="2" Margin="12,8,12,0">

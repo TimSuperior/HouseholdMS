@@ -1,4 +1,4 @@
-﻿<Application x:Class="HouseholdMS.App" 
+﻿<Application x:Class="HouseholdMS.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
@@ -13,7 +13,8 @@
         <!-- Global UI scale (visual zoom for everything) -->
         <sys:Double x:Key="AppUiScale">1.00</sys:Double>
 
-        <FontFamily x:Key="AppFontFamily">Segoe UI</FontFamily>
+        <!-- Global FontFamily (default to packaged Poppins; runtime can override via AppTypographySettings) -->
+        <FontFamily x:Key="AppFontFamily">pack://application:,,,/Assets/Fonts/#Poppins</FontFamily>
 
         <!-- Global styles so everything inherits the dynamic font -->
         <Style TargetType="{x:Type Control}">

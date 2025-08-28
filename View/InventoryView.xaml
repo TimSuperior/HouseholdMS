@@ -128,6 +128,7 @@
                              TextChanged="SearchBox_TextChanged"/>
 
                     <Button x:Name="AddInventoryButton"
+                            
                             Content="📥 New Item"
                             Grid.Column="1"
                             Width="150"

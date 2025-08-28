@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using HouseholdMS.View;                 // HouseholdsView, InventoryView
 using HouseholdMS.View.UserControls;    // AddInventoryControl
-using HouseholdMS.Model;                // DatabaseHelper, Household, InventoryItem (model)
+using HouseholdMS.Model;                // DatabaseHelper, Household, InventoryItem
 
 namespace HouseholdMS.View.Dashboard
 {
@@ -191,7 +191,7 @@ namespace HouseholdMS.View.Dashboard
         {
             if (sender is Button btn && btn.DataContext is InventoryTile t)
             {
-                // Build the model expected by AddInventoryControl (HouseholdMS.Model.InventoryItem)
+                // Build the model expected by AddInventoryControl
                 var modelItem = new InventoryItem
                 {
                     ItemID = t.ItemID,
@@ -206,7 +206,6 @@ namespace HouseholdMS.View.Dashboard
                 var ctrl = new AddInventoryControl(modelItem);
                 ctrl.OnSavedSuccessfully += (_, __) =>
                 {
-                    // close the window and refresh tiles
                     Window.GetWindow(ctrl)?.Close();
                     LoadInventoryTilesFromDb();
                 };
@@ -241,6 +240,10 @@ namespace HouseholdMS.View.Dashboard
         public int LowStockThreshold { get; set; }
         public DateTime? LastRestockedDate { get; set; }
         public string Note { get; set; }
-        public bool IsLowStock => Remaining <= LowStockThreshold;
+
+        // Three-state flags for XAML triggers
+        public bool IsZero => Remaining == 0;
+        public bool IsBelowThreshold => Remaining > 0 && Remaining < LowStockThreshold;
+        public bool IsOk => Remaining >= LowStockThreshold;
     }
 }

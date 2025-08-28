@@ -12,6 +12,8 @@
         WindowState="Maximized"
         Background="#f0f2f5">
 
+    
+    
     <Window.Resources>
         <!-- (unchanged) your styles -->
         <Style x:Key="MenuButtonStyle" TargetType="Button">
@@ -44,6 +46,10 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+      
+
+    
     </Window.Resources>
 
     <Grid>
@@ -69,6 +75,7 @@
 
             <StackPanel Grid.Row="0" Margin="10,20,10,10">
                 <TextBlock Text="☰ Main Menu"
+                           FontFamily="/Assets/Fonts/#Poppins"
                            FontSize="18"
                            FontWeight="Bold"
                            Foreground="White"
