@@ -122,6 +122,7 @@
     <Compile Include="Model\InventoryItem.cs" />
     <Compile Include="Model\MeasurementPoint.cs" />
     <Compile Include="Model\PdfReportGenerator.cs" />
+    <Compile Include="Model\Service.cs" />
     <Compile Include="Model\ServiceRecord.cs" />
     <Compile Include="Model\Technician.cs" />
     <Compile Include="Model\TestReport.cs" />

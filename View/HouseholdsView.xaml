@@ -134,7 +134,18 @@
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
-                            <GridViewColumn Header="Status" DisplayMemberBinding="{Binding Statuss}" Width="90"/>
+                            <!-- Status clickable -->
+                            <GridViewColumn Header="Status" Width="120">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Statuss}"
+                                                   Cursor="Hand"
+                                                   ToolTip="Click to change status"
+                                                   MouseLeftButtonDown="StatusText_MouseLeftButtonDown"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
                             <GridViewColumn Header="Comment" DisplayMemberBinding="{Binding UserComm}" Width="150"/>
                         </GridView>
                     </ListView.View>

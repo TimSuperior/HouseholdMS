@@ -4,22 +4,26 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using HouseholdMS.View.UserControls;
 using HouseholdMS.Model;
 using System.Data.SQLite;
+using System.Windows.Media;
 
 namespace HouseholdMS.View
 {
     public partial class HouseholdsView : UserControl
     {
+        // Canonical status labels
+        private const string OPERATIONAL = "Operational";
+        private const string IN_SERVICE = "In Service";
+        private const string NOT_OPERATIONAL = "Not Operational";
+
         private readonly ObservableCollection<Household> allHouseholds = new ObservableCollection<Household>();
         private ICollectionView view;
         private GridViewColumnHeader _lastHeaderClicked;
         private ListSortDirection _lastDirection = ListSortDirection.Ascending;
 
-        // Column header to property mapping for sorting
         private readonly Dictionary<string, string> _headerToProperty = new Dictionary<string, string>
         {
             { "ID", "HouseholdID" },
@@ -36,29 +40,52 @@ namespace HouseholdMS.View
 
         private readonly string _currentUserRole;
 
-        public HouseholdsView(string userRole = "User")
+        // initial status filter (normalized) and flags
+        private string _normalizedStatusFilter;
+        private bool _categoryFilterActive; // true only when launched from a status tile
+        private string _searchText = string.Empty;
+
+        // showAll parameter forces "All households" mode
+        public HouseholdsView(string userRole = "User",
+                              string initialStatusFilter = null,
+                              bool showAll = false)
         {
             InitializeComponent();
+
             _currentUserRole = userRole;
+
+            if (showAll)
+            {
+                _normalizedStatusFilter = string.Empty;
+                _categoryFilterActive = false; // ALL mode
+            }
+            else
+            {
+                _normalizedStatusFilter = NormalizeStatus(initialStatusFilter);
+                _categoryFilterActive = !string.IsNullOrWhiteSpace(_normalizedStatusFilter);
+            }
+
             LoadHouseholds();
             HouseholdListView.AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(GridViewColumnHeader_Click));
             HouseholdListView.SelectionChanged += HouseholdListView_SelectionChanged;
 
             ApplyAccessRestrictions();
+            UpdateSearchPlaceholder();
+            ApplyFilter(); // apply status filter (if any)
         }
 
         private void ApplyAccessRestrictions()
         {
             bool isAdmin = _currentUserRole == "Admin";
 
-            if (FindName("AddHouseholdButton") is Button addBtn)
-                addBtn.Visibility = isAdmin ? Visibility.Visible : Visibility.Collapsed;
+            var addBtn = FindName("AddHouseholdButton") as Button;
+            if (addBtn != null) addBtn.Visibility = isAdmin ? Visibility.Visible : Visibility.Collapsed;
 
-            if (FindName("EditHouseholdButton") is Button editBtn)
-                editBtn.Visibility = isAdmin ? Visibility.Visible : Visibility.Collapsed;
+            var editBtn = FindName("EditHouseholdButton") as Button;
+            if (editBtn != null) editBtn.Visibility = isAdmin ? Visibility.Visible : Visibility.Collapsed;
 
-            if (FindName("DeleteHouseholdButton") is Button deleteBtn)
-                deleteBtn.Visibility = isAdmin ? Visibility.Visible : Visibility.Collapsed;
+            var deleteBtn = FindName("DeleteHouseholdButton") as Button;
+            if (deleteBtn != null) deleteBtn.Visibility = isAdmin ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public void LoadHouseholds()
@@ -73,17 +100,17 @@ namespace HouseholdMS.View
                 {
                     while (reader.Read())
                     {
-                        DateTime installDate = DateTime.TryParse(reader["InstallDate"]?.ToString(), out DateTime dt1) ? dt1 : DateTime.MinValue;
-                        DateTime lastInspect = DateTime.TryParse(reader["LastInspect"]?.ToString(), out DateTime dt2) ? dt2 : DateTime.MinValue;
+                        DateTime installDate = DateTime.TryParse(reader["InstallDate"] == DBNull.Value ? null : reader["InstallDate"].ToString(), out DateTime dt1) ? dt1 : DateTime.MinValue;
+                        DateTime lastInspect = DateTime.TryParse(reader["LastInspect"] == DBNull.Value ? null : reader["LastInspect"].ToString(), out DateTime dt2) ? dt2 : DateTime.MinValue;
 
                         allHouseholds.Add(new Household
                         {
                             HouseholdID = Convert.ToInt32(reader["HouseholdID"]),
-                            OwnerName = reader["OwnerName"].ToString(),
-                            UserName = reader["UserName"].ToString(),
-                            Municipality = reader["Municipality"].ToString(),
-                            District = reader["District"].ToString(),
-                            ContactNum = reader["ContactNum"].ToString(),
+                            OwnerName = reader["OwnerName"]?.ToString(),
+                            UserName = reader["UserName"]?.ToString(),
+                            Municipality = reader["Municipality"]?.ToString(),
+                            District = reader["District"]?.ToString(),
+                            ContactNum = reader["ContactNum"]?.ToString(),
                             InstallDate = installDate,
                             LastInspect = lastInspect,
                             UserComm = reader["UserComm"] != DBNull.Value ? reader["UserComm"].ToString() : string.Empty,
@@ -97,72 +124,160 @@ namespace HouseholdMS.View
             HouseholdListView.ItemsSource = view;
         }
 
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        // --- Robust status normalization ---
+        private static string NormalizeStatus(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return string.Empty;
+            var t = s.Trim().ToLowerInvariant();
+
+            // tolerate extra spaces, dashes, underscores
+            t = t.Replace('_', ' ').Replace('-', ' ');
+            while (t.Contains("  ")) t = t.Replace("  ", " ");
+
+            if (t.StartsWith("operational")) return OPERATIONAL;
+            if (t.StartsWith("in service") || t.StartsWith("service")) return IN_SERVICE;
+            if (t.StartsWith("not operational") || t.StartsWith("notoperational")) return NOT_OPERATIONAL;
+
+            // Return trimmed original to preserve any custom labels
+            return s.Trim();
+        }
+
+        private static string DisplayStatusLabel(string normalized)
+        {
+            // For UI text only: show "Out of Service" when the filter is "In Service"
+            if (string.Equals(normalized, IN_SERVICE, StringComparison.Ordinal)) return "Out of Service";
+            return normalized;
+        }
+
+        private void UpdateSearchPlaceholder()
+        {
+            if (SearchBox == null) return;
+
+            string ph = _categoryFilterActive
+                ? $"Search within \"{DisplayStatusLabel(_normalizedStatusFilter)}\""
+                : "Search all households";
+
+            SearchBox.Tag = ph;
+
+            if (string.IsNullOrWhiteSpace(SearchBox.Text) ||
+                SearchBox.Text == "Search by owner, user, area or contact" ||
+                SearchBox.Text == "Search all households")
+            {
+                SearchBox.Text = ph;
+                SearchBox.Foreground = Brushes.Gray;
+                SearchBox.FontStyle = FontStyles.Italic;
+            }
+        }
+
+        // Combined filter: status category (if active) + search
+        private void ApplyFilter()
         {
             if (view == null) return;
 
-            string search = SearchBox.Text?.Trim().ToLower() ?? string.Empty;
-            view.Filter = obj => obj is Household h &&
-                (h.OwnerName.ToLower().Contains(search) ||
-                 h.ContactNum.ToLower().Contains(search) ||
-                 h.UserName.ToLower().Contains(search) ||
-                 h.Municipality.ToLower().Contains(search) ||
-                 h.District.ToLower().Contains(search));
+            string search = _searchText == null ? string.Empty : _searchText.Trim().ToLowerInvariant();
+            bool useCategory = _categoryFilterActive && !string.IsNullOrWhiteSpace(_normalizedStatusFilter);
+
+            view.Filter = obj =>
+            {
+                var h = obj as Household;
+                if (h == null) return false;
+
+                bool categoryOk = true;
+                if (useCategory)
+                {
+                    var hn = NormalizeStatus(h.Statuss);
+                    categoryOk = hn == _normalizedStatusFilter;
+                }
+                if (!categoryOk) return false;
+
+                if (string.IsNullOrEmpty(search)) return true;
+
+                return (h.OwnerName != null && h.OwnerName.ToLowerInvariant().Contains(search))
+                    || (h.ContactNum != null && h.ContactNum.ToLowerInvariant().Contains(search))
+                    || (h.UserName != null && h.UserName.ToLowerInvariant().Contains(search))
+                    || (h.Municipality != null && h.Municipality.ToLowerInvariant().Contains(search))
+                    || (h.District != null && h.District.ToLowerInvariant().Contains(search));
+            };
+
+            view.Refresh();
+        }
+
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (SearchBox != null && SearchBox.Text == (SearchBox.Tag as string))
+            {
+                _searchText = string.Empty;
+            }
+            else
+            {
+                _searchText = SearchBox?.Text ?? string.Empty;
+            }
+            ApplyFilter();
         }
 
         private void ResetText(object sender, RoutedEventArgs e)
         {
-            if (sender is TextBox box && string.IsNullOrWhiteSpace(box.Text))
+            var box = sender as TextBox;
+            if (box != null && string.IsNullOrWhiteSpace(box.Text))
             {
                 box.Text = box.Tag as string;
-                box.Foreground = System.Windows.Media.Brushes.Gray;
-                view.Filter = null;
+                box.Foreground = Brushes.Gray;
+                box.FontStyle = FontStyles.Italic;
+                _searchText = string.Empty;
+                ApplyFilter(); // keeps current category state
             }
         }
 
         private void ClearText(object sender, RoutedEventArgs e)
         {
-            if (sender is TextBox box && box.Text == box.Tag as string)
+            var box = sender as TextBox;
+            if (box == null) return;
+
+            if (box.Text == box.Tag as string)
             {
                 box.Text = string.Empty;
-                box.Foreground = System.Windows.Media.Brushes.Black;
             }
+            box.Foreground = Brushes.Black;
+            box.FontStyle = FontStyles.Normal;
+
+            _searchText = string.Empty;
+            ApplyFilter();
         }
 
-        // Improved sorting: supports all columns, including dates with CellTemplate
+        // Sorting
         private void GridViewColumnHeader_Click(object sender, RoutedEventArgs e)
         {
-            if (e.OriginalSource is GridViewColumnHeader header)
-            {
-                string headerText = header.Content?.ToString();
+            var header = e.OriginalSource as GridViewColumnHeader;
+            if (header == null) return;
 
-                if (string.IsNullOrEmpty(headerText) || !_headerToProperty.ContainsKey(headerText))
-                    return; // Not a sortable column
+            string headerText = header.Content == null ? null : header.Content.ToString();
+            if (string.IsNullOrEmpty(headerText) || !_headerToProperty.ContainsKey(headerText))
+                return;
 
-                string sortBy = _headerToProperty[headerText];
+            string sortBy = _headerToProperty[headerText];
 
-                ListSortDirection direction = (_lastHeaderClicked == header && _lastDirection == ListSortDirection.Ascending)
-                    ? ListSortDirection.Descending
-                    : ListSortDirection.Ascending;
+            ListSortDirection direction = (_lastHeaderClicked == header && _lastDirection == ListSortDirection.Ascending)
+                ? ListSortDirection.Descending
+                : ListSortDirection.Ascending;
 
-                _lastHeaderClicked = header;
-                _lastDirection = direction;
+            _lastHeaderClicked = header;
+            _lastDirection = direction;
 
-                view.SortDescriptions.Clear();
-                view.SortDescriptions.Add(new SortDescription(sortBy, direction));
-                view.Refresh();
-            }
+            view.SortDescriptions.Clear();
+            view.SortDescriptions.Add(new SortDescription(sortBy, direction));
+            view.Refresh();
         }
 
         private void AddHouseholdButton_Click(object sender, RoutedEventArgs e)
         {
             var form = new AddHouseholdControl();
-            form.OnSavedSuccessfully += (s, args) =>
+            form.OnSavedSuccessfully += delegate
             {
                 FormContent.Content = null;
                 LoadHouseholds();
+                ApplyFilter(); // preserve current scope
             };
-            form.OnCancelRequested += (s, args) =>
+            form.OnCancelRequested += delegate
             {
                 FormContent.Content = null;
                 HouseholdListView.SelectedItem = null;
@@ -178,13 +293,14 @@ namespace HouseholdMS.View
                 if (_currentUserRole == "Admin")
                 {
                     var form = new AddHouseholdControl(selected);
-                    form.OnSavedSuccessfully += (s, args) =>
+                    form.OnSavedSuccessfully += delegate
                     {
                         FormContent.Content = null;
                         LoadHouseholds();
+                        ApplyFilter();
                         HouseholdListView.SelectedItem = null;
                     };
-                    form.OnCancelRequested += (s, args) =>
+                    form.OnCancelRequested += delegate
                     {
                         FormContent.Content = null;
                         HouseholdListView.SelectedItem = null;
@@ -204,13 +320,14 @@ namespace HouseholdMS.View
             if (HouseholdListView.SelectedItem is Household selected)
             {
                 var form = new AddHouseholdControl(selected);
-                form.OnSavedSuccessfully += (s, args) =>
+                form.OnSavedSuccessfully += delegate
                 {
                     FormContent.Content = null;
                     LoadHouseholds();
+                    ApplyFilter();
                     HouseholdListView.SelectedItem = null;
                 };
-                form.OnCancelRequested += (s, args) =>
+                form.OnCancelRequested += delegate
                 {
                     FormContent.Content = null;
                     HouseholdListView.SelectedItem = null;
@@ -229,7 +346,7 @@ namespace HouseholdMS.View
             if (HouseholdListView.SelectedItem is Household selected)
             {
                 var confirm = MessageBox.Show(
-                    $"Are you sure you want to delete household \"{selected.OwnerName}\"?",
+                    "Are you sure you want to delete household \"" + selected.OwnerName + "\"?",
                     "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
                 if (confirm == MessageBoxResult.Yes)
@@ -245,6 +362,7 @@ namespace HouseholdMS.View
                     }
 
                     LoadHouseholds();
+                    ApplyFilter();
                     FormContent.Content = null;
                     HouseholdListView.SelectedItem = null;
                 }
@@ -253,6 +371,74 @@ namespace HouseholdMS.View
             {
                 MessageBox.Show("Please select a household to delete.", "Delete Household", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+        }
+
+        // Quick status change via context menu
+        private void StatusText_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var tb = sender as TextBlock;
+            if (tb == null) return;
+            var h = tb.DataContext as Household;
+            if (h == null) return;
+
+            var cm = new ContextMenu();
+
+            void addItem(string text)
+            {
+                var mi = new MenuItem { Header = text };
+                mi.Click += (s, _) => ChangeStatus(h, text);
+                cm.Items.Add(mi);
+            }
+
+            addItem(OPERATIONAL);
+            addItem(IN_SERVICE);
+            addItem(NOT_OPERATIONAL);
+
+            cm.PlacementTarget = tb;
+            cm.IsOpen = true;
+        }
+
+        private void ChangeStatus(Household h, string newStatus)
+        {
+            if (string.Equals(NormalizeStatus(h.Statuss), NormalizeStatus(newStatus), StringComparison.Ordinal))
+                return;
+
+            if (NormalizeStatus(newStatus) == IN_SERVICE)
+            {
+                var confirm = MessageBox.Show(
+                    "Move household \"" + h.OwnerName + "\" to In Service?\n\nThis will create/open a Service ticket.",
+                    "Confirm Status Change", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                if (confirm != MessageBoxResult.Yes) return;
+            }
+
+            try
+            {
+                using (var conn = DatabaseHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var tx = conn.BeginTransaction())
+                    {
+                        using (var cmd = new SQLiteCommand(
+                            "UPDATE Households SET Statuss=@st WHERE HouseholdID=@id;", conn, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@st", newStatus);
+                            cmd.Parameters.AddWithValue("@id", h.HouseholdID);
+                            cmd.ExecuteNonQuery();
+                        }
+                        tx.Commit();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to change status.\n" + ex.Message, "Error",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            LoadHouseholds();
+            ApplyFilter(); // keep current scope
         }
     }
 }

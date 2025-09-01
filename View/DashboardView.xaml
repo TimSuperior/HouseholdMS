@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.Dashboard.DashboardView"
+﻿<UserControl x:Class="HouseholdMS.View.Dashboard.DashboardView"  
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:HouseholdMS.View.Dashboard">
@@ -45,40 +45,29 @@
             </Setter>
         </Style>
 
-        <!-- Inventory tile = TileButton + three-state stock highlight -->
+        <!-- Inventory tile = TileButton + stock highlight -->
         <Style x:Key="InventoryTileButtonStyle" TargetType="Button" BasedOn="{StaticResource TileButton}">
             <Style.Triggers>
-                <!-- 1) OUT OF STOCK -->
                 <DataTrigger Binding="{Binding IsZero}" Value="True">
                     <Setter Property="Background" Value="#FFEBEE"/>
-                    <!-- light red -->
                     <Setter Property="BorderBrush" Value="#E57373"/>
-                    <!-- red -->
                     <Setter Property="BorderThickness" Value="2"/>
                 </DataTrigger>
-
-                <!-- 2) LOW (below threshold, but > 0) -->
                 <DataTrigger Binding="{Binding IsBelowThreshold}" Value="True">
                     <Setter Property="Background" Value="#FFF8E1"/>
-                    <!-- light amber -->
                     <Setter Property="BorderBrush" Value="#FFB300"/>
-                    <!-- amber -->
                     <Setter Property="BorderThickness" Value="2"/>
                 </DataTrigger>
-
-                <!-- 3) OK (>= threshold) -->
                 <DataTrigger Binding="{Binding IsOk}" Value="True">
                     <Setter Property="Background" Value="#E8F5E9"/>
-                    <!-- light green -->
                     <Setter Property="BorderBrush" Value="#81C784"/>
-                    <!-- green -->
                     <Setter Property="BorderThickness" Value="1.5"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
 
-        <!-- Inventory tile template -->
-        <DataTemplate DataType="{x:Type local:InventoryTile}">
+        <!-- Keyed template (no DataType) -->
+        <DataTemplate x:Key="InventoryTileTemplate">
             <Button Style="{StaticResource InventoryTileButtonStyle}" Click="InventoryTile_Click">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -87,16 +76,13 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Item name -->
                     <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16"/>
 
-                    <!-- BIG number: same size as household count -->
                     <StackPanel Grid.Row="1" Margin="0,6,0,0">
                         <TextBlock Text="Remaining" Foreground="#666" FontSize="12"/>
                         <TextBlock Text="{Binding Remaining}" FontSize="30" FontWeight="SemiBold"/>
                     </StackPanel>
 
-                    <!-- Small meta -->
                     <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0">
                         <TextBlock Text="{Binding LowStockThreshold, StringFormat=Threshold: {0}}" Margin="0,0,12,0"/>
                         <TextBlock Text="{Binding LastRestockedDate, StringFormat=Restocked: {0:yyyy-MM-dd}}"/>
@@ -110,13 +96,9 @@
     <Grid Background="#F0F2F5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- Header -->
             <RowDefinition Height="Auto"/>
-            <!-- Row 1: Household title + tiles -->
             <RowDefinition Height="Auto"/>
-            <!-- Row 2: Inventory -->
             <RowDefinition Height="*"/>
-            <!-- Row 3: Placeholder -->
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -126,8 +108,27 @@
 
         <!-- Row 1: Household (title + 3 tiles) -->
         <StackPanel Grid.Row="1" Margin="12,0,12,4">
-            <TextBlock Text="Household" FontSize="18" FontWeight="Bold" Margin="0,0,0,6"/>
+            <!-- Header with Open-all button -->
+            <DockPanel LastChildFill="True" Margin="0,0,0,6">
+                <TextBlock Text="🏠 Household" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
+                <Button Content="Open"
+                        Padding="8,4"
+                        Margin="8,0,0,0"
+                        HorizontalAlignment="Right"
+                        DockPanel.Dock="Right"
+                        Click="OpenAllHouseholds_Click"/>
+            </DockPanel>
+
             <UniformGrid Columns="3">
+                <!-- Tile 1: Total households -->
+                <Button Style="{StaticResource TileButton}" Click="OpenAllHouseholds_Click">
+                    <StackPanel>
+                        <TextBlock Text="Total Households" FontWeight="Bold"/>
+                        <TextBlock x:Name="TotalCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Tile 2: Operational -->
                 <Button Style="{StaticResource TileButton}" Click="OpenOperational_Click">
                     <StackPanel>
                         <TextBlock Text="Household Operational" FontWeight="Bold"/>
@@ -135,27 +136,20 @@
                     </StackPanel>
                 </Button>
 
+                <!-- Tile 3: Out of Service (DB status = In Service) -->
                 <Button Style="{StaticResource TileButton}" Click="OpenInService_Click">
                     <StackPanel>
-                        <TextBlock Text="Household In Service" FontWeight="Bold"/>
-                        <TextBlock x:Name="InServiceCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
-                    </StackPanel>
-                </Button>
-
-                <Button Style="{StaticResource TileButton}" Click="OpenNotOperational_Click">
-                    <StackPanel>
-                        <TextBlock Text="Household Not Operational" FontWeight="Bold"/>
-                        <TextBlock x:Name="NotOperationalCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
+                        <TextBlock Text="Household Out of Service" FontWeight="Bold"/>
+                        <TextBlock x:Name="OutOfServiceCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Button>
             </UniformGrid>
         </StackPanel>
 
-        <!-- Row 2: Inventory (wrap tiles) -->
+        <!-- Row 2: Inventory -->
         <StackPanel Grid.Row="2" Margin="12,8,12,0">
             <DockPanel LastChildFill="True" Margin="0,0,0,6">
-                <TextBlock Text="Inventory" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                <!-- Small button to open your InventoryView in a popup -->
+                <TextBlock Text="📦 Inventory" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
                 <Button Content="Open List"
                         Padding="8,4"
                         Margin="8,0,0,0"
@@ -167,7 +161,8 @@
             <Border CornerRadius="16" Background="#FFFFFF" BorderBrush="#DDDDDD" BorderThickness="1">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <ItemsControl x:Name="InventoryItemsControl"
-                                  ItemsSource="{Binding InventoryTiles}">
+                                  ItemsSource="{Binding InventoryTiles}"
+                                  ItemTemplate="{StaticResource InventoryTileTemplate}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel/>
@@ -181,7 +176,7 @@
             </Border>
         </StackPanel>
 
-        <!-- Row 3: Placeholder (room for 2 future tiles) -->
+        <!-- Row 3: Placeholder -->
         <Grid Grid.Row="3" Margin="12,12,12,12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>

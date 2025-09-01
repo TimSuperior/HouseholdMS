@@ -48,7 +48,7 @@ namespace HouseholdMS
             }
 
             // 🔥 Default content: Households
-            MainContent.Content = new HouseholdsView(_currentUserRole);
+            MainContent.Content = new DashboardView(_currentUserRole);
         }
 
         private void bt_HouseholdMenu(object sender, RoutedEventArgs e)
@@ -135,7 +135,7 @@ namespace HouseholdMS
 
         private void bt_Dashboard_Click(object sender, RoutedEventArgs e)
         {
-            MainContent.Content = new DashboardView();
+            MainContent.Content = new DashboardView(_currentUserRole);
         }
 
         private void AllTest_CloseRequested(object sender, EventArgs e)

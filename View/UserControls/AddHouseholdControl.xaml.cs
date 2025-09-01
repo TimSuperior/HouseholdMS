@@ -8,6 +8,16 @@ namespace HouseholdMS.View.UserControls
 {
     public partial class AddHouseholdControl : UserControl
     {
+        // DB canonical values
+        private const string DB_OPERATIONAL = "Operational";
+        private const string DB_IN_SERVICE = "In Service";
+
+        // UI label
+        private const string UI_OUT_OF_SERVICE = "Out of Service";
+
+        // Legacy to be treated as "In Service" for compatibility when editing
+        private const string LEGACY_NOT_OPERATIONAL = "Not Operational";
+
         private int? EditingHouseholdID = null;
 
         public event EventHandler OnSavedSuccessfully;
@@ -20,9 +30,11 @@ namespace HouseholdMS.View.UserControls
             SaveButton.Content = "➕ Add";
             DeleteButton.Visibility = Visibility.Collapsed;
 
-            // Always set to today, non-nullable expectation
+            // Default dates
             InstDatePicker.SelectedDate = DateTime.Today;
             LastInspPicker.SelectedDate = DateTime.Today;
+
+            // Default status is "Operational" (SelectedIndex=0)
         }
 
         public AddHouseholdControl(Household householdToEdit) : this()
@@ -39,10 +51,35 @@ namespace HouseholdMS.View.UserControls
             DistrictBox.Text = householdToEdit.District;
             ContactBox.Text = householdToEdit.ContactNum;
             NoteBox.Text = householdToEdit.UserComm;
-            StatusBox.Text = householdToEdit.Statuss;
 
             InstDatePicker.SelectedDate = householdToEdit.InstallDate;
             LastInspPicker.SelectedDate = householdToEdit.LastInspect;
+
+            // set status dropdown from DB value
+            SelectStatus(householdToEdit.Statuss);
+        }
+
+        private void SelectStatus(string statusFromDb)
+        {
+            var s = (statusFromDb ?? string.Empty).Trim();
+
+            if (s.Equals(DB_OPERATIONAL, StringComparison.OrdinalIgnoreCase))
+            {
+                StatusCombo.SelectedIndex = 0; // "Operational"
+                return;
+            }
+
+            // Treat DB "In Service", UI "Out of Service", and legacy "Not Operational" as the same bucket
+            if (s.Equals(DB_IN_SERVICE, StringComparison.OrdinalIgnoreCase) ||
+                s.Equals(UI_OUT_OF_SERVICE, StringComparison.OrdinalIgnoreCase) ||
+                s.Equals(LEGACY_NOT_OPERATIONAL, StringComparison.OrdinalIgnoreCase))
+            {
+                StatusCombo.SelectedIndex = 1; // "Out of Service" (maps to DB "In Service")
+                return;
+            }
+
+            // Fallback
+            StatusCombo.SelectedIndex = 0;
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)
@@ -57,7 +94,7 @@ namespace HouseholdMS.View.UserControls
                 using (var contactCheck = new SQLiteCommand(@"
                     SELECT COUNT(*) FROM Households
                     WHERE ContactNum = @Contact
-                    AND (@ID IS NULL OR HouseholdID != @ID)", conn))
+                      AND (@ID IS NULL OR HouseholdID != @ID)", conn))
                 {
                     contactCheck.Parameters.AddWithValue("@Contact", Contact);
                     contactCheck.Parameters.AddWithValue("@ID", (object)EditingHouseholdID ?? DBNull.Value);
@@ -73,7 +110,7 @@ namespace HouseholdMS.View.UserControls
                 using (var softCheck = new SQLiteCommand(@"
                     SELECT COUNT(*) FROM Households
                     WHERE OwnerName = @Owner
-                    AND (@ID IS NULL OR HouseholdID != @ID)", conn))
+                      AND (@ID IS NULL OR HouseholdID != @ID)", conn))
                 {
                     softCheck.Parameters.AddWithValue("@Owner", OwnerName);
                     softCheck.Parameters.AddWithValue("@ID", (object)EditingHouseholdID ?? DBNull.Value);
@@ -115,12 +152,12 @@ namespace HouseholdMS.View.UserControls
                     cmd.Parameters.AddWithValue("@District", District);
                     cmd.Parameters.AddWithValue("@Contact", Contact);
 
-                    // Save dates as yyyy-MM-dd for ISO and sorting compatibility
+                    // Save dates as yyyy-MM-dd
                     cmd.Parameters.AddWithValue("@Inst", InstDatePicker.SelectedDate.Value.ToString("yyyy-MM-dd"));
                     cmd.Parameters.AddWithValue("@Last", LastInspPicker.SelectedDate.Value.ToString("yyyy-MM-dd"));
 
                     cmd.Parameters.AddWithValue("@UserComm", string.IsNullOrWhiteSpace(Note) ? (object)DBNull.Value : Note);
-                    cmd.Parameters.AddWithValue("@Status", string.IsNullOrWhiteSpace(Status) ? (object)DBNull.Value : Status);
+                    cmd.Parameters.AddWithValue("@Status", Status); // Status property returns DB canonical value
 
                     if (EditingHouseholdID != null)
                         cmd.Parameters.AddWithValue("@ID", EditingHouseholdID);
@@ -172,13 +209,13 @@ namespace HouseholdMS.View.UserControls
             if (string.IsNullOrWhiteSpace(OwnerName)) { OwnerBox.Tag = "error"; hasError = true; }
             if (string.IsNullOrWhiteSpace(Contact)) { ContactBox.Tag = "error"; hasError = true; }
 
-            if (!int.TryParse(ContactBox.Text, out _))
+            int dummy;
+            if (!int.TryParse(ContactBox.Text, out dummy))
             {
                 MessageBox.Show("Please enter valid contact number!", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
 
-            // Non-nullable, must select a date
             if (InstDatePicker.SelectedDate == null || InstDatePicker.SelectedDate > DateTime.Today)
             {
                 MessageBox.Show("Installation date cannot be in the future or empty.", "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -206,17 +243,31 @@ namespace HouseholdMS.View.UserControls
             return true;
         }
 
-        // Properties for field values (UI -> code)
-        public string OwnerName => OwnerBox.Text.Trim();
-        public string UserName => UserNameBox.Text.Trim();
-        public string Municipality => MunicipalityBox.Text.Trim();
-        public string District => DistrictBox.Text.Trim();
-        public string Contact => ContactBox.Text.Trim();
-        public string Note => NoteBox.Text.Trim();
-        public string Status => StatusBox.Text.Trim();
+        // Properties for field values
+        public string OwnerName { get { return OwnerBox.Text.Trim(); } }
+        public string UserName { get { return UserNameBox.Text.Trim(); } }
+        public string Municipality { get { return MunicipalityBox.Text.Trim(); } }
+        public string District { get { return DistrictBox.Text.Trim(); } }
+        public string Contact { get { return ContactBox.Text.Trim(); } }
+        public string Note { get { return NoteBox.Text.Trim(); } }
 
-        // If you need them as DateTime (for internal logic)
-        public DateTime InstallDate => InstDatePicker.SelectedDate.Value;
-        public DateTime LastInspect => LastInspPicker.SelectedDate.Value;
+        /// <summary>
+        /// Returns the DB canonical value for Status:
+        /// - "Operational" (UI Operational)
+        /// - "In Service"  (UI Out of Service)
+        /// </summary>
+        public string Status
+        {
+            get
+            {
+                var selectedText = (StatusCombo.SelectedItem as ComboBoxItem)?.Content?.ToString().Trim() ?? string.Empty;
+                if (string.Equals(selectedText, UI_OUT_OF_SERVICE, StringComparison.OrdinalIgnoreCase))
+                    return DB_IN_SERVICE;
+                return DB_OPERATIONAL;
+            }
+        }
+
+        public DateTime InstallDate { get { return InstDatePicker.SelectedDate.Value; } }
+        public DateTime LastInspect { get { return LastInspPicker.SelectedDate.Value; } }
     }
 }

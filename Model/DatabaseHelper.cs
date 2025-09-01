@@ -110,14 +110,6 @@ CREATE TABLE IF NOT EXISTS Technicians (
     Note TEXT
 );
 
-CREATE TABLE IF NOT EXISTS SolarEquipment (
-    EquipmentID INTEGER PRIMARY KEY AUTOINCREMENT,
-    HouseholdID INTEGER NOT NULL,
-    Equipment TEXT NOT NULL,
-    Status TEXT NOT NULL,
-    FOREIGN KEY (HouseholdID) REFERENCES Households(HouseholdID) ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS InspectionReport (
     ReportID INTEGER PRIMARY KEY AUTOINCREMENT,
     HouseholdID INTEGER NOT NULL,
@@ -153,6 +145,50 @@ CREATE TABLE IF NOT EXISTS TestReports (
     FOREIGN KEY (HouseholdID) REFERENCES Households(HouseholdID) ON DELETE CASCADE,
     FOREIGN KEY (TechnicianID) REFERENCES Technicians(TechnicianID) ON DELETE CASCADE
 );
+
+-- =========================
+-- Service workflow (no history)
+-- =========================
+CREATE TABLE IF NOT EXISTS Service (
+    ServiceID     INTEGER PRIMARY KEY AUTOINCREMENT,
+    HouseholdID   INTEGER NOT NULL,
+    TechnicianID  INTEGER,
+    Problem       TEXT,
+    Action        TEXT,
+    InventoryUsed TEXT,
+    StartDate     TEXT NOT NULL DEFAULT (datetime('now')),
+    FinishDate    TEXT,
+    FOREIGN KEY (HouseholdID)  REFERENCES Households(HouseholdID)  ON DELETE CASCADE,
+    FOREIGN KEY (TechnicianID) REFERENCES Technicians(TechnicianID) ON DELETE SET NULL
+);
+
+-- Fast tile filtering
+CREATE INDEX IF NOT EXISTS IX_Households_Statuss ON Households(Statuss);
+CREATE INDEX IF NOT EXISTS IX_Service_HouseholdID ON Service(HouseholdID);
+CREATE INDEX IF NOT EXISTS IX_Service_StartDate  ON Service(StartDate);
+
+-- Guarantee only ONE open (FinishDate IS NULL) service per household
+CREATE UNIQUE INDEX IF NOT EXISTS UX_Service_OpenPerHousehold
+ON Service(HouseholdID) WHERE FinishDate IS NULL;
+
+-- Auto-create a Service when a household INSERTs as 'In Service'
+CREATE TRIGGER IF NOT EXISTS trg_hh_insert_inservice
+AFTER INSERT ON Households
+WHEN NEW.Statuss = 'In Service'
+BEGIN
+    INSERT OR IGNORE INTO Service (HouseholdID) VALUES (NEW.HouseholdID);
+END;
+
+-- Auto-create a Service when Statuss changes to 'In Service'
+CREATE TRIGGER IF NOT EXISTS trg_hh_update_inservice
+AFTER UPDATE OF Statuss ON Households
+WHEN NEW.Statuss = 'In Service'
+BEGIN
+    INSERT OR IGNORE INTO Service (HouseholdID) VALUES (NEW.HouseholdID);
+END;
+
+-- Optional legacy cleanup: treat 'Not Operational' as 'In Service'
+UPDATE Households SET Statuss = 'In Service' WHERE Statuss = 'Not Operational';
 
 -- Insert root admin if not exists
 INSERT OR IGNORE INTO Users (UserID, Name, Username, PasswordHash, Role)
