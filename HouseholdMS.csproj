@@ -134,6 +134,18 @@
     <Compile Include="View\DashboardView.xaml.cs">
       <DependentUpon>DashboardView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Dashboard\AddServiceControl.xaml.cs">
+      <DependentUpon>AddServiceControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Dashboard\AllHouseholdsView.xaml.cs">
+      <DependentUpon>AllHouseholdsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Dashboard\OperationalHouseholdsView.xaml.cs">
+      <DependentUpon>OperationalHouseholdsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Dashboard\OutOfServiceHouseholdsView.xaml.cs">
+      <DependentUpon>OutOfServiceHouseholdsView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\EqTesting\AllTestMenuView.xaml.cs">
       <DependentUpon>AllTestMenuView.xaml</DependentUpon>
     </Compile>
@@ -200,6 +212,9 @@
     <Compile Include="View\UserControls\AddTechnicianControl.xaml.cs">
       <DependentUpon>AddTechnicianControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\UserControls\CircularProgressBar.xaml.cs">
+      <DependentUpon>CircularProgressBar.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\UserControls\TestReportDetailControl.xaml.cs">
       <DependentUpon>TestReportDetailControl.xaml</DependentUpon>
     </Compile>
@@ -238,6 +253,22 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="View\DashboardView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Dashboard\AddServiceControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Dashboard\AllHouseholdsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Dashboard\OperationalHouseholdsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Dashboard\OutOfServiceHouseholdsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -326,6 +357,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\UserControls\AddTechnicianControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\UserControls\CircularProgressBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

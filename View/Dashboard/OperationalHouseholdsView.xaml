@@ -1,0 +1,180 @@
+﻿<UserControl x:Class="HouseholdMS.View.Dashboard.OperationalHouseholdsView" 
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="1200">
+
+    <UserControl.Resources>
+        <!-- Action button -->
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.7"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Search box -->
+        <Style x:Key="SearchBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="12,4"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="FontStyle" Value="Italic"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="Gray"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#ccc"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="#f9f9f9" Padding="20">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- LEFT: list + search -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBox x:Name="SearchBox"
+                             Style="{StaticResource SearchBoxStyle}"
+                             Width="280"
+                             Margin="0,0,10,0"
+                             VerticalContentAlignment="Center"
+                             Foreground="Gray"
+                             FontSize="13"
+                             FontStyle="Italic"
+                             Text="Search by owner, user, area or contact"
+                             Tag="Search by owner, user, area or contact"
+                             GotFocus="ClearText"
+                             LostFocus="ResetText"
+                             TextChanged="SearchBox_TextChanged"/>
+                </StackPanel>
+
+                <ListView x:Name="HouseholdListView"
+                          Grid.Row="1"
+                          Background="White"
+                          BorderBrush="#DDD"
+                          BorderThickness="1"
+                          SelectionMode="Single"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          SelectionChanged="HouseholdListView_SelectionChanged">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="ID" DisplayMemberBinding="{Binding HouseholdID}" Width="50"/>
+                            <GridViewColumn Header="Owner Name" DisplayMemberBinding="{Binding OwnerName}" Width="120"/>
+                            <GridViewColumn Header="User Name" DisplayMemberBinding="{Binding UserName}" Width="120"/>
+                            <GridViewColumn Header="Municipality" DisplayMemberBinding="{Binding Municipality}" Width="120"/>
+                            <GridViewColumn Header="District" DisplayMemberBinding="{Binding District}" Width="120"/>
+                            <GridViewColumn Header="Contact" DisplayMemberBinding="{Binding ContactNum}" Width="100"/>
+                            <GridViewColumn Header="Installed" Width="100">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding InstallDate, StringFormat='yyyy-MM-dd'}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Last Inspect" Width="110">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding LastInspect, StringFormat='yyyy-MM-dd'}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <!-- Status (admin-only change) -->
+                            <GridViewColumn Header="Status" Width="120">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Statuss}"
+                                                   Cursor="Hand"
+                                                   ToolTip="Click to change status (Admin only)"
+                                                   MouseLeftButtonDown="StatusText_MouseLeftButtonDown"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <GridViewColumn Header="Comment" DisplayMemberBinding="{Binding UserComm}" Width="150"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
+
+            <!-- RIGHT: details / AddServiceControl host -->
+            <Border x:Name="FormContainer"
+                    Grid.Column="1"
+                    Background="White"
+                    CornerRadius="6"
+                    BorderBrush="#DDD"
+                    BorderThickness="1"
+                    Padding="10"
+                    Margin="10,0,0,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Selection details or AddServiceControl will be injected here -->
+                    <ContentControl x:Name="FormContent"
+                                    Grid.Row="0"/>
+
+                    <!-- Start Service button (shown for Admin/Technician when eligible) -->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+                        <Button x:Name="StartServiceCallButton"
+                                Content="Start Service Call"
+                                Style="{StaticResource ActionButtonStyle}"
+                                Background="#1976D2"
+                                Visibility="Collapsed"
+                                Click="StartServiceCall_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

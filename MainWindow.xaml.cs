@@ -4,9 +4,8 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using HouseholdMS.View.EqTesting;
-using HouseholdMS.View.Measurement; // Исправь namespace если нужно
+using HouseholdMS.View.Measurement;
 using HouseholdMS.View.Dashboard;
-
 
 namespace HouseholdMS
 {
@@ -47,8 +46,14 @@ namespace HouseholdMS
                 ManageUsersButton.Visibility = Visibility.Collapsed;
             }
 
-            // 🔥 Default content: Households
+            // Default content
             MainContent.Content = new DashboardView(_currentUserRole);
+        }
+
+        // NEW: allow child views (e.g., DashboardView) to navigate MainContent
+        public void NavigateTo(UserControl view)
+        {
+            MainContent.Content = view;
         }
 
         private void bt_HouseholdMenu(object sender, RoutedEventArgs e)
@@ -95,7 +100,6 @@ namespace HouseholdMS
             MainContent.Content = view;
         }
 
-
         private void bt_BatteryTest_Click(object sender, RoutedEventArgs e)
         {
             MainContent.Content = new BatteryTestMenuView(_currentUserRole);
@@ -120,14 +124,17 @@ namespace HouseholdMS
         {
             MainContent.Content = new SettingMenuView(_currentUserRole);
         }
+
         private void bt_MeasurementMenu(object sender, RoutedEventArgs e)
         {
             MainContent.Content = new MeasurementView();
         }
+
         private void bt_OscilloscopeMenu(object sender, RoutedEventArgs e)
         {
             MainContent.Content = new HouseholdMS.View.Measurement.OscilloscopeView();
         }
+
         private void bt_Template_Click(object sender, RoutedEventArgs e)
         {
             MainContent.Content = new TemplateView();
@@ -140,16 +147,9 @@ namespace HouseholdMS
 
         private void AllTest_CloseRequested(object sender, EventArgs e)
         {
-            // Option 1: go to Reports so the user sees the saved entry
+            // Example post-close navigation; keep whichever you prefer:
             MainContent.Content = new TestReportsView(_currentUserRole);
-
-            // Option 2: or return to the default menu (uncomment if preferred)
             MainContent.Content = new HouseholdsView(_currentUserRole);
-
-            // Option 3: or just clear the content
-            //MainContent.Content = null;
         }
-
-        
     }
 }

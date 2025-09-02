@@ -61,7 +61,7 @@
         </Grid.LayoutTransform>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="250"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -83,7 +83,7 @@
             </StackPanel>
 
             <StackPanel Grid.Row="1">
-
+                
                 <Button x:Name="bt_Dashboard" Content="Dashboard" Click="bt_Dashboard_Click" Style="{StaticResource MenuButtonStyle}"/>
                 <!--<Button Content="🏠 Households" Click="bt_HouseholdMenu" Style="{StaticResource MenuButtonStyle}"/> -->
                 <Button Content="👷 Technicians" Click="bt_TechnicianMenu" Style="{StaticResource MenuButtonStyle}"/>

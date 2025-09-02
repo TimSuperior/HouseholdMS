@@ -1,15 +1,17 @@
 ﻿<UserControl x:Class="HouseholdMS.View.Dashboard.DashboardView"  
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctrls="clr-namespace:HouseholdMS.View.UserControls"
              xmlns:local="clr-namespace:HouseholdMS.View.Dashboard">
+
     <UserControl.Resources>
 
         <!-- Base tile look -->
         <Style x:Key="TileButton" TargetType="Button">
             <Setter Property="Margin" Value="8"/>
             <Setter Property="Padding" Value="16"/>
-            <Setter Property="MinHeight" Value="110"/>
-            <Setter Property="MinWidth" Value="220"/>
+            <Setter Property="MinHeight" Value="130"/>
+            <Setter Property="MinWidth" Value="240"/>
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="VerticalContentAlignment" Value="Stretch"/>
@@ -108,40 +110,72 @@
 
         <!-- Row 1: Household (title + 3 tiles) -->
         <StackPanel Grid.Row="1" Margin="12,0,12,4">
-            <!-- Header with Open-all button -->
             <DockPanel LastChildFill="True" Margin="0,0,0,6">
                 <TextBlock Text="🏠 Household" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                <Button Content="Open"
-                        Padding="8,4"
-                        Margin="8,0,0,0"
-                        HorizontalAlignment="Right"
-                        DockPanel.Dock="Right"
-                        Click="OpenAllHouseholds_Click"/>
             </DockPanel>
 
             <UniformGrid Columns="3">
                 <!-- Tile 1: Total households -->
                 <Button Style="{StaticResource TileButton}" Click="OpenAllHouseholds_Click">
-                    <StackPanel>
-                        <TextBlock Text="Total Households" FontWeight="Bold"/>
-                        <TextBlock x:Name="TotalCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
-                    </StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Text="Total Households" FontWeight="Bold"/>
+                            <TextBlock x:Name="TotalCountText" Text="0" FontSize="34" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Grid>
                 </Button>
 
-                <!-- Tile 2: Operational -->
+                <!-- Tile 2: Operational with ring -->
                 <Button Style="{StaticResource TileButton}" Click="OpenOperational_Click">
-                    <StackPanel>
-                        <TextBlock Text="Household Operational" FontWeight="Bold"/>
-                        <TextBlock x:Name="OperationalCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
-                    </StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Text="Operational" FontWeight="Bold"/>
+                            <TextBlock x:Name="OperationalCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <ctrls:CircularProgressBar x:Name="OperationalProgress"
+                                                   Width="72" Height="72"
+                                                   StrokeThickness="8"
+                                                   ProgressBrush="#4CAF50"
+                                                   TrackBrush="#E6E6E6"
+                                                   Grid.Column="1"
+                                                   HorizontalAlignment="Right"
+                                                   VerticalAlignment="Center"/>
+                    </Grid>
                 </Button>
 
-                <!-- Tile 3: Out of Service (DB status = In Service) -->
-                <Button Style="{StaticResource TileButton}" Click="OpenInService_Click">
-                    <StackPanel>
-                        <TextBlock Text="Household Out of Service" FontWeight="Bold"/>
-                        <TextBlock x:Name="OutOfServiceCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
-                    </StackPanel>
+                <!-- Tile 3: Out of Service (DB: In Service) with ring -->
+                <Button Style="{StaticResource TileButton}" Click="OpenOutOfService_Click">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Text="Out of Service" FontWeight="Bold"/>
+                            <TextBlock x:Name="OutOfServiceCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <ctrls:CircularProgressBar x:Name="OutOfServiceProgress"
+                                                   Width="72" Height="72"
+                                                   StrokeThickness="8"
+                                                   ProgressBrush="#F44336"
+                                                   TrackBrush="#E6E6E6"
+                                                   Grid.Column="1"
+                                                   HorizontalAlignment="Right"
+                                                   VerticalAlignment="Center"/>
+                    </Grid>
                 </Button>
             </UniformGrid>
         </StackPanel>

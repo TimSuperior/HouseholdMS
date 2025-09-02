@@ -1,0 +1,105 @@
+﻿<UserControl x:Class="HouseholdMS.View.Dashboard.AddServiceControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="500"
+             d:DesignWidth="520"
+             Background="White">
+
+    <Border Padding="20"
+            CornerRadius="12"
+            BorderBrush="#e0e0e0"
+            BorderThickness="1"
+            Background="White"
+            SnapsToDevicePixels="True">
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                <TextBlock Text="🛠" FontSize="22" Margin="0,0,8,0"/>
+                <TextBlock Text="Start Service Call"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Foreground="#2E3B4E"/>
+            </StackPanel>
+
+            <!-- Body -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+
+                    <!-- Household summary (read-only) -->
+                    <Border BorderBrush="#ededed" BorderThickness="1" CornerRadius="8" Padding="12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="Household ID:" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="HHIdText" Grid.Column="1"/>
+
+                            <TextBlock Grid.Row="1" Text="Owner:" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                            <TextBlock x:Name="OwnerText" Grid.Column="1" Grid.Row="1" Margin="0,6,0,0"/>
+
+                            <TextBlock Grid.Row="2" Text="User:" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                            <TextBlock x:Name="UserText" Grid.Column="1" Grid.Row="2" Margin="0,6,0,0"/>
+
+                            <TextBlock Grid.Row="3" Text="Municipality:" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                            <TextBlock x:Name="MunicipalityText" Grid.Column="1" Grid.Row="3" Margin="0,6,0,0"/>
+
+                            <TextBlock Grid.Row="4" Text="District:" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                            <TextBlock x:Name="DistrictText" Grid.Column="1" Grid.Row="4" Margin="0,6,0,0"/>
+
+                            <TextBlock Grid.Row="5" Text="Contact:" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                            <TextBlock x:Name="ContactText" Grid.Column="1" Grid.Row="5" Margin="0,6,0,0"/>
+
+                            <TextBlock Grid.Row="6" Text="Status:" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                            <TextBlock x:Name="StatusText" Grid.Column="1" Grid.Row="6" Margin="0,6,0,0"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Space -->
+                    <Border Height="10" Background="Transparent"/>
+
+                    <!-- Problem -->
+                    <TextBlock Text="Problem description (optional)" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBox x:Name="ProblemBox"
+                             Height="120"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             BorderBrush="#C0C0C0"
+                             BorderThickness="1"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Footer -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+                <Button x:Name="ConfirmBtn"
+                        Content="✔ Confirm Service"
+                        Height="36" MinWidth="160"
+                        Background="#2E7D32"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        Margin="0,0,8,0"
+                        Click="ConfirmBtn_Click"/>
+
+                <Button x:Name="CancelBtn"
+                        Content="✖ Cancel"
+                        Height="36" MinWidth="120"
+                        Background="#C62828"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        Click="CancelBtn_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

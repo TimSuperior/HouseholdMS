@@ -1,0 +1,38 @@
+﻿<UserControl x:Class="HouseholdMS.View.UserControls.CircularProgressBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="72" Height="72"
+             SizeChanged="UserControl_SizeChanged"
+             Loaded="UserControl_Loaded">
+    <Grid>
+        <!-- Background circle (track) -->
+        <Ellipse x:Name="TrackEllipse"
+                 StrokeThickness="{Binding StrokeThickness, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                 Stroke="{Binding TrackBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                 Fill="Transparent"/>
+
+        <!-- Full ring shown only when Percentage >= 100 -->
+        <Ellipse x:Name="FullRing"
+                 Visibility="Collapsed"
+                 StrokeThickness="{Binding StrokeThickness, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                 Stroke="{Binding ProgressBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                 Fill="Transparent"/>
+
+        <!-- Arc path for partial progress -->
+        <Path x:Name="ProgressPath"
+              StrokeThickness="{Binding StrokeThickness, RelativeSource={RelativeSource AncestorType=UserControl}}"
+              Stroke="{Binding ProgressBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"
+              StrokeStartLineCap="Round"
+              StrokeEndLineCap="Round"
+              Fill="Transparent"/>
+
+        <!-- Center label -->
+        <TextBlock x:Name="PercentLabel"
+                   Text="{Binding Percentage, RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat={}{0:0}%}"
+                   FontWeight="Bold"
+                   Foreground="#444"
+                   FontSize="14"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
+    </Grid>
+</UserControl>
