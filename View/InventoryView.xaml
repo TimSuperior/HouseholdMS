@@ -307,15 +307,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Note" Width="260">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Style="{StaticResource CellText}"
-                                                       Text="{Binding Note}"
-                                                       ToolTip="{Binding Note}"/>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
+                            
 
                                 <!-- Actions -->
                                 <GridViewColumn Header="Restock" Width="120">
@@ -341,6 +333,17 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
+
+                                        <GridViewColumn Header="Note" Width="160">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}"
+                                                   Text="{Binding Note}"
+                                                   ToolTip="{Binding Note}"/>   
+                                        </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+
                             </GridView>
                         </ListView.View>
                     </ListView>
