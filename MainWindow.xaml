@@ -85,6 +85,7 @@
             <StackPanel Grid.Row="1">
                 
                 <Button x:Name="bt_Dashboard" Content="Dashboard" Click="bt_Dashboard_Click" Style="{StaticResource MenuButtonStyle}"/>
+                <Button Content="🏠 Sites" Click="bt_SiteMenu" Style="{StaticResource MenuButtonStyle}"/>
                 <!--<Button Content="🏠 Households" Click="bt_HouseholdMenu" Style="{StaticResource MenuButtonStyle}"/> -->
                 <Button Content="👷 Technicians" Click="bt_TechnicianMenu" Style="{StaticResource MenuButtonStyle}"/>
                 <Button Content="📦 Inventory" Click="bt_InventoryMenu" Style="{StaticResource MenuButtonStyle}"/>

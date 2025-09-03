@@ -16,57 +16,18 @@
         <SolidColorBrush x:Key="Col.HeaderBg" Color="#FFF3F4F6"/>
         <SolidColorBrush x:Key="Col.HeaderFg" Color="#FF374151"/>
         <SolidColorBrush x:Key="Col.RowHover" Color="#FFF0F7FF"/>
-        <!-- stronger hover -->
         <SolidColorBrush x:Key="Col.RowSel"   Color="#FFDBEAFE"/>
-        <!-- stronger selected -->
         <SolidColorBrush x:Key="Col.RowSelBorder" Color="#FF3B82F6"/>
-        <!-- blue-500 -->
         <SolidColorBrush x:Key="Col.Text"     Color="#FF111827"/>
         <SolidColorBrush x:Key="Col.TextMut"  Color="#FF6B7280"/>
         <SolidColorBrush x:Key="Col.Primary"  Color="#FF3B82F6"/>
         <SolidColorBrush x:Key="Col.PrimaryHover" Color="#FF2563EB"/>
 
-        <!-- Primary button -->
-        <Style x:Key="ActionButtonStyle" TargetType="Button">
-            <Setter Property="Height" Value="36"/>
-            <Setter Property="MinWidth" Value="120"/>
-            <Setter Property="Margin" Value="4"/>
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Background" Value="{StaticResource Col.Primary}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="10"
-                                SnapsToDevicePixels="True">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="{StaticResource Col.PrimaryHover}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Opacity" Value="0.85"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" Value="0.6"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         <!-- Search box -->
         <Style x:Key="SearchBoxStyle" TargetType="TextBox">
             <Setter Property="Height" Value="36"/>
             <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="Margin" Value="0,0,10,10"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
             <Setter Property="Background" Value="White"/>
@@ -132,11 +93,10 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="4"/>
-                                    <!-- selection indicator -->
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Left selection bar (hidden by default) -->
+                                <!-- Left selection bar -->
                                 <Border x:Name="SelBar"
                                         Grid.Column="0"
                                         Background="{StaticResource Col.RowSelBorder}"
@@ -151,7 +111,7 @@
                         </Border>
 
                         <ControlTemplate.Triggers>
-                            <!-- Selected (independent of control focus) -->
+                            <!-- Selected -->
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="RowOuter" Property="Background" Value="{StaticResource Col.RowSel}"/>
                                 <Setter TargetName="RowOuter" Property="BorderBrush" Value="{StaticResource Col.RowSelBorder}"/>
@@ -213,179 +173,150 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <!-- ========== LAYOUT ========== -->
+    <!-- ========== LAYOUT (no right pane; pop-up on double-click) ========== -->
     <Border Background="{StaticResource Col.BgPage}" Padding="20">
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*"/>
-                <ColumnDefinition Width="2*"/>
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-            <!-- LEFT: search + table -->
-            <Grid Grid.Column="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+            <!-- Top bar -->
+            <TextBox x:Name="SearchBox"
+                     Style="{StaticResource SearchBoxStyle}"
+                     Width="320"
+                     VerticalContentAlignment="Center"
+                     Foreground="{StaticResource Col.TextMut}"
+                     FontStyle="Italic"
+                     Text="Search by owner, user, area or contact"
+                     Tag="Search by owner, user, area or contact"
+                     GotFocus="ClearText"
+                     LostFocus="ResetText"
+                     TextChanged="SearchBox_TextChanged"/>
 
-                <!-- Top bar -->
-                <DockPanel LastChildFill="False" Margin="0,0,0,10">
-                    <TextBox x:Name="SearchBox"
-                             Style="{StaticResource SearchBoxStyle}"
-                             Width="320"
-                             VerticalContentAlignment="Center"
-                             Foreground="{StaticResource Col.TextMut}"
-                             FontStyle="Italic"
-                             Text="Search by owner, user, area or contact"
-                             Tag="Search by owner, user, area or contact"
-                             GotFocus="ClearText"
-                             LostFocus="ResetText"
-                             TextChanged="SearchBox_TextChanged"
-                             DockPanel.Dock="Left"/>
-                    <Button x:Name="AddHouseholdButton"
-                            Content="➕ Add Household"
-                            Style="{StaticResource ActionButtonStyle}"
-                            Width="170"
-                            DockPanel.Dock="Right"
-                            Click="AddHouseholdButton_Click"/>
-                </DockPanel>
-
-                <!-- Card with ListView -->
-                <Border Grid.Row="1"
-                        Background="{StaticResource Col.BgCard}"
-                        CornerRadius="12"
-                        BorderBrush="{StaticResource Col.Border}"
-                        BorderThickness="1"
-                        Padding="8">
-                    <Grid>
-                        <ListView x:Name="HouseholdListView"
-                                  Background="Transparent"
-                                  BorderThickness="0"
-                                  ScrollViewer.CanContentScroll="True"
-                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                  VirtualizingPanel.IsVirtualizing="True"
-                                  VirtualizingPanel.VirtualizationMode="Recycling"
-                                  SelectionMode="Single"
-                                  SelectionChanged="HouseholdListView_SelectionChanged">
-                            <ListView.View>
-                                <GridView AllowsColumnReorder="True">
-                                    <GridViewColumn Header="ID" Width="60">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Style="{StaticResource CellText}"
-                                                           Text="{Binding HouseholdID}"
-                                                           Foreground="{StaticResource Col.TextMut}"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-
-                                    <GridViewColumn Header="Owner Name" Width="150">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Style="{StaticResource CellText}" Text="{Binding OwnerName}"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-
-                                    <GridViewColumn Header="User Name" Width="150">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Style="{StaticResource CellText}" Text="{Binding UserName}"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-
-                                    <GridViewColumn Header="Municipality" Width="140">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Style="{StaticResource CellText}" Text="{Binding Municipality}"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-
-                                    <GridViewColumn Header="District" Width="140">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Style="{StaticResource CellText}" Text="{Binding District}"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-
-                                    <GridViewColumn Header="Contact" Width="120">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Style="{StaticResource CellText}" Text="{Binding ContactNum}"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-
-                                    <GridViewColumn Header="Installed" Width="110">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Style="{StaticResource CellText}"
-                                                           Text="{Binding InstallDate, StringFormat='{}{0:yyyy-MM-dd}'}"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-
-                                    <GridViewColumn Header="Last Inspect" Width="120">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Style="{StaticResource CellText}"
-                                                           Text="{Binding LastInspect, StringFormat='{}{0:yyyy-MM-dd}'}"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-
-                                    <!-- Status chip -->
-                                    <GridViewColumn Header="Status" Width="150"
-                                                    CellTemplate="{StaticResource StatusChipTemplate}"/>
-
-                                    <GridViewColumn Header="Comment" Width="220">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Style="{StaticResource CellText}"
-                                                           Text="{Binding UserComm}"
-                                                           ToolTip="{Binding UserComm}"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                </GridView>
-                            </ListView.View>
-                        </ListView>
-
-                        <!-- Empty state -->
-                        <TextBlock Text="No out-of-service households found"
-                                   Foreground="{StaticResource Col.TextMut}"
-                                   FontStyle="Italic"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   IsHitTestVisible="False">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ElementName=HouseholdListView, Path=HasItems}" Value="False">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </Grid>
-                </Border>
-            </Grid>
-
-            <!-- RIGHT: inline details host -->
-            <Border x:Name="FormContainer"
-                    Grid.Column="1"
-                    Background="White"
+            <!-- Card with ListView -->
+            <Border Grid.Row="1"
+                    Background="{StaticResource Col.BgCard}"
                     CornerRadius="12"
                     BorderBrush="{StaticResource Col.Border}"
                     BorderThickness="1"
-                    Padding="10"
-                    Margin="10,0,0,0">
-                <ContentControl x:Name="FormContent"/>
+                    Padding="8">
+                <Grid>
+                    <ListView x:Name="HouseholdListView"
+                              Background="Transparent"
+                              BorderThickness="0"
+                              ScrollViewer.CanContentScroll="True"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.VirtualizationMode="Recycling"
+                              SelectionMode="Single"
+                              MouseDoubleClick="HouseholdListView_MouseDoubleClick">
+                        <ListView.View>
+                            <GridView AllowsColumnReorder="True">
+                                <GridViewColumn Header="ID" Width="60">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}"
+                                                       Text="{Binding HouseholdID}"
+                                                       Foreground="{StaticResource Col.TextMut}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Owner Name" Width="150">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding OwnerName}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="User Name" Width="150">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding UserName}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Municipality" Width="140">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding Municipality}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="District" Width="140">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding District}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Contact" Width="120">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding ContactNum}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Installed" Width="110">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}"
+                                                       Text="{Binding InstallDate, StringFormat='{}{0:yyyy-MM-dd}'}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Last Inspect" Width="120">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}"
+                                                       Text="{Binding LastInspect, StringFormat='{}{0:yyyy-MM-dd}'}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <!-- Status chip -->
+                                <GridViewColumn Header="Status" Width="150"
+                                                CellTemplate="{StaticResource StatusChipTemplate}"/>
+
+                                <GridViewColumn Header="Comment" Width="220">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}"
+                                                       Text="{Binding UserComm}"
+                                                       ToolTip="{Binding UserComm}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+
+                    <!-- Empty state -->
+                    <TextBlock Text="No out-of-service households found"
+                               Foreground="{StaticResource Col.TextMut}"
+                               FontStyle="Italic"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               IsHitTestVisible="False">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=HouseholdListView, Path=HasItems}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
             </Border>
         </Grid>
     </Border>

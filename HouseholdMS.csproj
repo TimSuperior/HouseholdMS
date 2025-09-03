@@ -149,6 +149,9 @@
     <Compile Include="View\Dashboard\ServiceCallDetailControl.xaml.cs">
       <DependentUpon>ServiceCallDetailControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Dashboard\SitesView.xaml.cs">
+      <DependentUpon>SitesView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\EqTesting\AllTestMenuView.xaml.cs">
       <DependentUpon>AllTestMenuView.xaml</DependentUpon>
     </Compile>
@@ -276,6 +279,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Dashboard\ServiceCallDetailControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Dashboard\SitesView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

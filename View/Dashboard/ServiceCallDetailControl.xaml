@@ -16,9 +16,6 @@
         <SolidColorBrush x:Key="Col.Muted" Color="#6B7280"/>
         <SolidColorBrush x:Key="Col.Border" Color="#E5E7EB"/>
         <SolidColorBrush x:Key="Col.Card" Color="#FFFFFFFF"/>
-        <SolidColorBrush x:Key="Col.BadgeGreen" Color="#D1FAE5"/>
-        <SolidColorBrush x:Key="Col.BadgeYellow" Color="#FEF3C7"/>
-        <SolidColorBrush x:Key="Col.BadgeRed" Color="#FEE2E2"/>
 
         <!-- Labels -->
         <Style x:Key="FormLabel" TargetType="TextBlock">
@@ -27,7 +24,7 @@
             <Setter Property="Foreground" Value="#111827"/>
         </Style>
 
-        <!-- Inputs -->
+        <!-- Base input -->
         <Style x:Key="InputTextBox" TargetType="TextBox">
             <Setter Property="Height" Value="32"/>
             <Setter Property="Padding" Value="8,0"/>
@@ -39,6 +36,43 @@
                     <Setter Property="BorderBrush" Value="{StaticResource Col.Accent}"/>
                 </Trigger>
             </Style.Triggers>
+        </Style>
+
+        <!-- Watermark TextBox using Tag as placeholder -->
+        <Style x:Key="WatermarkTextBox" TargetType="TextBox" BasedOn="{StaticResource InputTextBox}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <Grid>
+                                <ScrollViewer x:Name="PART_ContentHost"/>
+                                <TextBlock x:Name="Watermark"
+                                           Text="{TemplateBinding Tag}"
+                                           Foreground="#9CA3AF"
+                                           Margin="8,0,0,0"
+                                           VerticalAlignment="Center"
+                                           IsHitTestVisible="False"
+                                           Visibility="Collapsed"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="Text" Value=""/>
+                                    <Condition Property="IsKeyboardFocused" Value="False"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Watermark" Property="Visibility" Value="Visible"/>
+                            </MultiTrigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Watermark" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <!-- Buttons -->
@@ -257,7 +291,7 @@
             <!-- Footer -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
                 <Button x:Name="FinishBtn" Content="✔ Finish Service" Style="{StaticResource PrimaryButton}" Click="FinishBtn_Click"/>
-                <Button x:Name="CancelBtn" Content="✖ Cancel" Style="{StaticResource DangerButton}" Click="CancelBtn_Click"/>
+                <Button x:Name="CancelBtn" Content="✖ Cancel Service" Style="{StaticResource DangerButton}" Click="CancelBtn_Click"/>
             </StackPanel>
 
             <!-- ======= Overlays (in-panel modals) ======= -->
@@ -274,7 +308,9 @@
 
                         <TextBlock Text="Select Technicians" FontSize="16" FontWeight="Bold"/>
 
-                        <TextBox x:Name="TechSearchBox" Grid.Row="1" Margin="0,10,0,8" Style="{StaticResource InputTextBox}" PlaceholderText="Search..."
+                        <TextBox x:Name="TechSearchBox" Grid.Row="1" Margin="0,10,0,8"
+                                 Style="{StaticResource WatermarkTextBox}"
+                                 Tag="Search..."
                                  TextChanged="TechSearchBox_TextChanged"/>
 
                         <ListBox x:Name="TechList" Grid.Row="2" BorderBrush="{StaticResource Col.Border}" BorderThickness="1" Height="320">
@@ -309,17 +345,32 @@
 
                         <TextBlock Text="Add Inventory Items" FontSize="16" FontWeight="Bold"/>
 
-                        <TextBox x:Name="InvSearchBox" Grid.Row="1" Margin="0,10,0,8" Style="{StaticResource InputTextBox}" PlaceholderText="Search items..."
+                        <TextBox x:Name="InvSearchBox" Grid.Row="1" Margin="0,10,0,8"
+                                 Style="{StaticResource WatermarkTextBox}"
+                                 Tag="Search items..."
                                  TextChanged="InvSearchBox_TextChanged"/>
 
                         <ListView x:Name="InvList" Grid.Row="2" BorderBrush="{StaticResource Col.Border}" BorderThickness="1" Height="360"
                                   ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="Opacity" Value="1"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CanSelect}" Value="False">
+                                            <Setter Property="Opacity" Value="0.6"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListView.ItemContainerStyle>
                             <ListView.View>
                                 <GridView>
                                     <GridViewColumn Header="Use" Width="60">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" HorizontalAlignment="Center"/>
+                                                <CheckBox HorizontalAlignment="Center"
+                                                          IsEnabled="{Binding CanSelect}"
+                                                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                          ToolTip="{Binding StockBadgeText}"/>
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
@@ -337,11 +388,12 @@
                                     <GridViewColumn Header="Qty" Width="120">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <StackPanel Orientation="Horizontal">
+                                                <StackPanel Orientation="Horizontal" IsEnabled="{Binding CanSelect}">
                                                     <Button Width="24" Height="24" Content="−" Tag="{Binding}" Click="InvPickerMinus_Click"/>
                                                     <TextBox Width="40" Height="24" Margin="6,0"
                                                              HorizontalContentAlignment="Center"
-                                                             Text="{Binding QuantityUsed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                             Text="{Binding QuantityUsed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                             ToolTip="{Binding StockBadgeText}"/>
                                                     <Button Width="24" Height="24" Content="+" Tag="{Binding}" Click="InvPickerPlus_Click"/>
                                                 </StackPanel>
                                             </DataTemplate>

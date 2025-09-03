@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.Dashboard.AddServiceControl"
+﻿<UserControl x:Class="HouseholdMS.View.Dashboard.AddServiceControl" 
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -25,7 +25,7 @@
                 <SolidColorBrush x:Key="MutedBrush"    Color="#9E9E9E"/>
                 <SolidColorBrush x:Key="InputBorderBrush" Color="#C0C0C0"/>
 
-                <!-- Header chips (kept for parity; not used here but harmless) -->
+                <!-- Header chips -->
                 <Style x:Key="ChipBorder" TargetType="Border">
                     <Setter Property="CornerRadius" Value="10"/>
                     <Setter Property="Padding" Value="8,3"/>
@@ -145,7 +145,6 @@
                     <!-- Household summary (read-only) -->
                     <Border BorderBrush="#EDEDED" BorderThickness="1" CornerRadius="8" Padding="12">
                         <Grid>
-                            <!-- Explicit rows prevent overlap -->
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
@@ -183,7 +182,6 @@
                         </Grid>
                     </Border>
 
-                    <!-- Space -->
                     <Border Height="10" Background="Transparent"/>
 
                     <!-- Problem -->

@@ -62,7 +62,7 @@ namespace HouseholdMS.View.Dashboard
 
                     using (SQLiteTransaction tx = conn.BeginTransaction())
                     {
-                        // 1) Move household to "In Service" (UI: Out of Service)
+                        // 1) Move household to "In Service"
                         using (SQLiteCommand cmd1 = new SQLiteCommand(
                             "UPDATE Households SET Statuss='In Service' WHERE HouseholdID=@id;", conn, tx))
                         {
@@ -70,7 +70,7 @@ namespace HouseholdMS.View.Dashboard
                             cmd1.ExecuteNonQuery();
                         }
 
-                        // 2) Create/open service row (StartDate defaults to now)
+                        // 2) Create/open service row
                         using (SQLiteCommand cmd2 = new SQLiteCommand(
                             "INSERT OR IGNORE INTO Service (HouseholdID, Problem) VALUES (@id, @p);", conn, tx))
                         {
@@ -79,7 +79,7 @@ namespace HouseholdMS.View.Dashboard
                             cmd2.ExecuteNonQuery();
                         }
 
-                        // 3) Ensure problem is stored on currently open service
+                        // 3) Ensure problem text saved on currently open service
                         using (SQLiteCommand cmd3 = new SQLiteCommand(
                             "UPDATE Service SET Problem = COALESCE(NULLIF(@p,''), Problem) " +
                             "WHERE HouseholdID=@id AND FinishDate IS NULL;", conn, tx))

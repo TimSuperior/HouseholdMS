@@ -61,6 +61,11 @@ namespace HouseholdMS
             MainContent.Content = new HouseholdsView(_currentUserRole);
         }
 
+        private void bt_SiteMenu(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new SitesView(_currentUserRole);
+        }
+
         private void bt_TechnicianMenu(object sender, RoutedEventArgs e)
         {
             MainContent.Content = new TechView(_currentUserRole);

@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using HouseholdMS.View.UserControls;
+using HouseholdMS.View.UserControls; // for AddHouseholdControl (edit mode)
 using HouseholdMS.Model;
 using System.Data.SQLite;
 using System.Windows.Media;
@@ -15,7 +15,7 @@ namespace HouseholdMS.View.Dashboard
     public partial class OutOfServiceHouseholdsView : UserControl
     {
         private const string OPERATIONAL = "Operational";
-        private const string IN_SERVICE = "In Service"; // DB label for your "Out of Service"
+        private const string IN_SERVICE = "In Service";      // DB label for your "Out of Service" bucket
         private const string NOT_OPERATIONAL = "Not Operational";
 
         private readonly ObservableCollection<Household> allHouseholds = new ObservableCollection<Household>();
@@ -37,9 +37,9 @@ namespace HouseholdMS.View.Dashboard
             { "Comment", "UserComm" }
         };
 
-        private readonly string _currentUserRole = "Admin";
+        private string _currentUserRole = "Admin";
 
-        private string _normalizedStatusFilter = IN_SERVICE; // filter
+        private string _normalizedStatusFilter = IN_SERVICE; // default filter for this view
         private bool _categoryFilterActive = true;           // category mode
         private string _searchText = string.Empty;
 
@@ -47,27 +47,19 @@ namespace HouseholdMS.View.Dashboard
         {
             InitializeComponent();
 
-            LoadHouseholds();
-            HouseholdListView.AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(GridViewColumnHeader_Click));
-            HouseholdListView.SelectionChanged += HouseholdListView_SelectionChanged;
+            if (!string.IsNullOrWhiteSpace(userRole))
+                _currentUserRole = userRole;
 
-            ApplyAccessRestrictions();
+            LoadHouseholds();
+
+            // Sorting by clicking headers
+            HouseholdListView.AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(GridViewColumnHeader_Click));
+
+            // Ensure double-click handler is wired (works even if XAML didn't specify it)
+            HouseholdListView.MouseDoubleClick += HouseholdListView_MouseDoubleClick;
+
             UpdateSearchPlaceholder();
             ApplyFilter(); // apply category filter
-        }
-
-        private void ApplyAccessRestrictions()
-        {
-            bool isAdmin = _currentUserRole == "Admin";
-
-            var addBtn = FindName("AddHouseholdButton") as Button;
-            if (addBtn != null) addBtn.Visibility = isAdmin ? Visibility.Visible : Visibility.Collapsed;
-
-            var editBtn = FindName("EditHouseholdButton") as Button;
-            if (editBtn != null) editBtn.Visibility = isAdmin ? Visibility.Visible : Visibility.Collapsed;
-
-            var deleteBtn = FindName("DeleteHouseholdButton") as Button;
-            if (deleteBtn != null) deleteBtn.Visibility = isAdmin ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public void LoadHouseholds()
@@ -82,22 +74,24 @@ namespace HouseholdMS.View.Dashboard
                 {
                     while (reader.Read())
                     {
-                        DateTime installDate = DateTime.TryParse(reader["InstallDate"] == DBNull.Value ? null : reader["InstallDate"].ToString(), out DateTime dt1) ? dt1 : DateTime.MinValue;
-                        DateTime lastInspect = DateTime.TryParse(reader["LastInspect"] == DBNull.Value ? null : reader["LastInspect"].ToString(), out DateTime dt2) ? dt2 : DateTime.MinValue;
+                        DateTime installDate = DateTime.TryParse(reader["InstallDate"] == DBNull.Value ? null : Convert.ToString(reader["InstallDate"]), out DateTime dt1) ? dt1 : DateTime.MinValue;
+                        DateTime lastInspect = DateTime.TryParse(reader["LastInspect"] == DBNull.Value ? null : Convert.ToString(reader["LastInspect"]), out DateTime dt2) ? dt2 : DateTime.MinValue;
 
-                        allHouseholds.Add(new Household
+                        var h = new Household
                         {
                             HouseholdID = Convert.ToInt32(reader["HouseholdID"]),
-                            OwnerName = reader["OwnerName"]?.ToString(),
-                            UserName = reader["UserName"]?.ToString(),
-                            Municipality = reader["Municipality"]?.ToString(),
-                            District = reader["District"]?.ToString(),
-                            ContactNum = reader["ContactNum"]?.ToString(),
+                            OwnerName = reader["OwnerName"] == DBNull.Value ? null : Convert.ToString(reader["OwnerName"]),
+                            UserName = reader["UserName"] == DBNull.Value ? null : Convert.ToString(reader["UserName"]),
+                            Municipality = reader["Municipality"] == DBNull.Value ? null : Convert.ToString(reader["Municipality"]),
+                            District = reader["District"] == DBNull.Value ? null : Convert.ToString(reader["District"]),
+                            ContactNum = reader["ContactNum"] == DBNull.Value ? null : Convert.ToString(reader["ContactNum"]),
                             InstallDate = installDate,
                             LastInspect = lastInspect,
-                            UserComm = reader["UserComm"] != DBNull.Value ? reader["UserComm"].ToString() : string.Empty,
-                            Statuss = reader["Statuss"] != DBNull.Value ? reader["Statuss"].ToString() : string.Empty
-                        });
+                            UserComm = reader["UserComm"] == DBNull.Value ? string.Empty : Convert.ToString(reader["UserComm"]),
+                            Statuss = reader["Statuss"] == DBNull.Value ? string.Empty : Convert.ToString(reader["Statuss"])
+                        };
+
+                        allHouseholds.Add(h);
                     }
                 }
             }
@@ -119,12 +113,14 @@ namespace HouseholdMS.View.Dashboard
         }
 
         private static string DisplayStatusLabel(string normalized)
-            => string.Equals(normalized, IN_SERVICE, StringComparison.Ordinal) ? "Out of Service" : normalized;
+        {
+            return string.Equals(normalized, IN_SERVICE, StringComparison.Ordinal) ? "Out of Service" : normalized;
+        }
 
         private void UpdateSearchPlaceholder()
         {
             if (SearchBox == null) return;
-            string ph = _categoryFilterActive ? $"Search within \"{DisplayStatusLabel(_normalizedStatusFilter)}\"" : "Search all households";
+            string ph = _categoryFilterActive ? "Search within \"" + DisplayStatusLabel(_normalizedStatusFilter) + "\"" : "Search all households";
             SearchBox.Tag = ph;
 
             if (string.IsNullOrWhiteSpace(SearchBox.Text) ||
@@ -144,7 +140,7 @@ namespace HouseholdMS.View.Dashboard
             string search = _searchText == null ? string.Empty : _searchText.Trim().ToLowerInvariant();
             bool useCategory = _categoryFilterActive && !string.IsNullOrWhiteSpace(_normalizedStatusFilter);
 
-            view.Filter = obj =>
+            view.Filter = delegate (object obj)
             {
                 var h = obj as Household;
                 if (h == null) return false;
@@ -174,7 +170,7 @@ namespace HouseholdMS.View.Dashboard
             if (SearchBox != null && SearchBox.Text == (SearchBox.Tag as string))
                 _searchText = string.Empty;
             else
-                _searchText = SearchBox?.Text ?? string.Empty;
+                _searchText = SearchBox == null ? string.Empty : SearchBox.Text;
 
             ApplyFilter();
         }
@@ -229,129 +225,86 @@ namespace HouseholdMS.View.Dashboard
             view.Refresh();
         }
 
-        private void AddHouseholdButton_Click(object sender, RoutedEventArgs e)
+        // ===================== POP-UP LOGIC =====================
+
+        // Double-click opens a wider pop-up window. Single click just selects (default ListView behavior).
+        private void HouseholdListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            var form = new AddHouseholdControl();
-            form.OnSavedSuccessfully += delegate
+            var selected = HouseholdListView.SelectedItem as Household;
+            if (selected == null) return;
+
+            string norm = NormalizeStatus(selected.Statuss);
+
+            if (norm == IN_SERVICE)
             {
-                FormContent.Content = null;
+                // Out-of-Service bucket → open your existing ServiceCallDetailControl in a modal window
+                var ctl = new ServiceCallDetailControl(selected, _currentUserRole);
+
+                var win = new Window
+                {
+                    Title = $"Service Call Details — #{selected.HouseholdID} • {selected.OwnerName}",
+                    Content = ctl,
+                    Owner = Window.GetWindow(this),
+                    Width = 1100,
+                    Height = 760,
+                    MinWidth = 900,
+                    MinHeight = 600,
+                    ResizeMode = ResizeMode.CanResize,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Background = Brushes.White
+                };
+
+                ctl.ServiceFinished += (s, _) =>
+                {
+                    try { win.DialogResult = true; } catch { /* ignore if not modal yet */ }
+                    win.Close();
+                };
+                ctl.CancelRequested += (s, _) => win.Close();
+
+                win.ShowDialog();
+
+                // reload after closing
                 LoadHouseholds();
                 ApplyFilter();
-            };
-            form.OnCancelRequested += delegate
-            {
-                FormContent.Content = null;
                 HouseholdListView.SelectedItem = null;
-            };
-            FormContent.Content = form;
-        }
-
-        private void HouseholdListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (HouseholdListView.SelectedItem is Household selected)
-            {
-                // Normalize to your DB labels
-                var norm = NormalizeStatus(selected.Statuss);
-
-                if (norm == IN_SERVICE) // UI: "Out of Service" bucket
-                {
-                    var form = new ServiceCallDetailControl(selected, _currentUserRole);
-                    form.ServiceFinished += delegate
-                    {
-                        FormContent.Content = null;
-                        LoadHouseholds();
-                        ApplyFilter();
-                        HouseholdListView.SelectedItem = null;
-                    };
-                    form.CancelRequested += delegate
-                    {
-                        FormContent.Content = null;
-                        HouseholdListView.SelectedItem = null;
-                    };
-                    FormContent.Content = form;
-                }
-                else
-                {
-                    // Your existing edit (unchanged)
-                    var form = new AddHouseholdControl(selected);
-                    form.OnSavedSuccessfully += delegate
-                    {
-                        FormContent.Content = null;
-                        LoadHouseholds();
-                        ApplyFilter();
-                        HouseholdListView.SelectedItem = null;
-                    };
-                    form.OnCancelRequested += delegate
-                    {
-                        FormContent.Content = null;
-                        HouseholdListView.SelectedItem = null;
-                    };
-                    FormContent.Content = form;
-                }
             }
             else
             {
-                FormContent.Content = null;
-            }
-        }
+                // For non "In Service" rows, open edit (not add) using your existing AddHouseholdControl in a modal window
+                var ctl = new AddHouseholdControl(selected); // edit mode when constructed with entity
 
-
-        private void EditHousehold_Click(object sender, RoutedEventArgs e)
-        {
-            if (HouseholdListView.SelectedItem is Household selected)
-            {
-                var form = new AddHouseholdControl(selected);
-                form.OnSavedSuccessfully += delegate
+                var win = new Window
                 {
-                    FormContent.Content = null;
+                    Title = $"Edit Household — #{selected.HouseholdID} • {selected.OwnerName}",
+                    Content = ctl,
+                    Owner = Window.GetWindow(this),
+                    Width = 1000,
+                    Height = 720,
+                    MinWidth = 820,
+                    MinHeight = 560,
+                    ResizeMode = ResizeMode.CanResize,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Background = Brushes.White
+                };
+
+                ctl.OnSavedSuccessfully += (s, _) =>
+                {
+                    try { win.DialogResult = true; } catch { }
+                    win.Close();
+                };
+                ctl.OnCancelRequested += (s, _) => win.Close();
+
+                bool? result = win.ShowDialog();
+                if (result == true)
+                {
                     LoadHouseholds();
                     ApplyFilter();
-                    HouseholdListView.SelectedItem = null;
-                };
-                form.OnCancelRequested += delegate
-                {
-                    FormContent.Content = null;
-                    HouseholdListView.SelectedItem = null;
-                };
-                FormContent.Content = form;
-            }
-            else
-            {
-                MessageBox.Show("Please select a household to edit.", "Edit Household", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-
-        private void DeleteHousehold_Click(object sender, RoutedEventArgs e)
-        {
-            if (HouseholdListView.SelectedItem is Household selected)
-            {
-                var confirm = MessageBox.Show(
-                    $"Are you sure you want to delete household \"{selected.OwnerName}\"?",
-                    "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-                if (confirm == MessageBoxResult.Yes)
-                {
-                    using (var conn = DatabaseHelper.GetConnection())
-                    {
-                        conn.Open();
-                        using (var cmd = new SQLiteCommand("DELETE FROM Households WHERE HouseholdID = @id", conn))
-                        {
-                            cmd.Parameters.AddWithValue("@id", selected.HouseholdID);
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                    LoadHouseholds();
-                    ApplyFilter();
-                    FormContent.Content = null;
-                    HouseholdListView.SelectedItem = null;
                 }
-            }
-            else
-            {
-                MessageBox.Show("Please select a household to delete.", "Delete Household", MessageBoxButton.OK, MessageBoxImage.Warning);
+                HouseholdListView.SelectedItem = null;
             }
         }
 
+        // ===================== OPTIONAL: Context menu for status change =====================
         private void StatusText_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var tb = sender as TextBlock;
@@ -360,12 +313,14 @@ namespace HouseholdMS.View.Dashboard
             if (h == null) return;
 
             var cm = new ContextMenu();
-            void addItem(string text)
+
+            Action<string> addItem = delegate (string text)
             {
                 var mi = new MenuItem { Header = text };
-                mi.Click += (s, _) => ChangeStatus(h, text);
+                mi.Click += delegate { ChangeStatus(h, text); };
                 cm.Items.Add(mi);
-            }
+            };
+
             addItem(OPERATIONAL);
             addItem(IN_SERVICE);
             addItem(NOT_OPERATIONAL);
@@ -382,7 +337,7 @@ namespace HouseholdMS.View.Dashboard
             if (NormalizeStatus(newStatus) == IN_SERVICE)
             {
                 var confirm = MessageBox.Show(
-                    $"Move household \"{h.OwnerName}\" to In Service?\n\nThis will create/open a Service ticket.",
+                    "Move household \"" + h.OwnerName + "\" to In Service?\n\nThis will create/open a Service ticket.",
                     "Confirm Status Change", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
                 if (confirm != MessageBoxResult.Yes) return;
@@ -416,5 +371,7 @@ namespace HouseholdMS.View.Dashboard
             LoadHouseholds();
             ApplyFilter();
         }
+
+        // ====== NOTE: AddHousehold button and inline right-pane logic REMOVED as requested ======
     }
 }

@@ -3,10 +3,11 @@ using System.Collections.ObjectModel;
 using System.Data.SQLite;
 using System.Windows;
 using System.Windows.Controls;
-using HouseholdMS;                      // for MainWindow
+using HouseholdMS;                      // MainWindow
 using HouseholdMS.View;                 // InventoryView
-using HouseholdMS.View.UserControls;    // AddInventoryControl (used by tile editor)
+using HouseholdMS.View.UserControls;    // AddInventoryControl
 using HouseholdMS.Model;                // DatabaseHelper, InventoryItem
+using HouseholdMS.View.Dashboard;       // SitesView, SitesLanding
 
 namespace HouseholdMS.View.Dashboard
 {
@@ -15,17 +16,15 @@ namespace HouseholdMS.View.Dashboard
         private const string OPERATIONAL = "Operational";
         private const string IN_SERVICE = "In Service"; // UI label: "Out of Service"
 
-        private readonly string _userRole; // <-- carry role from MainWindow/Login
+        private readonly string _userRole;
 
         public ObservableCollection<InventoryTile> InventoryTiles { get; } = new ObservableCollection<InventoryTile>();
 
-        // Prefer this ctor (MainWindow already calls new DashboardView(_currentUserRole))
         public DashboardView(string userRole)
         {
             InitializeComponent();
 
             _userRole = string.IsNullOrWhiteSpace(userRole) ? "User" : userRole.Trim();
-
             DataContext = this;
 
             Loaded += delegate
@@ -35,17 +34,16 @@ namespace HouseholdMS.View.Dashboard
             };
         }
 
-        // Safe default if someone constructs without a role (treated as "User")
         public DashboardView() : this("User") { }
 
         private enum HCat { Operational, InService }
 
         private static HCat ClassifyStatus(string s)
         {
-            var t = (s ?? string.Empty).Trim();
+            string t = (s ?? string.Empty).Trim();
             if (t.Equals(OPERATIONAL, StringComparison.OrdinalIgnoreCase)) return HCat.Operational;
             if (t.Equals(IN_SERVICE, StringComparison.OrdinalIgnoreCase)) return HCat.InService;
-            return HCat.Operational; // default bucket
+            return HCat.Operational;
         }
 
         private void LoadHouseholdCountsFromDb()
@@ -54,15 +52,15 @@ namespace HouseholdMS.View.Dashboard
 
             try
             {
-                using (var conn = DatabaseHelper.GetConnection())
+                using (SQLiteConnection conn = DatabaseHelper.GetConnection())
                 {
                     conn.Open();
-                    using (var cmd = new SQLiteCommand("SELECT Statuss FROM Households", conn))
-                    using (var r = cmd.ExecuteReader())
+                    using (SQLiteCommand cmd = new SQLiteCommand("SELECT Statuss FROM Households", conn))
+                    using (SQLiteDataReader r = cmd.ExecuteReader())
                     {
                         while (r.Read())
                         {
-                            var raw = r["Statuss"] == DBNull.Value ? null : r["Statuss"].ToString();
+                            string raw = r["Statuss"] == DBNull.Value ? null : r["Statuss"].ToString();
                             switch (ClassifyStatus(raw))
                             {
                                 case HCat.Operational: op++; break;
@@ -79,12 +77,10 @@ namespace HouseholdMS.View.Dashboard
 
             int total = op + outs;
 
-            // Update counts
             if (TotalCountText != null) TotalCountText.Text = total.ToString();
             if (OperationalCountText != null) OperationalCountText.Text = op.ToString();
             if (OutOfServiceCountText != null) OutOfServiceCountText.Text = outs.ToString();
 
-            // Update ring percentages — out + op = 100% of total
             double opPct = total > 0 ? (op * 100.0 / total) : 0.0;
             double outPct = total > 0 ? (outs * 100.0 / total) : 0.0;
 
@@ -92,32 +88,38 @@ namespace HouseholdMS.View.Dashboard
             if (OutOfServiceProgress != null) OutOfServiceProgress.Percentage = outPct;
         }
 
-        // ---------------- Household tile openers -> navigate MainContent ----------------
+        // ---------------- Household tile openers -> navigate to SitesView with landing ----------------
 
         private void OpenAllHouseholds_Click(object sender, RoutedEventArgs e)
-            => NavigateMain(new AllHouseholdsView(_userRole));
+        {
+            NavigateMain(new SitesView(_userRole, SitesLanding.All));
+        }
 
         private void OpenOperational_Click(object sender, RoutedEventArgs e)
-            => NavigateMain(new OperationalHouseholdsView(_userRole));
+        {
+            NavigateMain(new SitesView(_userRole, SitesLanding.Operational));
+        }
 
-        // "Out of Service" corresponds to DB status "In Service"
         private void OpenOutOfService_Click(object sender, RoutedEventArgs e)
-            => NavigateMain(new OutOfServiceHouseholdsView(_userRole));
+        {
+            NavigateMain(new SitesView(_userRole, SitesLanding.OutOfService));
+        }
 
         private void NavigateMain(UserControl view)
         {
-            // Navigate in MainWindow's MainContent if available; fallback to popup if not.
-            if (Window.GetWindow(this) is MainWindow mw)
+            Window host = Window.GetWindow(this);
+            MainWindow mw = host as MainWindow;
+            if (mw != null)
             {
                 mw.NavigateTo(view);
             }
             else
             {
-                var win = new Window
+                Window win = new Window
                 {
                     Title = view.GetType().Name,
                     Content = view,
-                    Owner = Window.GetWindow(this),
+                    Owner = host,
                     Width = 1200,
                     Height = 750,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner
@@ -134,18 +136,18 @@ namespace HouseholdMS.View.Dashboard
 
             try
             {
-                using (var conn = DatabaseHelper.GetConnection())
+                using (SQLiteConnection conn = DatabaseHelper.GetConnection())
                 {
                     conn.Open();
-                    using (var cmd = new SQLiteCommand(@"
+                    using (SQLiteCommand cmd = new SQLiteCommand(@"
                         SELECT ItemID, ItemType, TotalQuantity, UsedQuantity, LowStockThreshold, LastRestockedDate, Note
                         FROM StockInventory
                         ORDER BY (TotalQuantity <= LowStockThreshold) DESC, ItemType ASC;", conn))
-                    using (var r = cmd.ExecuteReader())
+                    using (SQLiteDataReader r = cmd.ExecuteReader())
                     {
                         while (r.Read())
                         {
-                            var tile = new InventoryTile
+                            InventoryTile tile = new InventoryTile
                             {
                                 ItemID = Convert.ToInt32(r["ItemID"]),
                                 Name = r["ItemType"] == DBNull.Value ? null : r["ItemType"].ToString(),
@@ -154,8 +156,8 @@ namespace HouseholdMS.View.Dashboard
                                 LowStockThreshold = Convert.ToInt32(r["LowStockThreshold"]),
                                 Note = r["Note"] == DBNull.Value ? null : r["Note"].ToString(),
                                 LastRestockedDate = DateTime.TryParse(
-                                                        r["LastRestockedDate"] == DBNull.Value ? null : r["LastRestockedDate"].ToString(),
-                                                        out var d) ? d : (DateTime?)null
+                                    r["LastRestockedDate"] == DBNull.Value ? null : r["LastRestockedDate"].ToString(),
+                                    out DateTime d) ? d : (DateTime?)null
                             };
                             InventoryTiles.Add(tile);
                         }
@@ -170,9 +172,8 @@ namespace HouseholdMS.View.Dashboard
 
         private void OpenInventoryList_Click(object sender, RoutedEventArgs e)
         {
-            // Pass the current role so InventoryView can enforce its own access rules
-            var inv = new InventoryView(userRole: _userRole);
-            var win = new Window
+            InventoryView inv = new InventoryView(userRole: _userRole);
+            Window win = new Window
             {
                 Title = "Inventory",
                 Content = inv,
@@ -188,24 +189,24 @@ namespace HouseholdMS.View.Dashboard
 
         private void InventoryTile_Click(object sender, RoutedEventArgs e)
         {
-            var btn = sender as Button;
+            Button btn = sender as Button;
             if (btn == null) return;
 
-            var t = btn.DataContext as InventoryTile;
+            InventoryTile t = btn.DataContext as InventoryTile;
             if (t == null) return;
 
-            var modelItem = new InventoryItem
+            InventoryItem modelItem = new InventoryItem
             {
                 ItemID = t.ItemID,
                 ItemType = t.Name,
                 TotalQuantity = t.TotalQuantity,
                 UsedQuantity = t.UsedQuantity,
                 LowStockThreshold = t.LowStockThreshold,
-                LastRestockedDate = t.LastRestockedDate?.ToString("yyyy-MM-dd"),
+                LastRestockedDate = t.LastRestockedDate.HasValue ? t.LastRestockedDate.Value.ToString("yyyy-MM-dd") : null,
                 Note = t.Note ?? string.Empty
             };
 
-            var ctrl = new AddInventoryControl(modelItem);
+            AddInventoryControl ctrl = new AddInventoryControl(modelItem);
             ctrl.OnSavedSuccessfully += delegate
             {
                 Window.GetWindow(ctrl)?.Close();
@@ -216,7 +217,7 @@ namespace HouseholdMS.View.Dashboard
                 Window.GetWindow(ctrl)?.Close();
             };
 
-            var win = new Window
+            Window win = new Window
             {
                 Title = "Edit Inventory – " + (t.Name ?? ""),
                 Content = ctrl,
