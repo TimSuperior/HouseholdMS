@@ -9,7 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using HouseholdMS;              // for MainWindow / DatabaseHelper
+using HouseholdMS;              // DatabaseHelper
 using HouseholdMS.Model;
 using HouseholdMS.View.Dashboard; // AddServiceControl
 
@@ -228,7 +228,7 @@ namespace HouseholdMS.View.Dashboard
             Household selected = HouseholdListView.SelectedItem as Household;
             if (selected == null) return;
 
-            // Block if there is already an open service (same behavior you had before)
+            // Block if there is already an open service
             bool hasOpenService = false;
             using (SQLiteConnection conn = DatabaseHelper.GetConnection())
             {
@@ -248,7 +248,7 @@ namespace HouseholdMS.View.Dashboard
                 return;
             }
 
-            // Host your existing AddServiceControl inside a wide dialog
+            // Host AddServiceControl inside a wide dialog
             AddServiceControl svc = new AddServiceControl(selected, _currentUserRole);
 
             Window dlg = CreateWideDialog(svc,
@@ -264,7 +264,7 @@ namespace HouseholdMS.View.Dashboard
                 try { dlg.DialogResult = true; } catch { }
                 dlg.Close();
 
-                // After confirming, the row should disappear from "Operational"
+                // After confirming, reload (status may change outside this view's control)
                 LoadHouseholds();
                 ApplyFilter();
                 HouseholdListView.SelectedItem = null;
@@ -284,83 +284,11 @@ namespace HouseholdMS.View.Dashboard
             dlg.ShowDialog();
         }
 
-        private bool IsAdminOrTech()
-        {
-            string r = _currentUserRole == null ? "" : _currentUserRole.Trim();
-            return r.Equals("Admin", StringComparison.OrdinalIgnoreCase)
-                || r.Equals("Technician", StringComparison.OrdinalIgnoreCase);
-        }
-
-        // ===== Click on Status text in the list to cycle status (Admin/Technician) =====
+        // =====(Kept as a safe no-op if something else wires it accidentally)=====
         private void StatusText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            Household row = null;
-            FrameworkElement fe = sender as FrameworkElement;
-            if (fe != null) row = fe.DataContext as Household;
-            if (row == null && HouseholdListView != null) row = HouseholdListView.SelectedItem as Household;
-            if (row == null) return;
-
-            if (!IsAdminOrTech())
-            {
-                MessageBox.Show("Only Admin or Technician can change status.",
-                                "Access denied", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            string next = NextStatus(row.Statuss);
-
-            try
-            {
-                using (SQLiteConnection conn = DatabaseHelper.GetConnection())
-                {
-                    conn.Open();
-                    using (SQLiteCommand cmd = new SQLiteCommand(
-                        "UPDATE Households SET Statuss=@s WHERE HouseholdID=@id", conn))
-                    {
-                        cmd.Parameters.AddWithValue("@s", next);
-                        cmd.Parameters.AddWithValue("@id", row.HouseholdID);
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-
-                row.Statuss = next;
-                if (view != null) view.Refresh();
-
-                // If it’s no longer "Operational", remove from this list
-                if (!IsOperational(next))
-                {
-                    LoadHouseholds();
-                    ApplyFilter();
-                    HouseholdListView.SelectedItem = null;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Failed to change status.\n" + ex.Message,
-                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private static string NextStatus(string current)
-        {
-            string c = (current ?? "").Trim();
-            if (c.Equals(OPERATIONAL, StringComparison.OrdinalIgnoreCase)) return IN_SERVICE;
-            if (c.Equals(IN_SERVICE, StringComparison.OrdinalIgnoreCase)) return NOT_OPERATIONAL;
-            return OPERATIONAL;
-        }
-
-        private static string FormatDate(DateTime dt)
-        {
-            return (dt.Year > 1900) ? dt.ToString("yyyy-MM-dd") : "—";
-        }
-
-        private static Brush GetStatusBrush(string status)
-        {
-            string s = (status ?? "").Trim().ToLowerInvariant();
-            if (s.StartsWith("operational")) return new SolidColorBrush(Color.FromRgb(76, 175, 80));      // green
-            if (s.StartsWith("in service")) return new SolidColorBrush(Color.FromRgb(25, 118, 210));     // blue
-            if (s.StartsWith("not operational")) return new SolidColorBrush(Color.FromRgb(158, 158, 158)); // grey
-            return new SolidColorBrush(Color.FromRgb(76, 175, 80));
+            // READ-ONLY in this view by design: do nothing.
+            e.Handled = true;
         }
 
         private Window CreateWideDialog(FrameworkElement content, string title)
@@ -378,7 +306,7 @@ namespace HouseholdMS.View.Dashboard
                 ResizeMode = ResizeMode.CanResize,
                 ShowInTaskbar = false,
                 Content = host,
-                Width = 1100,   // wider as requested
+                Width = 1100,
                 Height = 760,
                 MinWidth = 900,
                 MinHeight = 600,

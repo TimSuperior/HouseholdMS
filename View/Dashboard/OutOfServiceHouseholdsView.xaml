@@ -23,11 +23,11 @@
         <SolidColorBrush x:Key="Col.Primary"  Color="#FF3B82F6"/>
         <SolidColorBrush x:Key="Col.PrimaryHover" Color="#FF2563EB"/>
 
-        <!-- Search box -->
+        <!-- Search box (match AllHouseholdsView: Margin 0,0,10,0 and Padding 12,6) -->
         <Style x:Key="SearchBoxStyle" TargetType="TextBox">
             <Setter Property="Height" Value="36"/>
             <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="Margin" Value="0,0,10,10"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
             <Setter Property="Background" Value="White"/>
@@ -62,7 +62,7 @@
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
         </Style>
 
-        <!-- Generic cell text (bigger & clearer) -->
+        <!-- Generic cell text -->
         <Style x:Key="CellText" TargetType="TextBlock">
             <Setter Property="Margin" Value="10,0"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -71,7 +71,7 @@
             <Setter Property="FontSize" Value="15"/>
         </Style>
 
-        <!-- ListView row style (NO zebra; strong selection with left bar) -->
+        <!-- ListView row style -->
         <Style TargetType="ListViewItem">
             <Setter Property="SnapsToDevicePixels" Value="True"/>
             <Setter Property="Padding" Value="0"/>
@@ -111,7 +111,6 @@
                         </Border>
 
                         <ControlTemplate.Triggers>
-                            <!-- Selected -->
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="RowOuter" Property="Background" Value="{StaticResource Col.RowSel}"/>
                                 <Setter TargetName="RowOuter" Property="BorderBrush" Value="{StaticResource Col.RowSelBorder}"/>
@@ -120,12 +119,10 @@
                                 <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
                             </Trigger>
 
-                            <!-- Hover -->
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="RowOuter" Property="Background" Value="{StaticResource Col.RowHover}"/>
                             </Trigger>
 
-                            <!-- Disabled -->
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.6"/>
                             </Trigger>
@@ -173,7 +170,7 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <!-- ========== LAYOUT (no right pane; pop-up on double-click) ========== -->
+    <!-- ========== LAYOUT (match AllHouseholdsView padding/margins) ========== -->
     <Border Background="{StaticResource Col.BgPage}" Padding="20">
         <Grid>
             <Grid.RowDefinitions>
@@ -181,18 +178,21 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Top bar -->
-            <TextBox x:Name="SearchBox"
-                     Style="{StaticResource SearchBoxStyle}"
-                     Width="320"
-                     VerticalContentAlignment="Center"
-                     Foreground="{StaticResource Col.TextMut}"
-                     FontStyle="Italic"
-                     Text="Search by owner, user, area or contact"
-                     Tag="Search by owner, user, area or contact"
-                     GotFocus="ClearText"
-                     LostFocus="ResetText"
-                     TextChanged="SearchBox_TextChanged"/>
+            <!-- Top bar: use DockPanel with bottom margin 10 like in AllHouseholdsView -->
+            <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,10">
+                <TextBox x:Name="SearchBox"
+                         Style="{StaticResource SearchBoxStyle}"
+                         Width="320"
+                         VerticalContentAlignment="Center"
+                         Foreground="{StaticResource Col.TextMut}"
+                         FontStyle="Italic"
+                         Text="Search by owner, user, area or contact"
+                         Tag="Search by owner, user, area or contact"
+                         GotFocus="ClearText"
+                         LostFocus="ResetText"
+                         TextChanged="SearchBox_TextChanged"
+                         DockPanel.Dock="Left"/>
+            </DockPanel>
 
             <!-- Card with ListView -->
             <Border Grid.Row="1"

@@ -147,7 +147,6 @@
                         </Border>
 
                         <ControlTemplate.Triggers>
-                            <!-- Selected -->
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="RowOuter" Property="Background" Value="{StaticResource Col.RowSel}"/>
                                 <Setter TargetName="RowOuter" Property="BorderBrush" Value="{StaticResource Col.RowSelBorder}"/>
@@ -155,13 +154,9 @@
                                 <Setter TargetName="SelBar" Property="Visibility" Value="Visible"/>
                                 <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
                             </Trigger>
-
-                            <!-- Hover -->
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="RowOuter" Property="Background" Value="{StaticResource Col.RowHover}"/>
                             </Trigger>
-
-                            <!-- Disabled -->
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.6"/>
                             </Trigger>
@@ -171,22 +166,22 @@
             </Setter>
         </Style>
 
-        <!-- Status chip (clickable) -->
+        <!-- Status chip (READ-ONLY in this view) -->
         <DataTemplate x:Key="StatusChipTemplate">
+            <!-- Block hit testing so clicks select the row instead of toggling status -->
             <Border x:Name="Chip"
                     Padding="10,4"
                     CornerRadius="999"
                     Background="#FFE5E7EB"
                     HorizontalAlignment="Left"
-                    ToolTip="Click to change status (Admins only)">
+                    ToolTip="Status (read-only in this view)"
+                    IsHitTestVisible="False">
                 <TextBlock Text="{Binding Statuss}"
                            Margin="0"
                            VerticalAlignment="Center"
                            Foreground="#FF374151"
                            FontWeight="SemiBold"
-                           FontSize="14"
-                           Cursor="Hand"
-                           MouseLeftButtonDown="StatusText_MouseLeftButtonDown"/>
+                           FontSize="14"/>
             </Border>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding Statuss}" Value="Operational">
@@ -320,7 +315,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <!-- Status chip -->
+                                <!-- Status chip (read-only) -->
                                 <GridViewColumn Header="Status" Width="150"
                                                 CellTemplate="{StaticResource StatusChipTemplate}"/>
 
