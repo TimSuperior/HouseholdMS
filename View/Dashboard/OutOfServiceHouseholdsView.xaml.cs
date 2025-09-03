@@ -250,8 +250,29 @@ namespace HouseholdMS.View.Dashboard
         {
             if (HouseholdListView.SelectedItem is Household selected)
             {
-                if (_currentUserRole == "Admin")
+                // Normalize to your DB labels
+                var norm = NormalizeStatus(selected.Statuss);
+
+                if (norm == IN_SERVICE) // UI: "Out of Service" bucket
                 {
+                    var form = new ServiceCallDetailControl(selected, _currentUserRole);
+                    form.ServiceFinished += delegate
+                    {
+                        FormContent.Content = null;
+                        LoadHouseholds();
+                        ApplyFilter();
+                        HouseholdListView.SelectedItem = null;
+                    };
+                    form.CancelRequested += delegate
+                    {
+                        FormContent.Content = null;
+                        HouseholdListView.SelectedItem = null;
+                    };
+                    FormContent.Content = form;
+                }
+                else
+                {
+                    // Your existing edit (unchanged)
                     var form = new AddHouseholdControl(selected);
                     form.OnSavedSuccessfully += delegate
                     {
@@ -273,6 +294,7 @@ namespace HouseholdMS.View.Dashboard
                 FormContent.Content = null;
             }
         }
+
 
         private void EditHousehold_Click(object sender, RoutedEventArgs e)
         {

@@ -7,7 +7,7 @@
              d:DesignHeight="450"
              d:DesignWidth="1200">
 
-    <!-- ========== THEME & STYLES (matched to AllHouseholdsView) ========== -->
+    <!-- ========== THEME & STYLES (clear selection, bigger rows, NO zebra) ========== -->
     <UserControl.Resources>
         <!-- Palette -->
         <SolidColorBrush x:Key="Col.BgCard" Color="#FFFFFFFF"/>
@@ -15,8 +15,12 @@
         <SolidColorBrush x:Key="Col.Border"  Color="#FFE5E7EB"/>
         <SolidColorBrush x:Key="Col.HeaderBg" Color="#FFF3F4F6"/>
         <SolidColorBrush x:Key="Col.HeaderFg" Color="#FF374151"/>
-        <SolidColorBrush x:Key="Col.RowHover" Color="#FFF5F8FF"/>
-        <SolidColorBrush x:Key="Col.RowSel"   Color="#FFE8F0FE"/>
+        <SolidColorBrush x:Key="Col.RowHover" Color="#FFF0F7FF"/>
+        <!-- stronger hover -->
+        <SolidColorBrush x:Key="Col.RowSel"   Color="#FFDBEAFE"/>
+        <!-- stronger selected -->
+        <SolidColorBrush x:Key="Col.RowSelBorder" Color="#FF3B82F6"/>
+        <!-- blue-500 -->
         <SolidColorBrush x:Key="Col.Text"     Color="#FF111827"/>
         <SolidColorBrush x:Key="Col.TextMut"  Color="#FF6B7280"/>
         <SolidColorBrush x:Key="Col.Primary"  Color="#FF3B82F6"/>
@@ -89,56 +93,78 @@
             <Setter Property="Background" Value="{StaticResource Col.HeaderBg}"/>
             <Setter Property="Foreground" Value="{StaticResource Col.HeaderFg}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="15"/>
             <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="Height" Value="42"/>
+            <Setter Property="Height" Value="44"/>
             <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
         </Style>
 
-        <!-- Generic cell text -->
+        <!-- Generic cell text (bigger & clearer) -->
         <Style x:Key="CellText" TargetType="TextBlock">
             <Setter Property="Margin" Value="10,0"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
             <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
+            <Setter Property="FontSize" Value="15"/>
         </Style>
 
-        <!-- ListView row style -->
+        <!-- ListView row style (NO zebra; strong selection with left bar) -->
         <Style TargetType="ListViewItem">
             <Setter Property="SnapsToDevicePixels" Value="True"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Margin" Value="0"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Height" Value="44"/>
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="FontSize" Value="15"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListViewItem">
-                        <Border x:Name="Row"
+                        <Border x:Name="RowOuter"
                                 CornerRadius="8"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{StaticResource Col.Border}"
                                 BorderThickness="0,0,0,1"
                                 Margin="4,2"
                                 SnapsToDevicePixels="True">
-                            <GridViewRowPresenter
-                                Content="{TemplateBinding Content}"
-                                Columns="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=View.Columns}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- selection indicator -->
+                                <Border x:Name="SelBar"
+                                        Grid.Column="0"
+                                        Background="{StaticResource Col.RowSelBorder}"
+                                        CornerRadius="8,0,0,8"
+                                        Visibility="Collapsed"/>
+
+                                <!-- row content -->
+                                <GridViewRowPresenter Grid.Column="1"
+                                                      Content="{TemplateBinding Content}"
+                                                      Columns="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=View.Columns}"/>
+                            </Grid>
                         </Border>
+
                         <ControlTemplate.Triggers>
+                            <!-- Selected (independent of focus) -->
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Row" Property="Background" Value="{StaticResource Col.RowSel}"/>
+                                <Setter TargetName="RowOuter" Property="Background" Value="{StaticResource Col.RowSel}"/>
+                                <Setter TargetName="RowOuter" Property="BorderBrush" Value="{StaticResource Col.RowSelBorder}"/>
+                                <Setter TargetName="RowOuter" Property="BorderThickness" Value="1"/>
+                                <Setter TargetName="SelBar" Property="Visibility" Value="Visible"/>
                                 <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
-                                <Setter Property="BorderBrush" TargetName="Row" Value="{StaticResource Col.RowSel}"/>
                             </Trigger>
+
+                            <!-- Hover -->
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Row" Property="Background" Value="{StaticResource Col.RowHover}"/>
+                                <Setter TargetName="RowOuter" Property="Background" Value="{StaticResource Col.RowHover}"/>
                             </Trigger>
-                            <!-- Zebra -->
-                            <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                                <Setter TargetName="Row" Property="Background" Value="#FFFCFCFD"/>
-                            </Trigger>
+
+                            <!-- Disabled -->
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.6"/>
                             </Trigger>
@@ -157,10 +183,11 @@
                     HorizontalAlignment="Left"
                     ToolTip="Click to change status (Admins only)">
                 <TextBlock Text="{Binding Statuss}"
-                           Margin="0,0,0,0"
+                           Margin="0"
                            VerticalAlignment="Center"
                            Foreground="#FF374151"
                            FontWeight="SemiBold"
+                           FontSize="14"
                            Cursor="Hand"
                            MouseLeftButtonDown="StatusText_MouseLeftButtonDown"/>
             </Border>
@@ -225,7 +252,6 @@
                         Padding="8">
                     <Grid>
                         <ListView x:Name="HouseholdListView"
-                                  AlternationCount="2"
                                   Background="Transparent"
                                   BorderThickness="0"
                                   ScrollViewer.CanContentScroll="True"
@@ -246,20 +272,45 @@
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
 
-                                    <GridViewColumn Header="Owner Name" Width="150"
-                                                    DisplayMemberBinding="{Binding OwnerName}"/>
+                                    <GridViewColumn Header="Owner Name" Width="150">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Style="{StaticResource CellText}" Text="{Binding OwnerName}"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
 
-                                    <GridViewColumn Header="User Name" Width="150"
-                                                    DisplayMemberBinding="{Binding UserName}"/>
+                                    <GridViewColumn Header="User Name" Width="150">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Style="{StaticResource CellText}" Text="{Binding UserName}"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
 
-                                    <GridViewColumn Header="Municipality" Width="140"
-                                                    DisplayMemberBinding="{Binding Municipality}"/>
+                                    <GridViewColumn Header="Municipality" Width="140">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Style="{StaticResource CellText}" Text="{Binding Municipality}"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
 
-                                    <GridViewColumn Header="District" Width="140"
-                                                    DisplayMemberBinding="{Binding District}"/>
+                                    <GridViewColumn Header="District" Width="140">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Style="{StaticResource CellText}" Text="{Binding District}"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
 
-                                    <GridViewColumn Header="Contact" Width="120"
-                                                    DisplayMemberBinding="{Binding ContactNum}"/>
+                                    <GridViewColumn Header="Contact" Width="120">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Style="{StaticResource CellText}" Text="{Binding ContactNum}"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
 
                                     <GridViewColumn Header="Installed" Width="110">
                                         <GridViewColumn.CellTemplate>

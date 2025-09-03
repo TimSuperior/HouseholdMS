@@ -20,20 +20,28 @@ namespace HouseholdMS.Model
                 {
                     var builder = new SQLiteConnectionStringBuilder(cfg);
                     dbFilePath = builder.DataSource;
-                    connectionString = builder.ToString();
+
+                    // Build and ensure foreign keys are ON for every connection.
+                    var tmp = builder.ToString();
+                    if (tmp.IndexOf("Foreign Keys", StringComparison.OrdinalIgnoreCase) < 0 &&
+                        tmp.IndexOf("ForeignKeys", StringComparison.OrdinalIgnoreCase) < 0)
+                    {
+                        tmp = tmp.TrimEnd(';') + ";Foreign Keys=True;";
+                    }
+                    connectionString = tmp;
                 }
                 catch
                 {
                     // invalid config → fallback
                     dbFilePath = GetDefaultDbPath();
-                    connectionString = $"Data Source={dbFilePath};Version=3;";
+                    connectionString = $"Data Source={dbFilePath};Version=3;Foreign Keys=True;";
                 }
             }
             else
             {
                 // no config → fallback
                 dbFilePath = GetDefaultDbPath();
-                connectionString = $"Data Source={dbFilePath};Version=3;";
+                connectionString = $"Data Source={dbFilePath};Version=3;Foreign Keys=True;";
             }
 
             // Ensure DB file exists
@@ -162,10 +170,34 @@ CREATE TABLE IF NOT EXISTS Service (
     FOREIGN KEY (TechnicianID) REFERENCES Technicians(TechnicianID) ON DELETE SET NULL
 );
 
+-- ============================================
+-- Many-to-many links for Technicians & Inventory per Service
+-- ============================================
+CREATE TABLE IF NOT EXISTS ServiceTechnicians (
+    ServiceID    INTEGER NOT NULL,
+    TechnicianID INTEGER NOT NULL,
+    PRIMARY KEY (ServiceID, TechnicianID),
+    FOREIGN KEY (ServiceID)    REFERENCES Service(ServiceID)         ON DELETE CASCADE,
+    FOREIGN KEY (TechnicianID) REFERENCES Technicians(TechnicianID)  ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS ServiceInventory (
+    ServiceID     INTEGER NOT NULL,
+    ItemID        INTEGER NOT NULL,
+    QuantityUsed  INTEGER NOT NULL CHECK (QuantityUsed > 0),
+    PRIMARY KEY (ServiceID, ItemID),
+    FOREIGN KEY (ServiceID) REFERENCES Service(ServiceID)            ON DELETE CASCADE,
+    FOREIGN KEY (ItemID)    REFERENCES StockInventory(ItemID)       ON DELETE CASCADE
+);
+
 -- Fast tile filtering
 CREATE INDEX IF NOT EXISTS IX_Households_Statuss ON Households(Statuss);
 CREATE INDEX IF NOT EXISTS IX_Service_HouseholdID ON Service(HouseholdID);
 CREATE INDEX IF NOT EXISTS IX_Service_StartDate  ON Service(StartDate);
+
+-- Link-table helper indexes
+CREATE INDEX IF NOT EXISTS IX_ServiceTechnicians_Tech ON ServiceTechnicians(TechnicianID);
+CREATE INDEX IF NOT EXISTS IX_ServiceInventory_Item   ON ServiceInventory(ItemID);
 
 -- Guarantee only ONE open (FinishDate IS NULL) service per household
 CREATE UNIQUE INDEX IF NOT EXISTS UX_Service_OpenPerHousehold

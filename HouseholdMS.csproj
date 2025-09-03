@@ -146,6 +146,9 @@
     <Compile Include="View\Dashboard\OutOfServiceHouseholdsView.xaml.cs">
       <DependentUpon>OutOfServiceHouseholdsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Dashboard\ServiceCallDetailControl.xaml.cs">
+      <DependentUpon>ServiceCallDetailControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\EqTesting\AllTestMenuView.xaml.cs">
       <DependentUpon>AllTestMenuView.xaml</DependentUpon>
     </Compile>
@@ -269,6 +272,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Dashboard\OutOfServiceHouseholdsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Dashboard\ServiceCallDetailControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
