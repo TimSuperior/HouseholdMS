@@ -173,6 +173,9 @@
     <Compile Include="View\InputDialogWindow.xaml.cs">
       <DependentUpon>InputDialogWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Inventory\InventoryDetails.xaml.cs">
+      <DependentUpon>InventoryDetails.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Login.xaml.cs">
       <DependentUpon>Login.xaml</DependentUpon>
     </Compile>
@@ -311,6 +314,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\InputDialogWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Inventory\InventoryDetails.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

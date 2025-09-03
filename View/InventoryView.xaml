@@ -3,38 +3,55 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:HouseholdMS.View"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="800">
-    <!-- FontFamily="Segoe UI"
-             FontSize="14"
-             Foreground="#333"-->
+             d:DesignHeight="450"
+             d:DesignWidth="1200">
 
+    <!-- ========== THEME & STYLES (ported from AllHouseholdsView) ========== -->
     <UserControl.Resources>
-        <!-- Action Button Style -->
+        <!-- Palette -->
+        <SolidColorBrush x:Key="Col.BgCard" Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Col.BgPage" Color="#FFF9F9F9"/>
+        <SolidColorBrush x:Key="Col.Border"  Color="#FFE5E7EB"/>
+        <SolidColorBrush x:Key="Col.HeaderBg" Color="#FFF3F4F6"/>
+        <SolidColorBrush x:Key="Col.HeaderFg" Color="#FF374151"/>
+        <SolidColorBrush x:Key="Col.RowHover" Color="#FFF0F7FF"/>
+        <SolidColorBrush x:Key="Col.RowSel"   Color="#FFDBEAFE"/>
+        <SolidColorBrush x:Key="Col.RowSelBorder" Color="#FF3B82F6"/>
+        <SolidColorBrush x:Key="Col.Text"     Color="#FF111827"/>
+        <SolidColorBrush x:Key="Col.TextMut"  Color="#FF6B7280"/>
+        <SolidColorBrush x:Key="Col.Primary"  Color="#FF3B82F6"/>
+        <SolidColorBrush x:Key="Col.PrimaryHover" Color="#FF2563EB"/>
+
+        <!-- Buttons -->
         <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="Height" Value="36"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Padding" Value="12,6"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="{StaticResource Col.Primary}"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Margin" Value="4,0"/>
-            <Setter Property="Padding" Value="10,2"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="10"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" Value="0.9"/>
+                                <Setter Property="Background" Value="{StaticResource Col.PrimaryHover}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Opacity" Value="0.7"/>
+                                <Setter Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -42,167 +59,311 @@
             </Setter>
         </Style>
 
-        <!-- Search TextBox Style -->
+        <!-- Search box -->
         <Style x:Key="SearchBoxStyle" TargetType="TextBox">
             <Setter Property="Height" Value="36"/>
-            <Setter Property="Padding" Value="12,4"/>
+            <Setter Property="Padding" Value="12,6"/>
             <Setter Property="Margin" Value="0,0,10,0"/>
-            <Setter Property="FontStyle" Value="Italic"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="Gray"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
             <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#ccc"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border Background="{TemplateBinding Background}" 
-            BorderBrush="{TemplateBinding BorderBrush}" 
-            BorderThickness="{TemplateBinding BorderThickness}" 
-            CornerRadius="6">
-                            <ScrollViewer x:Name="PART_ContentHost" />
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
+                                SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <!-- Inventory DataGrid Style -->
-        <Style x:Key="InventoryDataGridStyle" TargetType="DataGrid">
-            <Setter Property="AutoGenerateColumns" Value="False"/>
-            <Setter Property="CanUserAddRows" Value="False"/>
-            <Setter Property="IsReadOnly" Value="True"/>
-            <Setter Property="HeadersVisibility" Value="Column"/>
-            <Setter Property="GridLinesVisibility" Value="All"/>
-            <Setter Property="RowHeight" Value="40"/>
-            <Setter Property="SelectionMode" Value="Single"/>
-            <Setter Property="SelectionUnit" Value="FullRow"/>
+        <!-- GridView headers, cells, row style -->
+        <Style TargetType="GridViewColumnHeader">
+            <Setter Property="Background" Value="{StaticResource Col.HeaderBg}"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.HeaderFg}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+
+        <Style x:Key="CellText" TargetType="TextBlock">
+            <Setter Property="Margin" Value="10,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
+            <Setter Property="FontSize" Value="15"/>
+        </Style>
+
+        <Style TargetType="ListViewItem">
             <Setter Property="SnapsToDevicePixels" Value="True"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="AlternatingRowBackground" Value="White"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Border x:Name="RowOuter"
+                                CornerRadius="8"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{StaticResource Col.Border}"
+                                BorderThickness="0,0,0,1"
+                                Margin="4,2"
+                                SnapsToDevicePixels="True">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border x:Name="SelBar"
+                                        Grid.Column="0"
+                                        Background="{StaticResource Col.RowSelBorder}"
+                                        CornerRadius="8,0,0,8"
+                                        Visibility="Collapsed"/>
+                                <GridViewRowPresenter Grid.Column="1"
+                                                      Content="{TemplateBinding Content}"
+                                                      Columns="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=View.Columns}"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- Selection -->
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="RowOuter" Property="Background" Value="{StaticResource Col.RowSel}"/>
+                                <Setter TargetName="RowOuter" Property="BorderBrush" Value="{StaticResource Col.RowSelBorder}"/>
+                                <Setter TargetName="RowOuter" Property="BorderThickness" Value="1"/>
+                                <Setter TargetName="SelBar" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <!-- Hover -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="RowOuter" Property="Background" Value="{StaticResource Col.RowHover}"/>
+                            </Trigger>
+                            <!-- Disabled -->
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                            <!-- Low stock highlight -->
+                            <DataTrigger Binding="{Binding IsLowStock}" Value="True">
+                                <Setter TargetName="RowOuter" Property="Background" Value="#FFFDEAEA"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <!-- Highlight Low Stock -->
-        <Style x:Key="LowStockRowStyle" TargetType="DataGridRow">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsLowStock}" Value="True">
-                    <Setter Property="Background" Value="White"/>
-                    <Setter Property="Foreground" Value="#B71C1C"/>
-                    <Setter Property="FontWeight" Value="Bold"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
+        <!-- Read-only details (for non-admin double-click) -->
+        <DataTemplate x:Key="InventoryReadOnlyTemplate">
+            <Border Padding="12" Background="White">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="180"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-        
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Item ID:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ItemID}" Margin="0,0,0,6"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Item Type:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ItemType}" Margin="0,0,0,6"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Total Quantity:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding TotalQuantity}" Margin="0,0,0,6"/>
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Used Quantity:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding UsedQuantity}" Margin="0,0,0,6"/>
+
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Low Stock Threshold:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding LowStockThreshold}" Margin="0,0,0,6"/>
+
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Last Restocked:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding LastRestockedDate}" Margin="0,0,0,6"/>
+
+                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Note:" FontWeight="SemiBold" Margin="0,0,8,0"/>
+                    <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Note}" TextWrapping="Wrap"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
     </UserControl.Resources>
 
-    <Border Background="#f9f9f9" Padding="20">
+    <!-- ========== LAYOUT (matches AllHouseholdsView) ========== -->
+    <Border Background="{StaticResource Col.BgPage}" Padding="20">
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*"/>
-                <ColumnDefinition Width="2*"/>
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-            <!-- Left Side -->
-            <Grid Grid.Column="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+            <!-- Top bar -->
+            <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,10">
+                <TextBox x:Name="SearchBox"
+                         Style="{StaticResource SearchBoxStyle}"
+                         Width="320"
+                         VerticalContentAlignment="Center"
+                         Foreground="{StaticResource Col.TextMut}"
+                         FontStyle="Italic"
+                         Text="Search by item type"
+                         Tag="Search by item type"
+                         GotFocus="ClearText"
+                         LostFocus="ResetText"
+                         TextChanged="SearchBox_TextChanged"
+                         DockPanel.Dock="Left"/>
+                <Button x:Name="AddInventoryButton"
+                        Content="➕ New Item"
+                        Style="{StaticResource ActionButtonStyle}"
+                        Width="150"
+                        DockPanel.Dock="Right"
+                        Click="AddInventoryButton_Click"/>
+            </DockPanel>
 
-                <!-- Search and Add -->
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                    <TextBox x:Name="SearchBox"
-                             Style="{StaticResource SearchBoxStyle}"
-                             Width="280"
-                             Margin="0,0,10,0"
-                                VerticalContentAlignment="Center"
-                                Foreground="Gray"
-                                FontSize="13"
-                                FontStyle="Italic"
-                             Tag="Search by item type"
-                             Text="Search by item type"
-                             GotFocus="ClearText"
-                             LostFocus="ResetText"
-                             TextChanged="SearchBox_TextChanged"/>
-
-                    <Button x:Name="AddInventoryButton"
-                            
-                            Content="📥 New Item"
-                            Grid.Column="1"
-                            Width="150"
-                            FontWeight="Bold"
-                            Style="{StaticResource ActionButtonStyle}"
-                            Background="#4CAF50"
-                            
-                            Click="AddInventoryButton_Click"/>
-                </StackPanel>
-
-                <!-- Inventory Table -->
-                <Border Grid.Row="1"
-        Background="White"
-        CornerRadius="10"
-        BorderBrush="White"
-        BorderThickness="0"
-        Padding="1,0,0,0">
-                    <DataGrid x:Name="InventoryDataGrid"
-              Style="{StaticResource InventoryDataGridStyle}"
-              RowStyle="{StaticResource LowStockRowStyle}"
-              SelectedItem="{Binding SelectedInventoryItem, Mode=TwoWay}"
-              SelectionChanged="InventoryDataGrid_SelectionChanged"
-              MinWidth="950"
-              HorizontalScrollBarVisibility="Auto"
-                              Background="White"
-                              BorderBrush="#DDD"
-              VerticalScrollBarVisibility="Auto" AlternatingRowBackground="White">
-                        <DataGrid.Columns >
-                            <DataGridTextColumn Header="Item Type" Binding="{Binding ItemType}" Width="150" />
-                            <DataGridTextColumn Header="Total&#x0a;Quantity" Binding="{Binding TotalQuantity}" Width="90"/>
-                            <DataGridTextColumn Header="Used&#x0a;Quantity" Binding="{Binding UsedQuantity}" Width="90"/>
-                            <DataGridTextColumn Header="Low&#x0a;Threshold" Binding="{Binding LowStockThreshold}" Width="90"/>
-                            <DataGridTextColumn Header="Last&#x0a;Restocked" Binding="{Binding LastRestockedDate}" Width="120"/>
-
-                            <DataGridTemplateColumn Header="Restock" Width="90">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Button Content="➕ Restock"
-                                Tag="{Binding}"
-                                Style="{StaticResource ActionButtonStyle}"
-                                Background="#43A047"
-                                Click="Restock_Click"/>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-
-                            <DataGridTemplateColumn Header="Use" Width="90">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Button Content="➖ Use"
-                                Tag="{Binding}"
-                                Style="{StaticResource ActionButtonStyle}"
-                                Background="#E53935"
-                                Click="Use_Click"/>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-
-                            <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="*" MinWidth="150"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Border>
-
-            </Grid>
-
-            <!-- Right Side -->
-            <Border Grid.Column="1"
-                    Background="White"
-                    CornerRadius="6"
-                    BorderBrush="#DDD"
+            <!-- Table -->
+            <Border Grid.Row="1"
+                    Background="{StaticResource Col.BgCard}"
+                    CornerRadius="12"
+                    BorderBrush="{StaticResource Col.Border}"
                     BorderThickness="1"
-                    Padding="10"
-                    Margin="10,0,0,0">
-                <ContentControl x:Name="FormContent"/>
+                    Padding="8">
+                <Grid>
+                    <ListView x:Name="InventoryListView"
+                              Background="Transparent"
+                              BorderThickness="0"
+                              ScrollViewer.CanContentScroll="True"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.VirtualizationMode="Recycling"
+                              SelectionMode="Single"
+                              MouseDoubleClick="InventoryListView_MouseDoubleClick">
+                        <ListView.View>
+                            <GridView AllowsColumnReorder="True">
+                                <GridViewColumn Header="ID" Width="60">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}"
+                                                       Text="{Binding ItemID}"
+                                                       Foreground="{StaticResource Col.TextMut}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Item Type" Width="220">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding ItemType}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Total Qty" Width="110">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding TotalQuantity}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Used Qty" Width="110">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding UsedQuantity}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Low Threshold" Width="130">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding LowStockThreshold}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Last Restocked" Width="140">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding LastRestockedDate}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Note" Width="260">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}"
+                                                       Text="{Binding Note}"
+                                                       ToolTip="{Binding Note}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <!-- Actions -->
+                                <GridViewColumn Header="Restock" Width="120">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="➕ Restock"
+                                                    Tag="{Binding}"
+                                                    Style="{StaticResource ActionButtonStyle}"
+                                                    Background="#43A047"
+                                                    Click="Restock_Click"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Use" Width="120">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="➖ Use"
+                                                    Tag="{Binding}"
+                                                    Style="{StaticResource ActionButtonStyle}"
+                                                    Background="#E53935"
+                                                    Click="Use_Click"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+
+                    <!-- Empty state -->
+                    <TextBlock Text="No inventory items found"
+                               Foreground="{StaticResource Col.TextMut}"
+                               FontStyle="Italic"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               IsHitTestVisible="False">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=InventoryListView, Path=HasItems}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
             </Border>
         </Grid>
     </Border>

@@ -1,44 +1,65 @@
-﻿using System;
+﻿using HouseholdMS.Model;
+using HouseholdMS.View.UserControls; // AddInventoryControl
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Globalization;
-using System.Linq;
+using System.Data.SQLite;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using HouseholdMS.View.UserControls;
-using HouseholdMS.Model;
-using System.Data.SQLite; // Use SQLite!
+using System.Windows.Media;
 
 namespace HouseholdMS.View
 {
     public partial class InventoryView : UserControl
     {
-        private ObservableCollection<InventoryItem> allInventory = new ObservableCollection<InventoryItem>();
+        private readonly ObservableCollection<InventoryItem> allInventory = new ObservableCollection<InventoryItem>();
         private ICollectionView view;
         private readonly string _currentUserRole;
+
+        private GridViewColumnHeader _lastHeaderClicked;
+        private ListSortDirection _lastDirection = ListSortDirection.Ascending;
+
+        private readonly Dictionary<string, string> _headerToProperty = new Dictionary<string, string>
+        {
+            { "ID", "ItemID" },
+            { "Item Type", "ItemType" },
+            { "Total Qty", "TotalQuantity" },
+            { "Used Qty", "UsedQuantity" },
+            { "Low Threshold", "LowStockThreshold" },
+            { "Last Restocked", "LastRestockedDate" },
+            { "Note", "Note" }
+        };
 
         public InventoryItem SelectedInventoryItem { get; set; }
 
         public InventoryView(string userRole = "User")
         {
+            _currentUserRole = string.IsNullOrWhiteSpace(userRole) ? "User" : userRole.Trim();
             InitializeComponent();
-            _currentUserRole = userRole;
-            LoadInventory();
-            ApplyRoleRestrictions();
+            InitializeAndLoad();
         }
 
-        private void ApplyRoleRestrictions()
+        private void InitializeAndLoad()
         {
-            if (_currentUserRole == "User")
+            LoadInventory();
+
+            // Header click sorting like AllHouseholdsView
+            InventoryListView.AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(GridViewColumnHeader_Click));
+
+            // Role: hide Add for non-admins
+            if (!IsAdmin())
             {
                 if (FindName("AddInventoryButton") is Button addBtn)
                     addBtn.Visibility = Visibility.Collapsed;
-
-                if (FindName("FormContent") is ContentControl formContent)
-                    formContent.Visibility = Visibility.Collapsed;
             }
+
+            // Search placeholder state
+            UpdateSearchPlaceholder();
         }
+
+        private bool IsAdmin() => string.Equals(_currentUserRole, "Admin", StringComparison.OrdinalIgnoreCase);
 
         public void LoadInventory()
         {
@@ -55,10 +76,10 @@ namespace HouseholdMS.View
                         allInventory.Add(new InventoryItem
                         {
                             ItemID = Convert.ToInt32(reader["ItemID"]),
-                            ItemType = reader["ItemType"].ToString(),
+                            ItemType = reader["ItemType"]?.ToString(),
                             TotalQuantity = Convert.ToInt32(reader["TotalQuantity"]),
                             UsedQuantity = Convert.ToInt32(reader["UsedQuantity"]),
-                            LastRestockedDate = reader["LastRestockedDate"].ToString(),
+                            LastRestockedDate = reader["LastRestockedDate"]?.ToString(),
                             LowStockThreshold = Convert.ToInt32(reader["LowStockThreshold"]),
                             Note = reader["Note"] == DBNull.Value ? string.Empty : reader["Note"].ToString()
                         });
@@ -67,93 +88,212 @@ namespace HouseholdMS.View
             }
 
             view = CollectionViewSource.GetDefaultView(allInventory);
-            InventoryDataGrid.ItemsSource = view;
+            InventoryListView.ItemsSource = view;
+        }
+
+        // ===== Search (same placeholder pattern) =====
+        private void UpdateSearchPlaceholder()
+        {
+            if (SearchBox == null) return;
+
+            string ph = "Search by item type";
+            SearchBox.Tag = ph;
+
+            if (string.IsNullOrWhiteSpace(SearchBox.Text) ||
+                SearchBox.Text == "Search by item type")
+            {
+                SearchBox.Text = ph;
+                SearchBox.Foreground = Brushes.Gray;
+                SearchBox.FontStyle = FontStyles.Italic;
+            }
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (view == null) return;
 
-            string search = SearchBox.Text.Trim().ToLower();
+            string text = SearchBox.Text ?? string.Empty;
+            if (text == (SearchBox.Tag as string))
+            {
+                view.Filter = null;
+                view.Refresh();
+                return;
+            }
+
+            string search = text.Trim().ToLowerInvariant();
             view.Filter = obj =>
-                obj is InventoryItem item &&
-                item.ItemType.ToLower().Contains(search);
+            {
+                if (obj is InventoryItem it)
+                    return (it.ItemType ?? string.Empty).ToLowerInvariant().Contains(search);
+                return false;
+            };
+            view.Refresh();
         }
 
         private void ClearText(object sender, RoutedEventArgs e)
         {
-            if (sender is TextBox box && box.Text == (string)box.Tag)
+            var box = sender as TextBox;
+            if (box == null) return;
+
+            if (box.Text == box.Tag as string)
             {
-                box.Text = "";
-                box.Foreground = System.Windows.Media.Brushes.Black;
+                box.Text = string.Empty;
+            }
+            box.Foreground = Brushes.Black;
+            box.FontStyle = FontStyles.Normal;
+
+            if (view != null)
+            {
+                view.Filter = null;
+                view.Refresh();
             }
         }
 
         private void ResetText(object sender, RoutedEventArgs e)
         {
-            if (sender is TextBox box && string.IsNullOrWhiteSpace(box.Text))
+            var box = sender as TextBox;
+            if (box != null && string.IsNullOrWhiteSpace(box.Text))
             {
-                box.Text = (string)box.Tag;
-                box.Foreground = System.Windows.Media.Brushes.Gray;
-                view.Filter = null;
+                box.Text = box.Tag as string;
+                box.Foreground = Brushes.Gray;
+                box.FontStyle = FontStyles.Italic;
+
+                if (view != null)
+                {
+                    view.Filter = null;
+                    view.Refresh();
+                }
             }
         }
 
+        // ===== Sorting on header click =====
+        private void GridViewColumnHeader_Click(object sender, RoutedEventArgs e)
+        {
+            var header = e.OriginalSource as GridViewColumnHeader;
+            if (header == null) return;
+
+            string headerText = header.Content?.ToString();
+            if (string.IsNullOrEmpty(headerText) || !_headerToProperty.ContainsKey(headerText))
+                return;
+
+            string sortBy = _headerToProperty[headerText];
+
+            ListSortDirection direction =
+                (_lastHeaderClicked == header && _lastDirection == ListSortDirection.Ascending)
+                ? ListSortDirection.Descending
+                : ListSortDirection.Ascending;
+
+            _lastHeaderClicked = header;
+            _lastDirection = direction;
+
+            view.SortDescriptions.Clear();
+            view.SortDescriptions.Add(new SortDescription(sortBy, direction));
+            view.Refresh();
+        }
+
+        // ===== Add / Edit in POPUP (no inline FormContent) =====
         private void AddInventoryButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentUserRole == "User")
+            if (!IsAdmin())
             {
-                MessageBox.Show("Access Denied: You cannot add inventory.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Only admins can add inventory items.", "Access Denied",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             var form = new AddInventoryControl();
-            form.OnSavedSuccessfully += (s, args) =>
+            var dialog = CreateWideDialog(form, "Add Inventory Item");
+
+            form.OnSavedSuccessfully += delegate
             {
-                FormContent.Content = null;
+                dialog.DialogResult = true;
+                dialog.Close();
                 LoadInventory();
             };
-            form.OnCancelRequested += (s, args) => FormContent.Content = null;
+            form.OnCancelRequested += delegate
+            {
+                dialog.DialogResult = false;
+                dialog.Close();
+            };
 
-            FormContent.Content = form;
+            dialog.ShowDialog();
         }
 
-        private void InventoryDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void InventoryListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (InventoryDataGrid.SelectedItem is InventoryItem selectedItem)
+            var selected = InventoryListView.SelectedItem as InventoryItem;
+            if (selected == null) return;
+
+            if (IsAdmin())
             {
-                if (_currentUserRole == "User")
-                {
-                    FormContent.Content = null;
-                    return;
-                }
+                var form = new AddInventoryControl(selected);
+                var dialog = CreateWideDialog(form, $"Edit Item #{selected.ItemID}");
 
-                var form = new AddInventoryControl(selectedItem);
-                form.OnSavedSuccessfully += (s, args) =>
+                form.OnSavedSuccessfully += delegate
                 {
-                    FormContent.Content = null;
+                    dialog.DialogResult = true;
+                    dialog.Close();
                     LoadInventory();
-                    InventoryDataGrid.SelectedItem = null;
                 };
-                form.OnCancelRequested += (s, args) =>
+                form.OnCancelRequested += delegate
                 {
-                    FormContent.Content = null;
-                    InventoryDataGrid.SelectedItem = null;
+                    dialog.DialogResult = false;
+                    dialog.Close();
                 };
 
-                FormContent.Content = form;
+                dialog.ShowDialog();
             }
             else
             {
-                FormContent.Content = null;
+                // Read-only details popup for non-admin
+                var dt = (DataTemplate)FindResource("InventoryReadOnlyTemplate");
+                var content = (FrameworkElement)dt.LoadContent();
+                content.DataContext = selected;
+
+                var scroller = new ScrollViewer
+                {
+                    Content = content,
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+                };
+
+                var dialog = CreateWideDialog(scroller, $"Item #{selected.ItemID} — Details");
+                dialog.ShowDialog();
             }
         }
 
+        private Window CreateWideDialog(FrameworkElement content, string title)
+        {
+            var host = new Grid { Margin = new Thickness(16) };
+            host.Children.Add(content);
+
+            var owner = Window.GetWindow(this);
+
+            var dlg = new Window
+            {
+                Title = title,
+                Owner = owner,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                ResizeMode = ResizeMode.CanResize,
+                ShowInTaskbar = false,
+                Content = host,
+                Width = 900,
+                Height = 640,
+                MinWidth = 780,
+                MinHeight = 520,
+                Background = Brushes.White
+            };
+
+            try { if (owner != null) dlg.Icon = owner.Icon; } catch { }
+            return dlg;
+        }
+
+        // ===== Row actions (kept) =====
         private void Restock_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentUserRole == "User")
+            if (!IsAdmin())
             {
-                MessageBox.Show("Access Denied: You cannot restock inventory.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Access Denied: You cannot restock inventory.", "Access Denied",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -162,10 +302,11 @@ namespace HouseholdMS.View
                 var dialog = new InputDialogWindow($"Enter quantity to restock for '{item.ItemType}':");
                 if (dialog.ShowDialog() == true && dialog.Quantity.HasValue)
                 {
-                    int quantity = dialog.Quantity.Value;
-                    if (quantity <= 0)
+                    int qty = dialog.Quantity.Value;
+                    if (qty <= 0)
                     {
-                        MessageBox.Show("Please enter a valid quantity greater than zero.", "Invalid Quantity", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show("Please enter a valid quantity greater than zero.",
+                            "Invalid Quantity", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
 
@@ -174,11 +315,11 @@ namespace HouseholdMS.View
                         conn.Open();
                         using (var cmd = new SQLiteCommand(@"
                             UPDATE StockInventory 
-                            SET TotalQuantity = TotalQuantity + @qty, 
-                                LastRestockedDate = @now 
+                            SET TotalQuantity = TotalQuantity + @qty,
+                                LastRestockedDate = @now
                             WHERE ItemID = @id", conn))
                         {
-                            cmd.Parameters.AddWithValue("@qty", quantity);
+                            cmd.Parameters.AddWithValue("@qty", qty);
                             cmd.Parameters.AddWithValue("@now", DateTime.Now.ToString("yyyy-MM-dd"));
                             cmd.Parameters.AddWithValue("@id", item.ItemID);
                             cmd.ExecuteNonQuery();
@@ -192,9 +333,10 @@ namespace HouseholdMS.View
 
         private void Use_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentUserRole == "User")
+            if (!IsAdmin())
             {
-                MessageBox.Show("Access Denied: You cannot use inventory items.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Access Denied: You cannot use inventory items.", "Access Denied",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -203,16 +345,17 @@ namespace HouseholdMS.View
                 var dialog = new InputDialogWindow($"Enter quantity to use from '{item.ItemType}':");
                 if (dialog.ShowDialog() == true && dialog.Quantity.HasValue)
                 {
-                    int quantity = dialog.Quantity.Value;
-                    if (quantity <= 0)
+                    int qty = dialog.Quantity.Value;
+                    if (qty <= 0)
                     {
-                        MessageBox.Show("Please enter a valid quantity greater than zero.", "Invalid Quantity", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show("Please enter a valid quantity greater than zero.",
+                            "Invalid Quantity", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
-
-                    if (quantity > item.TotalQuantity)
+                    if (qty > item.TotalQuantity)
                     {
-                        MessageBox.Show("Not enough items in stock.", "Insufficient Stock", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show("Not enough items in stock.", "Insufficient Stock",
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
 
@@ -221,11 +364,11 @@ namespace HouseholdMS.View
                         conn.Open();
                         using (var cmd = new SQLiteCommand(@"
                             UPDATE StockInventory 
-                            SET TotalQuantity = TotalQuantity - @qty, 
-                                UsedQuantity = UsedQuantity + @qty 
+                            SET TotalQuantity = TotalQuantity - @qty,
+                                UsedQuantity  = UsedQuantity + @qty
                             WHERE ItemID = @id", conn))
                         {
-                            cmd.Parameters.AddWithValue("@qty", quantity);
+                            cmd.Parameters.AddWithValue("@qty", qty);
                             cmd.Parameters.AddWithValue("@id", item.ItemID);
                             cmd.ExecuteNonQuery();
                         }
@@ -237,7 +380,7 @@ namespace HouseholdMS.View
         }
     }
 
-    // Model
+    // ===== Model (kept local for this view) =====
     public class InventoryItem
     {
         public int ItemID { get; set; }
@@ -248,23 +391,5 @@ namespace HouseholdMS.View
         public int LowStockThreshold { get; set; }
         public string Note { get; set; }
         public bool IsLowStock => TotalQuantity <= LowStockThreshold;
-    }
-
-    // Converter
-    public class LowStockHighlightConverter : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (values.Length >= 2
-             && int.TryParse(values[0]?.ToString(), out int total)
-             && int.TryParse(values[1]?.ToString(), out int threshold))
-            {
-                return total <= threshold;
-            }
-            return false;
-        }
-
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-            => throw new NotImplementedException();
     }
 }
