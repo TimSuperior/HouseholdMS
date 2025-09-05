@@ -107,8 +107,9 @@ namespace HouseholdMS
 
         private void bt_BatteryTest_Click(object sender, RoutedEventArgs e)
         {
-            MainContent.Content = new BatteryTestMenuView(_currentUserRole);
+            MainContent.Content = new HouseholdMS.View.UserControls.EpeverMonitorControl();
         }
+
 
         private void bt_ControllerTest_Click(object sender, RoutedEventArgs e)
         {

@@ -43,6 +43,24 @@ namespace HouseholdMS.View.Dashboard
 
         private readonly string _currentUserRole;
 
+        // ===== Minimal parent refresh hook (no new files) =====
+        private Action _notifyParent;
+        public Action NotifyParent
+        {
+            get { return _notifyParent; }
+            set { _notifyParent = value; }
+        }
+        public void SetParentRefreshCallback(Action cb) { _notifyParent = cb; }
+        public event EventHandler RefreshRequested; // optional for event-based wiring
+        private void RaiseParentRefresh()
+        {
+            var cb = _notifyParent;
+            if (cb != null) { try { cb(); } catch { } }
+            var h = RefreshRequested;
+            if (h != null) { try { h(this, EventArgs.Empty); } catch { } }
+        }
+        // ======================================================
+
         public OperationalHouseholdsView() : this(GetRoleFromMain()) { }
 
         public OperationalHouseholdsView(string userRole)
@@ -55,6 +73,13 @@ namespace HouseholdMS.View.Dashboard
             UpdateSearchPlaceholder();
             ApplyFilter();
         }
+
+        // New overloads to allow SitesView to pass a callback directly
+        public OperationalHouseholdsView(string userRole, Action notifyParent) : this(userRole)
+        {
+            _notifyParent = notifyParent;
+        }
+        public OperationalHouseholdsView(Action notifyParent) : this(GetRoleFromMain(), notifyParent) { }
 
         private static string GetRoleFromMain()
         {
@@ -268,6 +293,9 @@ namespace HouseholdMS.View.Dashboard
                 LoadHouseholds();
                 ApplyFilter();
                 HouseholdListView.SelectedItem = null;
+
+                // Tell SitesView to refresh tiles (minimal hook)
+                RaiseParentRefresh();
             };
 
             onCancel = delegate (object s, EventArgs args)

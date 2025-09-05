@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using HouseholdMS.View.UserControls; // for AddHouseholdControl (edit mode)
+using HouseholdMS.View.UserControls; // AddHouseholdControl
 using HouseholdMS.Model;
 using System.Data.SQLite;
 using System.Windows.Media;
@@ -43,6 +43,22 @@ namespace HouseholdMS.View.Dashboard
         private bool _categoryFilterActive = true;           // category mode
         private string _searchText = string.Empty;
 
+        // ===== Minimal parent refresh hook (no new files) =====
+        private Action _notifyParent;
+        public Action NotifyParent { get { return _notifyParent; } set { _notifyParent = value; } }
+        public void SetParentRefreshCallback(Action cb) { _notifyParent = cb; }
+        public event EventHandler RefreshRequested; // optional event for SitesView to hook
+
+        private void RaiseParentRefresh()
+        {
+            var cb = _notifyParent;
+            if (cb != null) { try { cb(); } catch { } }
+
+            var h = RefreshRequested;
+            if (h != null) { try { h(this, EventArgs.Empty); } catch { } }
+        }
+        // ======================================================
+
         public OutOfServiceHouseholdsView(string userRole)
         {
             InitializeComponent();
@@ -55,11 +71,21 @@ namespace HouseholdMS.View.Dashboard
             // Sorting by clicking headers
             HouseholdListView.AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(GridViewColumnHeader_Click));
 
-            // Ensure double-click handler is wired (works even if XAML didn't specify it)
+            // Ensure double-click handler is wired
             HouseholdListView.MouseDoubleClick += HouseholdListView_MouseDoubleClick;
 
             UpdateSearchPlaceholder();
-            ApplyFilter(); // apply category filter
+            ApplyFilter();
+        }
+
+        // Overloads so SitesView can pass a callback directly (optional)
+        public OutOfServiceHouseholdsView(string userRole, Action notifyParent) : this(userRole)
+        {
+            _notifyParent = notifyParent;
+        }
+        public OutOfServiceHouseholdsView(Action notifyParent) : this("Admin")
+        {
+            _notifyParent = notifyParent;
         }
 
         public void LoadHouseholds()
@@ -226,8 +252,6 @@ namespace HouseholdMS.View.Dashboard
         }
 
         // ===================== POP-UP LOGIC =====================
-
-        // Double-click opens a wider pop-up window. Single click just selects (default ListView behavior).
         private void HouseholdListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var selected = HouseholdListView.SelectedItem as Household;
@@ -237,8 +261,8 @@ namespace HouseholdMS.View.Dashboard
 
             if (norm == IN_SERVICE)
             {
-                // Out-of-Service bucket → open your existing ServiceCallDetailControl in a modal window
-                var ctl = new ServiceCallDetailControl(selected, _currentUserRole);
+                // Out-of-Service bucket → open ServiceCallDetailControl in a modal window
+                var ctl = new HouseholdMS.View.Dashboard.ServiceCallDetailControl(selected, _currentUserRole);
 
                 var win = new Window
                 {
@@ -259,7 +283,6 @@ namespace HouseholdMS.View.Dashboard
                     try { win.DialogResult = true; } catch { /* ignore if not modal yet */ }
                     win.Close();
                 };
-                ctl.CancelRequested += (s, _) => win.Close();
 
                 win.ShowDialog();
 
@@ -267,10 +290,13 @@ namespace HouseholdMS.View.Dashboard
                 LoadHouseholds();
                 ApplyFilter();
                 HouseholdListView.SelectedItem = null;
+
+                // tell SitesView to refresh tiles
+                RaiseParentRefresh();
             }
             else
             {
-                // For non "In Service" rows, open edit (not add) using your existing AddHouseholdControl in a modal window
+                // For non "In Service" rows, open edit (not add)
                 var ctl = new AddHouseholdControl(selected); // edit mode when constructed with entity
 
                 var win = new Window
@@ -299,6 +325,7 @@ namespace HouseholdMS.View.Dashboard
                 {
                     LoadHouseholds();
                     ApplyFilter();
+                    RaiseParentRefresh();
                 }
                 HouseholdListView.SelectedItem = null;
             }
@@ -370,6 +397,7 @@ namespace HouseholdMS.View.Dashboard
 
             LoadHouseholds();
             ApplyFilter();
+            RaiseParentRefresh();
         }
 
         // ====== NOTE: AddHousehold button and inline right-pane logic REMOVED as requested ======

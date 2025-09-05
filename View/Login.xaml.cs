@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Input; // for Keyboard.Focus
 using System.Data.SQLite;
 using HouseholdMS.Model;
 
@@ -10,7 +11,30 @@ namespace HouseholdMS.View
         public Login()
         {
             InitializeComponent();
+
+            // Keep window within screen’s usable area and center on render/resize
+            var wa = SystemParameters.WorkArea;
+            MaxWidth = Math.Max(400, wa.Width - 40);
+            MaxHeight = Math.Max(300, wa.Height - 40);
+
             ShowLoginPanel();
+
+            // Ensure initial keyboard focus actually lands in username
+            Loaded += (_, __) => {
+                Keyboard.Focus(LoginUsernameBox);
+                LoginUsernameBox.SelectAll();
+            };
+
+            CenterInWorkArea();
+            SizeChanged += (_, __) => CenterInWorkArea();
+            ContentRendered += (_, __) => CenterInWorkArea();
+        }
+
+        private void CenterInWorkArea()
+        {
+            var wa = SystemParameters.WorkArea;
+            Left = wa.Left + (wa.Width - ActualWidth) / 2;
+            Top = wa.Top + (wa.Height - ActualHeight) / 2;
         }
 
         // ===== Panel toggles =====
@@ -20,8 +44,13 @@ namespace HouseholdMS.View
             LoginCard.Visibility = Visibility.Visible;
             RegisterCard.Visibility = Visibility.Collapsed;
 
-            // Focus username for quick typing
-            LoginUsernameBox.Focus();
+            // Make Enter trigger Login while on this panel
+            LoginBtn.IsDefault = true;
+            RegisterBtn.IsDefault = false;
+
+            // Put caret in username
+            Keyboard.Focus(LoginUsernameBox);
+            LoginUsernameBox.SelectAll();
         }
 
         private void ShowRegisterPanel()
@@ -30,12 +59,16 @@ namespace HouseholdMS.View
             RegisterCard.Visibility = Visibility.Visible;
             LoginCard.Visibility = Visibility.Collapsed;
 
-            RegNameBox.Focus();
+            // Make Enter trigger Register while on this panel
+            LoginBtn.IsDefault = false;
+            RegisterBtn.IsDefault = true;
+
+            Keyboard.Focus(RegNameBox);
+            RegNameBox.SelectAll();
         }
 
         // ===== Handlers =====
         private void ShowRegister_Click(object sender, RoutedEventArgs e) => ShowRegisterPanel();
-
         private void BackToLoginButton_Click(object sender, RoutedEventArgs e) => ShowLoginPanel();
 
         private void Exit_Click(object sender, RoutedEventArgs e)
@@ -52,6 +85,7 @@ namespace HouseholdMS.View
             {
                 MessageBox.Show("Please enter both Username and Password.", "Missing Credentials",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
+                Keyboard.Focus(LoginUsernameBox);
                 return;
             }
 
@@ -71,9 +105,6 @@ namespace HouseholdMS.View
 
                         if (!string.IsNullOrEmpty(role))
                         {
-                            MessageBox.Show($"Welcome {username}!\nRole: {role}", "Login Successful",
-                                MessageBoxButton.OK, MessageBoxImage.Information);
-
                             var mainWindow = new MainWindow(role);
                             mainWindow.Show();
                             Close();
@@ -84,7 +115,7 @@ namespace HouseholdMS.View
                                 MessageBoxButton.OK, MessageBoxImage.Warning);
                             LoginUsernameBox.Clear();
                             LoginPasswordBox.Clear();
-                            LoginUsernameBox.Focus();
+                            Keyboard.Focus(LoginUsernameBox);
                         }
                     }
                 }
@@ -111,6 +142,7 @@ namespace HouseholdMS.View
             {
                 MessageBox.Show("Please fill in all fields.", "Missing Information",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
+                Keyboard.Focus(RegNameBox);
                 return;
             }
 
@@ -125,11 +157,12 @@ namespace HouseholdMS.View
                     {
                         checkCmd.Parameters.AddWithValue("@username", username);
                         int existing = Convert.ToInt32(checkCmd.ExecuteScalar());
-
                         if (existing > 0)
                         {
                             MessageBox.Show("Username already exists. Please choose another.",
                                 "Username Taken", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            Keyboard.Focus(RegUsernameBox);
+                            RegUsernameBox.SelectAll();
                             return;
                         }
                     }
@@ -140,7 +173,6 @@ namespace HouseholdMS.View
                         insertCmd.Parameters.AddWithValue("@name", name);
                         insertCmd.Parameters.AddWithValue("@username", username);
                         insertCmd.Parameters.AddWithValue("@password", password); // TODO: hash in production
-
                         insertCmd.ExecuteNonQuery();
                     }
                 }
@@ -148,11 +180,10 @@ namespace HouseholdMS.View
                 MessageBox.Show("User registered successfully!", "Registration Complete",
                     MessageBoxButton.OK, MessageBoxImage.Information);
 
-                // Prefill login with the new username and switch back
                 LoginUsernameBox.Text = username;
                 LoginPasswordBox.Clear();
                 ShowLoginPanel();
-                LoginPasswordBox.Focus();
+                Keyboard.Focus(LoginPasswordBox);
             }
             catch (SQLiteException ex)
             {

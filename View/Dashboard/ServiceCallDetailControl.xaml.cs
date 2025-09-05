@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Media;
 using HouseholdMS.Model;
 
@@ -15,11 +16,29 @@ namespace HouseholdMS.View.Dashboard
     public partial class ServiceCallDetailControl : UserControl
     {
         // ===== Row models =====
-        public class TechRow
+        public class TechRow : INotifyPropertyChanged
         {
             public int TechnicianID { get; set; }
             public string Name { get; set; }
-            public bool IsSelected { get; set; }
+
+            private bool _isSelected;
+            public bool IsSelected
+            {
+                get { return _isSelected; }
+                set
+                {
+                    if (_isSelected == value) return;
+                    _isSelected = value;
+                    OnPropertyChanged("IsSelected");
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+            private void OnPropertyChanged(string name)
+            {
+                var h = PropertyChanged;
+                if (h != null) h(this, new PropertyChangedEventArgs(name));
+            }
         }
 
         public class InvRow : INotifyPropertyChanged
@@ -54,7 +73,9 @@ namespace HouseholdMS.View.Dashboard
                 get { return _isSelected; }
                 set
                 {
-                    _isSelected = CanSelect && value; // prevent selecting OOS
+                    bool newVal = CanSelect && value;
+                    if (_isSelected == newVal) return;
+                    _isSelected = newVal;
                     OnPropertyChanged("IsSelected");
                 }
             }
@@ -72,12 +93,13 @@ namespace HouseholdMS.View.Dashboard
                         if (v < 1) v = 1;
                         if (v > Available) v = Available;
                     }
+                    if (_quantityUsed == v) return;
                     _quantityUsed = v;
                     OnPropertyChanged("QuantityUsed");
                 }
             }
 
-            // Badge visuals (no resource lookups)
+            // Badge visuals
             private static readonly SolidColorBrush BadgeGreen = Make("#D1FAE5");
             private static readonly SolidColorBrush BadgeYellow = Make("#FEF3C7");
             private static readonly SolidColorBrush BadgeRed = Make("#FEE2E2");
@@ -129,7 +151,6 @@ namespace HouseholdMS.View.Dashboard
         private Dictionary<int, int> _preselectedInv = new Dictionary<int, int>();
 
         public event EventHandler ServiceFinished;
-        public event EventHandler CancelRequested; // kept for compatibility (still raised after successful cancel)
 
         public ServiceCallDetailControl(Household household, string userRole)
         {
@@ -139,7 +160,7 @@ namespace HouseholdMS.View.Dashboard
             _householdId = household.HouseholdID;
             _userRole = string.IsNullOrWhiteSpace(userRole) ? "User" : userRole;
 
-            // Fill summary labels
+            // Summary
             HHIdText.Text = household.HouseholdID.ToString();
             OwnerText.Text = household.OwnerName ?? "";
             UserText.Text = household.UserName ?? "";
@@ -152,11 +173,11 @@ namespace HouseholdMS.View.Dashboard
             bool canProceed = string.Equals(_userRole, "Admin", StringComparison.OrdinalIgnoreCase)
                               || string.Equals(_userRole, "Technician", StringComparison.OrdinalIgnoreCase);
             FinishBtn.IsEnabled = canProceed;
-            CancelBtn.IsEnabled = canProceed;
+            SaveOpenBtn.IsEnabled = canProceed;
             if (!canProceed)
             {
                 FinishBtn.ToolTip = "Only Admin or Technician can finish a service call.";
-                CancelBtn.ToolTip = "Only Admin or Technician can cancel a service call.";
+                SaveOpenBtn.ToolTip = "Only Admin or Technician can save a service call.";
             }
 
             // Bind UI collections
@@ -171,6 +192,12 @@ namespace HouseholdMS.View.Dashboard
             LoadInventory();
 
             UpdateTechButton();
+            UpdateTechOverlayHeader();
+            UpdateInvOverlayHeader();
+
+            // Initial filters
+            ApplyTechFilter();
+            ApplyInvFilter();
         }
 
         // ===== Loaders =====
@@ -190,7 +217,7 @@ namespace HouseholdMS.View.Dashboard
                         {
                             MessageBox.Show("No open service ticket for this household.", "Service", MessageBoxButton.OK, MessageBoxImage.Information);
                             FinishBtn.IsEnabled = false;
-                            CancelBtn.IsEnabled = false;
+                            SaveOpenBtn.IsEnabled = false;
                             return;
                         }
 
@@ -203,8 +230,14 @@ namespace HouseholdMS.View.Dashboard
                         OpenedAtText.Text = _openedAt == default(DateTime) ? "(unknown)" : _openedAt.ToString("yyyy-MM-dd HH:mm");
                         HeaderText.Text = "Service Call Details (Opened At: " + OpenedAtText.Text + ")";
 
-                        ProblemBox.Text = r1["Problem"] == DBNull.Value ? "" : r1["Problem"].ToString();
-                        ActionBox.Text = r1["Action"] == DBNull.Value ? "" : r1["Action"].ToString();
+                        var prevProblem = r1["Problem"] == DBNull.Value ? "" : r1["Problem"].ToString();
+                        var prevAction = r1["Action"] == DBNull.Value ? "" : r1["Action"].ToString();
+
+                        SetPrevBlock(ProblemPrevBox, ProblemPrevLabel, prevProblem, "Initial problem");
+                        SetPrevBlock(ActionPrevBox, ActionPrevLabel, prevAction, "Initial action");
+
+                        ProblemNewBox.Text = "";
+                        ActionNewBox.Text = "";
                     }
                 }
 
@@ -261,6 +294,9 @@ namespace HouseholdMS.View.Dashboard
                     }
                 }
             }
+
+            UpdateTechButton();
+            UpdateTechOverlayHeader();
         }
 
         private void LoadInventory()
@@ -298,12 +334,26 @@ namespace HouseholdMS.View.Dashboard
                     }
                 }
             }
+
+            UpdateInvOverlayHeader();
         }
 
         // ===== UI helpers =====
         private void UpdateTechButton()
         {
             OpenTechPickerBtn.Content = string.Format("Select Technicians ({0})", _techSelected.Count);
+        }
+
+        private void UpdateTechOverlayHeader()
+        {
+            int sel = _techAll.Count(t => t.IsSelected);
+            if (TechHeaderCountText != null) TechHeaderCountText.Text = "(" + sel + " selected)";
+        }
+
+        private void UpdateInvOverlayHeader()
+        {
+            int sel = _invAll.Count(i => i.IsSelected && i.CanSelect);
+            if (InvHeaderCountText != null) InvHeaderCountText.Text = "(" + sel + " selected)";
         }
 
         private void ShowValidation(string msg)
@@ -318,14 +368,85 @@ namespace HouseholdMS.View.Dashboard
             ValidationText.Visibility = Visibility.Collapsed;
         }
 
+        // ===== Previous/Initial block helpers =====
+        private static bool LooksLikeMerged(string content)
+        {
+            var t = (content ?? "").TrimStart();
+            return t.StartsWith("*previous*", StringComparison.OrdinalIgnoreCase)
+                   || t.StartsWith("*update", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string PickPrevLabel(string content, string initialLabel)
+        {
+            return LooksLikeMerged(content) ? "Previous" : initialLabel;
+        }
+
+        private static void SetPrevBlock(TextBox box, TextBlock label, string text, string initialLabel)
+        {
+            var trimmed = (text ?? "").Trim();
+            if (string.IsNullOrEmpty(trimmed))
+            {
+                label.Visibility = Visibility.Collapsed;
+                box.Visibility = Visibility.Collapsed;
+                box.Text = "";
+            }
+            else
+            {
+                label.Text = PickPrevLabel(trimmed, initialLabel);
+                label.Visibility = Visibility.Visible;
+                box.Visibility = Visibility.Visible;
+                box.Text = trimmed;
+            }
+        }
+
+        // ===== Filters =====
+        private void ApplyTechFilter()
+        {
+            string q = (TechSearchBox == null ? "" : (TechSearchBox.Text ?? "")).Trim().ToLowerInvariant();
+            ICollectionView view = CollectionViewSource.GetDefaultView(TechList.ItemsSource);
+            if (view == null) return;
+
+            if (string.IsNullOrEmpty(q))
+            {
+                view.Filter = null;
+            }
+            else
+            {
+                view.Filter = delegate (object obj)
+                {
+                    TechRow t = obj as TechRow;
+                    if (t == null) return false;
+                    return (t.Name ?? "").ToLowerInvariant().Contains(q);
+                };
+            }
+        }
+
+        private void ApplyInvFilter()
+        {
+            string q = (InvSearchBox == null ? "" : (InvSearchBox.Text ?? "")).Trim().ToLowerInvariant();
+            bool inStockOnly = (InStockOnlyCheck != null) && InStockOnlyCheck.IsChecked == true;
+
+            ICollectionView view = CollectionViewSource.GetDefaultView(InvList.ItemsSource);
+            if (view == null) return;
+
+            view.Filter = delegate (object obj)
+            {
+                InvRow r = obj as InvRow;
+                if (r == null) return false;
+
+                if (inStockOnly && !r.CanSelect) return false;
+                if (!string.IsNullOrEmpty(q) && !(r.ItemType ?? "").ToLowerInvariant().Contains(q)) return false;
+
+                return true;
+            };
+        }
+
         // ===== Technician overlay =====
         private void OpenTechPickerBtn_Click(object sender, RoutedEventArgs e)
         {
             TechOverlay.Visibility = Visibility.Visible;
-
-            ICollectionView view = CollectionViewSource.GetDefaultView(TechList.ItemsSource);
-            if (view != null) view.Filter = null;
-            TechSearchBox.Text = "";
+            ApplyTechFilter();
+            UpdateTechOverlayHeader();
         }
 
         private void TechPickerClose_Click(object sender, RoutedEventArgs e)
@@ -345,23 +466,7 @@ namespace HouseholdMS.View.Dashboard
 
         private void TechSearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string q = (TechSearchBox.Text ?? "").Trim().ToLowerInvariant();
-            ICollectionView view = CollectionViewSource.GetDefaultView(TechList.ItemsSource);
-            if (view == null) return;
-
-            if (string.IsNullOrEmpty(q))
-            {
-                view.Filter = null;
-            }
-            else
-            {
-                view.Filter = delegate (object obj)
-                {
-                    TechRow t = obj as TechRow;
-                    if (t == null) return false;
-                    return (t.Name ?? "").ToLowerInvariant().Contains(q);
-                };
-            }
+            ApplyTechFilter();
         }
 
         private void RemoveTechChip_Click(object sender, RoutedEventArgs e)
@@ -374,16 +479,35 @@ namespace HouseholdMS.View.Dashboard
             row.IsSelected = false;
             _techSelected.Remove(row);
             UpdateTechButton();
+            UpdateTechOverlayHeader();
+        }
+
+        private void TechSelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var t in _techAll) t.IsSelected = true;
+            UpdateTechOverlayHeader();
+        }
+
+        private void TechClear_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var t in _techAll) t.IsSelected = false;
+            UpdateTechOverlayHeader();
+        }
+
+        private void ClearTechSelection_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var t in _techAll) t.IsSelected = false;
+            _techSelected.Clear();
+            UpdateTechButton();
+            UpdateTechOverlayHeader();
         }
 
         // ===== Inventory overlay =====
         private void OpenInvPickerBtn_Click(object sender, RoutedEventArgs e)
         {
             InvOverlay.Visibility = Visibility.Visible;
-
-            ICollectionView view = CollectionViewSource.GetDefaultView(InvList.ItemsSource);
-            if (view != null) view.Filter = null;
-            InvSearchBox.Text = "";
+            ApplyInvFilter();
+            UpdateInvOverlayHeader();
         }
 
         private void InvPickerClose_Click(object sender, RoutedEventArgs e)
@@ -393,44 +517,22 @@ namespace HouseholdMS.View.Dashboard
 
         private void InvPickerAdd_Click(object sender, RoutedEventArgs e)
         {
-            // Add only selectable (in-stock) items
+            _invSelected.Clear();
             foreach (var item in _invAll.Where(x => x.CanSelect && x.IsSelected))
             {
-                if (!_invSelected.Any(s => s.ItemID == item.ItemID))
-                    _invSelected.Add(item);
+                _invSelected.Add(item);
             }
-
-            // Remove anything deselected or no longer selectable
-            for (int i = _invSelected.Count - 1; i >= 0; i--)
-            {
-                var id = _invSelected[i].ItemID;
-                var master = _invAll.First(x => x.ItemID == id);
-                if (!master.IsSelected || !master.CanSelect)
-                    _invSelected.RemoveAt(i);
-            }
-
             InvOverlay.Visibility = Visibility.Collapsed;
         }
 
         private void InvSearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string q = (InvSearchBox.Text ?? "").Trim().ToLowerInvariant();
-            ICollectionView view = CollectionViewSource.GetDefaultView(InvList.ItemsSource);
-            if (view == null) return;
+            ApplyInvFilter();
+        }
 
-            if (string.IsNullOrEmpty(q))
-            {
-                view.Filter = null;
-            }
-            else
-            {
-                view.Filter = delegate (object obj)
-                {
-                    InvRow r = obj as InvRow;
-                    if (r == null) return false;
-                    return (r.ItemType ?? "").ToLowerInvariant().Contains(q);
-                };
-            }
+        private void InStockOnlyCheck_Changed(object sender, RoutedEventArgs e)
+        {
+            ApplyInvFilter();
         }
 
         private void InvPickerMinus_Click(object sender, RoutedEventArgs e)
@@ -451,7 +553,6 @@ namespace HouseholdMS.View.Dashboard
             row.QuantityUsed = Math.Min(row.Available, row.QuantityUsed + 1);
         }
 
-        // Selected list stepper
         private void QtyMinus_Click(object sender, RoutedEventArgs e)
         {
             Button b = sender as Button;
@@ -480,6 +581,130 @@ namespace HouseholdMS.View.Dashboard
             InvRow master = _invAll.FirstOrDefault(x => x.ItemID == row.ItemID);
             if (master != null) master.IsSelected = false;
             _invSelected.Remove(row);
+            UpdateInvOverlayHeader();
+        }
+
+        private void InvSelectAllInStock_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var r in _invAll) r.IsSelected = r.CanSelect;
+            UpdateInvOverlayHeader();
+        }
+
+        private void InvClear_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var r in _invAll) r.IsSelected = false;
+            UpdateInvOverlayHeader();
+        }
+
+        private void ClearInvSelection_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var r in _invAll) r.IsSelected = false;
+            _invSelected.Clear();
+            UpdateInvOverlayHeader();
+        }
+
+        // ===== Tap-to-open quantity popup =====
+        private void ListItem_Toggle_OnClick(object sender, MouseButtonEventArgs e)
+        {
+            var lbi = sender as ListBoxItem;
+            if (lbi == null) return;
+
+            var tech = lbi.DataContext as TechRow;
+            if (tech != null)
+            {
+                tech.IsSelected = !tech.IsSelected;
+                UpdateTechOverlayHeader();
+                return;
+            }
+
+            var inv = lbi.DataContext as InvRow;
+            if (inv != null)
+            {
+                if (inv.CanSelect)
+                {
+                    inv.IsSelected = true;
+                    OpenQtyPopup(inv, lbi);
+                }
+                UpdateInvOverlayHeader();
+            }
+        }
+
+        private void ListItem_KeyDown_Toggle(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Space && e.Key != Key.Enter) return;
+
+            var lbi = sender as ListBoxItem;
+            if (lbi == null) return;
+
+            var tech = lbi.DataContext as TechRow;
+            if (tech != null)
+            {
+                tech.IsSelected = !tech.IsSelected;
+                UpdateTechOverlayHeader();
+                e.Handled = true;
+                return;
+            }
+
+            var inv = lbi.DataContext as InvRow;
+            if (inv != null)
+            {
+                if (inv.CanSelect)
+                {
+                    inv.IsSelected = true;
+                    OpenQtyPopup(inv, lbi);
+                }
+                UpdateInvOverlayHeader();
+                e.Handled = true;
+            }
+        }
+
+        private void OpenQtyPopup(InvRow row, FrameworkElement target)
+        {
+            if (row == null || target == null) return;
+            if (row.QuantityUsed < 1 && row.CanSelect) row.QuantityUsed = 1;
+            if (row.QuantityUsed > row.Available) row.QuantityUsed = row.Available;
+
+            QtyPopup.DataContext = row;
+            QtyPopup.PlacementTarget = target;
+            QtyPopup.IsOpen = true;
+        }
+
+        private void QtyPreset_Click(object sender, RoutedEventArgs e)
+        {
+            var row = QtyPopup.DataContext as InvRow;
+            if (row == null) return;
+            var btn = sender as Button;
+            if (btn == null) return;
+
+            int val;
+            if (int.TryParse((btn.Tag ?? "").ToString(), out val))
+                row.QuantityUsed = Math.Min(Math.Max(1, val), row.Available);
+        }
+
+        private void QtyPopupMinus_Click(object sender, RoutedEventArgs e)
+        {
+            var row = QtyPopup.DataContext as InvRow;
+            if (row == null || !row.CanSelect) return;
+            row.QuantityUsed = Math.Max(1, row.QuantityUsed - 1);
+        }
+
+        private void QtyPopupPlus_Click(object sender, RoutedEventArgs e)
+        {
+            var row = QtyPopup.DataContext as InvRow;
+            if (row == null || !row.CanSelect) return;
+            row.QuantityUsed = Math.Min(row.Available, row.QuantityUsed + 1);
+        }
+
+        private void QtyPopup_OK_Click(object sender, RoutedEventArgs e)
+        {
+            QtyPopup.IsOpen = false;
+        }
+
+        private void QtyPopup_Cancel_Click(object sender, RoutedEventArgs e)
+        {
+            var row = QtyPopup.DataContext as InvRow;
+            if (row != null && row.QuantityUsed <= 0) row.IsSelected = false;
+            QtyPopup.IsOpen = false;
         }
 
         // ===== Confirm helper for missing selections =====
@@ -501,8 +726,28 @@ namespace HouseholdMS.View.Dashboard
             return res == MessageBoxResult.Yes;
         }
 
+        // ===== Merge helpers =====
+        private static string MergeWithPrevious(string existing, string addition)
+        {
+            var add = (addition ?? "").Trim();
+            var prev = (existing ?? "").Trim();
+            if (string.IsNullOrEmpty(add)) return existing; // nothing new
+
+            // First notes → just store the text (no headers)
+            if (string.IsNullOrEmpty(prev))
+                return add;
+
+            bool alreadyTagged = prev.TrimStart().StartsWith("*previous*", StringComparison.OrdinalIgnoreCase);
+
+            string prefixPrev = alreadyTagged ? (prev + "\n\n") : ("*previous*\n" + prev + "\n\n");
+            var stamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+            var block = "*update " + stamp + "*\n" + add;
+
+            return prefixPrev + block;
+        }
+
         // ===== Actions =====
-        private void CancelBtn_Click(object sender, RoutedEventArgs e)
+        private void SaveOpenBtn_Click(object sender, RoutedEventArgs e)
         {
             HideValidation();
 
@@ -512,16 +757,10 @@ namespace HouseholdMS.View.Dashboard
                 return;
             }
 
-            var ask = MessageBox.Show(
-                "Cancel this service call?\n\nThis will close the ticket, clear its technicians/items, and set the household back to Operational. No stock will be deducted.",
-                "Cancel service call",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+            if (!ConfirmProceedIfMissing()) return;
 
-            if (ask != MessageBoxResult.Yes) return;
-
-            string problem = (ProblemBox.Text ?? "").Trim();
-            string action = (ActionBox.Text ?? "").Trim();
+            string mergedProblem = MergeWithPrevious(ProblemPrevBox.Text, ProblemNewBox.Text);
+            string mergedAction = MergeWithPrevious(ActionPrevBox.Text, ActionNewBox.Text);
 
             try
             {
@@ -530,33 +769,54 @@ namespace HouseholdMS.View.Dashboard
                     conn.Open();
                     using (var tx = conn.BeginTransaction())
                     {
-                        // Persist notes and close the ticket
+                        // Persist notes (keep ticket open)
                         using (var cmd = new SQLiteCommand(
-                            "UPDATE Service SET Problem=@p, Action=@a, FinishDate=datetime('now') WHERE ServiceID=@sid;", conn, tx))
+                            "UPDATE Service SET Problem=@p, Action=@a WHERE ServiceID=@sid;", conn, tx))
                         {
-                            // Mark that it was canceled (non-schema intrusive)
-                            string actionText = string.IsNullOrWhiteSpace(action) ? "(Cancelled; no work performed.)" : (action + " (Cancelled)");
-                            cmd.Parameters.AddWithValue("@p", (object)problem ?? DBNull.Value);
-                            cmd.Parameters.AddWithValue("@a", actionText);
+                            cmd.Parameters.AddWithValue("@p", (object)mergedProblem ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@a", (object)mergedAction ?? DBNull.Value);
                             cmd.Parameters.AddWithValue("@sid", _serviceId);
                             cmd.ExecuteNonQuery();
                         }
 
-                        // Clear any linkage rows (no deduction to stock)
+                        // Update tech links
                         using (var cmdDelTech = new SQLiteCommand("DELETE FROM ServiceTechnicians WHERE ServiceID=@sid;", conn, tx))
                         {
                             cmdDelTech.Parameters.AddWithValue("@sid", _serviceId);
                             cmdDelTech.ExecuteNonQuery();
                         }
+                        foreach (var t in _techSelected)
+                        {
+                            using (var cmdInsTech = new SQLiteCommand(
+                                "INSERT OR IGNORE INTO ServiceTechnicians (ServiceID, TechnicianID) VALUES (@sid,@tid);", conn, tx))
+                            {
+                                cmdInsTech.Parameters.AddWithValue("@sid", _serviceId);
+                                cmdInsTech.Parameters.AddWithValue("@tid", t.TechnicianID);
+                                cmdInsTech.ExecuteNonQuery();
+                            }
+                        }
+
+                        // Update inventory records (no deduction yet)
                         using (var cmdDelInv = new SQLiteCommand("DELETE FROM ServiceInventory WHERE ServiceID=@sid;", conn, tx))
                         {
                             cmdDelInv.Parameters.AddWithValue("@sid", _serviceId);
                             cmdDelInv.ExecuteNonQuery();
                         }
+                        foreach (var inv in _invSelected)
+                        {
+                            using (var cmdInsInv = new SQLiteCommand(
+                                "INSERT INTO ServiceInventory (ServiceID, ItemID, QuantityUsed) VALUES (@sid,@iid,@q);", conn, tx))
+                            {
+                                cmdInsInv.Parameters.AddWithValue("@sid", _serviceId);
+                                cmdInsInv.Parameters.AddWithValue("@iid", inv.ItemID);
+                                cmdInsInv.Parameters.AddWithValue("@q", inv.QuantityUsed);
+                                cmdInsInv.ExecuteNonQuery();
+                            }
+                        }
 
-                        // Return household to Operational
+                        // Keep household Out of Service (DB label "In Service")
                         using (var cmdUpdHh = new SQLiteCommand(
-                            "UPDATE Households SET Statuss='Operational' WHERE HouseholdID=@hh;", conn, tx))
+                            "UPDATE Households SET Statuss='In Service' WHERE HouseholdID=@hh;", conn, tx))
                         {
                             cmdUpdHh.Parameters.AddWithValue("@hh", _householdId);
                             cmdUpdHh.ExecuteNonQuery();
@@ -568,14 +828,17 @@ namespace HouseholdMS.View.Dashboard
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to cancel service.\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Failed to save service (kept open).\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            MessageBox.Show("Service call canceled and household set to Operational.", "Service", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Refresh previous blocks and clear new input
+            SetPrevBlock(ProblemPrevBox, ProblemPrevLabel, mergedProblem, "Initial problem");
+            SetPrevBlock(ActionPrevBox, ActionPrevLabel, mergedAction, "Initial action");
+            ProblemNewBox.Text = "";
+            ActionNewBox.Text = "";
 
-            var h = CancelRequested; if (h != null) h(this, EventArgs.Empty);
-            var h2 = ServiceFinished; if (h2 != null) h2(this, EventArgs.Empty); // so parent can refresh views
+            MessageBox.Show("Saved. Ticket remains open. No stock deducted.", "Service", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void FinishBtn_Click(object sender, RoutedEventArgs e)
@@ -588,10 +851,9 @@ namespace HouseholdMS.View.Dashboard
                 return;
             }
 
-            // Warn if missing tech/items and allow user to proceed
             if (!ConfirmProceedIfMissing()) return;
 
-            // Validate quantities for selected items
+            // Validate quantities
             foreach (var i in _invSelected)
             {
                 if (i.QuantityUsed < 1)
@@ -606,8 +868,8 @@ namespace HouseholdMS.View.Dashboard
                 }
             }
 
-            string problem = (ProblemBox.Text ?? "").Trim();
-            string action = (ActionBox.Text ?? "").Trim();
+            string mergedProblem = MergeWithPrevious(ProblemPrevBox.Text, ProblemNewBox.Text);
+            string mergedAction = MergeWithPrevious(ActionPrevBox.Text, ActionNewBox.Text);
 
             try
             {
@@ -619,8 +881,8 @@ namespace HouseholdMS.View.Dashboard
                         using (var cmd = new SQLiteCommand(
                             "UPDATE Service SET Problem=@p, Action=@a, FinishDate=datetime('now') WHERE ServiceID=@sid;", conn, tx))
                         {
-                            cmd.Parameters.AddWithValue("@p", (object)problem ?? DBNull.Value);
-                            cmd.Parameters.AddWithValue("@a", (object)action ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@p", (object)mergedProblem ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@a", (object)mergedAction ?? DBNull.Value);
                             cmd.Parameters.AddWithValue("@sid", _serviceId);
                             cmd.ExecuteNonQuery();
                         }
@@ -647,7 +909,7 @@ namespace HouseholdMS.View.Dashboard
                             cmdDelInv.ExecuteNonQuery();
                         }
 
-                        // Only deduct stock for items actually selected
+                        // Deduct stock for selected items
                         foreach (var inv in _invSelected)
                         {
                             int currentAvail;
@@ -696,8 +958,7 @@ namespace HouseholdMS.View.Dashboard
                 return;
             }
 
-            MessageBox.Show("Service call finished" + (_invSelected.Count > 0 ? " and inventory updated." : "."),
-                "Service", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Service finished. Household set to Operational and inventory updated.", "Service", MessageBoxButton.OK, MessageBoxImage.Information);
 
             var h = ServiceFinished; if (h != null) h(this, EventArgs.Empty);
         }

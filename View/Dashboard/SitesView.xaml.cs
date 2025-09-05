@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Data.SQLite;
+using System.Globalization;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using HouseholdMS;               // MainWindow
 using HouseholdMS.Model;         // DatabaseHelper
 
@@ -24,6 +27,10 @@ namespace HouseholdMS.View.Dashboard
         private readonly string _userRole;
         private readonly SitesLanding _landing;
 
+        // --- Safety-net: DB version polling (detects any write from any screen) ---
+        private DispatcherTimer _pulse;
+        private int _lastDbVersion = -1;
+
         public SitesView(string userRole)
         {
             InitializeComponent();
@@ -32,6 +39,7 @@ namespace HouseholdMS.View.Dashboard
             _landing = SitesLanding.None;
 
             Loaded += SitesView_Loaded;
+            Unloaded += SitesView_Unloaded;
             PreviewKeyDown += SitesView_PreviewKeyDown; // Alt+Left shortcut
         }
 
@@ -44,8 +52,14 @@ namespace HouseholdMS.View.Dashboard
 
         private void SitesView_Loaded(object sender, RoutedEventArgs e)
         {
-            LoadHouseholdCountsFromDb();
-            ShowLandingIfAny();
+            RefreshTiles();     // initial snapshot
+            StartPulse();       // safety net: auto-refresh when DB changes
+            ShowLandingIfAny(); // open requested child view
+        }
+
+        private void SitesView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            StopPulse();
         }
 
         private void SitesView_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -67,6 +81,12 @@ namespace HouseholdMS.View.Dashboard
             if (t.Equals(OPERATIONAL, StringComparison.OrdinalIgnoreCase)) return HCat.Operational;
             if (t.Equals(IN_SERVICE, StringComparison.OrdinalIgnoreCase)) return HCat.InService;
             return HCat.Operational;
+        }
+
+        // === PUBLIC refresh entry (used by children via callback) ===
+        private void RefreshTiles()
+        {
+            LoadHouseholdCountsFromDb();
         }
 
         private void LoadHouseholdCountsFromDb()
@@ -100,17 +120,19 @@ namespace HouseholdMS.View.Dashboard
 
             int total = op + outs;
 
-            if (TotalCountText != null) TotalCountText.Text = total.ToString();
-            if (OperationalCountText != null) OperationalCountText.Text = op.ToString();
-            if (OutOfServiceCountText != null) OutOfServiceCountText.Text = outs.ToString();
+            if (TotalCountText != null) TotalCountText.Text = total.ToString(CultureInfo.InvariantCulture);
+            if (OperationalCountText != null) OperationalCountText.Text = op.ToString(CultureInfo.InvariantCulture);
+            if (OutOfServiceCountText != null) OutOfServiceCountText.Text = outs.ToString(CultureInfo.InvariantCulture);
 
             double opPct = total > 0 ? (op * 100.0 / total) : 0.0;
             double outPct = total > 0 ? (outs * 100.0 / total) : 0.0;
 
+            // Your CircularProgressBar exposes "Percentage" (per your current code)
             if (OperationalProgress != null) OperationalProgress.Percentage = opPct;
             if (OutOfServiceProgress != null) OutOfServiceProgress.Percentage = outPct;
         }
 
+        // ---- Helpers to manage placeholder and child host ----
         private void ClearPlaceholder()
         {
             if (Placeholder != null) Placeholder.Visibility = Visibility.Collapsed;
@@ -120,24 +142,130 @@ namespace HouseholdMS.View.Dashboard
         {
             ClearPlaceholder();
             if (DetailHost != null)
-            {
                 DetailHost.Content = view;
-            }
+
+            // Try to subscribe to child's RefreshRequested event if it exists (no new files needed)
+            TryHookChildRefresh(view);
         }
 
+        // ---- Tile click handlers (create children with optional callback if supported) ----
         private void OpenAllSites_Click(object sender, RoutedEventArgs e)
         {
-            ShowInDetail(new AllHouseholdsView(_userRole));
+            ShowInDetail(CreateChild(typeof(AllHouseholdsView)));
         }
 
         private void OpenOperational_Click(object sender, RoutedEventArgs e)
         {
-            ShowInDetail(new OperationalHouseholdsView(_userRole));
+            ShowInDetail(CreateChild(typeof(OperationalHouseholdsView)));
         }
 
         private void OpenOutOfService_Click(object sender, RoutedEventArgs e)
         {
-            ShowInDetail(new OutOfServiceHouseholdsView(_userRole));
+            ShowInDetail(CreateChild(typeof(OutOfServiceHouseholdsView)));
+        }
+
+        // Create child view using the best available constructor:
+        // 1) (string userRole, Action notifyParent)
+        // 2) (string userRole)
+        // 3) (Action notifyParent)
+        // 4) ()
+        private UserControl CreateChild(Type t)
+        {
+            object instance = null;
+
+            // try (string, Action)
+            try
+            {
+                instance = Activator.CreateInstance(t, new object[] { _userRole, (Action)RefreshTiles });
+            }
+            catch { /* ignore */ }
+
+            // try (string)
+            if (instance == null)
+            {
+                try { instance = Activator.CreateInstance(t, new object[] { _userRole }); }
+                catch { /* ignore */ }
+            }
+
+            // try (Action)
+            if (instance == null)
+            {
+                try { instance = Activator.CreateInstance(t, new object[] { (Action)RefreshTiles }); }
+                catch { /* ignore */ }
+            }
+
+            // try ()
+            if (instance == null)
+            {
+                try { instance = Activator.CreateInstance(t, new object[] { }); }
+                catch { /* ignore */ }
+            }
+
+            var uc = instance as UserControl;
+            if (uc == null)
+                throw new InvalidOperationException("Failed to create child view: " + t.FullName);
+
+            // If the child exposes a way to set callback later (SetParentRefreshCallback(Action)),
+            // we’ll call it reflectively (optional).
+            TrySetParentCallback(uc);
+
+            return uc;
+        }
+
+        private void TrySetParentCallback(UserControl view)
+        {
+            if (view == null) return;
+
+            // Method: SetParentRefreshCallback(Action)
+            MethodInfo mi = view.GetType().GetMethod("SetParentRefreshCallback",
+                             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (mi != null)
+            {
+                ParameterInfo[] ps = mi.GetParameters();
+                if (ps.Length == 1 && ps[0].ParameterType == typeof(Action))
+                {
+                    try { mi.Invoke(view, new object[] { (Action)RefreshTiles }); } catch { }
+                }
+            }
+
+            // Property or field named "NotifyParent" of type Action
+            var pi = view.GetType().GetProperty("NotifyParent",
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (pi != null && pi.CanWrite && pi.PropertyType == typeof(Action))
+            {
+                try { pi.SetValue(view, (Action)RefreshTiles, null); } catch { }
+            }
+            var fi = view.GetType().GetField("NotifyParent",
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (fi != null && fi.FieldType == typeof(Action))
+            {
+                try { fi.SetValue(view, (Action)RefreshTiles); } catch { }
+            }
+        }
+
+        private void TryHookChildRefresh(UserControl view)
+        {
+            if (view == null) return;
+
+            // Event named RefreshRequested with signature EventHandler
+            EventInfo ev = view.GetType().GetEvent("RefreshRequested",
+                             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (ev != null && ev.EventHandlerType == typeof(EventHandler))
+            {
+                try
+                {
+                    EventHandler h = OnChildRefreshRequested;
+                    ev.AddEventHandler(view, h);
+                }
+                catch { /* best-effort */ }
+            }
+        }
+
+        private void OnChildRefreshRequested(object sender, EventArgs e)
+        {
+            // hop to UI thread if raised from background
+            if (!Dispatcher.CheckAccess()) Dispatcher.Invoke(RefreshTiles);
+            else RefreshTiles();
         }
 
         private void ShowLandingIfAny()
@@ -145,13 +273,13 @@ namespace HouseholdMS.View.Dashboard
             switch (_landing)
             {
                 case SitesLanding.All:
-                    ShowInDetail(new AllHouseholdsView(_userRole));
+                    ShowInDetail(CreateChild(typeof(AllHouseholdsView)));
                     break;
                 case SitesLanding.Operational:
-                    ShowInDetail(new OperationalHouseholdsView(_userRole));
+                    ShowInDetail(CreateChild(typeof(OperationalHouseholdsView)));
                     break;
                 case SitesLanding.OutOfService:
-                    ShowInDetail(new OutOfServiceHouseholdsView(_userRole));
+                    ShowInDetail(CreateChild(typeof(OutOfServiceHouseholdsView)));
                     break;
                 case SitesLanding.None:
                 default:
@@ -180,6 +308,55 @@ namespace HouseholdMS.View.Dashboard
                     WindowStartupLocation = WindowStartupLocation.CenterOwner
                 };
                 win.ShowDialog();
+            }
+        }
+
+        // ==================== DB version polling (safety net) ====================
+
+        private void StartPulse()
+        {
+            if (_pulse != null) return;
+            _lastDbVersion = GetDbVersionSafe();
+            _pulse = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+            _pulse.Tick += Pulse_Tick;
+            _pulse.Start();
+        }
+
+        private void StopPulse()
+        {
+            if (_pulse == null) return;
+            _pulse.Stop();
+            _pulse.Tick -= Pulse_Tick;
+            _pulse = null;
+        }
+
+        private void Pulse_Tick(object sender, EventArgs e)
+        {
+            int v = GetDbVersionSafe();
+            if (v != _lastDbVersion)
+            {
+                _lastDbVersion = v;
+                RefreshTiles(); // DB changed somewhere -> refresh tiles
+            }
+        }
+
+        private int GetDbVersionSafe()
+        {
+            try
+            {
+                using (var conn = DatabaseHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var cmd = new SQLiteCommand("PRAGMA data_version;", conn))
+                    {
+                        object o = cmd.ExecuteScalar();
+                        return o == null || o == DBNull.Value ? -1 : Convert.ToInt32(o, CultureInfo.InvariantCulture);
+                    }
+                }
+            }
+            catch
+            {
+                return _lastDbVersion;
             }
         }
     }

@@ -12,10 +12,11 @@
         <!-- Palette -->
         <SolidColorBrush x:Key="Col.Accent" Color="#2563EB"/>
         <SolidColorBrush x:Key="Col.Success" Color="#16A34A"/>
-        <SolidColorBrush x:Key="Col.Danger" Color="#DC2626"/>
-        <SolidColorBrush x:Key="Col.Muted" Color="#6B7280"/>
-        <SolidColorBrush x:Key="Col.Border" Color="#E5E7EB"/>
-        <SolidColorBrush x:Key="Col.Card" Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Col.Danger"  Color="#DC2626"/>
+        <SolidColorBrush x:Key="Col.Muted"   Color="#6B7280"/>
+        <SolidColorBrush x:Key="Col.Border"  Color="#E5E7EB"/>
+        <SolidColorBrush x:Key="Col.Card"    Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Col.CardAlt" Color="#F9FAFB"/>
 
         <!-- Labels -->
         <Style x:Key="FormLabel" TargetType="TextBlock">
@@ -113,6 +114,10 @@
         <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource PillButton}">
             <Setter Property="Background" Value="{StaticResource Col.Danger}"/>
         </Style>
+        <Style x:Key="GhostButton" TargetType="Button" BasedOn="{StaticResource PillButton}">
+            <Setter Property="Foreground" Value="#111827"/>
+            <Setter Property="Background" Value="#EEF2FF"/>
+        </Style>
 
         <!-- Chip -->
         <Style x:Key="Chip" TargetType="Border">
@@ -122,7 +127,7 @@
             <Setter Property="Padding" Value="10,4"/>
         </Style>
 
-        <!-- Card row for selected inventory -->
+        <!-- Selected inventory card -->
         <DataTemplate x:Key="InvCardTemplate">
             <Border Background="{StaticResource Col.Card}"
                     BorderBrush="{StaticResource Col.Border}"
@@ -164,6 +169,122 @@
                             Click="RemoveInv_Click" Tag="{Binding}"/>
                 </Grid>
             </Border>
+        </DataTemplate>
+
+        <!-- ===== Selectable “card row” template (shared) ===== -->
+        <Style x:Key="SelectableListItem" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <EventSetter Event="PreviewMouseLeftButtonUp" Handler="ListItem_Toggle_OnClick"/>
+            <EventSetter Event="KeyDown" Handler="ListItem_KeyDown_Toggle"/>
+        </Style>
+
+        <!-- Technician row look -->
+        <DataTemplate x:Key="TechRowTemplate">
+            <Border x:Name="Card"
+                    Background="{StaticResource Col.Card}"
+                    BorderBrush="{StaticResource Col.Border}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="10"
+                    Margin="0,6,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding TechnicianID, StringFormat=ID #{0}}"
+                                   FontSize="12" Foreground="{StaticResource Col.Muted}" Margin="0,2,0,0"/>
+                    </StackPanel>
+
+                    <Border x:Name="TechCheckGlyph" Grid.Column="1" Background="#E0E7FF"
+                            CornerRadius="999" Padding="6,2" VerticalAlignment="Center" Visibility="Collapsed">
+                        <TextBlock Text="✔" FontWeight="Bold" Foreground="#3730A3"/>
+                    </Border>
+                </Grid>
+            </Border>
+            <DataTemplate.Triggers>
+                <Trigger SourceName="Card" Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Card" Property="Background" Value="#F8FAFF"/>
+                    <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource Col.Accent}"/>
+                    <Setter TargetName="Card" Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="#000000" BlurRadius="8" ShadowDepth="0" Opacity="0.08"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                    <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource Col.Accent}"/>
+                    <Setter TargetName="Card" Property="Background" Value="#EFF6FF"/>
+                    <Setter TargetName="TechCheckGlyph" Property="Visibility" Value="Visible"/>
+                    <Setter TargetName="Card" Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="#000000" BlurRadius="8" ShadowDepth="0" Opacity="0.08"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <!-- Inventory row look -->
+        <DataTemplate x:Key="InvRowTemplate">
+            <Border x:Name="Card"
+                    Background="{StaticResource Col.Card}"
+                    BorderBrush="{StaticResource Col.Border}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="10"
+                    Margin="0,6,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding ItemType}" FontWeight="SemiBold"/>
+                        <Border CornerRadius="6" Padding="6,2" Margin="8,0,0,0"
+                                Background="{Binding StockBadgeBrush}">
+                            <TextBlock Text="{Binding StockBadgeText}" FontSize="12" Foreground="#111827"/>
+                        </Border>
+                        <TextBlock Text="{Binding Available, StringFormat= (Avail: {0})}"
+                                   Margin="8,0,0,0"
+                                   Foreground="{StaticResource Col.Muted}" FontSize="12"/>
+                    </StackPanel>
+
+                    <Border x:Name="InvCheckGlyph" Grid.Column="1" Background="#E0E7FF"
+                            CornerRadius="999" Padding="6,2" VerticalAlignment="Center" Visibility="Collapsed">
+                        <TextBlock Text="✔" FontWeight="Bold" Foreground="#3730A3"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <DataTemplate.Triggers>
+                <Trigger SourceName="Card" Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Card" Property="Background" Value="#F8FAFF"/>
+                    <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource Col.Accent}"/>
+                    <Setter TargetName="Card" Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="#000000" BlurRadius="8" ShadowDepth="0" Opacity="0.08"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                    <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource Col.Accent}"/>
+                    <Setter TargetName="Card" Property="Background" Value="#EFF6FF"/>
+                    <Setter TargetName="InvCheckGlyph" Property="Visibility" Value="Visible"/>
+                    <Setter TargetName="Card" Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="#000000" BlurRadius="8" ShadowDepth="0" Opacity="0.08"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
     </UserControl.Resources>
 
@@ -233,22 +354,36 @@
                         </Grid>
                     </Border>
 
-                    <!-- Problem / Action -->
+                    <!-- Problem -->
                     <TextBlock Text="Problem description" Style="{StaticResource FormLabel}"/>
-                    <TextBox x:Name="ProblemBox" Height="90" AcceptsReturn="True" TextWrapping="Wrap"
-                             VerticalScrollBarVisibility="Auto" Style="{StaticResource InputTextBox}"/>
+                    <TextBlock x:Name="ProblemPrevLabel" Text="Previous" Foreground="{StaticResource Col.Muted}" FontStyle="Italic" Margin="0,0,0,4"/>
+                    <TextBox x:Name="ProblemPrevBox" Height="80" AcceptsReturn="True" TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto" Style="{StaticResource InputTextBox}"
+                             IsReadOnly="True" Background="{StaticResource Col.CardAlt}" FontStyle="Italic"/>
+                    <TextBlock Text="New update" Style="{StaticResource FormLabel}" Margin="0,8,0,6"/>
+                    <TextBox x:Name="ProblemNewBox" Height="90" AcceptsReturn="True" TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto" Style="{StaticResource WatermarkTextBox}" Tag="What did you find now?"/>
 
+                    <!-- Action -->
                     <TextBlock Text="Action taken" Style="{StaticResource FormLabel}"/>
-                    <TextBox x:Name="ActionBox" Height="90" AcceptsReturn="True" TextWrapping="Wrap"
-                             VerticalScrollBarVisibility="Auto" Style="{StaticResource InputTextBox}"/>
+                    <TextBlock x:Name="ActionPrevLabel" Text="Previous" Foreground="{StaticResource Col.Muted}" FontStyle="Italic" Margin="0,0,0,4"/>
+                    <TextBox x:Name="ActionPrevBox" Height="80" AcceptsReturn="True" TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto" Style="{StaticResource InputTextBox}"
+                             IsReadOnly="True" Background="{StaticResource Col.CardAlt}" FontStyle="Italic"/>
+                    <TextBlock Text="New update" Style="{StaticResource FormLabel}" Margin="0,8,0,6"/>
+                    <TextBox x:Name="ActionNewBox" Height="90" AcceptsReturn="True" TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto" Style="{StaticResource WatermarkTextBox}" Tag="What did you do this visit?"/>
 
                     <!-- Technicians -->
                     <TextBlock Text="Technicians involved" Style="{StaticResource FormLabel}"/>
                     <StackPanel Orientation="Vertical">
-                        <Button x:Name="OpenTechPickerBtn"
-                                Content="Select Technicians (0)"
-                                Style="{StaticResource PillButton}"
-                                Click="OpenTechPickerBtn_Click"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="OpenTechPickerBtn"
+                                    Content="Select Technicians (0)"
+                                    Style="{StaticResource PillButton}"
+                                    Click="OpenTechPickerBtn_Click"/>
+                            <Button Content="Clear" Style="{StaticResource GhostButton}" Click="ClearTechSelection_Click"/>
+                        </StackPanel>
                         <ItemsControl x:Name="TechChipList" Margin="0,8,0,0">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -274,10 +409,13 @@
 
                     <!-- Inventory -->
                     <TextBlock Text="Inventory used" Style="{StaticResource FormLabel}"/>
-                    <Button x:Name="OpenInvPickerBtn"
-                            Content="Add Inventory Items"
-                            Style="{StaticResource PillButton}"
-                            Click="OpenInvPickerBtn_Click"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="OpenInvPickerBtn"
+                                Content="Add Inventory Items"
+                                Style="{StaticResource PillButton}"
+                                Click="OpenInvPickerBtn_Click"/>
+                        <Button Content="Clear" Style="{StaticResource GhostButton}" Click="ClearInvSelection_Click"/>
+                    </StackPanel>
                     <ItemsControl x:Name="SelectedInvList" ItemTemplate="{StaticResource InvCardTemplate}" Margin="0,8,0,0"/>
 
                     <TextBlock x:Name="ValidationText"
@@ -290,14 +428,14 @@
 
             <!-- Footer -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
-                <Button x:Name="FinishBtn" Content="✔ Finish Service" Style="{StaticResource PrimaryButton}" Click="FinishBtn_Click"/>
-                <Button x:Name="CancelBtn" Content="✖ Cancel Service" Style="{StaticResource DangerButton}" Click="CancelBtn_Click"/>
+                <Button x:Name="SaveOpenBtn" Content="💾 Save and keep the service call" Style="{StaticResource GhostButton}" Click="SaveOpenBtn_Click"/>
+                <Button x:Name="FinishBtn" Content="✔ Finish service call" Style="{StaticResource PrimaryButton}" Click="FinishBtn_Click"/>
             </StackPanel>
 
             <!-- ======= Overlays (in-panel modals) ======= -->
             <!-- Technicians Picker Overlay -->
             <Grid x:Name="TechOverlay" Background="#66000000" Visibility="Collapsed">
-                <Border Background="White" CornerRadius="12" Padding="16" MaxWidth="520" HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="{StaticResource Col.Border}" BorderThickness="1">
+                <Border Background="White" CornerRadius="12" Padding="16" MaxWidth="560" HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="{StaticResource Col.Border}" BorderThickness="1">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -306,26 +444,26 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Text="Select Technicians" FontSize="16" FontWeight="Bold"/>
+                        <DockPanel>
+                            <TextBlock Text="Select Technicians" FontSize="16" FontWeight="Bold" DockPanel.Dock="Left"/>
+                            <TextBlock x:Name="TechHeaderCountText" Text="(0 selected)" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource Col.Muted}"/>
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                                <Button Content="Select all" Style="{StaticResource GhostButton}" Click="TechSelectAll_Click"/>
+                                <Button Content="Clear" Style="{StaticResource GhostButton}" Click="TechClear_Click"/>
+                            </StackPanel>
+                        </DockPanel>
 
                         <TextBox x:Name="TechSearchBox" Grid.Row="1" Margin="0,10,0,8"
                                  Style="{StaticResource WatermarkTextBox}"
                                  Tag="Search..."
                                  TextChanged="TechSearchBox_TextChanged"/>
 
-                        <ListBox x:Name="TechList" Grid.Row="2" BorderBrush="{StaticResource Col.Border}" BorderThickness="1" Height="320">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <DockPanel LastChildFill="True" Margin="6,4">
-                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="0,0,8,0"/>
-                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
-                                    </DockPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
+                        <ListBox x:Name="TechList" Grid.Row="2" BorderBrush="{StaticResource Col.Border}" BorderThickness="1" Height="340"
+                                 ItemTemplate="{StaticResource TechRowTemplate}"
+                                 ItemContainerStyle="{StaticResource SelectableListItem}"/>
 
                         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-                            <Button Content="Save" Style="{StaticResource PrimaryButton}" Click="TechPickerSave_Click"/>
+                            <Button Content="Done" Style="{StaticResource PrimaryButton}" Click="TechPickerSave_Click"/>
                             <Button Content="Close" Style="{StaticResource DangerButton}" Click="TechPickerClose_Click"/>
                         </StackPanel>
                     </Grid>
@@ -334,7 +472,7 @@
 
             <!-- Inventory Picker Overlay -->
             <Grid x:Name="InvOverlay" Background="#66000000" Visibility="Collapsed">
-                <Border Background="White" CornerRadius="12" Padding="16" MaxWidth="680" HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="{StaticResource Col.Border}" BorderThickness="1">
+                <Border Background="White" CornerRadius="12" Padding="16" MaxWidth="720" HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="{StaticResource Col.Border}" BorderThickness="1">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -343,68 +481,85 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Text="Add Inventory Items" FontSize="16" FontWeight="Bold"/>
+                        <DockPanel>
+                            <TextBlock Text="Add Inventory Items" FontSize="16" FontWeight="Bold" DockPanel.Dock="Left"/>
+                            <TextBlock x:Name="InvHeaderCountText" Text="(0 selected)" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource Col.Muted}"/>
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                                <Button Content="Select in-stock" Style="{StaticResource GhostButton}" Click="InvSelectAllInStock_Click"/>
+                                <Button Content="Clear" Style="{StaticResource GhostButton}" Click="InvClear_Click"/>
+                            </StackPanel>
+                        </DockPanel>
 
-                        <TextBox x:Name="InvSearchBox" Grid.Row="1" Margin="0,10,0,8"
-                                 Style="{StaticResource WatermarkTextBox}"
-                                 Tag="Search items..."
-                                 TextChanged="InvSearchBox_TextChanged"/>
+                        <DockPanel Grid.Row="1" LastChildFill="True" Margin="0,10,0,8">
+                            <TextBox x:Name="InvSearchBox"
+                                     DockPanel.Dock="Left"
+                                     Width="260"
+                                     Style="{StaticResource WatermarkTextBox}"
+                                     Tag="Search items..."
+                                     TextChanged="InvSearchBox_TextChanged"/>
+                            <CheckBox x:Name="InStockOnlyCheck"
+                                      Content="In-stock only"
+                                      Margin="10,0,0,0"
+                                      VerticalAlignment="Center"
+                                      Checked="InStockOnlyCheck_Changed"
+                                      Unchecked="InStockOnlyCheck_Changed"/>
+                        </DockPanel>
 
-                        <ListView x:Name="InvList" Grid.Row="2" BorderBrush="{StaticResource Col.Border}" BorderThickness="1" Height="360"
-                                  ScrollViewer.VerticalScrollBarVisibility="Auto">
-                            <ListView.ItemContainerStyle>
-                                <Style TargetType="ListViewItem">
-                                    <Setter Property="Opacity" Value="1"/>
+                        <ListBox x:Name="InvList" Grid.Row="2"
+                                 BorderBrush="{StaticResource Col.Border}" BorderThickness="1"
+                                 Height="380"
+                                 ItemTemplate="{StaticResource InvRowTemplate}">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem" BasedOn="{StaticResource SelectableListItem}">
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding CanSelect}" Value="False">
                                             <Setter Property="Opacity" Value="0.6"/>
+                                            <Setter Property="IsEnabled" Value="True"/>
+                                            <Setter Property="ToolTip" Value="Out of stock"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </ListView.ItemContainerStyle>
-                            <ListView.View>
-                                <GridView>
-                                    <GridViewColumn Header="Use" Width="60">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <CheckBox HorizontalAlignment="Center"
-                                                          IsEnabled="{Binding CanSelect}"
-                                                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                          ToolTip="{Binding StockBadgeText}"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                    <GridViewColumn Header="Item" Width="220" DisplayMemberBinding="{Binding ItemType}"/>
-                                    <GridViewColumn Header="Available" Width="100" DisplayMemberBinding="{Binding Available}"/>
-                                    <GridViewColumn Header="Status" Width="120">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Border Padding="6,2" CornerRadius="6" Background="{Binding StockBadgeBrush}" HorizontalAlignment="Left">
-                                                    <TextBlock Text="{Binding StockBadgeText}" FontSize="12"/>
-                                                </Border>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                    <GridViewColumn Header="Qty" Width="120">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Orientation="Horizontal" IsEnabled="{Binding CanSelect}">
-                                                    <Button Width="24" Height="24" Content="−" Tag="{Binding}" Click="InvPickerMinus_Click"/>
-                                                    <TextBox Width="40" Height="24" Margin="6,0"
-                                                             HorizontalContentAlignment="Center"
-                                                             Text="{Binding QuantityUsed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                             ToolTip="{Binding StockBadgeText}"/>
-                                                    <Button Width="24" Height="24" Content="+" Tag="{Binding}" Click="InvPickerPlus_Click"/>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                </GridView>
-                            </ListView.View>
-                        </ListView>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+
+                        <Popup x:Name="QtyPopup"
+                               Placement="Right"
+                               StaysOpen="False"
+                               AllowsTransparency="True"
+                               PopupAnimation="Fade">
+                            <Border Background="White"
+                                    CornerRadius="12"
+                                    Padding="12"
+                                    BorderBrush="{StaticResource Col.Border}"
+                                    BorderThickness="1">
+                                <StackPanel MinWidth="220">
+                                    <TextBlock Text="{Binding ItemType}" FontWeight="Bold" Margin="0,0,0,8"/>
+                                    <WrapPanel Margin="0,0,0,6">
+                                        <Button Content="1"  Style="{StaticResource GhostButton}" Margin="0,0,6,6" Tag="1"  Click="QtyPreset_Click"/>
+                                        <Button Content="2"  Style="{StaticResource GhostButton}" Margin="0,0,6,6" Tag="2"  Click="QtyPreset_Click"/>
+                                        <Button Content="3"  Style="{StaticResource GhostButton}" Margin="0,0,6,6" Tag="3"  Click="QtyPreset_Click"/>
+                                        <Button Content="5"  Style="{StaticResource GhostButton}" Margin="0,0,6,6" Tag="5"  Click="QtyPreset_Click"/>
+                                        <Button Content="10" Style="{StaticResource GhostButton}" Margin="0,0,6,6" Tag="10" Click="QtyPreset_Click"/>
+                                    </WrapPanel>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,2,0,10" HorizontalAlignment="Left">
+                                        <Button Width="28" Height="28" Content="−" Click="QtyPopupMinus_Click"/>
+                                        <TextBox Width="56" Height="28" Margin="6,0"
+                                                 HorizontalContentAlignment="Center"
+                                                 Text="{Binding QuantityUsed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <Button Width="28" Height="28" Content="+" Click="QtyPopupPlus_Click"/>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Content="OK" Style="{StaticResource PrimaryButton}" Click="QtyPopup_OK_Click"/>
+                                        <Button Content="Cancel" Style="{StaticResource DangerButton}" Click="QtyPopup_Cancel_Click"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </Popup>
 
                         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-                            <Button Content="Add Selected" Style="{StaticResource PrimaryButton}" Click="InvPickerAdd_Click"/>
+                            <Button Content="Done" Style="{StaticResource PrimaryButton}" Click="InvPickerAdd_Click"/>
                             <Button Content="Close" Style="{StaticResource DangerButton}" Click="InvPickerClose_Click"/>
                         </StackPanel>
                     </Grid>

@@ -1,0 +1,124 @@
+﻿<UserControl x:Class="HouseholdMS.View.UserControls.EpeverMonitorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             d:DesignHeight="520" d:DesignWidth="720"
+             SnapsToDevicePixels="True" UseLayoutRounding="True"
+             Background="#FFF9F9F9">
+    <UserControl.Resources>
+        <!-- Simple modern styles -->
+        <Style TargetType="Border">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="8"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="Margin" Value="2"/>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Padding" Value="10,6"/>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="MinWidth" Value="110"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="MinWidth" Value="60"/>
+        </Style>
+        <SolidColorBrush x:Key="Accent" Color="#1976D2"/>
+        <SolidColorBrush x:Key="Muted"  Color="#6B7280"/>
+        <SolidColorBrush x:Key="Good"   Color="#16A34A"/>
+        <SolidColorBrush x:Key="Warn"   Color="#D97706"/>
+        <SolidColorBrush x:Key="Bad"    Color="#DC2626"/>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <!-- Toolbar -->
+        <Border DockPanel.Dock="Top" Background="White" Padding="10" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Port:" VerticalAlignment="Center" Margin="2,0"/>
+                <ComboBox x:Name="CmbPorts" Width="120"/>
+
+                <TextBlock Text="Baud:" VerticalAlignment="Center" Margin="16,0,2,0"/>
+                <ComboBox x:Name="CmbBaud" Width="100">
+                    <ComboBoxItem Content="115200" IsSelected="True"/>
+                    <ComboBoxItem Content="9600"/>
+                    <ComboBoxItem Content="57600"/>
+                    <ComboBoxItem Content="19200"/>
+                </ComboBox>
+
+                <TextBlock Text="ID:" VerticalAlignment="Center" Margin="16,0,2,0"/>
+                <TextBox x:Name="TxtId" Width="50" Text="1"/>
+
+                <Button x:Name="BtnRefresh" Content="Refresh Ports" Click="BtnRefresh_Click"/>
+                <Button x:Name="BtnConnect" Content="Connect" Click="BtnConnect_Click" Background="{StaticResource Accent}" Foreground="White"/>
+                <Button x:Name="BtnDisconnect" Content="Disconnect" Click="BtnDisconnect_Click" IsEnabled="False"/>
+
+                <Separator Width="20" />
+
+                <Button x:Name="BtnRead" Content="Read Now" Click="BtnRead_Click" IsEnabled="False"/>
+                <CheckBox x:Name="ChkAuto" Content="Auto refresh (1s)" IsChecked="True" VerticalAlignment="Center" Margin="8,0" IsEnabled="False"/>
+                <TextBlock x:Name="TxtStatus" Foreground="{StaticResource Muted}" Margin="16,0,0,0" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Content -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <UniformGrid Columns="2" Rows="3" Margin="8">
+                <Border>
+                    <StackPanel>
+                        <TextBlock Text="PV (Array)" FontWeight="Bold"/>
+                        <TextBlock x:Name="TxtPvV" Text="Voltage: —" FontSize="18"/>
+                        <TextBlock x:Name="TxtPvA" Text="Current: —" FontSize="18"/>
+                        <TextBlock x:Name="TxtPvW" Text="Power: —"   FontSize="18"/>
+                    </StackPanel>
+                </Border>
+
+                <Border>
+                    <StackPanel>
+                        <TextBlock Text="Battery" FontWeight="Bold"/>
+                        <TextBlock x:Name="TxtBatV" Text="Voltage: —" FontSize="18"/>
+                        <TextBlock x:Name="TxtBatA" Text="Charge Current: —" FontSize="18"/>
+                        <TextBlock x:Name="TxtBatW" Text="Charge Power: —"   FontSize="18"/>
+                    </StackPanel>
+                </Border>
+
+                <Border>
+                    <StackPanel>
+                        <TextBlock Text="State of Charge" FontWeight="Bold"/>
+                        <TextBlock x:Name="TxtSoc" Text="SOC: —" FontSize="28"/>
+                        <TextBlock x:Name="TxtUpdated" Text="Last update: —" Foreground="{StaticResource Muted}"/>
+                    </StackPanel>
+                </Border>
+
+                <Border>
+                    <StackPanel>
+                        <TextBlock Text="Link" FontWeight="Bold"/>
+                        <TextBlock x:Name="TxtLink" Text="Disconnected" FontSize="18" Foreground="{StaticResource Bad}"/>
+                        <TextBlock Text="Tip: Only one master on RS-485 (close MT50/eBox/other apps)"/>
+                    </StackPanel>
+                </Border>
+
+                <Border>
+                    <StackPanel>
+                        <TextBlock Text="Notes" FontWeight="Bold"/>
+                        <TextBlock Text="• Controller default: 115200 bps, ID=1"/>
+                        <TextBlock Text="• We read 0x3100..0x311A (real-time block)"/>
+                        <TextBlock Text="• Values scaled by 0.01 for V/A/W; SOC in %"/>
+                    </StackPanel>
+                </Border>
+
+                <Border>
+                    <StackPanel>
+                        <TextBlock Text="Raw / Debug" FontWeight="Bold"/>
+                        <TextBlock x:Name="TxtRaw" Text="—" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

@@ -116,6 +116,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Helpers\EpeverRegisters.cs" />
+    <Compile Include="Helpers\ModbusRtuRaw.cs" />
     <Compile Include="Model\AppTypographySettings.cs" />
     <Compile Include="Model\DatabaseHelper.cs" />
     <Compile Include="Model\Household.cs" />
@@ -151,6 +153,9 @@
     </Compile>
     <Compile Include="View\Dashboard\SitesView.xaml.cs">
       <DependentUpon>SitesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\UserControls\EpeverMonitorWindow.xaml.cs">
+      <DependentUpon>EpeverMonitorWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\EqTesting\AllTestMenuView.xaml.cs">
       <DependentUpon>AllTestMenuView.xaml</DependentUpon>
@@ -286,6 +291,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Dashboard\SitesView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\UserControls\EpeverMonitorWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

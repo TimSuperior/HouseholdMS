@@ -43,13 +43,43 @@ namespace HouseholdMS.View.Dashboard
         private bool _categoryFilterActive = false;
         private string _searchText = string.Empty;
 
+        // === Minimal parent refresh hook (no new files) ===
+        private Action _notifyParent;
+        public Action NotifyParent           // optional property for reflection-based wiring
+        {
+            get { return _notifyParent; }
+            set { _notifyParent = value; }
+        }
+        public void SetParentRefreshCallback(Action cb) // optional method for reflection-based wiring
+        {
+            _notifyParent = cb;
+        }
+        private void RaiseParentRefresh()
+        {
+            var cb = _notifyParent;
+            if (cb != null)
+            {
+                try { cb(); } catch { /* ignore */ }
+            }
+        }
+
+        // === Constructors ===
         public AllHouseholdsView(string userRole)
         {
             _currentUserRole = string.IsNullOrWhiteSpace(userRole) ? "User" : userRole.Trim();
             InitializeAndLoad();
         }
 
+        // New overload so SitesView can pass a callback directly
+        public AllHouseholdsView(string userRole, Action notifyParent)
+        {
+            _currentUserRole = string.IsNullOrWhiteSpace(userRole) ? "User" : userRole.Trim();
+            _notifyParent = notifyParent;
+            InitializeAndLoad();
+        }
+
         public AllHouseholdsView() : this("User") { }
+        public AllHouseholdsView(Action notifyParent) : this("User", notifyParent) { }
 
         private void InitializeAndLoad()
         {
@@ -259,7 +289,8 @@ namespace HouseholdMS.View.Dashboard
                 dialog.Close();
                 LoadHouseholds();
                 ApplyFilter();
-                // keep selection as-is (none during add)
+                // notify parent tiles
+                RaiseParentRefresh();
             };
             form.OnCancelRequested += delegate
             {
@@ -289,6 +320,8 @@ namespace HouseholdMS.View.Dashboard
                     dialog.Close();
                     LoadHouseholds();
                     ApplyFilter();
+                    // notify parent tiles (status/fields may have changed)
+                    RaiseParentRefresh();
                 };
                 form.OnCancelRequested += delegate
                 {
@@ -314,7 +347,6 @@ namespace HouseholdMS.View.Dashboard
                 dialog.ShowDialog();
             }
         }
-
 
         // === Utilities ===
         private Window CreateWideDialog(FrameworkElement content, string title)

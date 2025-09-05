@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Data.SQLite;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using HouseholdMS;
 using HouseholdMS.Model;
 
 namespace HouseholdMS.View.UserControls
@@ -22,6 +23,12 @@ namespace HouseholdMS.View.UserControls
         private const string LEGACY_NOT_OPERATIONAL = "Not Operational";
 
         private int? EditingHouseholdID = null;
+
+        // Service history rows (bound to DataGrid)
+        private readonly ObservableCollection<ServiceShortRow> _serviceRows = new ObservableCollection<ServiceShortRow>();
+
+        // Optional: bubble up when a service row is double-clicked
+        public event Action<int> OpenServiceRecordRequested;
 
         public event EventHandler OnSavedSuccessfully;
         public event EventHandler OnCancelRequested;
@@ -43,9 +50,15 @@ namespace HouseholdMS.View.UserControls
             if (StatusCombo != null)
                 StatusCombo.SelectedIndex = 0;
 
-            // Initial chip sync (in case resources/styles load later)
+            // Initial chip sync
             UpdateStatusChip();
             HideIdChip();
+
+            // Bind service grid
+            if (ServiceHistoryGrid != null)
+                ServiceHistoryGrid.ItemsSource = _serviceRows;
+
+            UpdateServiceHistoryVisibility();
         }
 
         public AddHouseholdControl(Household householdToEdit) : this()
@@ -72,12 +85,16 @@ namespace HouseholdMS.View.UserControls
             InstDatePicker.SelectedDate = householdToEdit.InstallDate;
             LastInspPicker.SelectedDate = householdToEdit.LastInspect;
 
-            // Map DB status -> UI combobox
+            // Map DB status -> UI
             SelectStatus(householdToEdit.Statuss);
             UpdateStatusChip();
+
+            // Load service history
+            UpdateServiceHistoryVisibility();
+            LoadServiceHistory();
         }
 
-        // ========= Optional public initializers if host prefers explicit calls =========
+        // ========= Optional public initializers =========
         public void InitializeForAdd()
         {
             EditingHouseholdID = null;
@@ -91,6 +108,9 @@ namespace HouseholdMS.View.UserControls
 
             HideIdChip();
             UpdateStatusChip();
+
+            _serviceRows.Clear();
+            UpdateServiceHistoryVisibility();
         }
 
         public void InitializeForEdit(int householdId)
@@ -102,9 +122,12 @@ namespace HouseholdMS.View.UserControls
 
             ShowIdChip(householdId);
             UpdateStatusChip();
+
+            UpdateServiceHistoryVisibility();
+            LoadServiceHistory();
         }
 
-        // ========= UI Events (wired from XAML) =========
+        // ========= UI Events =========
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             UpdateStatusChip();
@@ -225,6 +248,11 @@ namespace HouseholdMS.View.UserControls
 
             MessageBox.Show("Household saved successfully.", "Success",
                             MessageBoxButton.OK, MessageBoxImage.Information);
+
+            // Refresh history if editing existing record
+            if (EditingHouseholdID != null)
+                LoadServiceHistory();
+
             OnSavedSuccessfully?.Invoke(this, EventArgs.Empty);
         }
 
@@ -277,8 +305,7 @@ namespace HouseholdMS.View.UserControls
             }
 
             // simple numeric validation for contact (keep existing rule)
-            int dummy;
-            if (!int.TryParse(ContactBox.Text, out dummy))
+            if (!int.TryParse(ContactBox.Text, out _))
             {
                 MessageBox.Show("Please enter valid contact number!", "Validation Error",
                                 MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -342,11 +369,7 @@ namespace HouseholdMS.View.UserControls
             string uiStatus = CurrentUiStatusText();
 
             // Chip color mapping:
-            // Operational -> green
-            // In Service  -> blue (if ever shown)
-            // Out of Service -> gray/muted
             Brush bg;
-
             if (uiStatus.StartsWith("Operational", StringComparison.OrdinalIgnoreCase))
             {
                 bg = SafeFindBrush("SuccessBrush", new SolidColorBrush(Color.FromRgb(76, 175, 80)));
@@ -355,7 +378,7 @@ namespace HouseholdMS.View.UserControls
             {
                 bg = SafeFindBrush("AccentBrush", new SolidColorBrush(Color.FromRgb(25, 118, 210)));
             }
-            else // Out of Service or anything else
+            else
             {
                 bg = SafeFindBrush("MutedBrush", new SolidColorBrush(Color.FromRgb(158, 158, 158)));
             }
@@ -366,7 +389,7 @@ namespace HouseholdMS.View.UserControls
             if (StatusChipText != null)
                 StatusChipText.Text = string.IsNullOrWhiteSpace(uiStatus) ? "Operational" : uiStatus;
 
-            // Info bar showing only for Out of Service
+            // Info bar only for Out of Service
             if (StatusInfoBar != null)
             {
                 StatusInfoBar.Visibility =
@@ -404,6 +427,160 @@ namespace HouseholdMS.View.UserControls
                 IdChipText.Text = string.Empty;
         }
 
+        // ========= Service history logic (uses your Service/* tables) =========
+        private void UpdateServiceHistoryVisibility()
+        {
+            if (ServiceHistoryPanel == null) return;
+            ServiceHistoryPanel.Visibility = (EditingHouseholdID.HasValue ? Visibility.Visible : Visibility.Collapsed);
+        }
+
+        private void LoadServiceHistory()
+        {
+            if (!EditingHouseholdID.HasValue) return;
+
+            _serviceRows.Clear();
+
+            try
+            {
+                using (var conn = DatabaseHelper.GetConnection())
+                {
+                    conn.Open();
+
+                    // 1) Base service rows for this household
+                    using (var cmd = new SQLiteCommand(@"
+                        SELECT
+                            s.ServiceID,
+                            COALESCE(s.FinishDate, s.StartDate) AS At,
+                            -- Primary technician name (from Service.TechnicianID)
+                            t.Name AS PrimaryTech,
+                            -- All technician names from ServiceTechnicians (comma separated)
+                            (
+                                SELECT group_concat(t2.Name, ', ')
+                                FROM ServiceTechnicians st2
+                                JOIN Technicians t2 ON t2.TechnicianID = st2.TechnicianID
+                                WHERE st2.ServiceID = s.ServiceID
+                            ) AS TeamTechs,
+                            -- Prefer Action; fallback to Problem
+                            COALESCE(NULLIF(TRIM(s.Action), ''), s.Problem, '') AS Summary,
+                            CASE WHEN s.FinishDate IS NULL THEN 'Open' ELSE 'Closed' END AS State
+                        FROM Service s
+                        LEFT JOIN Technicians t ON t.TechnicianID = s.TechnicianID
+                        WHERE s.HouseholdID = @hid
+                        ORDER BY datetime(COALESCE(s.FinishDate, s.StartDate)) DESC, s.ServiceID DESC;", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@hid", EditingHouseholdID.Value);
+
+                        using (var rdr = cmd.ExecuteReader())
+                        {
+                            while (rdr.Read())
+                            {
+                                var row = new ServiceShortRow
+                                {
+                                    ServiceID = SafeGetInt(rdr, "ServiceID"),
+                                    Date = NormalizeDate(SafeGetString(rdr, "At")),
+                                    Status = SafeGetString(rdr, "State")
+                                };
+
+                                // Pick technician display: team technicians > primary > empty
+                                string team = SafeGetString(rdr, "TeamTechs");
+                                string primary = SafeGetString(rdr, "PrimaryTech");
+                                row.Technician = !string.IsNullOrWhiteSpace(team)
+                                                 ? team
+                                                 : (!string.IsNullOrWhiteSpace(primary) ? primary : "");
+
+                                // Summary from Action/Problem; if empty, we will try items summary below
+                                row.Summary = SafeGetString(rdr, "Summary");
+
+                                // 2) Optional: compact items used summary for this service
+                                //    Example: "2x Fuse, 1x Cable"
+                                row.Summary = AppendItemsIfEmptyOrAddon(conn, row.ServiceID, row.Summary);
+
+                                _serviceRows.Add(row);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Show a non-blocking hint (you can log instead)
+                System.Diagnostics.Debug.WriteLine("LoadServiceHistory error: " + ex.Message);
+            }
+
+            // Update header count + empty text
+            if (ServiceHistoryCountText != null)
+                ServiceHistoryCountText.Text = $"{_serviceRows.Count} records";
+
+            if (ServiceHistoryEmptyText != null)
+                ServiceHistoryEmptyText.Visibility = (_serviceRows.Count == 0) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private static string AppendItemsIfEmptyOrAddon(SQLiteConnection conn, int serviceId, string currentSummary)
+        {
+            try
+            {
+                using (var cmd = new SQLiteCommand(@"
+                    SELECT group_concat(si.QuantityUsed || 'x ' || i.ItemType, ', ')
+                    FROM ServiceInventory si
+                    JOIN StockInventory i ON i.ItemID = si.ItemID
+                    WHERE si.ServiceID = @sid;", conn))
+                {
+                    cmd.Parameters.AddWithValue("@sid", serviceId);
+                    var items = cmd.ExecuteScalar() as string;
+
+                    if (!string.IsNullOrWhiteSpace(items))
+                    {
+                        if (string.IsNullOrWhiteSpace(currentSummary))
+                            return items; // summary was empty → use items summary
+                        else
+                            return currentSummary + " | " + items; // add as addon
+                    }
+                }
+            }
+            catch
+            {
+                // ignore items summary if view/tables not present
+            }
+            return currentSummary ?? "";
+        }
+
+        private static int SafeGetOrdinal(System.Data.IDataRecord r, string name)
+        {
+            try { return r.GetOrdinal(name); } catch { return -1; }
+        }
+
+        private static string SafeGetString(System.Data.IDataRecord r, string name)
+        {
+            int i = SafeGetOrdinal(r, name);
+            if (i < 0 || r.IsDBNull(i)) return string.Empty;
+            try { return r.GetString(i); } catch { return Convert.ToString(r.GetValue(i)); }
+        }
+
+        private static int SafeGetInt(System.Data.IDataRecord r, string name)
+        {
+            int i = SafeGetOrdinal(r, name);
+            if (i < 0 || r.IsDBNull(i)) return 0;
+            try { return r.GetInt32(i); } catch { return Convert.ToInt32(r.GetValue(i)); }
+        }
+
+        private static string NormalizeDate(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return "";
+            // Accept "yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", etc.
+            if (DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var dt))
+                return dt.ToString("yyyy-MM-dd");
+            return s;
+        }
+
+        private void ServiceHistoryGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var row = (sender as DataGrid)?.SelectedItem as ServiceShortRow;
+            if (row == null) return;
+
+            if (OpenServiceRecordRequested != null)
+                OpenServiceRecordRequested(row.ServiceID);
+        }
+
         // ========= Exposed properties for field values =========
         public string OwnerName => OwnerBox.Text.Trim();
         public string UserName => UserNameBox.Text.Trim();
@@ -430,5 +607,15 @@ namespace HouseholdMS.View.UserControls
 
         public DateTime InstallDate => InstDatePicker.SelectedDate.Value;
         public DateTime LastInspect => LastInspPicker.SelectedDate.Value;
+
+        // Row model for service history grid
+        public class ServiceShortRow
+        {
+            public int ServiceID { get; set; }
+            public string Date { get; set; }        // yyyy-MM-dd
+            public string Technician { get; set; }  // aggregated names
+            public string Summary { get; set; }     // Action/Problem + items
+            public string Status { get; set; }      // Open/Closed
+        }
     }
 }

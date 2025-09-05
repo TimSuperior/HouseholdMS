@@ -225,6 +225,82 @@ UPDATE Households SET Statuss = 'In Service' WHERE Statuss = 'Not Operational';
 -- Insert root admin if not exists
 INSERT OR IGNORE INTO Users (UserID, Name, Username, PasswordHash, Role)
 VALUES (1, 'Root Admin', 'root', 'root', 'Admin');
+
+-- ============================================
+-- NEW: Restock history (when, who, qty, note)
+-- ============================================
+CREATE TABLE IF NOT EXISTS ItemRestock (
+    RestockID      INTEGER PRIMARY KEY AUTOINCREMENT,
+    ItemID         INTEGER NOT NULL,
+    Quantity       INTEGER NOT NULL CHECK (Quantity > 0),
+    RestockedAt    TEXT NOT NULL,        -- ISO 8601 UTC (from app)
+    CreatedByName  TEXT,                 -- optional free-text who
+    Note           TEXT,
+    FOREIGN KEY (ItemID) REFERENCES StockInventory(ItemID) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS IX_ItemRestock_Item_At ON ItemRestock(ItemID, RestockedAt DESC);
+
+-- ============================================
+-- Helpful views for UI
+-- ============================================
+
+-- On-hand = TotalQuantity - UsedQuantity
+CREATE VIEW IF NOT EXISTS v_ItemOnHand AS
+SELECT ItemID,
+       (TotalQuantity - UsedQuantity) AS OnHand,
+       TotalQuantity,
+       UsedQuantity,
+       LastRestockedDate,
+       LowStockThreshold,
+       ItemType,
+       Note
+FROM StockInventory;
+
+-- Usage history per item (date from Service.FinishDate fallback StartDate)
+CREATE VIEW IF NOT EXISTS v_ItemUsageHistory AS
+SELECT
+    si.ItemID,
+    s.ServiceID,
+    si.QuantityUsed AS Quantity,
+    COALESCE(s.FinishDate, s.StartDate) AS UsedAt,
+    s.HouseholdID,
+    s.TechnicianID
+FROM ServiceInventory si
+JOIN Service s ON s.ServiceID = si.ServiceID;
+
+-- Restock history per item
+CREATE VIEW IF NOT EXISTS v_ItemRestockHistory AS
+SELECT
+    r.ItemID,
+    r.RestockID,
+    r.Quantity,
+    r.RestockedAt,
+    r.CreatedByName,
+    r.Note
+FROM ItemRestock r;
+
+-- Unified activity timeline (Usage negative, Restock positive)
+CREATE VIEW IF NOT EXISTS v_ItemActivity AS
+SELECT
+    si.ItemID,
+    'USAGE' AS Type,
+    COALESCE(s.FinishDate, s.StartDate) AS At,
+    -si.QuantityUsed AS DeltaQty,
+    s.ServiceID AS RefID,
+    NULL AS Who,
+    NULL AS Note
+FROM ServiceInventory si
+JOIN Service s ON s.ServiceID = si.ServiceID
+UNION ALL
+SELECT
+    r.ItemID,
+    'RESTOCK' AS Type,
+    r.RestockedAt AS At,
+    r.Quantity AS DeltaQty,
+    r.RestockID AS RefID,
+    r.CreatedByName AS Who,
+    r.Note AS Note
+FROM ItemRestock r;
 ";
 
             using (var conn = GetConnection())

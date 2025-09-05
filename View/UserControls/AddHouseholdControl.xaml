@@ -153,9 +153,15 @@
             <!-- ===== Layout ===== -->
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <!-- Header -->
                 <RowDefinition Height="Auto"/>
+                <!-- Info bar -->
                 <RowDefinition Height="*"/>
+                <!-- Form (scroll) -->
                 <RowDefinition Height="Auto"/>
+                <!-- Service history (card) -->
+                <RowDefinition Height="Auto"/>
+                <!-- Footer buttons -->
             </Grid.RowDefinitions>
 
             <!-- Header: icon + title on left; ID + status chip on right -->
@@ -269,7 +275,6 @@
                               SelectionChanged="StatusCombo_SelectionChanged"
                               SelectedIndex="0"
                               IsEditable="False">
-                        <!-- Keep your UI options -->
                         <ComboBoxItem Content="Operational"/>
                         <ComboBoxItem Content="Out of Service"/>
                     </ComboBox>
@@ -289,8 +294,101 @@
                 </StackPanel>
             </ScrollViewer>
 
+            <!-- ===== Service History (card) ===== -->
+            <Border x:Name="ServiceHistoryPanel"
+                    Grid.Row="3"
+                    Visibility="Collapsed"
+                    CornerRadius="8"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="1"
+                    Background="#FAFAFA"
+                    Padding="12"
+                    Margin="0,10,0,0">
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <!-- header -->
+                        <RowDefinition Height="Auto"/>
+                        <!-- empty/info text -->
+                        <RowDefinition Height="*"/>
+                        <!-- grid -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <DockPanel Grid.Row="0" LastChildFill="False">
+                        <TextBlock Text="🛠 Service History"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="#2E3B4E"
+                                   Margin="0,0,8,6"/>
+                        <Border Background="#ECEFF1"
+                                BorderBrush="#CFD8DC"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="8,3"
+                                Margin="6,0,0,0">
+                            <TextBlock x:Name="ServiceHistoryCountText"
+                                       Foreground="#37474F"
+                                       FontWeight="SemiBold"
+                                       Text="0 records"/>
+                        </Border>
+                    </DockPanel>
+
+                    <!-- Empty state -->
+                    <TextBlock x:Name="ServiceHistoryEmptyText"
+                               Grid.Row="1"
+                               Margin="0,6,0,8"
+                               Foreground="{StaticResource MutedBrush}"
+                               Text="No service records yet."
+                               Visibility="Collapsed"/>
+
+                    <!-- Grid -->
+                    <DataGrid x:Name="ServiceHistoryGrid"
+                              Grid.Row="2"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              IsReadOnly="True"
+                              HeadersVisibility="Column"
+                              SelectionMode="Single"
+                              RowHeight="34"
+                              Margin="0,4,0,0"
+                              MouseDoubleClick="ServiceHistoryGrid_MouseDoubleClick"
+                              MaxHeight="240">
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#F3F4F6"/>
+                                <Setter Property="Foreground" Value="#374151"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="BorderBrush" Value="#E5E7EB"/>
+                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                <Setter Property="Padding" Value="8,6"/>
+                            </Style>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="BorderBrush" Value="#E5E7EB"/>
+                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                            </Style>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="Padding" Value="8,0"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                            </Style>
+                        </DataGrid.Resources>
+
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding ServiceID}" Header="#" Width="50"/>
+                            <DataGridTextColumn Binding="{Binding Date}" Header="Date" Width="110"/>
+                            <DataGridTextColumn Binding="{Binding Technician}" Header="Technician" Width="150"/>
+                            <DataGridTextColumn Binding="{Binding Summary}" Header="Summary" Width="*"/>
+                            <DataGridTextColumn Binding="{Binding Status}" Header="Status" Width="120"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
             <!-- Footer buttons -->
-            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
                 <Button x:Name="SaveButton"
                         Content="💾 Save"
                         Style="{StaticResource PrimaryButton}"
