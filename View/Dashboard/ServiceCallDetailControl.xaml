@@ -171,7 +171,7 @@
             </Border>
         </DataTemplate>
 
-        <!-- ===== Selectable “card row” template (shared) ===== -->
+        <!-- Selectable list item -->
         <Style x:Key="SelectableListItem" TargetType="ListBoxItem">
             <Setter Property="Padding" Value="0"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -181,7 +181,7 @@
             <EventSetter Event="KeyDown" Handler="ListItem_KeyDown_Toggle"/>
         </Style>
 
-        <!-- Technician row look -->
+        <!-- Technician row -->
         <DataTemplate x:Key="TechRowTemplate">
             <Border x:Name="Card"
                     Background="{StaticResource Col.Card}"
@@ -231,7 +231,7 @@
             </DataTemplate.Triggers>
         </DataTemplate>
 
-        <!-- Inventory row look -->
+        <!-- Inventory row -->
         <DataTemplate x:Key="InvRowTemplate">
             <Border x:Name="Card"
                     Background="{StaticResource Col.Card}"
@@ -432,7 +432,6 @@
                 <Button x:Name="FinishBtn" Content="✔ Finish service call" Style="{StaticResource PrimaryButton}" Click="FinishBtn_Click"/>
             </StackPanel>
 
-            <!-- ======= Overlays (in-panel modals) ======= -->
             <!-- Technicians Picker Overlay -->
             <Grid x:Name="TechOverlay" Background="#66000000" Visibility="Collapsed">
                 <Border Background="White" CornerRadius="12" Padding="16" MaxWidth="560" HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="{StaticResource Col.Border}" BorderThickness="1">
@@ -522,6 +521,7 @@
                             </ListBox.ItemContainerStyle>
                         </ListBox>
 
+                        <!-- Quantity Popup -->
                         <Popup x:Name="QtyPopup"
                                Placement="Right"
                                StaysOpen="False"

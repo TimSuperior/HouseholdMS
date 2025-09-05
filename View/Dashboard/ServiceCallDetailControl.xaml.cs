@@ -839,6 +839,9 @@ namespace HouseholdMS.View.Dashboard
             ActionNewBox.Text = "";
 
             MessageBox.Show("Saved. Ticket remains open. No stock deducted.", "Service", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            // === NEW: close the window just like Finish ===
+            var h = ServiceFinished; if (h != null) h(this, EventArgs.Empty);
         }
 
         private void FinishBtn_Click(object sender, RoutedEventArgs e)
@@ -960,7 +963,7 @@ namespace HouseholdMS.View.Dashboard
 
             MessageBox.Show("Service finished. Household set to Operational and inventory updated.", "Service", MessageBoxButton.OK, MessageBoxImage.Information);
 
-            var h = ServiceFinished; if (h != null) h(this, EventArgs.Empty);
+            var h2 = ServiceFinished; if (h2 != null) h2(this, EventArgs.Empty);
         }
     }
 }

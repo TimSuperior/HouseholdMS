@@ -154,9 +154,6 @@
     <Compile Include="View\Dashboard\SitesView.xaml.cs">
       <DependentUpon>SitesView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\UserControls\EpeverMonitorWindow.xaml.cs">
-      <DependentUpon>EpeverMonitorWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\EqTesting\AllTestMenuView.xaml.cs">
       <DependentUpon>AllTestMenuView.xaml</DependentUpon>
     </Compile>
@@ -229,6 +226,9 @@
     <Compile Include="View\UserControls\CircularProgressBar.xaml.cs">
       <DependentUpon>CircularProgressBar.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\UserControls\EpeverMonitorControl.xaml.cs">
+      <DependentUpon>EpeverMonitorControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\UserControls\TestReportDetailControl.xaml.cs">
       <DependentUpon>TestReportDetailControl.xaml</DependentUpon>
     </Compile>
@@ -291,10 +291,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Dashboard\SitesView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\UserControls\EpeverMonitorWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -391,6 +387,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\UserControls\CircularProgressBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\UserControls\EpeverMonitorControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
