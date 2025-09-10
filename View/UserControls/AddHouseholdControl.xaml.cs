@@ -168,7 +168,7 @@ namespace HouseholdMS.View.UserControls
             {
                 conn.Open();
 
-                // Strict duplicate by contact number
+                // Strict duplicate by contact number (keep existing behavior)
                 using (var contactCheck = new SQLiteCommand(@"
                     SELECT COUNT(*) FROM Households
                     WHERE ContactNum = @Contact
@@ -185,7 +185,7 @@ namespace HouseholdMS.View.UserControls
                     }
                 }
 
-                // Soft duplicate check by OwnerName
+                // Soft duplicate check by OwnerName (advisory)
                 using (var softCheck = new SQLiteCommand(@"
                     SELECT COUNT(*) FROM Households
                     WHERE OwnerName = @Owner
@@ -203,6 +203,24 @@ namespace HouseholdMS.View.UserControls
                             MessageBoxImage.Warning);
 
                         if (confirm != MessageBoxResult.Yes) return;
+                    }
+                }
+
+                // Align with DB UNIQUE (OwnerName, UserName, ContactNum) to avoid trigger/constraint aborts
+                using (var uqCheck = new SQLiteCommand(@"
+                    SELECT COUNT(*) FROM Households
+                    WHERE OwnerName = @Owner AND UserName = @UserName AND ContactNum = @Contact
+                      AND (@ID IS NULL OR HouseholdID != @ID);", conn))
+                {
+                    uqCheck.Parameters.AddWithValue("@Owner", OwnerName);
+                    uqCheck.Parameters.AddWithValue("@UserName", UserName);
+                    uqCheck.Parameters.AddWithValue("@Contact", Contact);
+                    uqCheck.Parameters.AddWithValue("@ID", (object)EditingHouseholdID ?? DBNull.Value);
+                    if (Convert.ToInt32(uqCheck.ExecuteScalar()) > 0)
+                    {
+                        MessageBox.Show("That owner, user name and contact combination already exists.",
+                                        "Duplicate Household", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
                     }
                 }
 
@@ -304,7 +322,7 @@ namespace HouseholdMS.View.UserControls
                 ContactBox.Tag = "error"; hasError = true;
             }
 
-            // simple numeric validation for contact (keep existing rule)
+            // simple numeric validation for contact (retain existing rule)
             if (!int.TryParse(ContactBox.Text, out _))
             {
                 MessageBox.Show("Please enter valid contact number!", "Validation Error",
@@ -374,7 +392,8 @@ namespace HouseholdMS.View.UserControls
             {
                 bg = SafeFindBrush("SuccessBrush", new SolidColorBrush(Color.FromRgb(76, 175, 80)));
             }
-            else if (uiStatus.StartsWith("In Service", StringComparison.OrdinalIgnoreCase))
+            else if (uiStatus.StartsWith("In Service", StringComparison.OrdinalIgnoreCase) ||
+                     uiStatus.StartsWith(UI_OUT_OF_SERVICE, StringComparison.OrdinalIgnoreCase))
             {
                 bg = SafeFindBrush("AccentBrush", new SolidColorBrush(Color.FromRgb(25, 118, 210)));
             }
@@ -427,7 +446,7 @@ namespace HouseholdMS.View.UserControls
                 IdChipText.Text = string.Empty;
         }
 
-        // ========= Service history logic (uses your Service/* tables) =========
+        // ========= Service history logic (uses your Service/* tables; updated to v_Technicians) =========
         private void UpdateServiceHistoryVisibility()
         {
             if (ServiceHistoryPanel == null) return;
@@ -446,25 +465,22 @@ namespace HouseholdMS.View.UserControls
                 {
                     conn.Open();
 
-                    // 1) Base service rows for this household
+                    // Use v_Technicians (approved active technicians) instead of legacy Technicians table
                     using (var cmd = new SQLiteCommand(@"
                         SELECT
                             s.ServiceID,
                             COALESCE(s.FinishDate, s.StartDate) AS At,
-                            -- Primary technician name (from Service.TechnicianID)
-                            t.Name AS PrimaryTech,
-                            -- All technician names from ServiceTechnicians (comma separated)
+                            vt.Name AS PrimaryTech,  -- from Service.TechnicianID
                             (
-                                SELECT group_concat(t2.Name, ', ')
+                                SELECT group_concat(vt2.Name, ', ')
                                 FROM ServiceTechnicians st2
-                                JOIN Technicians t2 ON t2.TechnicianID = st2.TechnicianID
+                                JOIN v_Technicians vt2 ON vt2.TechnicianID = st2.TechnicianID
                                 WHERE st2.ServiceID = s.ServiceID
                             ) AS TeamTechs,
-                            -- Prefer Action; fallback to Problem
                             COALESCE(NULLIF(TRIM(s.Action), ''), s.Problem, '') AS Summary,
                             CASE WHEN s.FinishDate IS NULL THEN 'Open' ELSE 'Closed' END AS State
                         FROM Service s
-                        LEFT JOIN Technicians t ON t.TechnicianID = s.TechnicianID
+                        LEFT JOIN v_Technicians vt ON vt.TechnicianID = s.TechnicianID
                         WHERE s.HouseholdID = @hid
                         ORDER BY datetime(COALESCE(s.FinishDate, s.StartDate)) DESC, s.ServiceID DESC;", conn))
                     {
@@ -488,11 +504,10 @@ namespace HouseholdMS.View.UserControls
                                                  ? team
                                                  : (!string.IsNullOrWhiteSpace(primary) ? primary : "");
 
-                                // Summary from Action/Problem; if empty, we will try items summary below
+                                // Summary from Action/Problem; if empty, attach items summary below
                                 row.Summary = SafeGetString(rdr, "Summary");
 
-                                // 2) Optional: compact items used summary for this service
-                                //    Example: "2x Fuse, 1x Cable"
+                                // Optional: compact items used summary for this service (e.g., "2x Fuse, 1x Cable")
                                 row.Summary = AppendItemsIfEmptyOrAddon(conn, row.ServiceID, row.Summary);
 
                                 _serviceRows.Add(row);
@@ -503,13 +518,12 @@ namespace HouseholdMS.View.UserControls
             }
             catch (Exception ex)
             {
-                // Show a non-blocking hint (you can log instead)
                 System.Diagnostics.Debug.WriteLine("LoadServiceHistory error: " + ex.Message);
             }
 
             // Update header count + empty text
             if (ServiceHistoryCountText != null)
-                ServiceHistoryCountText.Text = $"{_serviceRows.Count} records";
+                ServiceHistoryCountText.Text = _serviceRows.Count + " records";
 
             if (ServiceHistoryEmptyText != null)
                 ServiceHistoryEmptyText.Visibility = (_serviceRows.Count == 0) ? Visibility.Visible : Visibility.Collapsed;
@@ -582,12 +596,12 @@ namespace HouseholdMS.View.UserControls
         }
 
         // ========= Exposed properties for field values =========
-        public string OwnerName => OwnerBox.Text.Trim();
-        public string UserName => UserNameBox.Text.Trim();
-        public string Municipality => MunicipalityBox.Text.Trim();
-        public string District => DistrictBox.Text.Trim();
-        public string Contact => ContactBox.Text.Trim();
-        public string Note => NoteBox.Text.Trim();
+        public string OwnerName { get { return OwnerBox.Text.Trim(); } }
+        public string UserName { get { return UserNameBox.Text.Trim(); } }
+        public string Municipality { get { return MunicipalityBox.Text.Trim(); } }
+        public string District { get { return DistrictBox.Text.Trim(); } }
+        public string Contact { get { return ContactBox.Text.Trim(); } }
+        public string Note { get { return NoteBox.Text.Trim(); } }
 
         /// <summary>
         /// Returns the DB canonical value for Status:
@@ -605,8 +619,8 @@ namespace HouseholdMS.View.UserControls
             }
         }
 
-        public DateTime InstallDate => InstDatePicker.SelectedDate.Value;
-        public DateTime LastInspect => LastInspPicker.SelectedDate.Value;
+        public DateTime InstallDate { get { return InstDatePicker.SelectedDate.Value; } }
+        public DateTime LastInspect { get { return LastInspPicker.SelectedDate.Value; } }
 
         // Row model for service history grid
         public class ServiceShortRow

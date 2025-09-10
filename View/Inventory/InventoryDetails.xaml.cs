@@ -28,7 +28,7 @@ namespace HouseholdMS.View.Inventory
         {
             if (_itemId <= 0)
             {
-                System.Windows.MessageBox.Show("Invalid inventory item ID.", "Error",
+                MessageBox.Show("Invalid inventory item ID.", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 Close();
                 return;
@@ -55,7 +55,7 @@ namespace HouseholdMS.View.Inventory
                         {
                             if (!r.Read())
                             {
-                                System.Windows.MessageBox.Show("Inventory item not found.", "Not Found",
+                                MessageBox.Show("Inventory item not found.", "Not Found",
                                     MessageBoxButton.OK, MessageBoxImage.Information);
                                 Close();
                                 return;
@@ -74,7 +74,17 @@ namespace HouseholdMS.View.Inventory
 
                             ItemTypeBox.Text = itemType;
                             UsedQtyBox.Text = _usedQty.ToString(CultureInfo.InvariantCulture);
-                            LastRestockedText.Text = string.IsNullOrWhiteSpace(_lastRestocked) ? "—" : _lastRestocked;
+
+                            // If column was empty, try to infer from ItemRestock history
+                            if (string.IsNullOrWhiteSpace(_lastRestocked))
+                            {
+                                _lastRestocked = GetLatestRestockUtcString(conn, id);
+                            }
+
+                            LastRestockedText.Text = string.IsNullOrWhiteSpace(_lastRestocked)
+                                ? "—"
+                                : ToKstString(_lastRestocked);
+
                             NoteBox.Text = note;
                         }
                     }
@@ -82,9 +92,28 @@ namespace HouseholdMS.View.Inventory
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show("Error loading inventory item: " + ex.Message, "Error",
+                MessageBox.Show("Error loading inventory item: " + ex.Message, "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 Close();
+            }
+        }
+
+        // Get latest restock timestamp (UTC string) from ItemRestock for this item
+        private static string GetLatestRestockUtcString(SQLiteConnection openConn, int itemId)
+        {
+            try
+            {
+                using (var cmd = new SQLiteCommand(
+                    "SELECT MAX(RestockedAt) FROM ItemRestock WHERE ItemID = @id", openConn))
+                {
+                    cmd.Parameters.AddWithValue("@id", itemId);
+                    var val = cmd.ExecuteScalar();
+                    return val == null || val == DBNull.Value ? null : Convert.ToString(val);
+                }
+            }
+            catch
+            {
+                return null;
             }
         }
 
@@ -174,7 +203,7 @@ namespace HouseholdMS.View.Inventory
                 {
                     conn.Open();
 
-                    // Prefer many-to-many names; fallback to Service.TechnicianID name
+                    // UPDATED: Use v_Technicians (Users-backed view), not the old Technicians table.
                     using (var cmd = new SQLiteCommand(
                         @"
 SELECT 
@@ -183,17 +212,17 @@ SELECT
     vih.ServiceID,
     vih.HouseholdID,
     vih.TechnicianID,
-    COALESCE(st_names.Names, t.Name) AS TechnicianNames
+    COALESCE(st_names.Names, vt.Name) AS TechnicianNames
 FROM v_ItemUsageHistory AS vih
 LEFT JOIN (
-    SELECT st.ServiceID, GROUP_CONCAT(t2.Name, ', ') AS Names
+    SELECT st.ServiceID, GROUP_CONCAT(vt2.Name, ', ') AS Names
     FROM ServiceTechnicians st
-    JOIN Technicians t2 ON t2.TechnicianID = st.TechnicianID
+    JOIN v_Technicians vt2 ON vt2.TechnicianID = st.TechnicianID
     GROUP BY st.ServiceID
 ) AS st_names
     ON st_names.ServiceID = vih.ServiceID
-LEFT JOIN Technicians t
-    ON t.TechnicianID = vih.TechnicianID
+LEFT JOIN v_Technicians vt
+    ON vt.TechnicianID = vih.TechnicianID
 WHERE vih.ItemID = @id
 ORDER BY datetime(vih.UsedAt) DESC
 ", conn))
@@ -246,7 +275,7 @@ ORDER BY datetime(vih.UsedAt) DESC
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show("Error loading usage history: " + ex.Message, "Error",
+                MessageBox.Show("Error loading usage history: " + ex.Message, "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

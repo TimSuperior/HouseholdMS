@@ -5,116 +5,318 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             Background="White"
-             d:DesignHeight="500"
-             d:DesignWidth="440">
+             Background="#F6F7FB"
+             UseLayoutRounding="True"
+             SnapsToDevicePixels="True"
+             TextOptions.TextFormattingMode="Display"
+             TextOptions.TextRenderingMode="ClearType"
+             d:DesignHeight="600"
+             d:DesignWidth="520">
 
-    <Border Padding="25"
-            CornerRadius="10"
-            BorderBrush="#DDD"
-            BorderThickness="1"
-            Background="White"
-            SnapsToDevicePixels="True">
+    <!-- ========== THEME ========== -->
+    <UserControl.Resources>
+        <!-- Palette -->
+        <SolidColorBrush x:Key="Col.Page"   Color="#F6F7FB"/>
+        <SolidColorBrush x:Key="Col.Card"   Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Col.Border" Color="#E5E7EB"/>
+        <SolidColorBrush x:Key="Col.Text"   Color="#111827"/>
+        <SolidColorBrush x:Key="Col.Muted"  Color="#6B7280"/>
+        <SolidColorBrush x:Key="Col.Accent" Color="#3B82F6"/>
+        <SolidColorBrush x:Key="Col.Danger" Color="#EF4444"/>
 
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+        <!-- Status pills -->
+        <SolidColorBrush x:Key="Pill.DefaultBg" Color="#F3F4F6"/>
+        <SolidColorBrush x:Key="Pill.DefaultFg" Color="#111827"/>
+        <SolidColorBrush x:Key="Pill.OpenBg"    Color="#DBEAFE"/>
+        <SolidColorBrush x:Key="Pill.OpenFg"    Color="#1E3A8A"/>
+        <SolidColorBrush x:Key="Pill.FinishBg"  Color="#DCFCE7"/>
+        <SolidColorBrush x:Key="Pill.FinishFg"  Color="#065F46"/>
+        <SolidColorBrush x:Key="Pill.CancelBg"  Color="#FEE2E2"/>
+        <SolidColorBrush x:Key="Pill.CancelFg"  Color="#991B1B"/>
 
-            <!-- Header -->
-            <TextBlock x:Name="FormHeader"
-                       Grid.Row="0"
-                       FontSize="18"
-                       FontWeight="Bold"
-                       Foreground="#2E3B4E"
-                       Margin="0,0,0,20"/>
+        <!-- Card (no bitmap effects to keep text sharp) -->
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource Col.Card}"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+        </Style>
 
-            <!-- Form Fields -->
-            <StackPanel Grid.Row="1" VerticalAlignment="Top">
-                <TextBlock Text="Household ID" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <TextBox x:Name="HouseholdIDBox" Height="32" Margin="0,0,0,12"/>
+        <!-- Labels / Values -->
+        <Style x:Key="LabelText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Col.Muted}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,8,6"/>
+        </Style>
+        <Style x:Key="ValueText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
 
-                <TextBlock Text="Technician ID" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <TextBox x:Name="TechnicianIDBox" Height="32" Margin="0,0,0,12"/>
+        <!-- Buttons -->
+        <Style x:Key="BaseButton" TargetType="Button">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="MinWidth" Value="110"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="#EEF2FF"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.Accent}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="btn" CornerRadius="12" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="btn" Property="Opacity" Value="0.92"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="btn" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="btn" Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="PrimaryButton" BasedOn="{StaticResource BaseButton}" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource Col.Accent}"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style x:Key="DangerButton" BasedOn="{StaticResource BaseButton}" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource Col.Danger}"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
 
-                <TextBlock Text="Last Inspect Date" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <DatePicker x:Name="LastInspectPicker"
-                            Height="32"
-                            Margin="0,0,0,12"
-                            DisplayDateEnd="{x:Static System:DateTime.Today}"
-                            SelectedDate="{x:Static System:DateTime.Today}"/>
+        <!-- Divider -->
+        <Style x:Key="Divider" TargetType="Separator">
+            <Setter Property="Margin" Value="0,10,0,10"/>
+            <Setter Property="Background" Value="{StaticResource Col.Border}"/>
+            <Setter Property="Height" Value="1"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Separator">
+                        <Border Background="{TemplateBinding Background}" Height="{TemplateBinding Height}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-                <TextBlock Text="Problem" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <TextBox x:Name="ProblemBox"
-                         Height="80"
-                         Margin="0,0,0,12"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         VerticalScrollBarVisibility="Auto"/>
+        <!-- Info bubble -->
+        <Style x:Key="InfoBubble" TargetType="Border">
+            <Setter Property="Background" Value="#FAFAFB"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="MinHeight" Value="32"/>
+        </Style>
+    </UserControl.Resources>
 
-                <TextBlock Text="Action Taken" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <TextBox x:Name="ActionBox"
-                         Height="80"
-                         Margin="0,0,0,12"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         VerticalScrollBarVisibility="Auto"/>
+    <!-- ========== LAYOUT ========== -->
+    <Grid Background="{StaticResource Col.Page}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-                <TextBlock Text="Repair Date" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <DatePicker x:Name="RepairDatePicker"
-                            Height="32"
-                            Margin="0,0,0,12"
-                            DisplayDateEnd="{x:Static System:DateTime.Today}"/>
-            </StackPanel>
+        <!-- Header (sharp shadow by layered border; no blur effects) -->
+        <Grid Grid.Row="0" Margin="16,16,16,8">
+            <Border Background="#12000000" CornerRadius="18" Margin="0,2,0,0"/>
+            <Border Style="{StaticResource Card}" Padding="16">
+                <DockPanel LastChildFill="False">
+                    <StackPanel Orientation="Vertical" DockPanel.Dock="Left">
+                        <TextBlock x:Name="FormHeader"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource Col.Text}"
+                                   Text="➕ Add Service Record"/>
+                        <TextBlock Text="Service details and activity"
+                                   Foreground="{StaticResource Col.Muted}"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
 
-            <!-- Buttons Row -->
-            <Grid Grid.Row="2" Margin="0,20,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <Button x:Name="DeleteButton"
-                        Content="🗑 Delete"
-                        Width="100"
-                        Height="38"
-                        FontWeight="Bold"
-                        Background="#9E1B1B"
-                        Foreground="White"
-                        Cursor="Hand"
-                        Visibility="Collapsed"
-                        Grid.Column="0"
-                        Margin="0,0,20,0"
-                        Click="Delete_Click"/>
-
-                <!-- Spacer -->
-
-                <Button x:Name="SaveButton"
-                        Content="✔ Save"
-                        Width="120"
-                        Height="38"
-                        FontWeight="Bold"
-                        Background="#4CAF50"
-                        Foreground="White"
-                        Cursor="Hand"
-                        Grid.Column="2"
-                        Margin="0,0,10,0"
-                        Click="Save_Click"/>
-
-                <Button Content="✖ Cancel"
-                        Width="100"
-                        Height="38"
-                        FontWeight="Bold"
-                        Background="#F44336"
-                        Foreground="White"
-                        Cursor="Hand"
-                        Grid.Column="3"
-                        Click="Cancel_Click"/>
-            </Grid>
+                    <!-- Status pill (auto-visible in details mode) -->
+                    <Border x:Name="StatusPill"
+                            DockPanel.Dock="Right"
+                            Padding="10,4"
+                            CornerRadius="999"
+                            Background="{StaticResource Pill.DefaultBg}"
+                            VerticalAlignment="Center">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=DetailsPanel, Path=Visibility}" Value="Visible">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock x:Name="StatusPillText"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource Pill.DefaultFg}"/>
+                    </Border>
+                </DockPanel>
+            </Border>
         </Grid>
-    </Border>
+
+        <!-- CONTENT -->
+        <Grid Grid.Row="1" Margin="16,8,16,8">
+            <Border Background="#12000000" CornerRadius="18" Margin="0,2,0,0"/>
+            <Border Style="{StaticResource Card}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- ===== Details mode ===== -->
+                        <Grid x:Name="DetailsPanel"
+                              Grid.Row="0"
+                              Visibility="Collapsed">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <!-- 0: Service ID -->
+                                <RowDefinition Height="Auto"/>
+                                <!-- 1: Household -->
+                                <RowDefinition Height="Auto"/>
+                                <!-- 2: Technicians -->
+                                <RowDefinition Height="Auto"/>
+                                <!-- 3: Divider -->
+                                <RowDefinition Height="Auto"/>
+                                <!-- 4: Problem -->
+                                <RowDefinition Height="Auto"/>
+                                <!-- 5: Action -->
+                                <RowDefinition Height="Auto"/>
+                                <!-- 6: Inventory -->
+                                <RowDefinition Height="Auto"/>
+                                <!-- 7: Divider -->
+                                <RowDefinition Height="Auto"/>
+                                <!-- 8: Started -->
+                                <RowDefinition Height="Auto"/>
+                                <!-- 9: Finished -->
+                            </Grid.RowDefinitions>
+
+                            <!-- Meta -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource LabelText}" Text="Service ID:"/>
+                            <TextBlock x:Name="ServiceIdValue" Grid.Row="0" Grid.Column="1" Style="{StaticResource ValueText}"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource LabelText}" Text="Household:"/>
+                            <TextBlock x:Name="HouseholdValue" Grid.Row="1" Grid.Column="1" Style="{StaticResource ValueText}"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource LabelText}" Text="Technicians:"/>
+                            <TextBlock x:Name="TechniciansValue" Grid.Row="2" Grid.Column="1" Style="{StaticResource ValueText}"/>
+
+                            <Separator Grid.Row="3" Grid.ColumnSpan="2" Style="{StaticResource Divider}"/>
+
+                            <!-- Problem -->
+                            <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource LabelText}" Text="Problem:"/>
+                            <Border Grid.Row="4" Grid.Column="1" Style="{StaticResource InfoBubble}">
+                                <TextBlock x:Name="ProblemValue" Style="{StaticResource ValueText}" Margin="0"/>
+                            </Border>
+
+                            <!-- Action -->
+                            <TextBlock Grid.Row="5" Grid.Column="0" Style="{StaticResource LabelText}" Text="Action:"/>
+                            <Border Grid.Row="5" Grid.Column="1" Style="{StaticResource InfoBubble}">
+                                <TextBlock x:Name="ActionValue" Style="{StaticResource ValueText}" Margin="0"/>
+                            </Border>
+
+                            <!-- Inventory -->
+                            <TextBlock Grid.Row="6" Grid.Column="0" Style="{StaticResource LabelText}" Text="Inventory Used:"/>
+                            <Border Grid.Row="6" Grid.Column="1" Style="{StaticResource InfoBubble}">
+                                <TextBlock x:Name="InventoryValue" Style="{StaticResource ValueText}" Margin="0"/>
+                            </Border>
+
+                            <Separator Grid.Row="7" Grid.ColumnSpan="2" Style="{StaticResource Divider}"/>
+
+                            <!-- Dates -->
+                            <TextBlock Grid.Row="8" Grid.Column="0" Style="{StaticResource LabelText}" Text="Started:"/>
+                            <TextBlock x:Name="StartedValue" Grid.Row="8" Grid.Column="1" Style="{StaticResource ValueText}"/>
+
+                            <TextBlock Grid.Row="9" Grid.Column="0" Style="{StaticResource LabelText}" Text="Finished:"/>
+                            <TextBlock x:Name="FinishedValue" Grid.Row="9" Grid.Column="1" Style="{StaticResource ValueText}"/>
+                        </Grid>
+
+                        <!-- ===== Original form mode (kept) ===== -->
+                        <StackPanel x:Name="FormPanel" Grid.Row="1" Margin="0,4,0,0">
+                            <Grid Margin="0,4,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource LabelText}" Text="Household ID"/>
+                                <TextBox x:Name="HouseholdIDBox" Grid.Row="0" Grid.Column="1" Height="36" Margin="0,0,0,10"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource LabelText}" Text="Technician ID"/>
+                                <TextBox x:Name="TechnicianIDBox" Grid.Row="1" Grid.Column="1" Height="36" Margin="0,0,0,10"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource LabelText}" Text="Last Inspect Date"/>
+                                <DatePicker x:Name="LastInspectPicker"
+                                            Grid.Row="2" Grid.Column="1"
+                                            Height="36" Margin="0,0,0,10"
+                                            DisplayDateEnd="{x:Static System:DateTime.Today}"
+                                            SelectedDate="{x:Static System:DateTime.Today}"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource LabelText}" Text="Problem"/>
+                                <TextBox x:Name="ProblemBox" Grid.Row="3" Grid.Column="1"
+                                         Height="88" Margin="0,0,0,10" AcceptsReturn="True"
+                                         TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+
+                                <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource LabelText}" Text="Action Taken"/>
+                                <TextBox x:Name="ActionBox" Grid.Row="4" Grid.Column="1"
+                                         Height="88" Margin="0,0,0,10" AcceptsReturn="True"
+                                         TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+
+                                <TextBlock Grid.Row="5" Grid.Column="0" Style="{StaticResource LabelText}" Text="Repair Date"/>
+                                <DatePicker x:Name="RepairDatePicker"
+                                            Grid.Row="5" Grid.Column="1"
+                                            Height="36" Margin="0,0,0,10"
+                                            DisplayDateEnd="{x:Static System:DateTime.Today}"/>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <!-- FOOTER BUTTONS -->
+        <Border Grid.Row="2" Background="Transparent" Margin="16,8,16,16">
+            <DockPanel LastChildFill="False">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <Button x:Name="DeleteButton"
+                            Content="🗑 Delete"
+                            Style="{StaticResource DangerButton}"
+                            Visibility="Collapsed"
+                            Margin="0,0,8,0"
+                            Click="Delete_Click"/>
+                    <Button x:Name="SaveButton"
+                            Content="✔ Save"
+                            Style="{StaticResource PrimaryButton}"
+                            Margin="0,0,8,0"
+                            Click="Save_Click"/>
+                    <Button x:Name="CancelButton"
+                            Content="✖ Close"
+                            Style="{StaticResource BaseButton}"
+                            Click="Cancel_Click"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </Grid>
 </UserControl>

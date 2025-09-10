@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.Dashboard.ServiceCallDetailControl"
+﻿<UserControl x:Class="HouseholdMS.View.Dashboard.ServiceCallDetailControl" 
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -429,7 +429,8 @@
             <!-- Footer -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
                 <Button x:Name="SaveOpenBtn" Content="💾 Save and keep the service call" Style="{StaticResource GhostButton}" Click="SaveOpenBtn_Click"/>
-                <Button x:Name="FinishBtn" Content="✔ Finish service call" Style="{StaticResource PrimaryButton}" Click="FinishBtn_Click"/>
+                <Button x:Name="CancelBtn" Content="✖ Cancel service call" Style="{StaticResource DangerButton}" Margin="8,0,0,0" Click="CancelBtn_Click"/>
+                <Button x:Name="FinishBtn" Content="✔ Finish service call" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" Click="FinishBtn_Click"/>
             </StackPanel>
 
             <!-- Technicians Picker Overlay -->

@@ -1,4 +1,4 @@
-﻿<Window x:Class="HouseholdMS.MainWindow" 
+﻿<Window x:Class="HouseholdMS.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -12,10 +12,8 @@
         WindowState="Maximized"
         Background="#f0f2f5">
 
-    
-    
     <Window.Resources>
-        <!-- (unchanged) your styles -->
+        <!-- Base sidebar button -->
         <Style x:Key="MenuButtonStyle" TargetType="Button">
             <Setter Property="Height" Value="42"/>
             <Setter Property="Margin" Value="10,4"/>
@@ -41,19 +39,110 @@
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter Property="Background" Value="#546579"/>
                             </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#98A2B3"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
-      
+        <!-- Main section "header" buttons (Dashboard, Monitoring, Test & Manuals) -->
+        <Style x:Key="SectionHeaderButtonStyle" TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="Margin" Value="10,12,10,4"/>
+            <Setter Property="Background" Value="#354559"/>
+            <Setter Property="BorderBrush" Value="#41536A"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <DockPanel LastChildFill="True">
+                                <Border Background="#4B5E77"
+                                        Width="4" Height="Auto"
+                                        CornerRadius="4,0,0,4"
+                                        Margin="-12,0,12,0"/>
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </DockPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#3B4E66"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#465A73"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#9AA7B7"/>
+                                <Setter Property="Background" Value="#2f3b4e"/>
+                                <Setter Property="BorderBrush" Value="#39475C"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-    
+        <!-- Submenu buttons: smaller, indented, lighter -->
+        <Style x:Key="SubMenuButtonStyle" TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#E5E7EB"/>
+            <Setter Property="Margin" Value="26,2,10,2"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <DockPanel LastChildFill="True">
+                                <Border Background="#3B4A61"
+                                        Width="2" Height="Auto"
+                                        CornerRadius="2"
+                                        Margin="-6,0,8,0"
+                                        Opacity="0.7"/>
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </DockPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#344255"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#415169"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#9CA3AF"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Subsection separator label -->
+        <Style x:Key="SidebarCaption" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#B7C2CF"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="26,6,10,2"/>
+            <Setter Property="TextWrapping" Value="NoWrap"/>
+        </Style>
     </Window.Resources>
 
     <Grid>
-        <!-- NEW: scale the entire window content with the same global factor -->
+        <!-- Optional global UI scale -->
         <Grid.LayoutTransform>
             <ScaleTransform
                 ScaleX="{DynamicResource AppUiScale}"
@@ -61,7 +150,7 @@
         </Grid.LayoutTransform>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="260"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -73,42 +162,126 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
+            <!-- Brand / Title -->
             <StackPanel Grid.Row="0" Margin="10,20,10,10">
                 <TextBlock Text="☰ Main Menu"
-                           FontFamily="/Assets/Fonts/#Poppins"
                            FontSize="18"
                            FontWeight="Bold"
                            Foreground="White"
-                           Margin="5,0,0,20"/>
+                           Margin="5,0,0,16"/>
             </StackPanel>
 
-            <StackPanel Grid.Row="1">
-                
-                <Button x:Name="bt_Dashboard" Content="Dashboard" Click="bt_Dashboard_Click" Style="{StaticResource MenuButtonStyle}"/>
-                <Button Content="🏠 Sites" Click="bt_SiteMenu" Style="{StaticResource MenuButtonStyle}"/>
-                <!--<Button Content="🏠 Households" Click="bt_HouseholdMenu" Style="{StaticResource MenuButtonStyle}"/> -->
-                <Button Content="👷 Technicians" Click="bt_TechnicianMenu" Style="{StaticResource MenuButtonStyle}"/>
-                <Button Content="📦 Inventory" Click="bt_InventoryMenu" Style="{StaticResource MenuButtonStyle}"/>
-                <Button Content="🔧 Service Records" Click="bt_ServiceMenu" Style="{StaticResource MenuButtonStyle}"/>
-                <Button x:Name="bt_TestReports" Content="📄 Test Reports" Click="bt_TestReports_Click" Style="{StaticResource MenuButtonStyle}"/>
-                <Button x:Name="ManageUsersButton" Content="👥 Manage Users" Click="bt_ManageUsers" Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
-                <Button x:Name="bt_AllTest" Content="Blue Smart Charger" Click="bt_AllTest_Click" Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
-                <Button x:Name="bt_BatteryTest" Content="🔋 Battery Test" Click="bt_BatteryTest_Click" Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
-                <Button x:Name="bt_ControllerTest" Content="🧪 Controller Test" Click="bt_ControllerTest_Click" Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
-                <Button x:Name="bt_InverterTest" Content="⚡ Inverter Test" Click="bt_InverterTest_Click" Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
-                <Button x:Name="bt_SwitchTest" Content="⚡ Switch Test" Click="bt_SwitchTest_Click" Style="{StaticResource MenuButtonStyle}" Visibility="Collapsed"/>
-                <Button x:Name="bt_Template" Content="Template" Click="bt_Template_Click" Style="{StaticResource MenuButtonStyle}" />
-        
-                <Button Content="📊 Measurements" Click="bt_MeasurementMenu" Style="{StaticResource MenuButtonStyle}"/>
-                <Button Content="📈 Oscilloscope" Click="bt_OscilloscopeMenu" Style="{StaticResource MenuButtonStyle}"/>
-            </StackPanel>
+            <!-- Navigation -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
 
-            <StackPanel Grid.Row="2" Margin="10,0,10,10">
-                <Button x:Name="bt_SettingMenu" Height="38" Content="⚙ Settings" Padding="42,0" Click="bt_SettingMenu_Click" Style="{StaticResource MenuButtonStyle}"
-                        Background="#FF010159"
+                    <!-- === DASHBOARD (main) === -->
+                    <Button x:Name="bt_Dashboard"
+                            Content="📊 Dashboard"
+                            Click="bt_Dashboard_Click"
+                            Style="{StaticResource SectionHeaderButtonStyle}"/>
+
+                    <!-- Dashboard sub-items (always visible, lighter look) -->
+                    <TextBlock Text="Dashboard Sections" Style="{StaticResource SidebarCaption}"/>
+                    <Button Content="🏠 Sites"
+                            Click="bt_SiteMenu"
+                            Style="{StaticResource SubMenuButtonStyle}"/>
+                    <Button Content="📦 Inventory"
+                            Click="bt_InventoryMenu"
+                            Style="{StaticResource SubMenuButtonStyle}"/>
+                    <Button Content="🛠 Service Records"
+                            Click="bt_ServiceMenu"
+                            Style="{StaticResource SubMenuButtonStyle}"/>
+
+                    <!-- Spacer -->
+                    <Border Height="8"/>
+
+                    <!-- === MONITORING (main - not active yet) === -->
+                    <Button Content="🛰 Monitoring"
+                            IsEnabled="False"
+                            ToolTip="Coming soon"
+                            Style="{StaticResource SectionHeaderButtonStyle}"/>
+
+                    <!-- Monitoring sub-items -->
+                    <TextBlock Text="Live Instruments" Style="{StaticResource SidebarCaption}"/>
+                    <!-- Keep handler names to avoid code-behind changes -->
+                    <Button x:Name="bt_BatteryTest"
+                            Content="🔋 MPPT Monitoring"
+                            Click="bt_BatteryTest_Click"
+                            Style="{StaticResource SubMenuButtonStyle}"/>
+                    <Button Content="📈 Oscilloscope"
+                            Click="bt_OscilloscopeMenu"
+                            Style="{StaticResource SubMenuButtonStyle}"/>
+                    <Button Content="📊 Multimeter"
+                            Click="bt_MeasurementMenu"
+                            Style="{StaticResource SubMenuButtonStyle}"/>
+
+                    <!-- Spacer -->
+                    <Border Height="8"/>
+
+                    <!-- === TEST & MANUALS (main) === -->
+                    <Button Content="🧪 Test Manuals"
+                            Style="{StaticResource SectionHeaderButtonStyle}"
+                            IsEnabled="True"/>
+
+                    <TextBlock Text="Test Modules" Style="{StaticResource SidebarCaption}"/>
+                    <Button x:Name="bt_AllTest"
+                            Content="🔌 Blue Smart Charger"
+                            Click="bt_AllTest_Click"
+                            Style="{StaticResource SubMenuButtonStyle}"/>
+                    <Button x:Name="bt_ControllerTest"
+                            Content="🧭 Controller Test"
+                            Click="bt_ControllerTest_Click"
+                            Style="{StaticResource SubMenuButtonStyle}"/>
+                    <Button x:Name="bt_InverterTest"
+                            Content="⚡ Inverter Test"
+                            Click="bt_InverterTest_Click"
+                            Style="{StaticResource SubMenuButtonStyle}"/>
+                    <Button x:Name="bt_SwitchTest"
+                            Content="🔀 Switch Test"
+                            Click="bt_SwitchTest_Click"
+                            Style="{StaticResource SubMenuButtonStyle}"/>
+
+                    <TextBlock Text="Documentation" Style="{StaticResource SidebarCaption}"/>
+                    <Button x:Name="bt_TestReports"
+                            Content="📄 Test Reports"
+                            Click="bt_TestReports_Click"
+                            Style="{StaticResource SubMenuButtonStyle}"/>
+                    <Button x:Name="bt_Template"
+                            Content="📁 Templates"
+                            Click="bt_Template_Click"
+                            Style="{StaticResource SubMenuButtonStyle}"/>
+
+                    <!-- Admin tools (kept hidden by default) -->
+                    <Button x:Name="NavManageUsersBtn"
+                            Content="👥 Manage Users"
+                            Click="bt_ManageUsers"
+                            Style="{StaticResource SubMenuButtonStyle}"
+                            Visibility="Collapsed"/>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Footer -->
+            <StackPanel Grid.Row="2" Margin="10,8,10,12">
+                <Button x:Name="bt_SettingMenu"
+                        Height="38"
+                        Content="⚙ Settings"
+                        Padding="42,0"
+                        Click="bt_SettingMenu_Click"
+                        Style="{StaticResource MenuButtonStyle}"
+                        Background="#010159"
                         BorderBrush="Transparent" BorderThickness="0"/>
-                <Button Content="🚪 Logout" Height="38" FontWeight="Bold" Foreground="White" Background="#c62828"
-                        BorderBrush="Transparent" BorderThickness="0" Cursor="Hand" Click="Logout_Click" Padding="0,0"/>
+                <Button Content="🚪 Logout"
+                        Height="38"
+                        FontWeight="Bold"
+                        Foreground="White"
+                        Background="#c62828"
+                        BorderBrush="Transparent"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Click="Logout_Click"
+                        Padding="0,0"/>
             </StackPanel>
         </Grid>
 

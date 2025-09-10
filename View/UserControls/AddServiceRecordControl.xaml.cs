@@ -1,130 +1,117 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using HouseholdMS.Model;
-using System.Data.SQLite; // Use SQLite
+using System.Windows.Media;
+using HouseholdMS.View; // for ServiceRow
 
 namespace HouseholdMS.View.UserControls
 {
     public partial class AddServiceRecordControl : UserControl
     {
-        private readonly ServiceRecord _record;
-        private readonly bool _isEdit;
+        private readonly bool _detailsOnly;
+        private readonly ServiceRow _row;
 
         public event EventHandler OnSavedSuccessfully;
         public event EventHandler OnCancelRequested;
 
+        // Form mode (kept)
         public AddServiceRecordControl()
         {
             InitializeComponent();
             FormHeader.Text = "➕ Add Service Record";
-            SaveButton.Content = "➕ Add";
-            RepairDatePicker.SelectedDate = DateTime.Today;
-            LastInspectPicker.SelectedDate = DateTime.Today;
+
+            DetailsPanel.Visibility = Visibility.Collapsed;
+            FormPanel.Visibility = Visibility.Visible;
+
+            SaveButton.Visibility = Visibility.Visible;
+            DeleteButton.Visibility = Visibility.Collapsed;
+            CancelButton.Content = "✖ Close";
         }
 
-        public AddServiceRecordControl(ServiceRecord record) : this()
+        // Details mode (used from ServiceRecordsView)
+        public AddServiceRecordControl(ServiceRow row) : this()
         {
-            _record = record;
-            _isEdit = true;
+            _row = row ?? throw new ArgumentNullException(nameof(row));
+            _detailsOnly = true;
 
-            FormHeader.Text = $"✏ Edit Record #{record.ReportID}";
-            SaveButton.Content = "✏ Save Changes";
-            DeleteButton.Visibility = Visibility.Visible;
+            FormHeader.Text = $"Service #{row.ServiceID} — Details";
+            DetailsPanel.Visibility = Visibility.Visible;
+            FormPanel.Visibility = Visibility.Collapsed;
 
-            HouseholdIDBox.Text = record.HouseholdID.ToString();
-            TechnicianIDBox.Text = record.TechnicianID.ToString();
+            // Buttons
+            SaveButton.Visibility = Visibility.Collapsed;
+            DeleteButton.Visibility = Visibility.Collapsed;
+            CancelButton.Content = "✖ Close";
 
-            if (DateTime.TryParse(record.LastInspect, out var lastInspDate))
-                LastInspectPicker.SelectedDate = lastInspDate;
+            // Populate details (Primary Tech removed; Team -> Technicians)
+            ServiceIdValue.Text = row.ServiceID.ToString();
+            HouseholdValue.Text = row.HouseholdText;
+            TechniciansValue.Text = string.IsNullOrWhiteSpace(row.AllTechnicians) ? "—" : row.AllTechnicians;
+            ProblemValue.Text = string.IsNullOrWhiteSpace(row.Problem) ? "—" : row.Problem;
+            ActionValue.Text = string.IsNullOrWhiteSpace(row.Action) ? "—" : row.Action;
+            InventoryValue.Text = string.IsNullOrWhiteSpace(row.InventorySummary) ? "—" : row.InventorySummary;
+            StartedValue.Text = string.IsNullOrWhiteSpace(row.StartDateText) ? "—" : row.StartDateText;
+            FinishedValue.Text = string.IsNullOrWhiteSpace(row.FinishDateText) ? "—" : row.FinishDateText;
 
-            ProblemBox.Text = record.Problem;
-            ActionBox.Text = record.Action;
+            ApplyStatusPill(row.StatusText);
+        }
 
-            if (DateTime.TryParse(record.RepairDate, out var parsedDate))
-                RepairDatePicker.SelectedDate = parsedDate;
+        private void ApplyStatusPill(string status)
+        {
+            var s = (status ?? "").Trim().ToLowerInvariant();
+            Brush bg = (Brush)FindResource("Pill.DefaultBg");
+            Brush fg = (Brush)FindResource("Pill.DefaultFg");
+
+            if (s == "open")
+            {
+                bg = (Brush)FindResource("Pill.OpenBg");
+                fg = (Brush)FindResource("Pill.OpenFg");
+            }
+            else if (s == "finished")
+            {
+                bg = (Brush)FindResource("Pill.FinishBg");
+                fg = (Brush)FindResource("Pill.FinishFg");
+            }
+            else if (s == "canceled" || s == "cancelled")
+            {
+                bg = (Brush)FindResource("Pill.CancelBg");
+                fg = (Brush)FindResource("Pill.CancelFg");
+            }
+
+            StatusPill.Background = bg;
+            StatusPillText.Foreground = fg;
+            StatusPillText.Text = string.IsNullOrWhiteSpace(status) ? "Open" : status;
+            // Visibility handled by XAML trigger (shows when DetailsPanel is Visible)
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            if (!int.TryParse(HouseholdIDBox.Text.Trim(), out int householdID) ||
-                !int.TryParse(TechnicianIDBox.Text.Trim(), out int technicianID))
+            if (_detailsOnly)
             {
-                MessageBox.Show("Please enter valid numeric values for Household ID and Technician ID.",
-                                "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("This view is read-only.", "Info",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
+            // Implement create/update here if needed by your app.
+            MessageBox.Show("Save not implemented in this build.", "Not Implemented",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+        }
 
-            string lastInspect = LastInspectPicker.SelectedDate?.ToString("yyyy-MM-dd");
-            string problem = ProblemBox.Text.Trim();
-            string action = ActionBox.Text.Trim();
-            string repairDate = RepairDatePicker.SelectedDate?.ToString("yyyy-MM-dd");
-
-            using (var conn = DatabaseHelper.GetConnection())
+        private void Delete_Click(object sender, RoutedEventArgs e)
+        {
+            if (_detailsOnly)
             {
-                conn.Open();
-                string query = _isEdit
-                    ? @"UPDATE InspectionReport SET 
-                            HouseholdID = @householdID,
-                            TechnicianID = @technicianID,
-                            LastInspect = @lastInspect,
-                            Problem = @problem,
-                            Action = @action,
-                            RepairDate = @repairDate
-                        WHERE ReportID = @reportID"
-                    : @"INSERT INTO InspectionReport 
-                            (HouseholdID, TechnicianID, LastInspect, Problem, Action, RepairDate)
-                       VALUES (@householdID, @technicianID, @lastInspect, @problem, @action, @repairDate)";
-
-                using (var cmd = new SQLiteCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@householdID", householdID);
-                    cmd.Parameters.AddWithValue("@technicianID", technicianID);
-                    cmd.Parameters.AddWithValue("@lastInspect", string.IsNullOrEmpty(lastInspect) ? (object)DBNull.Value : lastInspect);
-                    cmd.Parameters.AddWithValue("@problem", string.IsNullOrWhiteSpace(problem) ? DBNull.Value : (object)problem);
-                    cmd.Parameters.AddWithValue("@action", string.IsNullOrWhiteSpace(action) ? DBNull.Value : (object)action);
-                    cmd.Parameters.AddWithValue("@repairDate", string.IsNullOrEmpty(repairDate) ? (object)DBNull.Value : repairDate);
-
-                    if (_isEdit)
-                        cmd.Parameters.AddWithValue("@reportID", _record.ReportID);
-
-                    cmd.ExecuteNonQuery();
-                }
+                MessageBox.Show("This view is read-only.", "Info",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
             }
-
-            MessageBox.Show(_isEdit ? "Record updated!" : "Record added!",
-                            "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            OnSavedSuccessfully?.Invoke(this, EventArgs.Empty);
+            MessageBox.Show("Delete not implemented in this build.", "Not Implemented",
+                MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             OnCancelRequested?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void Delete_Click(object sender, RoutedEventArgs e)
-        {
-            if (!_isEdit || _record == null)
-                return;
-
-            var result = MessageBox.Show($"Are you sure you want to delete Record #{_record.ReportID}?",
-                                         "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes)
-                return;
-
-            using (var conn = DatabaseHelper.GetConnection())
-            {
-                conn.Open();
-                using (var cmd = new SQLiteCommand("DELETE FROM InspectionReport WHERE ReportID = @id", conn))
-                {
-                    cmd.Parameters.AddWithValue("@id", _record.ReportID);
-                    cmd.ExecuteNonQuery();
-                }
-            }
-
-            MessageBox.Show("Record deleted.", "Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
-            OnSavedSuccessfully?.Invoke(this, EventArgs.Empty);
         }
     }
 }

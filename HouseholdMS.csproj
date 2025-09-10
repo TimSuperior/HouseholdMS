@@ -181,11 +181,11 @@
     <Compile Include="View\Login.xaml.cs">
       <DependentUpon>Login.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\HouseholdsView.xaml.cs">
-      <DependentUpon>HouseholdsView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\InventoryView.xaml.cs">
       <DependentUpon>InventoryView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\UserManagementView.xaml.cs">
+      <DependentUpon>UserManagementView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Measurement\LivePlotControl.xaml.cs">
       <DependentUpon>LivePlotControl.xaml</DependentUpon>
@@ -196,17 +196,11 @@
     <Compile Include="View\Measurement\OscilloscopeView.xaml.cs">
       <DependentUpon>OscilloscopeView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\RegisterUser.xaml.cs">
-      <DependentUpon>RegisterUser.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\ServiceRecordsView.xaml.cs">
       <DependentUpon>ServiceRecordsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\SettingMenuView.xaml.cs">
       <DependentUpon>SettingMenuView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\TechView.xaml.cs">
-      <DependentUpon>TechView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\TestReportsView.xaml.cs">
       <DependentUpon>TestReportsView.xaml</DependentUpon>
@@ -219,9 +213,6 @@
     </Compile>
     <Compile Include="View\UserControls\AddServiceRecordControl.xaml.cs">
       <DependentUpon>AddServiceRecordControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\UserControls\AddTechnicianControl.xaml.cs">
-      <DependentUpon>AddTechnicianControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\UserControls\CircularProgressBar.xaml.cs">
       <DependentUpon>CircularProgressBar.xaml</DependentUpon>
@@ -237,9 +228,6 @@
     </Compile>
     <Compile Include="View\UserControls\UserFormControl.xaml.cs">
       <DependentUpon>UserFormControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\UserManagementView.xaml.cs">
-      <DependentUpon>UserManagementView.xaml</DependentUpon>
     </Compile>
     <Page Include="Assets\Manuals\3_Charger.xaml">
       <SubType>Designer</SubType>
@@ -330,11 +318,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\HouseholdsView.xaml">
+    <Page Include="View\InventoryView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\InventoryView.xaml">
+    <Page Include="View\UserManagementView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -350,19 +338,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\RegisterUser.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="View\ServiceRecordsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\SettingMenuView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\TechView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -379,10 +359,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\UserControls\AddServiceRecordControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\UserControls\AddTechnicianControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -403,10 +379,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\UserControls\UserFormControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\UserManagementView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -1,4 +1,4 @@
-﻿<Window x:Class="HouseholdMS.View.Login"
+﻿<Window x:Class="HouseholdMS.View.Login" 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Login"
@@ -133,15 +133,74 @@
 
                             <TextBlock Text="Password" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
                             <PasswordBox x:Name="RegPasswordBox"
-                                         Height="40" Margin="0,0,0,20" Padding="10,0"
+                                         Height="40" Margin="0,4,0,4" Padding="10,0"
                                          Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"
                                          VerticalContentAlignment="Center" />
+
+                            <!-- Password rules note -->
+                            <TextBlock Margin="0,0,0,10"
+                                       FontSize="12"
+                                       Foreground="#666666"
+                                       TextWrapping="Wrap">
+                                Password must be longer than 6 characters and include at least one number or symbol. 
+                                It cannot be the same as your Name or Username.
+                            </TextBlock>
+
+                            <TextBlock Text="Confirm Password" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
+                            <PasswordBox x:Name="RegConfirmPasswordBox"
+                                         Height="40" Margin="0,0,0,16" Padding="10,0"
+                                         Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"
+                                         VerticalContentAlignment="Center" />
+
+                            <!-- Technician toggle -->
+                            <CheckBox x:Name="IsTechnicianCheck"
+                                      Style="{x:Null}"
+                                      Visibility="Visible"
+                                      IsEnabled="True"
+                                      Content="I'm a technician (request approval)"
+                                      FontWeight="SemiBold"
+                                      Foreground="#333333"
+                                      Margin="0,0,0,8"
+                                      Checked="Reg_TechCheck_Toggled"
+                                      Unchecked="Reg_TechCheck_Toggled"/>
+
+                            <!-- Technician details -->
+                            <StackPanel x:Name="TechDetailsPanel" Visibility="Collapsed">
+                                <Separator Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Phone (digits only, 8–15)" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
+                                <TextBox x:Name="RegPhoneBox"
+                                         Height="36" Margin="0,0,0,8" Padding="10,0"
+                                         Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"
+                                         VerticalContentAlignment="Center"
+                                         PreviewTextInput="DigitsOnly_PreviewTextInput"
+                                         DataObject.Pasting="DigitsOnly_OnPaste"/>
+
+                                <TextBlock Text="Address (required for technician)" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
+                                <TextBox x:Name="RegAddressBox"
+                                         Height="36" Margin="0,0,0,8" Padding="10,0"
+                                         Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"
+                                         VerticalContentAlignment="Center"/>
+
+                                <TextBlock Text="Assigned Area (required for technician)" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
+                                <TextBox x:Name="RegAreaBox"
+                                         Height="36" Margin="0,0,0,8" Padding="10,0"
+                                         Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"
+                                         VerticalContentAlignment="Center"/>
+
+                                <TextBlock Text="Note (optional)" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
+                                <TextBox x:Name="RegNoteBox"
+                                         Height="60" Margin="0,0,0,8"
+                                         TextWrapping="Wrap" AcceptsReturn="True"
+                                         Padding="8,6"
+                                         Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"/>
+                            </StackPanel>
 
                             <Button x:Name="RegisterBtn"
                                     Content="Register"
                                     Height="44" Background="#4CAF50" Foreground="White"
                                     FontWeight="Bold" BorderThickness="0"
-                                    Margin="0,0,0,12"
+                                    Margin="0,8,0,12"
                                     Click="RegisterButton_Click"/>
 
                             <Button Content="Back to Login"

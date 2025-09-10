@@ -23,6 +23,7 @@ namespace HouseholdMS.View.Dashboard
     {
         private const string OPERATIONAL = "Operational";
         private const string IN_SERVICE = "In Service"; // UI name: "Out of Service"
+        private const string NOT_OPERATIONAL = "Not Operational";
 
         private readonly string _userRole;
         private readonly SitesLanding _landing;
@@ -80,6 +81,8 @@ namespace HouseholdMS.View.Dashboard
             string t = (s ?? string.Empty).Trim();
             if (t.Equals(OPERATIONAL, StringComparison.OrdinalIgnoreCase)) return HCat.Operational;
             if (t.Equals(IN_SERVICE, StringComparison.OrdinalIgnoreCase)) return HCat.InService;
+            if (t.Equals(NOT_OPERATIONAL, StringComparison.OrdinalIgnoreCase)) return HCat.InService; // legacy → treat as In Service
+            // Fallback: assume operational
             return HCat.Operational;
         }
 
@@ -91,24 +94,37 @@ namespace HouseholdMS.View.Dashboard
 
         private void LoadHouseholdCountsFromDb()
         {
-            int op = 0, outs = 0;
+            int op = 0, outs = 0, total = 0;
 
             try
             {
-                using (SQLiteConnection conn = DatabaseHelper.GetConnection())
+                using (var conn = DatabaseHelper.GetConnection())
                 {
                     conn.Open();
-                    using (SQLiteCommand cmd = new SQLiteCommand("SELECT Statuss FROM Households", conn))
-                    using (SQLiteDataReader r = cmd.ExecuteReader())
+
+                    // Faster aggregate counting with normalization in SQL:
+                    // Normalize by lowercasing and removing '_'/'-' before LIKE checks.
+                    using (var cmd = new SQLiteCommand(@"
+                        SELECT
+                            SUM(CASE 
+                                    WHEN lower(replace(replace(COALESCE(Statuss,''),'_',' '),'-',' ')) LIKE 'operational%'
+                                        THEN 1 ELSE 0
+                                END) AS Op,
+                            SUM(CASE 
+                                    WHEN lower(replace(replace(COALESCE(Statuss,''),'_',' '),'-',' ')) LIKE 'in service%'
+                                      OR lower(replace(replace(COALESCE(Statuss,''),'_',' '),'-',' ')) LIKE 'service%'
+                                      OR lower(replace(replace(COALESCE(Statuss,''),'_',' '),'-',' ')) LIKE 'not operational%'
+                                        THEN 1 ELSE 0
+                                END) AS Outs,
+                            COUNT(*) AS Total
+                        FROM Households;", conn))
+                    using (var r = cmd.ExecuteReader())
                     {
-                        while (r.Read())
+                        if (r.Read())
                         {
-                            string raw = r["Statuss"] == DBNull.Value ? null : r["Statuss"].ToString();
-                            switch (ClassifyStatus(raw))
-                            {
-                                case HCat.Operational: op++; break;
-                                case HCat.InService: outs++; break;
-                            }
+                            op = SafeInt(r, "Op");
+                            outs = SafeInt(r, "Outs");
+                            total = SafeInt(r, "Total");
                         }
                     }
                 }
@@ -118,8 +134,6 @@ namespace HouseholdMS.View.Dashboard
                 System.Diagnostics.Debug.WriteLine("SitesView.LoadHouseholdCountsFromDb error: " + ex);
             }
 
-            int total = op + outs;
-
             if (TotalCountText != null) TotalCountText.Text = total.ToString(CultureInfo.InvariantCulture);
             if (OperationalCountText != null) OperationalCountText.Text = op.ToString(CultureInfo.InvariantCulture);
             if (OutOfServiceCountText != null) OutOfServiceCountText.Text = outs.ToString(CultureInfo.InvariantCulture);
@@ -127,9 +141,20 @@ namespace HouseholdMS.View.Dashboard
             double opPct = total > 0 ? (op * 100.0 / total) : 0.0;
             double outPct = total > 0 ? (outs * 100.0 / total) : 0.0;
 
-            // Your CircularProgressBar exposes "Percentage" (per your current code)
+            // Your CircularProgressBar exposes "Percentage"
             if (OperationalProgress != null) OperationalProgress.Percentage = opPct;
             if (OutOfServiceProgress != null) OutOfServiceProgress.Percentage = outPct;
+        }
+
+        private static int SafeInt(System.Data.IDataRecord r, string name)
+        {
+            try
+            {
+                int i = r.GetOrdinal(name);
+                if (i < 0 || r.IsDBNull(i)) return 0;
+                try { return r.GetInt32(i); } catch { return Convert.ToInt32(r.GetValue(i), CultureInfo.InvariantCulture); }
+            }
+            catch { return 0; }
         }
 
         // ---- Helpers to manage placeholder and child host ----
@@ -206,7 +231,7 @@ namespace HouseholdMS.View.Dashboard
                 throw new InvalidOperationException("Failed to create child view: " + t.FullName);
 
             // If the child exposes a way to set callback later (SetParentRefreshCallback(Action)),
-            // we’ll call it reflectively (optional).
+            // call it reflectively (optional).
             TrySetParentCallback(uc);
 
             return uc;
@@ -221,7 +246,7 @@ namespace HouseholdMS.View.Dashboard
                              BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             if (mi != null)
             {
-                ParameterInfo[] ps = mi.GetParameters();
+                var ps = mi.GetParameters();
                 if (ps.Length == 1 && ps[0].ParameterType == typeof(Action))
                 {
                     try { mi.Invoke(view, new object[] { (Action)RefreshTiles }); } catch { }
@@ -291,14 +316,14 @@ namespace HouseholdMS.View.Dashboard
         private void BreadcrumbDashboard_Click(object sender, RoutedEventArgs e)
         {
             Window host = Window.GetWindow(this);
-            MainWindow mw = host as MainWindow;
+            var mw = host as MainWindow;
             if (mw != null)
             {
                 mw.NavigateTo(new DashboardView(_userRole));
             }
             else
             {
-                Window win = new Window
+                var win = new Window
                 {
                     Title = "Dashboard",
                     Content = new DashboardView(_userRole),

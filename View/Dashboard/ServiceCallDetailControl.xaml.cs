@@ -174,10 +174,13 @@ namespace HouseholdMS.View.Dashboard
                               || string.Equals(_userRole, "Technician", StringComparison.OrdinalIgnoreCase);
             FinishBtn.IsEnabled = canProceed;
             SaveOpenBtn.IsEnabled = canProceed;
+            CancelBtn.IsEnabled = canProceed;
             if (!canProceed)
             {
-                FinishBtn.ToolTip = "Only Admin or Technician can finish a service call.";
-                SaveOpenBtn.ToolTip = "Only Admin or Technician can save a service call.";
+                var tip = "Only Admin or Technician can perform this action.";
+                FinishBtn.ToolTip = tip;
+                SaveOpenBtn.ToolTip = tip;
+                CancelBtn.ToolTip = tip;
             }
 
             // Bind UI collections
@@ -218,6 +221,7 @@ namespace HouseholdMS.View.Dashboard
                             MessageBox.Show("No open service ticket for this household.", "Service", MessageBoxButton.OK, MessageBoxImage.Information);
                             FinishBtn.IsEnabled = false;
                             SaveOpenBtn.IsEnabled = false;
+                            CancelBtn.IsEnabled = false;
                             return;
                         }
 
@@ -275,7 +279,43 @@ namespace HouseholdMS.View.Dashboard
             using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT TechnicianID, Name FROM Technicians ORDER BY Name;", conn))
+
+                // 1) Try the legacy schema: a real Technicians table.
+                try
+                {
+                    using (var cmd = new SQLiteCommand(
+                        "SELECT TechnicianID, Name FROM Technicians ORDER BY Name;", conn))
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        while (r.Read())
+                        {
+                            int id = Convert.ToInt32(r["TechnicianID"]);
+                            string name = r["Name"] == DBNull.Value ? ("Technician #" + id) : r["Name"].ToString();
+
+                            var row = new TechRow
+                            {
+                                TechnicianID = id,
+                                Name = name,
+                                IsSelected = _preselectedTechIds.Contains(id)
+                            };
+                            _techAll.Add(row);
+                            if (row.IsSelected) _techSelected.Add(row);
+                        }
+                    }
+
+                    // If we made it here, Technicians table exists; we're done.
+                    UpdateTechButton();
+                    UpdateTechOverlayHeader();
+                    return;
+                }
+                catch (SQLiteException ex) when (ex.Message.IndexOf("no such table", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    // Fall through to Users-based lookup.
+                }
+
+                // 2) Modern/simple schema: use Users as the source of technicians.
+                using (var cmd = new SQLiteCommand(
+                    "SELECT rowid AS TechnicianID, Name FROM Users WHERE LOWER(Role)='technician' ORDER BY Name;", conn))
                 using (var r = cmd.ExecuteReader())
                 {
                     while (r.Read())
@@ -293,10 +333,10 @@ namespace HouseholdMS.View.Dashboard
                         if (row.IsSelected) _techSelected.Add(row);
                     }
                 }
-            }
 
-            UpdateTechButton();
-            UpdateTechOverlayHeader();
+                UpdateTechButton();
+                UpdateTechOverlayHeader();
+            }
         }
 
         private void LoadInventory()
@@ -769,9 +809,9 @@ namespace HouseholdMS.View.Dashboard
                     conn.Open();
                     using (var tx = conn.BeginTransaction())
                     {
-                        // Persist notes (keep ticket open)
+                        // Persist notes and keep ticket open (explicit Status)
                         using (var cmd = new SQLiteCommand(
-                            "UPDATE Service SET Problem=@p, Action=@a WHERE ServiceID=@sid;", conn, tx))
+                            "UPDATE Service SET Problem=@p, Action=@a, Status='Open' WHERE ServiceID=@sid;", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@p", (object)mergedProblem ?? DBNull.Value);
                             cmd.Parameters.AddWithValue("@a", (object)mergedAction ?? DBNull.Value);
@@ -796,7 +836,7 @@ namespace HouseholdMS.View.Dashboard
                             }
                         }
 
-                        // Update inventory records (no deduction yet)
+                        // Update inventory snapshot (no deduction)
                         using (var cmdDelInv = new SQLiteCommand("DELETE FROM ServiceInventory WHERE ServiceID=@sid;", conn, tx))
                         {
                             cmdDelInv.Parameters.AddWithValue("@sid", _serviceId);
@@ -814,7 +854,7 @@ namespace HouseholdMS.View.Dashboard
                             }
                         }
 
-                        // Keep household Out of Service (DB label "In Service")
+                        // Keep household Out of Service while open
                         using (var cmdUpdHh = new SQLiteCommand(
                             "UPDATE Households SET Statuss='In Service' WHERE HouseholdID=@hh;", conn, tx))
                         {
@@ -840,7 +880,6 @@ namespace HouseholdMS.View.Dashboard
 
             MessageBox.Show("Saved. Ticket remains open. No stock deducted.", "Service", MessageBoxButton.OK, MessageBoxImage.Information);
 
-            // === NEW: close the window just like Finish ===
             var h = ServiceFinished; if (h != null) h(this, EventArgs.Empty);
         }
 
@@ -882,7 +921,7 @@ namespace HouseholdMS.View.Dashboard
                     using (var tx = conn.BeginTransaction())
                     {
                         using (var cmd = new SQLiteCommand(
-                            "UPDATE Service SET Problem=@p, Action=@a, FinishDate=datetime('now') WHERE ServiceID=@sid;", conn, tx))
+                            "UPDATE Service SET Problem=@p, Action=@a, FinishDate=datetime('now'), Status='Finished' WHERE ServiceID=@sid;", conn, tx))
                         {
                             cmd.Parameters.AddWithValue("@p", (object)mergedProblem ?? DBNull.Value);
                             cmd.Parameters.AddWithValue("@a", (object)mergedAction ?? DBNull.Value);
@@ -964,6 +1003,75 @@ namespace HouseholdMS.View.Dashboard
             MessageBox.Show("Service finished. Household set to Operational and inventory updated.", "Service", MessageBoxButton.OK, MessageBoxImage.Information);
 
             var h2 = ServiceFinished; if (h2 != null) h2(this, EventArgs.Empty);
+        }
+
+        private void CancelBtn_Click(object sender, RoutedEventArgs e)
+        {
+            HideValidation();
+
+            if (_serviceId == 0)
+            {
+                MessageBox.Show("No open service ticket found.", "Service", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                "Cancel this service call?\n\nThis will:\n• Mark the ticket as Canceled\n• Close it now (sets FinishDate)\n• NOT deduct any inventory\n• Clear any pending item selections\n• Set household to Operational",
+                "Cancel service call?",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes) return;
+
+            string mergedProblem = MergeWithPrevious(ProblemPrevBox.Text, ProblemNewBox.Text);
+            string mergedAction = MergeWithPrevious(ActionPrevBox.Text, ActionNewBox.Text);
+
+            try
+            {
+                using (var conn = DatabaseHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var tx = conn.BeginTransaction())
+                    {
+                        // Mark canceled + close
+                        using (var cmd = new SQLiteCommand(
+                            "UPDATE Service SET Problem=@p, Action=@a, FinishDate=datetime('now'), Status='Canceled' WHERE ServiceID=@sid;", conn, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@p", (object)mergedProblem ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@a", (object)mergedAction ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@sid", _serviceId);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // Remove any snapshot from ServiceInventory
+                        using (var cmdDelInv = new SQLiteCommand(
+                            "DELETE FROM ServiceInventory WHERE ServiceID=@sid;", conn, tx))
+                        {
+                            cmdDelInv.Parameters.AddWithValue("@sid", _serviceId);
+                            cmdDelInv.ExecuteNonQuery();
+                        }
+
+                        // Household back to Operational
+                        using (var cmdUpdHh = new SQLiteCommand(
+                            "UPDATE Households SET Statuss='Operational' WHERE HouseholdID=@hh;", conn, tx))
+                        {
+                            cmdUpdHh.Parameters.AddWithValue("@hh", _householdId);
+                            cmdUpdHh.ExecuteNonQuery();
+                        }
+
+                        tx.Commit();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to cancel service.\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            MessageBox.Show("Service canceled. Household set to Operational. No stock deducted.", "Service", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            var h = ServiceFinished; if (h != null) h(this, EventArgs.Empty);
         }
     }
 }

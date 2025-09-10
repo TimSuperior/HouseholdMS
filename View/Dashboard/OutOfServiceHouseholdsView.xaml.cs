@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using HouseholdMS.View.UserControls; // AddHouseholdControl
+using HouseholdMS.View.UserControls; // AddHouseholdControl (edit form)
 using HouseholdMS.Model;
 using System.Data.SQLite;
 using System.Windows.Media;
@@ -14,8 +14,9 @@ namespace HouseholdMS.View.Dashboard
 {
     public partial class OutOfServiceHouseholdsView : UserControl
     {
+        // DB canonical labels (match your schema/triggers)
         private const string OPERATIONAL = "Operational";
-        private const string IN_SERVICE = "In Service";      // DB label for your "Out of Service" bucket
+        private const string IN_SERVICE = "In Service";        // This is your "Out of Service" bucket in UI
         private const string NOT_OPERATIONAL = "Not Operational";
 
         private readonly ObservableCollection<Household> allHouseholds = new ObservableCollection<Household>();
@@ -39,25 +40,32 @@ namespace HouseholdMS.View.Dashboard
 
         private string _currentUserRole = "Admin";
 
-        private string _normalizedStatusFilter = IN_SERVICE; // default filter for this view
-        private bool _categoryFilterActive = true;           // category mode
+        // Default to only show "In Service" (out-of-service) in this view
+        private string _normalizedStatusFilter = IN_SERVICE;
+        private bool _categoryFilterActive = true;
         private string _searchText = string.Empty;
 
-        // ===== Minimal parent refresh hook (no new files) =====
+        // ===== Optional parent refresh hook (no extra files) =====
         private Action _notifyParent;
         public Action NotifyParent { get { return _notifyParent; } set { _notifyParent = value; } }
         public void SetParentRefreshCallback(Action cb) { _notifyParent = cb; }
-        public event EventHandler RefreshRequested; // optional event for SitesView to hook
+        public event EventHandler RefreshRequested;
 
         private void RaiseParentRefresh()
         {
             var cb = _notifyParent;
-            if (cb != null) { try { cb(); } catch { } }
+            if (cb != null)
+            {
+                try { cb(); } catch { }
+            }
 
             var h = RefreshRequested;
-            if (h != null) { try { h(this, EventArgs.Empty); } catch { } }
+            if (h != null)
+            {
+                try { h(this, EventArgs.Empty); } catch { }
+            }
         }
-        // ======================================================
+        // ========================================================
 
         public OutOfServiceHouseholdsView(string userRole)
         {
@@ -68,10 +76,10 @@ namespace HouseholdMS.View.Dashboard
 
             LoadHouseholds();
 
-            // Sorting by clicking headers
+            // Sorting via column headers
             HouseholdListView.AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(GridViewColumnHeader_Click));
 
-            // Ensure double-click handler is wired
+            // Double-click = open appropriate modal (ServiceCall for In Service; Edit otherwise)
             HouseholdListView.MouseDoubleClick += HouseholdListView_MouseDoubleClick;
 
             UpdateSearchPlaceholder();
@@ -95,22 +103,30 @@ namespace HouseholdMS.View.Dashboard
             using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT * FROM Households", conn))
+
+                // Pull all; UI filter will scope to "In Service" for this view.
+                using (var cmd = new SQLiteCommand("SELECT HouseholdID, OwnerName, UserName, Municipality, District, ContactNum, InstallDate, LastInspect, UserComm, Statuss FROM Households;", conn))
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        DateTime installDate = DateTime.TryParse(reader["InstallDate"] == DBNull.Value ? null : Convert.ToString(reader["InstallDate"]), out DateTime dt1) ? dt1 : DateTime.MinValue;
-                        DateTime lastInspect = DateTime.TryParse(reader["LastInspect"] == DBNull.Value ? null : Convert.ToString(reader["LastInspect"]), out DateTime dt2) ? dt2 : DateTime.MinValue;
+                        DateTime installDate;
+                        DateTime lastInspect;
+
+                        var installRaw = reader["InstallDate"] == DBNull.Value ? null : Convert.ToString(reader["InstallDate"]);
+                        var lastRaw = reader["LastInspect"] == DBNull.Value ? null : Convert.ToString(reader["LastInspect"]);
+
+                        installDate = DateTime.TryParse(installRaw, out var dt1) ? dt1 : DateTime.MinValue;
+                        lastInspect = DateTime.TryParse(lastRaw, out var dt2) ? dt2 : DateTime.MinValue;
 
                         var h = new Household
                         {
                             HouseholdID = Convert.ToInt32(reader["HouseholdID"]),
-                            OwnerName = reader["OwnerName"] == DBNull.Value ? null : Convert.ToString(reader["OwnerName"]),
-                            UserName = reader["UserName"] == DBNull.Value ? null : Convert.ToString(reader["UserName"]),
-                            Municipality = reader["Municipality"] == DBNull.Value ? null : Convert.ToString(reader["Municipality"]),
-                            District = reader["District"] == DBNull.Value ? null : Convert.ToString(reader["District"]),
-                            ContactNum = reader["ContactNum"] == DBNull.Value ? null : Convert.ToString(reader["ContactNum"]),
+                            OwnerName = reader["OwnerName"] == DBNull.Value ? string.Empty : Convert.ToString(reader["OwnerName"]),
+                            UserName = reader["UserName"] == DBNull.Value ? string.Empty : Convert.ToString(reader["UserName"]),
+                            Municipality = reader["Municipality"] == DBNull.Value ? string.Empty : Convert.ToString(reader["Municipality"]),
+                            District = reader["District"] == DBNull.Value ? string.Empty : Convert.ToString(reader["District"]),
+                            ContactNum = reader["ContactNum"] == DBNull.Value ? string.Empty : Convert.ToString(reader["ContactNum"]),
                             InstallDate = installDate,
                             LastInspect = lastInspect,
                             UserComm = reader["UserComm"] == DBNull.Value ? string.Empty : Convert.ToString(reader["UserComm"]),
@@ -129,24 +145,33 @@ namespace HouseholdMS.View.Dashboard
         private static string NormalizeStatus(string s)
         {
             if (string.IsNullOrWhiteSpace(s)) return string.Empty;
+
             var t = s.Trim().ToLowerInvariant();
             t = t.Replace('_', ' ').Replace('-', ' ');
             while (t.Contains("  ")) t = t.Replace("  ", " ");
+
             if (t.StartsWith("operational")) return OPERATIONAL;
             if (t.StartsWith("in service") || t.StartsWith("service")) return IN_SERVICE;
             if (t.StartsWith("not operational") || t.StartsWith("notoperational")) return NOT_OPERATIONAL;
+
+            // Fallback: return original trimmed
             return s.Trim();
         }
 
         private static string DisplayStatusLabel(string normalized)
         {
+            // UI-friendly label (your product language)
             return string.Equals(normalized, IN_SERVICE, StringComparison.Ordinal) ? "Out of Service" : normalized;
         }
 
         private void UpdateSearchPlaceholder()
         {
             if (SearchBox == null) return;
-            string ph = _categoryFilterActive ? "Search within \"" + DisplayStatusLabel(_normalizedStatusFilter) + "\"" : "Search all households";
+
+            string ph = _categoryFilterActive
+                ? "Search within \"" + DisplayStatusLabel(_normalizedStatusFilter) + "\""
+                : "Search all households";
+
             SearchBox.Tag = ph;
 
             if (string.IsNullOrWhiteSpace(SearchBox.Text) ||
@@ -181,11 +206,18 @@ namespace HouseholdMS.View.Dashboard
 
                 if (string.IsNullOrEmpty(search)) return true;
 
-                return (h.OwnerName != null && h.OwnerName.ToLowerInvariant().Contains(search))
-                    || (h.ContactNum != null && h.ContactNum.ToLowerInvariant().Contains(search))
-                    || (h.UserName != null && h.UserName.ToLowerInvariant().Contains(search))
-                    || (h.Municipality != null && h.Municipality.ToLowerInvariant().Contains(search))
-                    || (h.District != null && h.District.ToLowerInvariant().Contains(search));
+                // string contains search on several fields
+                if (!string.IsNullOrEmpty(h.OwnerName) && h.OwnerName.ToLowerInvariant().Contains(search)) return true;
+                if (!string.IsNullOrEmpty(h.UserName) && h.UserName.ToLowerInvariant().Contains(search)) return true;
+                if (!string.IsNullOrEmpty(h.Municipality) && h.Municipality.ToLowerInvariant().Contains(search)) return true;
+                if (!string.IsNullOrEmpty(h.District) && h.District.ToLowerInvariant().Contains(search)) return true;
+                if (!string.IsNullOrEmpty(h.ContactNum) && h.ContactNum.ToLowerInvariant().Contains(search)) return true;
+
+                // Numeric search for ID (optional)
+                int id;
+                if (int.TryParse(search, out id) && h.HouseholdID == id) return true;
+
+                return false;
             };
 
             view.Refresh();
@@ -239,7 +271,8 @@ namespace HouseholdMS.View.Dashboard
 
             string sortBy = _headerToProperty[headerText];
 
-            ListSortDirection direction = (_lastHeaderClicked == header && _lastDirection == ListSortDirection.Ascending)
+            ListSortDirection direction =
+                (_lastHeaderClicked == header && _lastDirection == ListSortDirection.Ascending)
                 ? ListSortDirection.Descending
                 : ListSortDirection.Ascending;
 
@@ -251,7 +284,7 @@ namespace HouseholdMS.View.Dashboard
             view.Refresh();
         }
 
-        // ===================== POP-UP LOGIC =====================
+        // ===================== Double-click behavior =====================
         private void HouseholdListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var selected = HouseholdListView.SelectedItem as Household;
@@ -261,12 +294,12 @@ namespace HouseholdMS.View.Dashboard
 
             if (norm == IN_SERVICE)
             {
-                // Out-of-Service bucket → open ServiceCallDetailControl in a modal window
+                // Out-of-Service bucket → open ServiceCallDetailControl as modal
                 var ctl = new HouseholdMS.View.Dashboard.ServiceCallDetailControl(selected, _currentUserRole);
 
                 var win = new Window
                 {
-                    Title = $"Service Call Details — #{selected.HouseholdID} • {selected.OwnerName}",
+                    Title = "Service Call Details — #" + selected.HouseholdID + " • " + selected.OwnerName,
                     Content = ctl,
                     Owner = Window.GetWindow(this),
                     Width = 1100,
@@ -278,30 +311,25 @@ namespace HouseholdMS.View.Dashboard
                     Background = Brushes.White
                 };
 
-                ctl.ServiceFinished += (s, _) =>
-                {
-                    try { win.DialogResult = true; } catch { /* ignore if not modal yet */ }
-                    win.Close();
-                };
+                // Close when service finished (event raised by control)
+                ctl.ServiceFinished += delegate { try { win.DialogResult = true; } catch { } win.Close(); };
 
                 win.ShowDialog();
 
-                // reload after closing
+                // Reload & notify after closing
                 LoadHouseholds();
                 ApplyFilter();
                 HouseholdListView.SelectedItem = null;
-
-                // tell SitesView to refresh tiles
                 RaiseParentRefresh();
             }
             else
             {
-                // For non "In Service" rows, open edit (not add)
-                var ctl = new AddHouseholdControl(selected); // edit mode when constructed with entity
+                // Non "In Service": open edit form
+                var ctl = new AddHouseholdControl(selected); // edit mode when instance is passed
 
                 var win = new Window
                 {
-                    Title = $"Edit Household — #{selected.HouseholdID} • {selected.OwnerName}",
+                    Title = "Edit Household — #" + selected.HouseholdID + " • " + selected.OwnerName,
                     Content = ctl,
                     Owner = Window.GetWindow(this),
                     Width = 1000,
@@ -313,12 +341,8 @@ namespace HouseholdMS.View.Dashboard
                     Background = Brushes.White
                 };
 
-                ctl.OnSavedSuccessfully += (s, _) =>
-                {
-                    try { win.DialogResult = true; } catch { }
-                    win.Close();
-                };
-                ctl.OnCancelRequested += (s, _) => win.Close();
+                ctl.OnSavedSuccessfully += delegate { try { win.DialogResult = true; } catch { } win.Close(); };
+                ctl.OnCancelRequested += delegate { win.Close(); };
 
                 bool? result = win.ShowDialog();
                 if (result == true)
@@ -331,7 +355,7 @@ namespace HouseholdMS.View.Dashboard
             }
         }
 
-        // ===================== OPTIONAL: Context menu for status change =====================
+        // ===================== Status change context menu =====================
         private void StatusText_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var tb = sender as TextBlock;
@@ -358,13 +382,16 @@ namespace HouseholdMS.View.Dashboard
 
         private void ChangeStatus(Household h, string newStatus)
         {
+            // Avoid unnecessary writes
             if (string.Equals(NormalizeStatus(h.Statuss), NormalizeStatus(newStatus), StringComparison.Ordinal))
                 return;
 
+            // Warn when moving into "In Service" because a Service ticket will be opened by trigger
             if (NormalizeStatus(newStatus) == IN_SERVICE)
             {
                 var confirm = MessageBox.Show(
-                    "Move household \"" + h.OwnerName + "\" to In Service?\n\nThis will create/open a Service ticket.",
+                    "Move household \"" + h.OwnerName + "\" to In Service?\n\n" +
+                    "This will create/open a Service ticket.",
                     "Confirm Status Change", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
                 if (confirm != MessageBoxResult.Yes) return;
@@ -384,6 +411,8 @@ namespace HouseholdMS.View.Dashboard
                             cmd.Parameters.AddWithValue("@id", h.HouseholdID);
                             cmd.ExecuteNonQuery();
                         }
+
+                        // The DB trigger will auto-create a Service row when Statuss becomes 'In Service'.
                         tx.Commit();
                     }
                 }
@@ -399,7 +428,5 @@ namespace HouseholdMS.View.Dashboard
             ApplyFilter();
             RaiseParentRefresh();
         }
-
-        // ====== NOTE: AddHousehold button and inline right-pane logic REMOVED as requested ======
     }
 }

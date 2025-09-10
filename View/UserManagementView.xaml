@@ -1,73 +1,364 @@
-﻿<UserControl x:Class="HouseholdMS.View.UserManagementView"
+﻿<UserControl x:Class="HouseholdMS.View.UserManagementView" 
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:HouseholdMS.View"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="1200">
 
-    <Border Background="#f9f9f9" Padding="20">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <!-- Converter is in the same namespace and public -->
+        <local:RoleToBrushConverter x:Key="RoleToBrush"/>
+
+        <!-- Palette -->
+        <SolidColorBrush x:Key="Col.BgCard" Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Col.BgPage" Color="#FFF9F9F9"/>
+        <SolidColorBrush x:Key="Col.Border"  Color="#FFE5E7EB"/>
+        <SolidColorBrush x:Key="Col.HeaderBg" Color="#FFF3F4F6"/>
+        <SolidColorBrush x:Key="Col.HeaderFg" Color="#FF374151"/>
+        <SolidColorBrush x:Key="Col.RowHover" Color="#FFF0F7FF"/>
+        <SolidColorBrush x:Key="Col.RowSel"   Color="#FFDBEAFE"/>
+        <SolidColorBrush x:Key="Col.RowSelBorder" Color="#FF3B82F6"/>
+        <SolidColorBrush x:Key="Col.Text"     Color="#FF111827"/>
+        <SolidColorBrush x:Key="Col.TextMut"  Color="#FF6B7280"/>
+        <SolidColorBrush x:Key="Col.Primary"  Color="#FF3B82F6"/>
+        <SolidColorBrush x:Key="Col.PrimaryHover" Color="#FF2563EB"/>
+
+        <!-- Buttons -->
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="{StaticResource Col.Primary}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource Col.PrimaryHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Compact buttons for table-row actions -->
+        <Style x:Key="RowActionButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="MinWidth" Value="100"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Margin" Value="4,0,0,0"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+
+        <!-- Search box -->
+        <Style x:Key="SearchBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- GridView visuals -->
+        <Style TargetType="GridViewColumnHeader">
+            <Setter Property="Background" Value="{StaticResource Col.HeaderBg}"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.HeaderFg}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+
+        <Style x:Key="CellText" TargetType="TextBlock">
+            <Setter Property="Margin" Value="10,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
+            <Setter Property="FontSize" Value="15"/>
+        </Style>
+
+        <!-- Lightweight container style (no named parts) -->
+        <Style x:Key="UserRowContainerStyle" TargetType="ListViewItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource Col.RowHover}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{StaticResource Col.RowSel}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource Col.RowSelBorder}"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.6"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Context menu uses commands on *UserManagementView* -->
+        <ContextMenu x:Key="UserRowContextMenu"
+                     DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+            <MenuItem Header="Change role">
+                <MenuItem Header="Guest"
+                          IsEnabled="{Binding CanSetGuest}"
+                          Command="{x:Static local:UserManagementView.RoleToGuestCommand}"
+                          CommandParameter="{Binding UserID}"/>
+                <MenuItem Header="Technician"
+                          IsEnabled="{Binding CanSetTech}"
+                          Command="{x:Static local:UserManagementView.RoleToTechCommand}"
+                          CommandParameter="{Binding UserID}"/>
+                <MenuItem Header="Admin"
+                          IsEnabled="{Binding CanSetAdmin}"
+                          Command="{x:Static local:UserManagementView.RoleToAdminCommand}"
+                          CommandParameter="{Binding UserID}"/>
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="Delete user"
+                      IsEnabled="{Binding CanDelete}"
+                      Command="{x:Static local:UserManagementView.DeleteUserCommand}"
+                      CommandParameter="{Binding UserID}"/>
+        </ContextMenu>
+
+        <!-- Role chip -->
+        <DataTemplate x:Key="RoleChipTemplate">
+            <Border Padding="10,4" CornerRadius="999"
+                    Background="{Binding Role, Converter={StaticResource RoleToBrush}}">
+                <TextBlock Text="{Binding Role}" FontWeight="SemiBold" FontSize="14"/>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource Col.BgPage}" Padding="20">
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*"/>
-                <ColumnDefinition Width="2*"/>
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-            <!-- Left Side: User List -->
-            <Grid Grid.Column="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+            <!-- Top bar -->
+            <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,10">
+                <TextBlock Text="👥 User Management"
+                           VerticalAlignment="Center" Margin="0,0,12,0"
+                           FontWeight="Bold" FontSize="20"
+                           DockPanel.Dock="Left"/>
+                <TextBox x:Name="SearchBox"
+                         Style="{StaticResource SearchBoxStyle}"
+                         Width="420"
+                         VerticalContentAlignment="Center"
+                         Foreground="{StaticResource Col.TextMut}"
+                         FontStyle="Italic"
+                         Text="Search name/username/role/phone/address/area/note/status"
+                         Tag="Search name/username/role/phone/address/area/note/status"
+                         GotFocus="SearchBox_GotFocus"
+                         LostFocus="SearchBox_LostFocus"
+                         KeyUp="SearchBox_KeyUp"
+                         DockPanel.Dock="Left"/>
+                <Button x:Name="AddUserButton"
+                        Content="➕ Add User"
+                        Style="{StaticResource ActionButtonStyle}"
+                        Width="150"
+                        DockPanel.Dock="Right"
+                        Click="AddUserButton_Click"/>
+            </DockPanel>
 
-                <!-- Header -->
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                    <TextBlock Text="👥 User Management"
-                               FontSize="22"
-                               FontWeight="Bold"
-                               Margin="0,0,0,10"/>
-                </StackPanel>
-
-                <!-- User List -->
-                <Border Grid.Row="1"
-                        Background="White"
-                        CornerRadius="0"
-                        BorderBrush="#DDD"
-                        BorderThickness="1"
-                        Padding="0"
-                        SnapsToDevicePixels="True">
-                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                  VerticalScrollBarVisibility="Auto"
-                                  CanContentScroll="True">
-                        <ListView x:Name="UserListView" 
-                                  Background="White"
-                                  BorderBrush="#DDD"
-                                  BorderThickness="0"
-                                  SelectionMode="Single"
-                                  SelectionChanged="UserListView_SelectionChanged">
-                            <ListView.View>
-                                <GridView>
-                                    <GridViewColumn Header="ID" DisplayMemberBinding="{Binding UserID}" Width="70"/>
-                                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" Width="150"/>
-                                    <GridViewColumn Header="Username" DisplayMemberBinding="{Binding Username}" Width="150"/>
-                                    <GridViewColumn Header="Role" DisplayMemberBinding="{Binding Role}" Width="150"/>
-                                </GridView>
-                            </ListView.View>
-                        </ListView>
-                    </ScrollViewer>
-                </Border>
-            </Grid>
-
-            <!-- Right Side: Inline Form Area (like FormContent) -->
-            <Border x:Name="FormContainer"
-                    Grid.Column="1"
-                    Background="White"
-                    CornerRadius="6"
-                    BorderBrush="#DDD"
+            <!-- Table card -->
+            <Border Grid.Row="1"
+                    Background="{StaticResource Col.BgCard}"
+                    CornerRadius="12"
+                    BorderBrush="{StaticResource Col.Border}"
                     BorderThickness="1"
-                    Padding="10"
-                    Margin="10,0,0,0">
-                <ContentControl x:Name="FormContent"/>
+                    Padding="8">
+                <Grid>
+                    <ListView x:Name="UserListView"
+                              Background="Transparent"
+                              BorderThickness="0"
+                              ScrollViewer.CanContentScroll="True"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.VirtualizationMode="Recycling"
+                              SelectionMode="Single"
+                              ItemContainerStyle="{StaticResource UserRowContainerStyle}"
+                              MouseDoubleClick="UserListView_MouseDoubleClick">
+                        <ListView.Resources>
+                            <Style TargetType="ListViewItem" BasedOn="{StaticResource UserRowContainerStyle}">
+                                <Setter Property="ContextMenu" Value="{StaticResource UserRowContextMenu}"/>
+                            </Style>
+                        </ListView.Resources>
+
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="ID" Width="60">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding UserID}"
+                                                       Foreground="{StaticResource Col.TextMut}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Name" Width="160">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding Name}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Username" Width="150">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding Username}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Role" Width="130"
+                                                CellTemplate="{StaticResource RoleChipTemplate}"/>
+
+                                <GridViewColumn Header="Phone" Width="130">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding Phone}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Address" Width="220">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}"
+                                                       Text="{Binding Address}" ToolTip="{Binding Address}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Assigned Area" Width="160">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding AssignedArea}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Note" Width="220">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}"
+                                                       Text="{Binding Note}" ToolTip="{Binding Note}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Status" Width="120">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}"
+                                                       Text="{Binding StatusLabel}"
+                                                       FontWeight="SemiBold"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <!-- UPDATED: wider column + 2-col grid + compact buttons -->
+                                <GridViewColumn Header="Approval" Width="240">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid Visibility="{Binding ShowApprovalButtons, Converter={StaticResource BoolToVis}}"
+                                                  Margin="6,0"
+                                                  HorizontalAlignment="Stretch">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <Button Grid.Column="0"
+                                                        Content="Approve"
+                                                        Style="{StaticResource RowActionButtonStyle}"
+                                                        Margin="0,0,4,0"
+                                                        Background="#10B981"
+                                                        Command="{x:Static local:UserManagementView.ApproveCommand}"
+                                                        CommandParameter="{Binding UserID}"/>
+
+                                                <Button Grid.Column="1"
+                                                        Content="Decline"
+                                                        Style="{StaticResource RowActionButtonStyle}"
+                                                        Background="#EF4444"
+                                                        Command="{x:Static local:UserManagementView.DeclineCommand}"
+                                                        CommandParameter="{Binding UserID}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+
+                    <!-- Empty state -->
+                    <TextBlock Text="No users found"
+                               Foreground="{StaticResource Col.TextMut}"
+                               FontStyle="Italic"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               IsHitTestVisible="False">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=UserListView, Path=HasItems}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
             </Border>
         </Grid>
     </Border>

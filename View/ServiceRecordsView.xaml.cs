@@ -1,4 +1,5 @@
 ﻿using HouseholdMS.Model;
+using HouseholdMS.View.UserControls;   // <-- add this
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -24,14 +25,14 @@ namespace HouseholdMS.View
         private readonly Dictionary<string, string> _headerToProperty = new Dictionary<string, string>
         {
             { "ID", "ServiceID" },
-            { "Household", "OwnerName" },     // sort by owner name
+            { "Household", "OwnerName" },
             { "Technicians", "AllTechnicians"},
             { "Problem", "Problem"},
             { "Action", "Action"},
             { "Inv. Used", "InventorySummary"},
             { "Start", "StartDate"},
             { "Finish", "FinishDate"},
-            { "Status", "IsOpen"}            // false<true ordering
+            { "Status", "StatusRank"}
         };
 
         public ServiceRecordsView(string userRole = "User")
@@ -42,19 +43,10 @@ namespace HouseholdMS.View
             InitializeAndLoad();
         }
 
-        private bool IsAdmin()
-        {
-            return string.Equals(_currentUserRole, "Admin", StringComparison.OrdinalIgnoreCase);
-        }
-
         private void InitializeAndLoad()
         {
             LoadServiceRecords();
-
-            // Header click sorting like your InventoryView
             ServiceListView.AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(GridViewColumnHeader_Click));
-
-            // Search placeholder state
             UpdateSearchPlaceholder();
         }
 
@@ -66,7 +58,6 @@ namespace HouseholdMS.View
             {
                 conn.Open();
 
-                // Aggregate team technicians and inventory summary via GROUP_CONCAT
                 string sql = @"
 SELECT
   s.ServiceID,
@@ -74,22 +65,20 @@ SELECT
   h.OwnerName,
   h.UserName,
   s.TechnicianID,
-  COALESCE(t.Name,'') AS PrimaryTechName,
+  COALESCE(vt.Name,'') AS PrimaryTechName,
   COALESCE(s.Problem,'') AS Problem,
   COALESCE(s.Action,'')  AS Action,
   COALESCE(s.StartDate,'') AS StartDate,
   s.FinishDate AS FinishDate,
-  CASE WHEN s.FinishDate IS NULL THEN 1 ELSE 0 END AS IsOpenInt,
+  COALESCE(s.Status,'') AS Status,
 
-  -- all technicians attached (may include primary if also in link table)
   (
-    SELECT group_concat(tt.Name, ', ')
+    SELECT group_concat(vt2.Name, ', ')
     FROM ServiceTechnicians st
-    JOIN Technicians tt ON tt.TechnicianID = st.TechnicianID
+    JOIN v_Technicians vt2 ON vt2.TechnicianID = st.TechnicianID
     WHERE st.ServiceID = s.ServiceID
   ) AS AllTechnicians,
 
-  -- inventory summary with item names
   (
     SELECT group_concat((si.QuantityUsed || '× ' || inv.ItemType), ', ')
     FROM ServiceInventory si
@@ -99,8 +88,8 @@ SELECT
 
 FROM Service s
 JOIN Households h ON h.HouseholdID = s.HouseholdID
-LEFT JOIN Technicians t ON t.TechnicianID = s.TechnicianID
-ORDER BY s.StartDate DESC;";
+LEFT JOIN v_Technicians vt ON vt.TechnicianID = s.TechnicianID
+ORDER BY datetime(COALESCE(s.FinishDate, s.StartDate)) DESC, s.ServiceID DESC;";
 
                 using (var cmd = new SQLiteCommand(sql, conn))
                 using (var r = cmd.ExecuteReader())
@@ -112,16 +101,18 @@ ORDER BY s.StartDate DESC;";
                         DateTime startDt;
                         DateTime? finishDt = null;
 
-                        // Parse ISO-ish strings safely
                         if (!DateTime.TryParse(startStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out startDt))
                             startDt = DateTime.MinValue;
 
                         if (finishObj != DBNull.Value)
                         {
-                            DateTime tmp;
-                            if (DateTime.TryParse(Convert.ToString(finishObj), CultureInfo.InvariantCulture, DateTimeStyles.None, out tmp))
+                            if (DateTime.TryParse(Convert.ToString(finishObj), CultureInfo.InvariantCulture, DateTimeStyles.None, out var tmp))
                                 finishDt = tmp;
                         }
+
+                        var statusRaw = Convert.ToString(r["Status"] ?? "").Trim();
+                        if (string.IsNullOrEmpty(statusRaw))
+                            statusRaw = finishDt.HasValue ? "Finished" : "Open";
 
                         var row = new ServiceRow
                         {
@@ -136,7 +127,7 @@ ORDER BY s.StartDate DESC;";
                             InventorySummary = Convert.ToString(r["InventorySummary"] ?? ""),
                             StartDate = startDt,
                             FinishDate = finishDt,
-                            IsOpen = Convert.ToInt32(r["IsOpenInt"]) == 1
+                            Status = statusRaw
                         };
 
                         _all.Add(row);
@@ -148,16 +139,15 @@ ORDER BY s.StartDate DESC;";
             ServiceListView.ItemsSource = _view;
         }
 
-        // ===== Search with placeholder (same behavior as your InventoryView) =====
+        // ===== Search with placeholder =====
         private void UpdateSearchPlaceholder()
         {
             if (SearchBox == null) return;
 
-            string ph = "Search by household/tech/problem/action";
+            string ph = "Search by household/tech/problem/action/status";
             SearchBox.Tag = ph;
 
-            if (string.IsNullOrWhiteSpace(SearchBox.Text) ||
-                SearchBox.Text == ph)
+            if (string.IsNullOrWhiteSpace(SearchBox.Text) || SearchBox.Text == ph)
             {
                 SearchBox.Text = ph;
                 SearchBox.Foreground = Brushes.Gray;
@@ -178,7 +168,7 @@ ORDER BY s.StartDate DESC;";
             }
 
             string search = text.Trim().ToLowerInvariant();
-            _view.Filter = delegate (object obj)
+            _view.Filter = obj =>
             {
                 var s = obj as ServiceRow;
                 if (s == null) return false;
@@ -188,6 +178,7 @@ ORDER BY s.StartDate DESC;";
                 if ((s.Problem ?? "").ToLowerInvariant().Contains(search)) return true;
                 if ((s.Action ?? "").ToLowerInvariant().Contains(search)) return true;
                 if ((s.InventorySummary ?? "").ToLowerInvariant().Contains(search)) return true;
+                if ((s.StatusText ?? "").ToLowerInvariant().Contains(search)) return true;
                 if (s.ServiceID.ToString().Contains(search)) return true;
                 if (s.HouseholdID.ToString().Contains(search)) return true;
 
@@ -198,27 +189,26 @@ ORDER BY s.StartDate DESC;";
 
         private void ClearText(object sender, RoutedEventArgs e)
         {
-            var box = sender as TextBox;
-            if (box == null) return;
-
-            if (box.Text == box.Tag as string)
+            if (sender is TextBox box)
             {
-                box.Text = string.Empty;
-            }
-            box.Foreground = Brushes.Black;
-            box.FontStyle = FontStyles.Normal;
+                if (box.Text == box.Tag as string)
+                {
+                    box.Text = string.Empty;
+                }
+                box.Foreground = Brushes.Black;
+                box.FontStyle = FontStyles.Normal;
 
-            if (_view != null)
-            {
-                _view.Filter = null;
-                _view.Refresh();
+                if (_view != null)
+                {
+                    _view.Filter = null;
+                    _view.Refresh();
+                }
             }
         }
 
         private void ResetText(object sender, RoutedEventArgs e)
         {
-            var box = sender as TextBox;
-            if (box != null && string.IsNullOrWhiteSpace(box.Text))
+            if (sender is TextBox box && string.IsNullOrWhiteSpace(box.Text))
             {
                 box.Text = box.Tag as string;
                 box.Foreground = Brushes.Gray;
@@ -244,7 +234,7 @@ ORDER BY s.StartDate DESC;";
 
             string sortBy = _headerToProperty[headerText];
 
-            ListSortDirection direction =
+            var direction =
                 (_lastHeaderClicked == header && _lastDirection == ListSortDirection.Ascending)
                 ? ListSortDirection.Descending
                 : ListSortDirection.Ascending;
@@ -257,69 +247,22 @@ ORDER BY s.StartDate DESC;";
             _view.Refresh();
         }
 
-        // ===== Double-click → read-only details popup =====
+        // ===== Double-click → open AddServiceRecordControl (details mode) =====
         private void ServiceListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var selected = ServiceListView.SelectedItem as ServiceRow;
             if (selected == null) return;
 
-            var dt = (DataTemplate)FindResource("ServiceReadOnlyTemplate");
-            var content = (FrameworkElement)dt.LoadContent();
-            content.DataContext = selected;
-
+            var control = new AddServiceRecordControl(selected);
             var scroller = new ScrollViewer
             {
-                Content = content,
+                Content = control,
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto
             };
 
-            var dialog = CreateDialog(scroller, "Service #" + selected.ServiceID + " — Details", 860, 620);
+            var dialog = CreateDialog(scroller, $"Service #{selected.ServiceID} — Details", 860, 620);
+            control.OnCancelRequested += (_, __) => dialog.Close();
             dialog.ShowDialog();
-        }
-
-        // ===== Finish service (Admin only; safe-guarded) =====
-        private void Finish_Click(object sender, RoutedEventArgs e)
-        {
-            if (!IsAdmin())
-            {
-                MessageBox.Show("Only admins can finish a service.", "Access Denied",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var btn = sender as Button;
-            if (btn == null || btn.Tag == null) return;
-
-            var row = btn.Tag as ServiceRow;
-            if (row == null) return;
-
-            if (!row.IsOpen)
-            {
-                MessageBox.Show("This service is already closed.", "Info",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            var confirm = MessageBox.Show(
-                string.Format("Finish Service #{0} now?", row.ServiceID),
-                "Confirm Finish", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (confirm != MessageBoxResult.Yes) return;
-
-            using (var conn = DatabaseHelper.GetConnection())
-            {
-                conn.Open();
-
-                using (var cmd = new SQLiteCommand(
-                    "UPDATE Service SET FinishDate = @now WHERE ServiceID = @id AND FinishDate IS NULL;", conn))
-                {
-                    cmd.Parameters.AddWithValue("@now", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                    cmd.Parameters.AddWithValue("@id", row.ServiceID);
-                    cmd.ExecuteNonQuery();
-                }
-            }
-
-            LoadServiceRecords();
         }
 
         private Window CreateDialog(FrameworkElement content, string title, double width, double height)
@@ -349,7 +292,7 @@ ORDER BY s.StartDate DESC;";
         }
     }
 
-    // ===== Row model (kept local) =====
+    // ===== Row model =====
     public class ServiceRow
     {
         public int ServiceID { get; set; }
@@ -369,26 +312,35 @@ ORDER BY s.StartDate DESC;";
         public DateTime StartDate { get; set; }
         public DateTime? FinishDate { get; set; }
 
-        public bool IsOpen { get; set; }
+        public string Status { get; set; }
 
-        public string HouseholdText
-        {
-            get { return string.Format("#{0} — {1} ({2})", HouseholdID, OwnerName, UserName); }
-        }
-
-        public string StartDateText
-        {
-            get { return StartDate == DateTime.MinValue ? "" : StartDate.ToString("yyyy-MM-dd HH:mm"); }
-        }
-
-        public string FinishDateText
-        {
-            get { return FinishDate.HasValue ? FinishDate.Value.ToString("yyyy-MM-dd HH:mm") : ""; }
-        }
+        public string HouseholdText => $"#{HouseholdID} — {OwnerName} ({UserName})";
+        public string StartDateText => StartDate == DateTime.MinValue ? "" : StartDate.ToString("yyyy-MM-dd HH:mm");
+        public string FinishDateText => FinishDate.HasValue ? FinishDate.Value.ToString("yyyy-MM-dd HH:mm") : "";
 
         public string StatusText
         {
-            get { return IsOpen ? "Open" : "Closed"; }
+            get
+            {
+                var s = (Status ?? "").Trim();
+                if (string.IsNullOrEmpty(s))
+                    return FinishDate.HasValue ? "Finished" : "Open";
+                return char.ToUpper(s[0]) + (s.Length > 1 ? s.Substring(1).ToLowerInvariant() : "");
+            }
+        }
+
+        public bool IsOpen => string.Equals(StatusText, "Open", StringComparison.OrdinalIgnoreCase);
+
+        public int StatusRank
+        {
+            get
+            {
+                var s = StatusText.ToLowerInvariant();
+                if (s == "open") return 0;
+                if (s == "finished") return 1;
+                if (s == "canceled" || s == "cancelled") return 2;
+                return 3;
+            }
         }
     }
 }

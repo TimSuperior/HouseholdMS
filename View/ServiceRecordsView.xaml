@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.ServiceRecordsView"
+﻿<UserControl x:Class="HouseholdMS.View.ServiceRecordsView" 
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -7,7 +7,7 @@
              d:DesignHeight="450"
              d:DesignWidth="1200">
 
-    <!-- ===== THEME & STYLES (copied/adapted from InventoryView) ===== -->
+    <!-- ===== THEME & STYLES ===== -->
     <UserControl.Resources>
         <!-- Palette -->
         <SolidColorBrush x:Key="Col.BgCard" Color="#FFFFFFFF"/>
@@ -85,7 +85,7 @@
             </Setter>
         </Style>
 
-        <!-- GridView headers, cells, row style -->
+        <!-- Grid headers/cells/rows -->
         <Style TargetType="GridViewColumnHeader">
             <Setter Property="Background" Value="{StaticResource Col.HeaderBg}"/>
             <Setter Property="Foreground" Value="{StaticResource Col.HeaderFg}"/>
@@ -162,6 +162,27 @@
             </Setter>
         </Style>
 
+        <!-- Status pill -->
+        <DataTemplate x:Key="StatusPillTemplate">
+            <Border x:Name="Tag" Padding="8,2" CornerRadius="999" Background="#F3F4F6" HorizontalAlignment="Left">
+                <TextBlock x:Name="TagText" Text="{Binding StatusText}" FontWeight="SemiBold" Foreground="#111827"/>
+            </Border>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding StatusText}" Value="Open">
+                    <Setter TargetName="Tag" Property="Background" Value="#DBEAFE"/>
+                    <Setter TargetName="TagText" Property="Foreground" Value="#1E3A8A"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding StatusText}" Value="Finished">
+                    <Setter TargetName="Tag" Property="Background" Value="#DCFCE7"/>
+                    <Setter TargetName="TagText" Property="Foreground" Value="#065F46"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding StatusText}" Value="Canceled">
+                    <Setter TargetName="Tag" Property="Background" Value="#FEE2E2"/>
+                    <Setter TargetName="TagText" Property="Foreground" Value="#991B1B"/>
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
         <!-- Read-only popup template -->
         <DataTemplate x:Key="ServiceReadOnlyTemplate">
             <Border Padding="16" Background="White">
@@ -171,6 +192,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -206,8 +228,11 @@
                     <TextBlock Grid.Row="7" Grid.Column="0" Text="Started:" FontWeight="SemiBold" Margin="0,0,8,6"/>
                     <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding StartDateText}" Margin="0,0,0,6"/>
 
-                    <TextBlock Grid.Row="8" Grid.Column="0" Text="Finished:" FontWeight="SemiBold" Margin="0,0,8,0"/>
-                    <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding FinishDateText}" Margin="0,0,0,0"/>
+                    <TextBlock Grid.Row="8" Grid.Column="0" Text="Finished:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding FinishDateText}" Margin="0,0,0,6"/>
+
+                    <TextBlock Grid.Row="9" Grid.Column="0" Text="Status:" FontWeight="SemiBold" Margin="0,0,8,0"/>
+                    <ContentPresenter Grid.Row="9" Grid.Column="1" ContentTemplate="{StaticResource StatusPillTemplate}" Content="{Binding}"/>
                 </Grid>
             </Border>
         </DataTemplate>
@@ -229,13 +254,12 @@
                          VerticalContentAlignment="Center"
                          Foreground="{StaticResource Col.TextMut}"
                          FontStyle="Italic"
-                         Text="Search by household/tech/problem/action"
-                         Tag="Search by household/tech/problem/action"
+                         Text="Search by household/tech/problem/action/status"
+                         Tag="Search by household/tech/problem/action/status"
                          GotFocus="ClearText"
                          LostFocus="ResetText"
                          TextChanged="SearchBox_TextChanged"
                          DockPanel.Dock="Left"/>
-                <!-- (Optional) Add new service button could go here if you later add a form -->
             </DockPanel>
 
             <!-- Table -->
@@ -325,22 +349,10 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Status" Width="100">
+                                <GridViewColumn Header="Status" Width="120">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding StatusText}"/>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-
-                                <GridViewColumn Header="Finish Now" Width="140">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Content="✔ Finish"
-                                                    Tag="{Binding}"
-                                                    Style="{StaticResource ActionButtonStyle}"
-                                                    IsEnabled="{Binding IsOpen}"
-                                                    Click="Finish_Click"/>
+                                            <ContentPresenter ContentTemplate="{StaticResource StatusPillTemplate}" Content="{Binding}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
