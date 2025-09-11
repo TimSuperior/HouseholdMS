@@ -45,17 +45,14 @@ namespace HouseholdMS.View
         {
             LoadInventory();
 
-            // Header click sorting like AllHouseholdsView
             InventoryListView.AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(GridViewColumnHeader_Click));
 
-            // Role: hide Add for non-admins
             if (!IsAdmin())
             {
                 if (FindName("AddInventoryButton") is Button addBtn)
                     addBtn.Visibility = Visibility.Collapsed;
             }
 
-            // Search placeholder state
             UpdateSearchPlaceholder();
         }
 
@@ -91,7 +88,7 @@ namespace HouseholdMS.View
             InventoryListView.ItemsSource = view;
         }
 
-        // ===== Search (same placeholder pattern) =====
+        // ===== Search =====
         private void UpdateSearchPlaceholder()
         {
             if (SearchBox == null) return;
@@ -191,7 +188,7 @@ namespace HouseholdMS.View
             view.Refresh();
         }
 
-        // ===== Add / Edit in POPUP (no inline FormContent) =====
+        // ===== Add / Edit popup =====
         private void AddInventoryButton_Click(object sender, RoutedEventArgs e)
         {
             if (!IsAdmin())
@@ -245,7 +242,6 @@ namespace HouseholdMS.View
             }
             else
             {
-                // Read-only details popup for non-admin
                 var dt = (DataTemplate)FindResource("InventoryReadOnlyTemplate");
                 var content = (FrameworkElement)dt.LoadContent();
                 content.DataContext = selected;
@@ -287,7 +283,7 @@ namespace HouseholdMS.View
             return dlg;
         }
 
-        // ===== Row actions (kept) =====
+        // ===== Row actions =====
         private void Restock_Click(object sender, RoutedEventArgs e)
         {
             if (!IsAdmin())
@@ -297,37 +293,52 @@ namespace HouseholdMS.View
                 return;
             }
 
-            if (sender is Button btn && btn.Tag is InventoryItem item)
+            var item = (sender as FrameworkElement)?.GetValue(Button.CommandParameterProperty) as InventoryItem
+                       ?? (sender as Button)?.Tag as InventoryItem;
+            if (item == null) return;
+
+            var dialog = new ItemActionDialog("Restock", item.ItemType);
+            if (dialog.ShowDialog() == true && dialog.Quantity.HasValue)
             {
-                var dialog = new InputDialogWindow($"Enter quantity to restock for '{item.ItemType}':");
-                if (dialog.ShowDialog() == true && dialog.Quantity.HasValue)
+                int qty = dialog.Quantity.Value;
+                if (qty <= 0)
                 {
-                    int qty = dialog.Quantity.Value;
-                    if (qty <= 0)
-                    {
-                        MessageBox.Show("Please enter a valid quantity greater than zero.",
-                            "Invalid Quantity", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
-
-                    using (var conn = DatabaseHelper.GetConnection())
-                    {
-                        conn.Open();
-                        using (var cmd = new SQLiteCommand(@"
-                            UPDATE StockInventory 
-                            SET TotalQuantity = TotalQuantity + @qty,
-                                LastRestockedDate = @now
-                            WHERE ItemID = @id", conn))
-                        {
-                            cmd.Parameters.AddWithValue("@qty", qty);
-                            cmd.Parameters.AddWithValue("@now", DateTime.Now.ToString("yyyy-MM-dd"));
-                            cmd.Parameters.AddWithValue("@id", item.ItemID);
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-
-                    LoadInventory();
+                    MessageBox.Show("Please enter a valid quantity greater than zero.",
+                        "Invalid Quantity", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
                 }
+
+                using (var conn = DatabaseHelper.GetConnection())
+                {
+                    conn.Open();
+
+                    // 1) StockInventory totals (+) and last restocked date
+                    using (var cmd = new SQLiteCommand(@"
+                        UPDATE StockInventory 
+                        SET TotalQuantity = TotalQuantity + @qty,
+                            LastRestockedDate = @now
+                        WHERE ItemID = @id;", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@qty", qty);
+                        cmd.Parameters.AddWithValue("@now", DateTime.Now.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@id", item.ItemID);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // 2) Append restock history with person + note
+                    using (var cmd2 = new SQLiteCommand(@"
+                        INSERT INTO ItemRestock (ItemID, Quantity, RestockedAt, CreatedByName, Note)
+                        VALUES (@id, @qty, datetime('now'), @by, @note);", conn))
+                    {
+                        cmd2.Parameters.AddWithValue("@id", item.ItemID);
+                        cmd2.Parameters.AddWithValue("@qty", qty);
+                        cmd2.Parameters.AddWithValue("@by", string.IsNullOrWhiteSpace(dialog.Person) ? (object)DBNull.Value : dialog.Person.Trim());
+                        cmd2.Parameters.AddWithValue("@note", string.IsNullOrWhiteSpace(dialog.NoteOrReason) ? (object)DBNull.Value : dialog.NoteOrReason.Trim());
+                        cmd2.ExecuteNonQuery();
+                    }
+                }
+
+                LoadInventory();
             }
         }
 
@@ -340,47 +351,62 @@ namespace HouseholdMS.View
                 return;
             }
 
-            if (sender is Button btn && btn.Tag is InventoryItem item)
+            var item = (sender as FrameworkElement)?.GetValue(Button.CommandParameterProperty) as InventoryItem
+                       ?? (sender as Button)?.Tag as InventoryItem;
+            if (item == null) return;
+
+            var dialog = new ItemActionDialog("Use", item.ItemType);
+            if (dialog.ShowDialog() == true && dialog.Quantity.HasValue)
             {
-                var dialog = new InputDialogWindow($"Enter quantity to use from '{item.ItemType}':");
-                if (dialog.ShowDialog() == true && dialog.Quantity.HasValue)
+                int qty = dialog.Quantity.Value;
+                if (qty <= 0)
                 {
-                    int qty = dialog.Quantity.Value;
-                    if (qty <= 0)
-                    {
-                        MessageBox.Show("Please enter a valid quantity greater than zero.",
-                            "Invalid Quantity", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
-                    if (qty > item.TotalQuantity)
-                    {
-                        MessageBox.Show("Not enough items in stock.", "Insufficient Stock",
-                            MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
-
-                    using (var conn = DatabaseHelper.GetConnection())
-                    {
-                        conn.Open();
-                        using (var cmd = new SQLiteCommand(@"
-                            UPDATE StockInventory 
-                            SET TotalQuantity = TotalQuantity - @qty,
-                                UsedQuantity  = UsedQuantity + @qty
-                            WHERE ItemID = @id", conn))
-                        {
-                            cmd.Parameters.AddWithValue("@qty", qty);
-                            cmd.Parameters.AddWithValue("@id", item.ItemID);
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-
-                    LoadInventory();
+                    MessageBox.Show("Please enter a valid quantity greater than zero.",
+                        "Invalid Quantity", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
                 }
+                if (qty > item.TotalQuantity)
+                {
+                    MessageBox.Show("Not enough items in stock.", "Insufficient Stock",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                using (var conn = DatabaseHelper.GetConnection())
+                {
+                    conn.Open();
+
+                    // 1) Keep your existing behavior: total(-), used(+)
+                    using (var cmd = new SQLiteCommand(@"
+                        UPDATE StockInventory 
+                        SET TotalQuantity = TotalQuantity - @qty,
+                            UsedQuantity  = UsedQuantity + @qty
+                        WHERE ItemID = @id;", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@qty", qty);
+                        cmd.Parameters.AddWithValue("@id", item.ItemID);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // 2) Log manual usage with person + reason
+                    using (var cmd2 = new SQLiteCommand(@"
+                        INSERT INTO ItemUsage (ItemID, Quantity, UsedAt, UsedByName, Reason)
+                        VALUES (@id, @qty, datetime('now'), @by, @reason);", conn))
+                    {
+                        cmd2.Parameters.AddWithValue("@id", item.ItemID);
+                        cmd2.Parameters.AddWithValue("@qty", qty);
+                        cmd2.Parameters.AddWithValue("@by", string.IsNullOrWhiteSpace(dialog.Person) ? (object)DBNull.Value : dialog.Person.Trim());
+                        cmd2.Parameters.AddWithValue("@reason", string.IsNullOrWhiteSpace(dialog.NoteOrReason) ? (object)DBNull.Value : dialog.NoteOrReason.Trim());
+                        cmd2.ExecuteNonQuery();
+                    }
+                }
+
+                LoadInventory();
             }
         }
     }
 
-    // ===== Model (kept local for this view) =====
+    // ===== Model (kept) =====
     public class InventoryItem
     {
         public int ItemID { get; set; }

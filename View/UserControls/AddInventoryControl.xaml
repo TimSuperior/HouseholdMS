@@ -4,77 +4,275 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             d:DesignHeight="400" d:DesignWidth="420"
-             Background="White">
+             d:DesignHeight="560" d:DesignWidth="520"
+             Background="#F6F7FB">
 
-    <Border Padding="20" Background="White" BorderBrush="#DDD" BorderThickness="1" CornerRadius="10">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+    <!-- ===== THEME / STYLES ===== -->
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="Col.Page"   Color="#F6F7FB"/>
+        <SolidColorBrush x:Key="Col.Card"   Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Col.Border" Color="#E5E7EB"/>
+        <SolidColorBrush x:Key="Col.Text"   Color="#111827"/>
+        <SolidColorBrush x:Key="Col.Muted"  Color="#6B7280"/>
+        <SolidColorBrush x:Key="Col.Accent" Color="#3B82F6"/>
+        <SolidColorBrush x:Key="Col.Danger" Color="#EF4444"/>
+        <SolidColorBrush x:Key="Col.Warn"   Color="#F59E0B"/>
+        <SolidColorBrush x:Key="Col.Success" Color="#10B981"/>
 
-            <!-- Form Fields -->
-            <StackPanel Grid.Row="0">
-                <TextBlock x:Name="FormHeader"
-                           FontSize="18"
-                           FontWeight="Bold"
-                           Foreground="#2E3B4E"
-                           Margin="0,0,0,20"/>
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource Col.Card}"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Margin" Value="12,0,12,12"/>
+        </Style>
 
-                <TextBlock Text="Item Type" FontWeight="SemiBold"/>
-                <TextBox x:Name="ItemTypeBox" Height="32" Margin="0,0,0,10"/>
+        <Style x:Key="LabelText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Col.Muted}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,10,0,4"/>
+        </Style>
+        <Style x:Key="ValueText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
+        </Style>
 
-                <TextBlock Text="Total Quantity" FontWeight="SemiBold"/>
-                <TextBox x:Name="TotalQtyBox" Height="32" Margin="0,0,0,10"/>
+        <Style x:Key="ReadOnlyBox" TargetType="TextBox">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#FAFAFA"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
+        </Style>
 
-                <TextBlock Text="Low Stock Threshold" FontWeight="SemiBold"/>
-                <TextBox x:Name="ThresholdBox" Height="32" Margin="0,0,0,10"/>
+        <Style x:Key="InputBox" TargetType="TextBox">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
+            <Style.Triggers>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource Col.Accent}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
 
-                <TextBlock Text="Note (optional)" FontWeight="SemiBold"/>
-                <TextBox x:Name="NoteBox"
-                         Height="80"
-                         Margin="0,0,0,10"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         VerticalScrollBarVisibility="Auto"/>
+        <Style x:Key="Pill" TargetType="Border">
+            <Setter Property="CornerRadius" Value="999"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="Background" Value="#F3F4F6"/>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Background" Value="#4CAF50"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="#D32F2F"/>
+        </Style>
+        <Style x:Key="CancelButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="#F44336"/>
+            <Setter Property="MinWidth" Value="100"/>
+            <Setter Property="Height" Value="38"/>
+        </Style>
+
+        <Style TargetType="DataGrid">
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="CanUserDeleteRows" Value="False"/>
+            <Setter Property="CanUserResizeRows" Value="False"/>
+            <Setter Property="RowHeaderWidth" Value="0"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="Margin" Value="0,8,0,0"/>
+        </Style>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#F3F4F6"/>
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="Padding" Value="8,6"/>
+        </Style>
+        <Style TargetType="DataGridRow">
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Height" Value="34"/>
+        </Style>
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="8,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="{StaticResource Col.Page}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Card -->
+        <Border Style="{StaticResource Card}" Grid.Row="0" Padding="14">
+            <DockPanel LastChildFill="False">
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Left">
+                    <TextBlock x:Name="FormHeader"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource Col.Text}"/>
+                    <TextBlock Text="Manage inventory item" Foreground="{StaticResource Col.Muted}" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- CENTERED pill text -->
+                <Border x:Name="StatusPill"
+                        DockPanel.Dock="Right"
+                        Style="{StaticResource Pill}"
+                        Visibility="Collapsed">
+                    <Grid>
+                        <TextBlock x:Name="StatusPillText"
+                                   FontWeight="SemiBold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Center"/>
+                    </Grid>
+                </Border>
+            </DockPanel>
+        </Border>
+
+        <!-- Body -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+
+                <!-- Form card -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Item Type" Style="{StaticResource LabelText}"/>
+                        <TextBox x:Name="ItemTypeBox" Style="{StaticResource InputBox}" Margin="0,0,0,6"/>
+
+                        <!-- Initial Quantity (create mode only) -->
+                        <StackPanel x:Name="InitialQtyPanel" Margin="0,0,0,0">
+                            <TextBlock Text="Initial Quantity" Style="{StaticResource LabelText}"/>
+                            <TextBox x:Name="InitialQtyBox"
+                                     Style="{StaticResource InputBox}"
+                                     Margin="0,0,0,6"
+                                     PreviewTextInput="InitialQtyBox_PreviewTextInput"
+                                     PreviewKeyDown="InitialQtyBox_PreviewKeyDown"
+                                     DataObject.Pasting="InitialQtyBox_Pasting"/>
+                        </StackPanel>
+
+                        <TextBlock Text="Low Stock Threshold" Style="{StaticResource LabelText}"/>
+                        <TextBox x:Name="ThresholdBox"
+                                 Style="{StaticResource InputBox}"
+                                 Margin="0,0,0,6"
+                                 PreviewTextInput="ThresholdBox_PreviewTextInput"
+                                 PreviewKeyDown="ThresholdBox_PreviewKeyDown"
+                                 DataObject.Pasting="ThresholdBox_Pasting"/>
+
+                        <TextBlock Text="Note (optional)" Style="{StaticResource LabelText}"/>
+                        <TextBox x:Name="NoteBox" Style="{StaticResource InputBox}"
+                                 Height="88" AcceptsReturn="True" TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Snapshot + Histories (edit mode only) -->
+                <Border x:Name="SnapshotCard" Style="{StaticResource Card}" Visibility="Collapsed">
+                    <StackPanel>
+                        <DockPanel LastChildFill="False" Margin="0,0,0,8">
+                            <TextBlock Text="Item Snapshot" FontSize="16" FontWeight="Bold" Foreground="{StaticResource Col.Text}" DockPanel.Dock="Left"/>
+                        </DockPanel>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,6">
+                                <TextBlock Text="Available" Style="{StaticResource LabelText}"/>
+                                <TextBlock x:Name="AvailQtyInfoText" Style="{StaticResource ValueText}" FontSize="14"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,0,6">
+                                <TextBlock Text="Used" Style="{StaticResource LabelText}"/>
+                                <TextBlock x:Name="UsedQtyInfoText" Style="{StaticResource ValueText}" FontSize="14"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,0">
+                                <TextBlock Text="Last Restocked" Style="{StaticResource LabelText}"/>
+                                <TextBlock x:Name="LastRestockedInfoText" Style="{StaticResource ValueText}" Text="—"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,0,0,0">
+                                <TextBlock Text="Last Used" Style="{StaticResource LabelText}"/>
+                                <TextBlock x:Name="LastUsedInfoText" Style="{StaticResource ValueText}" Text="—"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <Border x:Name="StatusInfoBar"
+                                Margin="0,10,0,0"
+                                Padding="10"
+                                CornerRadius="10"
+                                Background="#FFF7ED"
+                                BorderBrush="#FED7AA"
+                                BorderThickness="1"
+                                Visibility="Collapsed">
+                            <TextBlock x:Name="StatusInfoText" Foreground="#9A3412"/>
+                        </Border>
+
+                        <!-- Usage -->
+                        <TextBlock Text="Usage History" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource Col.Muted}" Margin="0,14,0,4"/>
+                        <DataGrid x:Name="UsageGrid" IsReadOnly="True" MouseDoubleClick="UsageGrid_MouseDoubleClick" MaxHeight="240">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="When"          Binding="{Binding UsedAtLocal}"    Width="160"/>
+                                <DataGridTextColumn Header="Qty Used"      Binding="{Binding Quantity}"       Width="80"/>
+                                <DataGridTextColumn Header="Service"       Binding="{Binding ServiceCol}"     Width="120"/>
+                                <DataGridTextColumn Header="Used By"       Binding="{Binding UsedByCol}"      Width="140"/>
+                                <DataGridTextColumn Header="Technician(s)" Binding="{Binding TechnicianCol}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Restock -->
+                        <TextBlock Text="Restock History" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource Col.Muted}" Margin="0,14,0,4"/>
+                        <DataGrid x:Name="RestockGrid" IsReadOnly="True" MaxHeight="240">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="When"     Binding="{Binding RestockedLocal}" Width="160"/>
+                                <DataGridTextColumn Header="Qty"      Binding="{Binding Quantity}"       Width="80"/>
+                                <DataGridTextColumn Header="By"       Binding="{Binding CreatedByName}"  Width="160"/>
+                                <DataGridTextColumn Header="Note"     Binding="{Binding Note}"           Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
             </StackPanel>
+        </ScrollViewer>
 
-            <!-- Action Buttons -->
-            <StackPanel Grid.Row="1"
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Right"
-                        Margin="0,20,0,0">
-
-                <Button x:Name="SaveButton"
-                        Content="✔ Save Changes"
-                        Width="120"
-                        Height="38"
-                        Background="#4CAF50"
-                        Foreground="White"
-                        FontWeight="Bold"
-                        Margin="0,0,10,0"
-                        Click="Save_Click"/>
-
-                <Button Content="✖ Cancel"
-                        Width="100"
-                        Height="36"
-                        Background="#F44336"
-                        Foreground="White"
-                        FontWeight="Bold"
-                        Margin="0,0,10,0"
-                        Click="Cancel_Click"/>
-
-                <Button x:Name="DeleteButton"
-                        Content="🗑 Delete"
-                        Width="100"
-                        Height="36"
-                        Background="#D32F2F"
-                        Foreground="White"
-                        FontWeight="Bold"
-                        Visibility="Collapsed"
-                        Click="Delete_Click"/>
-            </StackPanel>
-        </Grid>
-    </Border>
+        <!-- Footer Buttons -->
+        <Border Style="{StaticResource Card}" Grid.Row="2" Padding="12">
+            <DockPanel LastChildFill="False">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <Button x:Name="SaveButton" Content="✔ Save Changes" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Click="Save_Click"/>
+                    <Button Content="✖ Cancel" Style="{StaticResource CancelButton}" Margin="0,0,10,0" Click="Cancel_Click"/>
+                    <Button x:Name="DeleteButton" Content="🗑 Delete" Style="{StaticResource DangerButton}" Visibility="Collapsed" Click="Delete_Click"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </Grid>
 </UserControl>

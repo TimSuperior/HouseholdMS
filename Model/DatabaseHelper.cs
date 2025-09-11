@@ -154,7 +154,7 @@ CREATE TABLE IF NOT EXISTS Households (
 );
 CREATE INDEX IF NOT EXISTS IX_Households_Statuss ON Households(Statuss);
 
-/* INVENTORY (unchanged) */
+/* INVENTORY */
 CREATE TABLE IF NOT EXISTS StockInventory (
     ItemID            INTEGER PRIMARY KEY AUTOINCREMENT,
     ItemType          TEXT    NOT NULL,
@@ -164,6 +164,8 @@ CREATE TABLE IF NOT EXISTS StockInventory (
     LowStockThreshold INTEGER NOT NULL DEFAULT 5 CHECK (LowStockThreshold >= 0),
     Note              TEXT
 );
+
+/* Per-restock history (already had person+note) */
 CREATE TABLE IF NOT EXISTS ItemRestock (
     RestockID      INTEGER PRIMARY KEY AUTOINCREMENT,
     ItemID         INTEGER NOT NULL,
@@ -175,7 +177,19 @@ CREATE TABLE IF NOT EXISTS ItemRestock (
 );
 CREATE INDEX IF NOT EXISTS IX_ItemRestock_Item_At ON ItemRestock(ItemID, RestockedAt DESC);
 
-/* SERVICE: now includes Status */
+/* NEW: manual (non-service) usage history with person+reason */
+CREATE TABLE IF NOT EXISTS ItemUsage (
+    UseID       INTEGER PRIMARY KEY AUTOINCREMENT,
+    ItemID      INTEGER NOT NULL,
+    Quantity    INTEGER NOT NULL CHECK (Quantity > 0),
+    UsedAt      TEXT    NOT NULL,
+    UsedByName  TEXT,
+    Reason      TEXT,
+    FOREIGN KEY (ItemID) REFERENCES StockInventory(ItemID) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS IX_ItemUsage_Item_At ON ItemUsage(ItemID, UsedAt DESC);
+
+/* SERVICE (unchanged from your last version) */
 CREATE TABLE IF NOT EXISTS Service (
     ServiceID     INTEGER PRIMARY KEY AUTOINCREMENT,
     HouseholdID   INTEGER NOT NULL,
@@ -261,7 +275,7 @@ CREATE TABLE IF NOT EXISTS TestReports (
     FOREIGN KEY (TechnicianID) REFERENCES Users(UserID)           ON DELETE CASCADE
 );
 
-/* Role/approval enforcement (unchanged) */
+/* Role/approval checks (unchanged) */
 DROP TRIGGER IF EXISTS trg_check_Service_leadTech_role;
 CREATE TRIGGER trg_check_Service_leadTech_role
 BEFORE INSERT ON Service
@@ -328,7 +342,7 @@ BEGIN
     END;
 END;
 
-/* Inventory helper views (unchanged) */
+/* Views */
 CREATE VIEW IF NOT EXISTS v_ItemOnHand AS
 SELECT ItemID,
        (TotalQuantity - UsedQuantity) AS OnHand,
@@ -340,28 +354,31 @@ SELECT ItemID,
        Note
 FROM StockInventory;
 
-CREATE VIEW IF NOT EXISTS v_ItemUsageHistory AS
+/* REPLACED: include manual uses too */
+DROP VIEW IF EXISTS v_ItemUsageHistory;
+CREATE VIEW v_ItemUsageHistory AS
 SELECT
-    si.ItemID,
-    s.ServiceID,
-    si.QuantityUsed AS Quantity,
+    si.ItemID               AS ItemID,
+    s.ServiceID             AS ServiceID,
+    si.QuantityUsed         AS Quantity,
     COALESCE(s.FinishDate, s.StartDate) AS UsedAt,
-    s.HouseholdID,
-    s.TechnicianID
+    s.HouseholdID           AS HouseholdID,
+    s.TechnicianID          AS TechnicianID
 FROM ServiceInventory si
-JOIN Service s ON s.ServiceID = si.ServiceID;
-
-CREATE VIEW IF NOT EXISTS v_ItemRestockHistory AS
+JOIN Service s ON s.ServiceID = si.ServiceID
+UNION ALL
 SELECT
-    r.ItemID,
-    r.RestockID,
-    r.Quantity,
-    r.RestockedAt,
-    r.CreatedByName,
-    r.Note
-FROM ItemRestock r;
+    u.ItemID                AS ItemID,
+    NULL                    AS ServiceID,
+    u.Quantity              AS Quantity,
+    u.UsedAt                AS UsedAt,
+    NULL                    AS HouseholdID,
+    NULL                    AS TechnicianID
+FROM ItemUsage u;
 
-CREATE VIEW IF NOT EXISTS v_ItemActivity AS
+/* Activity view (optional union) */
+DROP VIEW IF EXISTS v_ItemActivity;
+CREATE VIEW v_ItemActivity AS
 SELECT
     si.ItemID,
     'USAGE' AS Type,
@@ -381,7 +398,17 @@ SELECT
     r.RestockID AS RefID,
     r.CreatedByName AS Who,
     r.Note AS Note
-FROM ItemRestock r;
+FROM ItemRestock r
+UNION ALL
+SELECT
+    u.ItemID,
+    'USAGE' AS Type,
+    u.UsedAt AS At,
+    -u.Quantity AS DeltaQty,
+    u.UseID AS RefID,
+    u.UsedByName AS Who,
+    u.Reason AS Note
+FROM ItemUsage u;
 ";
 
             using (var conn = GetConnection())
@@ -390,7 +417,7 @@ FROM ItemRestock r;
                 using (var cmd = new SQLiteCommand(schema, conn))
                     cmd.ExecuteNonQuery();
 
-                // Lightweight migrations
+                // Lightweight migrations still kept
                 if (!TableHasColumn(conn, "Users", "TechApproved"))
                 {
                     using (var alter = new SQLiteCommand(
@@ -400,7 +427,6 @@ FROM ItemRestock r;
                     }
                 }
 
-                // NEW: add Service.Status to existing DBs
                 if (!TableHasColumn(conn, "Service", "Status"))
                 {
                     using (var alter = new SQLiteCommand(
@@ -408,7 +434,6 @@ FROM ItemRestock r;
                     {
                         alter.ExecuteNonQuery();
                     }
-                    // Backfill status from FinishDate
                     using (var upd1 = new SQLiteCommand("UPDATE Service SET Status='Finished' WHERE FinishDate IS NOT NULL;", conn))
                         upd1.ExecuteNonQuery();
                     using (var upd2 = new SQLiteCommand("UPDATE Service SET Status='Open' WHERE FinishDate IS NULL;", conn))
@@ -418,5 +443,6 @@ FROM ItemRestock r;
                 }
             }
         }
+
     }
 }

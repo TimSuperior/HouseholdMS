@@ -3,8 +3,10 @@ using System.Data;
 using System.Data.SQLite;
 using System.Globalization;
 using System.Windows;
+using System.Windows.Input;   // for MouseButtonEventArgs
 using System.Windows.Media;   // Brush, ColorConverter
 using HouseholdMS.Model;
+using HouseholdMS.View.UserControls; // AddServiceRecordControl
 
 namespace HouseholdMS.View.Inventory
 {
@@ -36,7 +38,8 @@ namespace HouseholdMS.View.Inventory
 
             LoadItemFromDb(_itemId);
             UpdateComputedFieldsAndStatus();
-            LoadUsageHistory(); // also sets LastUsedText
+            LoadUsageHistory();    // also sets LastUsedText
+            LoadRestockHistory();  // show who restocked
         }
 
         private void LoadItemFromDb(int id)
@@ -203,28 +206,59 @@ namespace HouseholdMS.View.Inventory
                 {
                     conn.Open();
 
-                    // UPDATED: Use v_Technicians (Users-backed view), not the old Technicians table.
-                    using (var cmd = new SQLiteCommand(
-                        @"
-SELECT 
-    vih.UsedAt,
-    vih.Quantity,
-    vih.ServiceID,
-    vih.HouseholdID,
-    vih.TechnicianID,
-    COALESCE(st_names.Names, vt.Name) AS TechnicianNames
-FROM v_ItemUsageHistory AS vih
-LEFT JOIN (
-    SELECT st.ServiceID, GROUP_CONCAT(vt2.Name, ', ') AS Names
-    FROM ServiceTechnicians st
-    JOIN v_Technicians vt2 ON vt2.TechnicianID = st.TechnicianID
-    GROUP BY st.ServiceID
-) AS st_names
-    ON st_names.ServiceID = vih.ServiceID
-LEFT JOIN v_Technicians vt
-    ON vt.TechnicianID = vih.TechnicianID
-WHERE vih.ItemID = @id
-ORDER BY datetime(vih.UsedAt) DESC
+                    // NOTE: In UNION ALL, ORDER BY must reference output columns.
+                    using (var cmd = new SQLiteCommand(@"
+WITH svc AS (
+    SELECT 
+        COALESCE(s.FinishDate, s.StartDate) AS UsedAt,
+        si.QuantityUsed AS Quantity,
+        s.ServiceID,
+        s.HouseholdID,
+        s.TechnicianID
+    FROM ServiceInventory si
+    JOIN Service s ON s.ServiceID = si.ServiceID
+    WHERE si.ItemID = @id
+),
+svc_ext AS (
+    SELECT 
+        svc.UsedAt                              AS UsedAt,
+        svc.Quantity                            AS Quantity,
+        svc.ServiceID                           AS ServiceID,
+        svc.HouseholdID                         AS HouseholdID,
+        svc.TechnicianID                        AS TechnicianID,
+        COALESCE(st_names.Names, vt.Name)       AS TechnicianNames,
+        NULL                                    AS UsedByName
+    FROM svc
+    LEFT JOIN (
+        SELECT st.ServiceID, GROUP_CONCAT(vt2.Name, ', ') AS Names
+        FROM ServiceTechnicians st
+        JOIN v_Technicians vt2 ON vt2.TechnicianID = st.TechnicianID
+        GROUP BY st.ServiceID
+    ) AS st_names
+        ON st_names.ServiceID = svc.ServiceID
+    LEFT JOIN v_Technicians vt
+        ON vt.TechnicianID = svc.TechnicianID
+),
+manual AS (
+    SELECT
+        u.UsedAt        AS UsedAt,
+        u.Quantity      AS Quantity,
+        NULL            AS ServiceID,
+        NULL            AS HouseholdID,
+        NULL            AS TechnicianID,
+        NULL            AS TechnicianNames,
+        u.UsedByName    AS UsedByName
+    FROM ItemUsage u
+    WHERE u.ItemID = @id
+)
+SELECT
+    UsedAt, Quantity, ServiceID, HouseholdID, TechnicianID, TechnicianNames, UsedByName
+FROM svc_ext
+UNION ALL
+SELECT
+    UsedAt, Quantity, ServiceID, HouseholdID, TechnicianID, TechnicianNames, UsedByName
+FROM manual
+ORDER BY UsedAt DESC;  -- <-- key change: order by the output column
 ", conn))
                     {
                         cmd.Parameters.AddWithValue("@id", _itemId);
@@ -240,6 +274,8 @@ ORDER BY datetime(vih.UsedAt) DESC
                                 dt.Columns.Add("UsedAtLocal", typeof(string));
                             if (!dt.Columns.Contains("TechnicianCol"))
                                 dt.Columns.Add("TechnicianCol", typeof(string));
+                            if (!dt.Columns.Contains("UsedByCol"))
+                                dt.Columns.Add("UsedByCol", typeof(string));
 
                             foreach (DataRow row in dt.Rows)
                             {
@@ -251,24 +287,26 @@ ORDER BY datetime(vih.UsedAt) DESC
                                 var raw = row["UsedAt"] == DBNull.Value ? "" : Convert.ToString(row["UsedAt"]);
                                 row["UsedAtLocal"] = ToKstString(raw);
 
-                                // Technician name(s)
-                                var names = row["TechnicianNames"] == DBNull.Value ? "" : Convert.ToString(row["TechnicianNames"]);
-                                row["TechnicianCol"] = string.IsNullOrWhiteSpace(names) ? "—" : names;
+                                // Technician name(s) (service-driven rows); show em dash if empty
+                                var techNames = dt.Columns.Contains("TechnicianNames") && row["TechnicianNames"] != DBNull.Value
+                                                ? Convert.ToString(row["TechnicianNames"])
+                                                : "";
+                                row["TechnicianCol"] = string.IsNullOrWhiteSpace(techNames) ? "—" : techNames;
+
+                                // Used By (manual rows); em dash otherwise
+                                var who = dt.Columns.Contains("UsedByName") && row["UsedByName"] != DBNull.Value
+                                          ? Convert.ToString(row["UsedByName"])
+                                          : "";
+                                row["UsedByCol"] = string.IsNullOrWhiteSpace(who) ? "—" : who;
                             }
 
-                            // Bind grid
                             UsageGrid.ItemsSource = dt.DefaultView;
 
-                            // Set "Last Used" (top row after ORDER BY DESC)
+                            // "Last Used" from the first row (already DESC)
                             if (dt.Rows.Count > 0)
-                            {
-                                var first = dt.Rows[0];
-                                LastUsedText.Text = Convert.ToString(first["UsedAtLocal"]) ?? "—";
-                            }
+                                LastUsedText.Text = Convert.ToString(dt.Rows[0]["UsedAtLocal"]) ?? "—";
                             else
-                            {
                                 LastUsedText.Text = "—";
-                            }
                         }
                     }
                 }
@@ -278,6 +316,90 @@ ORDER BY datetime(vih.UsedAt) DESC
                 MessageBox.Show("Error loading usage history: " + ex.Message, "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+
+        private void LoadRestockHistory()
+        {
+            try
+            {
+                using (var conn = DatabaseHelper.GetConnection())
+                {
+                    conn.Open();
+                    using (var cmd = new SQLiteCommand(@"
+SELECT RestockedAt, Quantity, CreatedByName, Note
+FROM ItemRestock
+WHERE ItemID = @id
+ORDER BY datetime(RestockedAt) DESC;", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", _itemId);
+                        using (var da = new SQLiteDataAdapter(cmd))
+                        {
+                            var dt = new DataTable();
+                            da.Fill(dt);
+
+                            if (!dt.Columns.Contains("RestockedAtLocal"))
+                                dt.Columns.Add("RestockedAtLocal", typeof(string));
+                            if (!dt.Columns.Contains("RestockedByCol"))
+                                dt.Columns.Add("RestockedByCol", typeof(string));
+
+                            foreach (DataRow row in dt.Rows)
+                            {
+                                var at = row["RestockedAt"] == DBNull.Value ? "" : Convert.ToString(row["RestockedAt"]);
+                                row["RestockedAtLocal"] = ToKstString(at);
+
+                                var who = row["CreatedByName"] == DBNull.Value ? "" : Convert.ToString(row["CreatedByName"]);
+                                row["RestockedByCol"] = string.IsNullOrWhiteSpace(who) ? "—" : who;
+                            }
+
+                            RestockGrid.ItemsSource = dt.DefaultView;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading restock history: " + ex.Message, "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // === Open service details by double-clicking a usage row (only when ServiceID present) ===
+        private void UsageGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var drv = UsageGrid?.SelectedItem as DataRowView;
+            if (drv == null) return;
+
+            if (!drv.Row.Table.Columns.Contains("ServiceID")) return;
+            var val = drv["ServiceID"];
+            if (val == null || val == DBNull.Value) return;
+
+            if (int.TryParse(Convert.ToString(val, CultureInfo.InvariantCulture), out int serviceId) && serviceId > 0)
+            {
+                OpenServiceDetailsDialog(serviceId);
+                e.Handled = true;
+            }
+        }
+
+        private void OpenServiceDetailsDialog(int serviceId)
+        {
+            var ctrl = new AddServiceRecordControl(serviceId);
+
+            var detailsWin = new Window
+            {
+                Title = $"Service #{serviceId}",
+                Content = ctrl,
+                Owner = this,
+                Width = 560,
+                Height = 700,
+                ResizeMode = ResizeMode.NoResize,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                ShowInTaskbar = false
+            };
+
+            ctrl.OnCancelRequested += (_, __) => detailsWin.Close();
+
+            detailsWin.ShowDialog();
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e) => Close();

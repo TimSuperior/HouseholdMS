@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using HouseholdMS.Model;
+using HouseholdMS.View.UserControls;
 
 namespace HouseholdMS.View.UserControls
 {
@@ -27,7 +28,7 @@ namespace HouseholdMS.View.UserControls
         // Service history rows (bound to DataGrid)
         private readonly ObservableCollection<ServiceShortRow> _serviceRows = new ObservableCollection<ServiceShortRow>();
 
-        // Optional: bubble up when a service row is double-clicked
+        // Optional: bubble up when a service row is opened
         public event Action<int> OpenServiceRecordRequested;
 
         public event EventHandler OnSavedSuccessfully;
@@ -206,7 +207,7 @@ namespace HouseholdMS.View.UserControls
                     }
                 }
 
-                // Align with DB UNIQUE (OwnerName, UserName, ContactNum) to avoid trigger/constraint aborts
+                // Align with DB UNIQUE (OwnerName, UserName, ContactNum)
                 using (var uqCheck = new SQLiteCommand(@"
                     SELECT COUNT(*) FROM Households
                     WHERE OwnerName = @Owner AND UserName = @UserName AND ContactNum = @Contact
@@ -446,7 +447,7 @@ namespace HouseholdMS.View.UserControls
                 IdChipText.Text = string.Empty;
         }
 
-        // ========= Service history logic (uses your Service/* tables; updated to v_Technicians) =========
+        // ========= Service history logic =========
         private void UpdateServiceHistoryVisibility()
         {
             if (ServiceHistoryPanel == null) return;
@@ -465,12 +466,11 @@ namespace HouseholdMS.View.UserControls
                 {
                     conn.Open();
 
-                    // Use v_Technicians (approved active technicians) instead of legacy Technicians table
                     using (var cmd = new SQLiteCommand(@"
                         SELECT
                             s.ServiceID,
                             COALESCE(s.FinishDate, s.StartDate) AS At,
-                            vt.Name AS PrimaryTech,  -- from Service.TechnicianID
+                            vt.Name AS PrimaryTech,
                             (
                                 SELECT group_concat(vt2.Name, ', ')
                                 FROM ServiceTechnicians st2
@@ -497,17 +497,13 @@ namespace HouseholdMS.View.UserControls
                                     Status = SafeGetString(rdr, "State")
                                 };
 
-                                // Pick technician display: team technicians > primary > empty
                                 string team = SafeGetString(rdr, "TeamTechs");
                                 string primary = SafeGetString(rdr, "PrimaryTech");
                                 row.Technician = !string.IsNullOrWhiteSpace(team)
                                                  ? team
                                                  : (!string.IsNullOrWhiteSpace(primary) ? primary : "");
 
-                                // Summary from Action/Problem; if empty, attach items summary below
                                 row.Summary = SafeGetString(rdr, "Summary");
-
-                                // Optional: compact items used summary for this service (e.g., "2x Fuse, 1x Cable")
                                 row.Summary = AppendItemsIfEmptyOrAddon(conn, row.ServiceID, row.Summary);
 
                                 _serviceRows.Add(row);
@@ -521,7 +517,6 @@ namespace HouseholdMS.View.UserControls
                 System.Diagnostics.Debug.WriteLine("LoadServiceHistory error: " + ex.Message);
             }
 
-            // Update header count + empty text
             if (ServiceHistoryCountText != null)
                 ServiceHistoryCountText.Text = _serviceRows.Count + " records";
 
@@ -545,15 +540,15 @@ namespace HouseholdMS.View.UserControls
                     if (!string.IsNullOrWhiteSpace(items))
                     {
                         if (string.IsNullOrWhiteSpace(currentSummary))
-                            return items; // summary was empty → use items summary
+                            return items;
                         else
-                            return currentSummary + " | " + items; // add as addon
+                            return currentSummary + " | " + items;
                     }
                 }
             }
             catch
             {
-                // ignore items summary if view/tables not present
+                // ignore if not present
             }
             return currentSummary ?? "";
         }
@@ -580,19 +575,56 @@ namespace HouseholdMS.View.UserControls
         private static string NormalizeDate(string s)
         {
             if (string.IsNullOrWhiteSpace(s)) return "";
-            // Accept "yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", etc.
             if (DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var dt))
                 return dt.ToString("yyyy-MM-dd");
             return s;
         }
 
+        // === NEW: single-click open details ===
+        private void ServiceHistoryGrid_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var row = (sender as DataGrid)?.SelectedItem as ServiceShortRow;
+            if (row == null) return;
+
+            // Keep backward-compat event
+            OpenServiceRecordRequested?.Invoke(row.ServiceID);
+
+            // Open details dialog inline (non-destructive)
+            OpenServiceRecordInDialog(row.ServiceID);
+            e.Handled = true;
+        }
+
+        // (kept for compatibility; not wired anymore)
         private void ServiceHistoryGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var row = (sender as DataGrid)?.SelectedItem as ServiceShortRow;
             if (row == null) return;
 
-            if (OpenServiceRecordRequested != null)
-                OpenServiceRecordRequested(row.ServiceID);
+            OpenServiceRecordRequested?.Invoke(row.ServiceID);
+            OpenServiceRecordInDialog(row.ServiceID);
+            e.Handled = true;
+        }
+
+        private void OpenServiceRecordInDialog(int serviceId)
+        {
+            var ctrl = new AddServiceRecordControl(serviceId);
+            var owner = Window.GetWindow(this);
+
+            var win = new Window
+            {
+                Title = $"Service #{serviceId}",
+                Content = ctrl,
+                Owner = owner,
+                Width = 560,
+                Height = 700,
+                ResizeMode = ResizeMode.NoResize,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                ShowInTaskbar = false
+            };
+
+            ctrl.OnCancelRequested += (_, __) => win.Close();
+
+            win.ShowDialog();
         }
 
         // ========= Exposed properties for field values =========
