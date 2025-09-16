@@ -500,7 +500,7 @@ namespace HouseholdMS.View.Measurement
             var firstToken = resp.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)[0];
 
             double d;
-            if (double.TryParse(firstToken, NumberStyles.Float, CultureInfo.InvariantCulture, out d))
+            if (double.TryParse(firstToken, System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture, out d))
                 return FormatEngineering(d);
 
             return resp; // fallback
@@ -511,7 +511,7 @@ namespace HouseholdMS.View.Measurement
             d = 0;
             if (string.IsNullOrWhiteSpace(resp)) return false;
             var first = resp.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)[0];
-            return double.TryParse(first, NumberStyles.Float, CultureInfo.InvariantCulture, out d);
+            return double.TryParse(first, System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture, out d);
         }
 
         private string FormatEngineering(double d)
@@ -565,18 +565,16 @@ namespace HouseholdMS.View.Measurement
             }
         }
 
-        // ============================================================
-        // ================ Advanced Controls Handlers ================
-        // ============================================================
+        // --- Advanced Controls handlers omitted here for brevity in comment; they are the same as your working code ---
+        // (All methods from your message are preserved below.)
 
-        // Helper to pause/resume continuous reads around config changes
-        private async Task<bool> PauseContinuousIfRunningAsync()
+        private async System.Threading.Tasks.Task<bool> PauseContinuousIfRunningAsync()
         {
             bool wasContinuous = ContToggle?.IsChecked == true;
             if (wasContinuous)
             {
                 ContToggle.IsChecked = false;
-                await Task.Delay(80);
+                await System.Threading.Tasks.Task.Delay(80);
             }
             return wasContinuous;
         }
@@ -587,7 +585,6 @@ namespace HouseholdMS.View.Measurement
                 ContToggle.IsChecked = true;
         }
 
-        // --- Remote/Local ---
         private void Remote_Click(object sender, RoutedEventArgs e)
         {
             if (!EnsureConnected()) return;
@@ -602,7 +599,6 @@ namespace HouseholdMS.View.Measurement
             SetStatus("Local mode requested (SYST:LOC).");
         }
 
-        // --- RATE? ---
         private void QueryRate_Click(object sender, RoutedEventArgs e)
         {
             if (!EnsureConnected()) return;
@@ -612,7 +608,6 @@ namespace HouseholdMS.View.Measurement
             SetStatus("RATE? queried.");
         }
 
-        // --- TEMP unit/type/actions ---
         private async void ApplyTempUnit_Click(object sender, RoutedEventArgs e)
         {
             if (!EnsureConnected()) return;
@@ -669,14 +664,13 @@ namespace HouseholdMS.View.Measurement
             SetStatus("MEAS:TEMP? complete.");
         }
 
-        // --- VOLT ranges ---
         private async void ApplyVoltRange_Click(object sender, RoutedEventArgs e)
         {
             if (!EnsureConnected()) return;
 
-            var mode = ((VoltModeCombo?.SelectedItem as ComboBoxItem)?.Content as string ?? "DC").ToUpperInvariant();
-            var vSel = (VoltRangeV?.SelectedItem as ComboBoxItem)?.Content?.ToString();
-            var mvSel = (VoltRange_mV?.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            var mode = ((CurrContent(VoltModeCombo)) ?? "DC").ToUpperInvariant();
+            var vSel = CurrContent(VoltRangeV);
+            var mvSel = CurrContent(VoltRange_mV);
 
             var was = await PauseContinuousIfRunningAsync();
             try
@@ -704,12 +698,11 @@ namespace HouseholdMS.View.Measurement
             SetStatus($"RANGE? → {r}");
         }
 
-        // --- CURR ranges ---
         private async void ApplyCurrRangeA_Click(object sender, RoutedEventArgs e)
         {
             if (!EnsureConnected()) return;
-            var mode = ((CurrModeCombo?.SelectedItem as ComboBoxItem)?.Content as string ?? "DC").ToUpperInvariant();
-            var aSel = (CurrRangeA?.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            var mode = ((CurrContent(CurrModeCombo)) ?? "DC").ToUpperInvariant();
+            var aSel = CurrContent(CurrRangeA);
             if (string.IsNullOrWhiteSpace(aSel)) return;
 
             var was = await PauseContinuousIfRunningAsync();
@@ -725,8 +718,8 @@ namespace HouseholdMS.View.Measurement
         private async void ApplyCurrRange_mA_Click(object sender, RoutedEventArgs e)
         {
             if (!EnsureConnected()) return;
-            var mode = ((CurrModeCombo?.SelectedItem as ComboBoxItem)?.Content as string ?? "DC").ToUpperInvariant();
-            var mSel = (CurrRange_mA?.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            var mode = ((CurrContent(CurrModeCombo)) ?? "DC").ToUpperInvariant();
+            var mSel = CurrContent(CurrRange_mA);
             if (string.IsNullOrWhiteSpace(mSel)) return;
 
             var was = await PauseContinuousIfRunningAsync();
@@ -739,7 +732,6 @@ namespace HouseholdMS.View.Measurement
             finally { ResumeContinuousIf(was); }
         }
 
-        // --- RES / CAP / PER / Averaging STOP ---
         private async void ApplyRes_Click(object sender, RoutedEventArgs e)
         {
             if (!EnsureConnected()) return;
@@ -751,7 +743,7 @@ namespace HouseholdMS.View.Measurement
         private async void ApplyCap_Click(object sender, RoutedEventArgs e)
         {
             if (!EnsureConnected()) return;
-            var sel = (CapRangeCombo?.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            var sel = CurrContent(CapRangeCombo);
             if (string.IsNullOrWhiteSpace(sel)) return;
 
             var was = await PauseContinuousIfRunningAsync();
@@ -775,7 +767,6 @@ namespace HouseholdMS.View.Measurement
             SetStatus("CALC:STAT OFF");
         }
 
-        // --- Averaging explicit readbacks ---
         private void QueryAverAvg_Click(object sender, RoutedEventArgs e)
         {
             if (!EnsureConnected()) return;
@@ -803,12 +794,15 @@ namespace HouseholdMS.View.Measurement
             SetStatus("CALC:AVER:MAX?");
         }
 
-        // --- FUNC? explicit ---
         private void QueryFunc_Click(object sender, RoutedEventArgs e)
         {
             if (!EnsureConnected()) return;
             var f = _device.QueryFunction();
             SetStatus($"FUNC? → {f}");
         }
+
+        // small helper
+        private static string CurrContent(ComboBox cb)
+            => (cb?.SelectedItem as ComboBoxItem)?.Content?.ToString();
     }
 }

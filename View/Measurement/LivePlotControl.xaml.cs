@@ -6,16 +6,30 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Syncfusion.Licensing; // licensing
 
 namespace HouseholdMS.View.Measurement
 {
     /// <summary>
-    /// Numeric-time live plot (seconds only). Plotting happens ONLY when
-    /// Start/Stop is pressed on this control. Stats are fed from device
-    /// via SetDeviceStats(min,max,avg).
+    /// Numeric-time live plot (seconds only) using Syncfusion SfChart.
+    /// Plotting happens ONLY when Start/Stop is pressed on this control.
+    /// Stats are fed from device via SetDeviceStats(min,max,avg).
     /// </summary>
     public partial class LivePlotControl : UserControl
     {
+        // Register Syncfusion license once, safely.
+        static LivePlotControl()
+        {
+            try
+            {
+                // Safe to call multiple times; Syncfusion ignores duplicates.
+                SyncfusionLicenseProvider.RegisterLicense(
+                    "Mzk3NTExMEAzMzMwMmUzMDJlMzAzYjMzMzAzYlZIMmI2R1J4SGJTT0ExYWF0VTR2L3RMaDJEVUJyNkk2elh1YXpNSWFrSzA9;Mzk3NTExMUAzMzMwMmUzMDJlMzAzYjMzMzAzYmZIUkhmT1JKVzRZNDVKeUtra1BnanozdU5NTUtzeGM2MUNrY2Y0T3laN3c9;Mgo+DSMBPh8sVXN0S0d+X1ZPd11dXmJWd1p/THNYflR1fV9DaUwxOX1dQl9mSXlQd0djW31bdHVWQGRXUkQ=;NRAiBiAaIQQuGjN/VkZ+XU9HcVRDX3xKf0x/TGpQb19xflBPallYVBYiSV9jS3tTcUZiW39ccnFRR2ZbV091Xw==;Mgo+DSMBMAY9C3t3VVhhQlJDfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTH5UdURhWX1cdXBUTmNfWkd2;Mzk3NTExNUAzMzMwMmUzMDJlMzAzYjMzMzAzYkhIbUxNNFR5alVJbys5YkVKdHJHVmYwL1p6ZnZrZ1hkaEQ1alZZQlVWVGs9;Mzk3NTExNkAzMzMwMmUzMDJlMzAzYjMzMzAzYmNwQ2s0ZWc5RzJab2l0ZFArM2R2VGIyWWorek1WenBOaHlPdjN2dnpmOGs9"
+                );
+            }
+            catch { /* ignore – fail-safe if already registered elsewhere */ }
+        }
+
         // Public so ItemsSource type is accessible from outside
         public sealed class PlotPoint
         {
@@ -66,10 +80,8 @@ namespace HouseholdMS.View.Measurement
             TimeAxis.LabelFormat = "0";  // 0,1,2,...
             TimeAxis.Interval = 1;
             TimeAxis.Minimum = 0d;
-
-            // NOTE: Some Syncfusion versions don't expose ChartRangePadding in WPF.
-            // If your build supports it, you can set:
-            //   TimeAxis.RangePadding = ChartRangePadding.None;
+            // If your version supports it:
+            // TimeAxis.RangePadding = ChartRangePadding.None;
         }
 
         /// <summary>Stop the internal polling loop if running.</summary>

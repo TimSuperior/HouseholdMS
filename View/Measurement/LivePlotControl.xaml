@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.Measurement.LivePlotControl"
+﻿<UserControl x:Class="HouseholdMS.View.Measurement.LivePlotControl" 
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
@@ -93,10 +93,9 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Chart -->
+            <!-- Syncfusion Chart -->
             <syncfusion:SfChart x:Name="Chart" Grid.Row="0" Margin="0,0,0,10">
                 <syncfusion:SfChart.PrimaryAxis>
-                    <!-- Numeric seconds (no dates) -->
                     <syncfusion:NumericalAxis x:Name="TimeAxis"
                                               Header="Time (s)"
                                               LabelFormat="0"
@@ -119,7 +118,6 @@
                                                      ZoomMode="X"/>
                 </syncfusion:SfChart.Behaviors>
 
-                <!-- Fast line for realtime performance -->
                 <syncfusion:FastLineSeries x:Name="LineSeries"
                                            XBindingPath="X"
                                            YBindingPath="Y"

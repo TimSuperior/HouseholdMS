@@ -14,7 +14,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Navigation;
 
-
 // Force using the WPF MessageBox (not WinForms or any custom class)
 using WpfMessageBox = System.Windows.MessageBox;
 
@@ -25,7 +24,6 @@ namespace HouseholdMS.View.EqTesting
     public partial class AllTestMenuView : UserControl
     {
         public event EventHandler CloseRequested;
-
 
         private enum WizardStep { Precaution = 0, Form = 1, Setup1 = 2, Setup2 = 3, Setup3 = 4, Charging = 5 }
         private WizardStep _step = WizardStep.Precaution;
@@ -53,19 +51,17 @@ namespace HouseholdMS.View.EqTesting
         // Charging timestamps
         private DateTime? _chargingStartUtc;
 
-        // FlowDocs for Setup steps (Build Action = Page).
-        // If you only have Wiring.xaml now, point all three to the same path.
-        
+        // FlowDocs for Setup steps (Build Action = Page)
         private const string Setup1DocPath = "/Assets/Manuals/2_Wiring.xaml";
         private const string Setup2DocPath = "/Assets/Manuals/3_Charger.xaml";
         private const string Setup3DocPath = "/Assets/Manuals/4_Victron.xaml";
+
         public AllTestMenuView(string userRole = "Admin")
         {
             InitializeComponent();
 
             this.AddHandler(Hyperlink.RequestNavigateEvent,
                 new RequestNavigateEventHandler(Hyperlink_RequestNavigate));
-
 
             _search = new LookupSearch(Model.DatabaseHelper.GetConnection);
 
@@ -287,6 +283,7 @@ namespace HouseholdMS.View.EqTesting
             {
                 await conn.OpenAsync();
 
+                // ✅ Household exists (unchanged)
                 using (var c1 = new SQLiteCommand("SELECT EXISTS(SELECT 1 FROM Households WHERE HouseholdID=@id);", conn))
                 {
                     c1.Parameters.AddWithValue("@id", _householdId);
@@ -297,17 +294,47 @@ namespace HouseholdMS.View.EqTesting
                         return false;
                     }
                 }
-                using (var c2 = new SQLiteCommand("SELECT EXISTS(SELECT 1 FROM Technicians WHERE TechnicianID=@id);", conn))
+
+                // ✅ Technician check updated for new schema:
+                // Prefer the approved technicians view (v_Technicians). Falls back to Users if the view isn’t present.
+                bool techOk;
+                using (var cHasView = new SQLiteCommand("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='view' AND name='v_Technicians');", conn))
                 {
-                    c2.Parameters.AddWithValue("@id", _technicianId);
-                    var ok2 = Convert.ToInt32(await c2.ExecuteScalarAsync()) == 1;
-                    if (!ok2)
+                    var hasView = Convert.ToInt32(await cHasView.ExecuteScalarAsync()) == 1;
+                    if (hasView)
                     {
-                        WpfMessageBox.Show("Technician not found in DB.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return false;
+                        using (var c2 = new SQLiteCommand("SELECT EXISTS(SELECT 1 FROM v_Technicians WHERE TechnicianID=@id);", conn))
+                        {
+                            c2.Parameters.AddWithValue("@id", _technicianId);
+                            techOk = Convert.ToInt32(await c2.ExecuteScalarAsync()) == 1;
+                        }
+                    }
+                    else
+                    {
+                        using (var c2 = new SQLiteCommand(@"
+                            SELECT EXISTS(
+                                SELECT 1
+                                FROM Users
+                                WHERE UserID=@id
+                                  AND Role='Technician'
+                                  AND IsActive=1
+                                  AND TechApproved=1
+                            );", conn))
+                        {
+                            c2.Parameters.AddWithValue("@id", _technicianId);
+                            techOk = Convert.ToInt32(await c2.ExecuteScalarAsync()) == 1;
+                        }
                     }
                 }
+
+                if (!techOk)
+                {
+                    WpfMessageBox.Show("Selected technician is not an approved, active Technician user.", "Not Allowed",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return false;
+                }
             }
+
             return true;
         }
 
@@ -528,9 +555,6 @@ namespace HouseholdMS.View.EqTesting
 
                 // ✅ Ask parent (MainWindow) to close this content
                 CloseRequested?.Invoke(this, EventArgs.Empty);
-
-                // ❌ Remove or comment out any direct window closing:
-                // CloseHostWindow();
             }
             catch (Exception ex)
             {
@@ -539,9 +563,6 @@ namespace HouseholdMS.View.EqTesting
             }
         }
 
-
-
-
         private async Task SaveReportAsync()
         {
             if (_householdId == null || _technicianId == null)
@@ -549,67 +570,43 @@ namespace HouseholdMS.View.EqTesting
 
             var endUtc = DateTime.UtcNow;
 
-            // Build annotation blob: keeps details that do NOT have dedicated columns in your schema
-            // (BatterySerial, ChargingStartUtc, ChargingEndUtc)
+            // Build annotation blob: keeps details that do NOT have dedicated columns
             var lines = new List<string>
-    {
-        // NOTE: BatterySerial is NOT a column in TestReports; we keep it in Annotations.
-        "BatterySerial=" + (BatterySerialBox.Text ?? string.Empty).Trim(),
-        "ChargingStartUtc=" + (_chargingStartUtc?.ToString("o") ?? string.Empty),
-        "ChargingEndUtc=" + endUtc.ToString("o")
-    };
+            {
+                "BatterySerial=" + (BatterySerialBox.Text ?? string.Empty).Trim(),
+                "ChargingStartUtc=" + (_chargingStartUtc?.ToString("o") ?? string.Empty),
+                "ChargingEndUtc=" + endUtc.ToString("o")
+            };
 
-            // Add free-form notes written during Charging step
             var userNotes = (ChargingNotesBox?.Text ?? string.Empty).Trim();
             if (!string.IsNullOrEmpty(userNotes))
                 lines.Add("UserNotes=" + userNotes.Replace(Environment.NewLine, " \\n "));
 
             var annotations = string.Join(Environment.NewLine, lines);
 
-            // DeviceStatus is in your schema; we can store a simple terminal state here.
-            var deviceStatus = "ChargingCompleted"; // or "ChargingStopped", etc.
+            var deviceStatus = "ChargingCompleted";
 
             using (var conn = Model.DatabaseHelper.GetConnection())
             {
                 await conn.OpenAsync();
 
-                // Your schema already creates TestReports. No CREATE TABLE here.
                 using (var cmd = new SQLiteCommand(@"
-            INSERT INTO TestReports
-                (HouseholdID, TechnicianID, TestDate, Annotations, DeviceStatus
-                 -- , InspectionItems
-                 -- , SettingsVerification
-                 -- , ImagePaths
-                )
-            VALUES
-                (@hh, @tech, @testDate, @annotations, @status
-                 -- , @insp
-                 -- , @settings
-                 -- , @imgs
-                );
-        ", conn))
+                    INSERT INTO TestReports
+                        (HouseholdID, TechnicianID, TestDate, Annotations, DeviceStatus)
+                    VALUES
+                        (@hh, @tech, @testDate, @annotations, @status);
+                ", conn))
                 {
                     cmd.Parameters.AddWithValue("@hh", _householdId.Value);
                     cmd.Parameters.AddWithValue("@tech", _technicianId.Value);
-
-                    // TestDate exists in your schema; we set it explicitly to end time.
                     cmd.Parameters.AddWithValue("@testDate", endUtc.ToString("o"));
-
-                    // Only columns that exist:
                     cmd.Parameters.AddWithValue("@annotations", annotations);
                     cmd.Parameters.AddWithValue("@status", deviceStatus);
-
-                    // Not used now (commented because they exist but we have no data in this flow):
-                    // cmd.Parameters.AddWithValue("@insp", DBNull.Value);       // InspectionItems
-                    // cmd.Parameters.AddWithValue("@settings", DBNull.Value);   // SettingsVerification
-                    // cmd.Parameters.AddWithValue("@imgs", DBNull.Value);       // ImagePaths
 
                     await cmd.ExecuteNonQueryAsync();
                 }
             }
         }
-
-
 
         #region Helpers
 
@@ -640,7 +637,7 @@ namespace HouseholdMS.View.EqTesting
         private async Task<List<LookupSearch.PickItem>> SafeSearchTechniciansAsync(string q)
         {
             if (string.IsNullOrWhiteSpace(q)) return new List<LookupSearch.PickItem>();
-            try { return await _search.SearchTechnicianPicksAsync(q); }
+            try { return await _search.SearchTechnicianPicksAsync(q); } // expected to use v_Technicians internally
             catch { return new List<LookupSearch.PickItem>(); }
         }
 
@@ -703,8 +700,6 @@ namespace HouseholdMS.View.EqTesting
             else
                 this.Visibility = Visibility.Collapsed; // or notify parent via event if you prefer
         }
-
-
 
         #endregion
     }

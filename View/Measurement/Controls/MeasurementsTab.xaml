@@ -1,0 +1,110 @@
+﻿<UserControl x:Class="HouseholdMS.View.Measurement.Controls.MeasurementsTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="Transparent">
+    <StackPanel Margin="8">
+        <TextBlock Text="Measurements" FontWeight="Bold" FontSize="16" Margin="0,0,0,8"/>
+
+        <TextBlock Text="Measurement Source" Foreground="#666" Margin="0,0,0,4"/>
+        <ComboBox x:Name="CmbSource" Width="220" SelectedIndex="0" Margin="0,0,0,8">
+            <ComboBoxItem Content="CH1"/>
+            <ComboBoxItem Content="CH2"/>
+            <ComboBoxItem Content="MATH"/>
+        </ComboBox>
+
+        <TextBlock Text="Select metrics to display:" Foreground="#666" Margin="0,4,0,6"/>
+        <WrapPanel>
+            <CheckBox x:Name="M_Vpp"  Content="Vpp"  IsChecked="True" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_Vavg" Content="Vavg" IsChecked="True" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_Vrms" Content="Vrms" IsChecked="True" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_Vmax" Content="Vmax" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_Vmin" Content="Vmin" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_Vpos" Content="Vp+"  Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_Vneg" Content="Vp-"  Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_Freq" Content="Freq" IsChecked="True" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_Per"  Content="Period" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_Duty" Content="Duty %" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_PwPos" Content="+Pulse W" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_PwNeg" Content="-Pulse W" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_Rise" Content="Rise 10-90" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_Fall" Content="Fall 90-10" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_Ripple" Content="Ripple %" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_Crest" Content="Crest" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_Overshoot" Content="Overshoot %" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_Undershoot" Content="Undershoot %" Margin="0,0,12,6"/>
+            <CheckBox x:Name="M_ZeroCross" Content="Zero-cross rate" Margin="0,0,12,6"/>
+        </WrapPanel>
+
+        <TextBlock Text="Polling interval (ms)" Foreground="#666" Margin="0,4,0,6"/>
+        <Slider x:Name="SldPoll" Minimum="100" Maximum="2000" Value="500" TickFrequency="100" IsSnapToTickEnabled="True"
+            ValueChanged="SldPoll_ValueChanged" Width="240"/>
+
+        <Separator Margin="0,10,0,8"/>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- left -->
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Vpp:"/>
+            <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ValVpp" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Vavg:"/>
+            <TextBlock Grid.Row="1" Grid.Column="1" x:Name="ValVavg" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Vrms:"/>
+            <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ValVrms" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Vmax:"/>
+            <TextBlock Grid.Row="3" Grid.Column="1" x:Name="ValVmax" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="Vmin:"/>
+            <TextBlock Grid.Row="4" Grid.Column="1" x:Name="ValVmin" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="5" Grid.Column="0" Text="Vp+:"/>
+            <TextBlock Grid.Row="5" Grid.Column="1" x:Name="ValVpos" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="6" Grid.Column="0" Text="Vp-:"/>
+            <TextBlock Grid.Row="6" Grid.Column="1" x:Name="ValVneg" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="7" Grid.Column="0" Text="Ripple:"/>
+            <TextBlock Grid.Row="7" Grid.Column="1" x:Name="ValRipple" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="8" Grid.Column="0" Text="Crest:"/>
+            <TextBlock Grid.Row="8" Grid.Column="1" x:Name="ValCrest" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="9" Grid.Column="0" Text="Zero-cross:"/>
+            <TextBlock Grid.Row="9" Grid.Column="1" x:Name="ValZeroCross" Margin="8,0,0,0"/>
+
+            <!-- right -->
+            <TextBlock Grid.Row="0" Grid.Column="2" Text="Freq:"/>
+            <TextBlock Grid.Row="0" Grid.Column="3" x:Name="ValFreq" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="1" Grid.Column="2" Text="Period:"/>
+            <TextBlock Grid.Row="1" Grid.Column="3" x:Name="ValPer" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="2" Grid.Column="2" Text="Duty:"/>
+            <TextBlock Grid.Row="2" Grid.Column="3" x:Name="ValDuty" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="3" Grid.Column="2" Text="Rise:"/>
+            <TextBlock Grid.Row="3" Grid.Column="3" x:Name="ValRise" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="4" Grid.Column="2" Text="Fall:"/>
+            <TextBlock Grid.Row="4" Grid.Column="3" x:Name="ValFall" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="5" Grid.Column="2" Text="Overshoot:"/>
+            <TextBlock Grid.Row="5" Grid.Column="3" x:Name="ValOver" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="6" Grid.Column="2" Text="Undershoot:"/>
+            <TextBlock Grid.Row="6" Grid.Column="3" x:Name="ValUnder" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="7" Grid.Column="2" Text="+PulseW:"/>
+            <TextBlock Grid.Row="7" Grid.Column="3" x:Name="ValPwPos" Margin="8,0,0,0"/>
+            <TextBlock Grid.Row="8" Grid.Column="2" Text="-PulseW:"/>
+            <TextBlock Grid.Row="8" Grid.Column="3" x:Name="ValPwNeg" Margin="8,0,0,0"/>
+        </Grid>
+    </StackPanel>
+</UserControl>

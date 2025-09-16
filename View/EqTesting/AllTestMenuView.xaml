@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.EqTesting.AllTestMenuView"
+﻿<UserControl x:Class="HouseholdMS.View.EqTesting.AllTestMenuView" 
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -19,7 +19,6 @@
 
         <SolidColorBrush x:Key="CardBackground"   Color="#F9FAFB"/>
         <SolidColorBrush x:Key="CardBorder"       Color="#E5E7EB"/>
-
 
         <!-- Watermark TextBox -->
         <Style x:Key="WatermarkedTextBox" TargetType="TextBox">
@@ -62,35 +61,33 @@
             <Setter Property="Margin" Value="0,6,12,0"/>
         </Style>
 
-        
         <Style x:Key="ClearableWatermarkedTextBox"
-       BasedOn="{StaticResource WatermarkedTextBox}"
-       TargetType="TextBox">
+               BasedOn="{StaticResource WatermarkedTextBox}"
+               TargetType="TextBox">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Background" Value="{StaticResource InputBackground}"/>
             <Setter Property="BorderBrush" Value="{StaticResource InputBorder}"/>
             <Setter Property="BorderThickness" Value="1.5"/>
-            
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
                         <Grid>
                             <!-- Visible rounded border -->
                             <Border x:Name="Bd"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="8"/>
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8"/>
 
                             <!-- Text content host -->
                             <ScrollViewer x:Name="PART_ContentHost" Margin="10,6,30,6"/>
 
                             <!-- Watermark -->
                             <TextBlock Text="{TemplateBinding Tag}"
-                               Margin="12,0,0,0"
-                               Foreground="#9AA0A6"
-                               IsHitTestVisible="False"
-                               VerticalAlignment="Center">
+                                       Margin="12,0,0,0"
+                                       Foreground="#9AA0A6"
+                                       IsHitTestVisible="False"
+                                       VerticalAlignment="Center">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -109,18 +106,18 @@
 
                             <!-- Clear button -->
                             <Button x:Name="PART_ClearBtn"
-                            Content="✕"
-                            Width="18" Height="18"
-                            FontSize="11"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            Margin="0,0,8,0"
-                            Cursor="Hand"
-                            Focusable="False"
-                            Background="#FFF0F0F0"
-                            BorderBrush="#DDD"
-                            BorderThickness="1"
-                            Padding="0"/>
+                                    Content="✕"
+                                    Width="18" Height="18"
+                                    FontSize="11"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,8,0"
+                                    Cursor="Hand"
+                                    Focusable="False"
+                                    Background="#FFF0F0F0"
+                                    BorderBrush="#DDD"
+                                    BorderThickness="1"
+                                    Padding="0"/>
                         </Grid>
 
                         <!-- Visual triggers -->
@@ -133,8 +130,6 @@
                                 <Setter TargetName="PART_ClearBtn" Property="Visibility" Value="Collapsed"/>
                                 <Setter TargetName="Bd" Property="Opacity" Value="0.6"/>
                             </Trigger>
-
-                            
                             <Trigger Property="IsKeyboardFocused" Value="True">
                                 <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource InputBorderFocus}"/>
                             </Trigger>
@@ -143,7 +138,6 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
 
         <!-- Small inline indeterminate progress bar -->
         <Style x:Key="InlineSpinner" TargetType="ProgressBar">
@@ -162,9 +156,6 @@
             <Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling"/>
         </Style>
 
-        
-        
-
         <!-- Section header text -->
         <Style x:Key="SectionHeader" TargetType="TextBlock">
             <Setter Property="FontSize" Value="16"/>
@@ -182,7 +173,6 @@
             <Setter Property="Padding" Value="16"/>
             <Setter Property="Margin" Value="0,8,0,0"/>
         </Style>
-
     </UserControl.Resources>
 
     <!-- SINGLE root content -->
@@ -247,18 +237,17 @@
                                    Target="{Binding ElementName=BatterySerialBox}"/>
                             <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,8">
                                 <TextBox x:Name="BatterySerialBox"
-             Height="40"                               
-                                    Style="{StaticResource ClearableWatermarkedTextBox}"
-             Tag="Enter battery serial"
-             HorizontalAlignment="Stretch"
-             PreviewTextInput="BatterySerialBox_PreviewTextInput"
-             TextChanged="BatterySerialBox_TextChanged"/>
-                                    <TextBlock x:Name="BatterySerialError"
-               Foreground="#C62828"
-               FontSize="12"
-               Visibility="Collapsed"/>
+                                         Height="40"
+                                         Style="{StaticResource ClearableWatermarkedTextBox}"
+                                         Tag="Enter battery serial"
+                                         HorizontalAlignment="Stretch"
+                                         PreviewTextInput="BatterySerialBox_PreviewTextInput"
+                                         TextChanged="BatterySerialBox_TextChanged"/>
+                                <TextBlock x:Name="BatterySerialError"
+                                           Foreground="#C62828"
+                                           FontSize="12"
+                                           Visibility="Collapsed"/>
                             </StackPanel>
-
 
                             <!-- Household -->
                             <Label Grid.Row="2" Grid.Column="0"
@@ -268,20 +257,19 @@
                             <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,8">
                                 <Grid>
                                     <TextBox x:Name="HouseholdSearchBox"
-                 Height="40"                              
-                                        Style="{StaticResource ClearableWatermarkedTextBox}"
-                 Tag="Type name / phone / municipality / district / username"
-                 HorizontalAlignment="Stretch"
-                 TextChanged="OnHouseholdSearchChanged"
-                 KeyDown="HouseholdSearchBox_KeyDown"
-                 GotFocus="HouseholdSearchBox_GotFocus"
-                 LostKeyboardFocus="HouseholdSearchBox_LostKeyboardFocus"/>
-                                        <ProgressBar x:Name="HouseholdSpinner"
-                     Style="{StaticResource InlineSpinner}"
-                     VerticalAlignment="Bottom"/>
+                                             Height="40"
+                                             Style="{StaticResource ClearableWatermarkedTextBox}"
+                                             Tag="Type name / phone / municipality / district / username"
+                                             HorizontalAlignment="Stretch"
+                                             TextChanged="OnHouseholdSearchChanged"
+                                             KeyDown="HouseholdSearchBox_KeyDown"
+                                             GotFocus="HouseholdSearchBox_GotFocus"
+                                             LostKeyboardFocus="HouseholdSearchBox_LostKeyboardFocus"/>
+                                    <ProgressBar x:Name="HouseholdSpinner"
+                                                 Style="{StaticResource InlineSpinner}"
+                                                 VerticalAlignment="Bottom"/>
                                 </Grid>
 
-                               
                                 <Border x:Name="HouseholdSelectedChip"
                                         Background="#EEF6FF"
                                         BorderBrush="#BFDBFE"
@@ -297,10 +285,8 @@
                                 </Border>
                             </StackPanel>
 
-                           
                             <TextBlock Grid.Row="2" Grid.Column="2" Margin="8,8,0,0" Visibility="Collapsed"/>
 
-                           
                             <Popup x:Name="HouseholdPopup"
                                    PlacementTarget="{Binding ElementName=HouseholdSearchBox}"
                                    Placement="Bottom"
@@ -339,17 +325,17 @@
                             <StackPanel Grid.Row="5" Grid.Column="1" Margin="0,0,0,8">
                                 <Grid>
                                     <TextBox x:Name="TechnicianSearchBox"
-                 Height="40"                             
-                                        Style="{StaticResource ClearableWatermarkedTextBox}"
-                 Tag="Type name / phone"
-                 HorizontalAlignment="Stretch"
-                 TextChanged="OnTechnicianSearchChanged"
-                 KeyDown="TechnicianSearchBox_KeyDown"
-                 GotFocus="TechnicianSearchBox_GotFocus"
-                 LostKeyboardFocus="TechnicianSearchBox_LostKeyboardFocus"/>
-                                        <ProgressBar x:Name="TechnicianSpinner"
-                     Style="{StaticResource InlineSpinner}"
-                     VerticalAlignment="Bottom"/>
+                                             Height="40"
+                                             Style="{StaticResource ClearableWatermarkedTextBox}"
+                                             Tag="Type name / phone"
+                                             HorizontalAlignment="Stretch"
+                                             TextChanged="OnTechnicianSearchChanged"
+                                             KeyDown="TechnicianSearchBox_KeyDown"
+                                             GotFocus="TechnicianSearchBox_GotFocus"
+                                             LostKeyboardFocus="TechnicianSearchBox_LostKeyboardFocus"/>
+                                    <ProgressBar x:Name="TechnicianSpinner"
+                                                 Style="{StaticResource InlineSpinner}"
+                                                 VerticalAlignment="Bottom"/>
                                 </Grid>
 
                                 <!-- Selected chip -->
@@ -402,18 +388,17 @@
                     </ScrollViewer>
 
                     <!-- Setup (FlowDocument-only) -->
-                    
                     <Grid x:Name="SetupPanel" Visibility="Collapsed" Margin="0 8 0 8">
                         <FlowDocumentScrollViewer x:Name="SetupViewer"
-                              VerticalScrollBarVisibility="Auto"
-                              Margin="0,0,0,8"/>
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  Margin="0,0,0,8"/>
                     </Grid>
 
                     <!-- Charging -->
                     <ScrollViewer x:Name="ChargingPanel"
-              Visibility="Collapsed"
-              Margin="0 8 0 8"
-              VerticalScrollBarVisibility="Auto">
+                                  Visibility="Collapsed"
+                                  Margin="0 8 0 8"
+                                  VerticalScrollBarVisibility="Auto">
                         <StackPanel>
                             <TextBlock Text="Charging started. Please wait…" FontSize="16" FontWeight="Bold"/>
                             <TextBlock x:Name="ChargingSub" Text="Monitoring in progress…" Margin="0,6,0,12"/>
@@ -423,18 +408,16 @@
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource SectionHeader}" Text="Annotations"/>
                                     <TextBox x:Name="ChargingNotesBox"
-                         Style="{StaticResource ClearableWatermarkedTextBox}"
-                         Tag="Describe any issues, errors, observations…"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         VerticalScrollBarVisibility="Auto"
-                         MinHeight="140"/>
+                                             Style="{StaticResource ClearableWatermarkedTextBox}"
+                                             Tag="Describe any issues, errors, observations…"
+                                             AcceptsReturn="True"
+                                             TextWrapping="Wrap"
+                                             VerticalScrollBarVisibility="Auto"
+                                             MinHeight="140"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
                     </ScrollViewer>
-
-
                 </Grid>
             </Grid>
         </Border>
@@ -443,10 +426,8 @@
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 16 0 0">
             <Button x:Name="ManualButton" Content="📄 Manual" Width="120" Margin="4" Click="OnOpenManual" Visibility="Collapsed"/>
             <Button x:Name="StartButton" Content="▶ Start" Width="120" Margin="4" Click="OnStartFromPrecaution" Visibility="Collapsed"/>
-
             <Button x:Name="BackButton" Content="⬅ Back" Width="110" Margin="4" Click="OnPrevStep" Visibility="Collapsed"/>
             <Button x:Name="NextButton" Content="Next ➡" Width="110" Margin="4" Click="OnNextStep" Visibility="Collapsed"/>
-
             <Button x:Name="FinishButton" Content="Finish Charging" Width="140" Margin="4" Click="OnFinishCharging" Visibility="Collapsed"/>
         </StackPanel>
     </Grid>

@@ -118,17 +118,11 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <!-- 0 Header -->
                     <RowDefinition Height="Auto"/>
-                    <!-- 1 Connection -->
                     <RowDefinition Height="Auto"/>
-                    <!-- 2 Function+Math+Actions -->
                     <RowDefinition Height="Auto"/>
-                    <!-- 3 Advanced Controls (NEW) -->
                     <RowDefinition Height="*"/>
-                    <!-- 4 Readout+Graph -->
                     <RowDefinition Height="Auto"/>
-                    <!-- 5 Status -->
                 </Grid.RowDefinitions>
 
                 <!-- Header -->
@@ -136,7 +130,6 @@
                     <StackPanel DockPanel.Dock="Left">
                         <TextBlock Text="Measurement Console" FontSize="22" FontWeight="Bold"
                                    Foreground="{StaticResource HeaderFg}"/>
-                        <!-- Full raw *IDN?* appears here -->
                         <TextBlock x:Name="DeviceNameText" Text="—" Foreground="{StaticResource SubtleFg}" TextWrapping="Wrap"/>
                     </StackPanel>
                 </DockPanel>
@@ -244,12 +237,11 @@
                     </Grid>
                 </Border>
 
-                <!-- Advanced Controls (NEW, additive) -->
+                <!-- Advanced Controls -->
                 <Border Grid.Row="3" Style="{StaticResource Card}" Margin="0,0,0,14">
                     <StackPanel>
                         <TextBlock Text="Advanced Controls" Style="{StaticResource SectionTitle}" FontSize="16"/>
 
-                        <!-- Remote / Local & RATE? -->
                         <WrapPanel Margin="0,4,0,8">
                             <Button Content="Remote (SYST:REM)" Width="150" Click="Remote_Click"/>
                             <Button Content="Local (SYST:LOC)"  Width="140" Margin="8,0,0,0" Click="Local_Click"/>
@@ -257,7 +249,6 @@
                             <TextBlock x:Name="RateReadbackText" Margin="8,6,0,0" Foreground="{StaticResource SubtleFg}"/>
                         </WrapPanel>
 
-                        <!-- Temperature group -->
                         <GroupBox Header="Temperature (RTD / THER)" Margin="0,0,0,8">
                             <StackPanel Margin="8">
                                 <WrapPanel>
@@ -278,7 +269,6 @@
                             </StackPanel>
                         </GroupBox>
 
-                        <!-- Voltage ranges -->
                         <GroupBox Header="Voltage (V / mV)" Margin="0,0,0,8">
                             <StackPanel Margin="8">
                                 <WrapPanel>
@@ -305,7 +295,6 @@
                             </StackPanel>
                         </GroupBox>
 
-                        <!-- Current ranges -->
                         <GroupBox Header="Current (A / mA/µA)" Margin="0,0,0,8">
                             <StackPanel Margin="8">
                                 <WrapPanel>
@@ -333,7 +322,6 @@
                             </StackPanel>
                         </GroupBox>
 
-                        <!-- Resistance / Capacitance / Period / Averaging -->
                         <WrapPanel>
                             <Button Content="CONF:RES" Width="110" Click="ApplyRes_Click"/>
                             <TextBlock Text="Cap:" Margin="16,6,8,0"/>
@@ -348,7 +336,6 @@
                             <Button Content="FUNC?" Width="90" Margin="8,0,0,0" Click="QueryFunc_Click"/>
                         </WrapPanel>
 
-                        <!-- Averaging readbacks -->
                         <WrapPanel Margin="0,8,0,0">
                             <Button Content="AVG?" Width="80" Click="QueryAverAvg_Click"/>
                             <TextBlock x:Name="AvgValText" Margin="8,6,0,0"/>

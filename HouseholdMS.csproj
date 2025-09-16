@@ -187,6 +187,19 @@
     <Compile Include="View\InventoryView.xaml.cs">
       <DependentUpon>InventoryView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Measurement\Controls\AcquisitionTab.xaml.cs">
+      <DependentUpon>AcquisitionTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Measurement\Controls\ChannelsTab.xaml.cs">
+      <DependentUpon>ChannelsTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Measurement\Controls\ExportTab.xaml.cs">
+      <DependentUpon>ExportTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Measurement\Controls\MeasurementsTab.xaml.cs">
+      <DependentUpon>MeasurementsTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Measurement\MeasurementValues.cs" />
     <Compile Include="View\UserManagementView.xaml.cs">
       <DependentUpon>UserManagementView.xaml</DependentUpon>
     </Compile>
@@ -326,6 +339,22 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\InventoryView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Measurement\Controls\AcquisitionTab.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Measurement\Controls\ChannelsTab.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Measurement\Controls\ExportTab.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Measurement\Controls\MeasurementsTab.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
