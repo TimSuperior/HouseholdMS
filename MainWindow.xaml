@@ -1,4 +1,4 @@
-﻿<Window x:Class="HouseholdMS.MainWindow"
+﻿<Window x:Class="HouseholdMS.MainWindow" 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -215,6 +215,13 @@
                     <Button Content="📊 Multimeter"
                             Click="bt_MeasurementMenu"
                             Style="{StaticResource SubMenuButtonStyle}"/>
+                    <!-- NEW: Electronic Load (IT8615) -->
+                    <Button Content="⚡ Electronic Load (IT8615)"
+                            Click="bt_ElectronicLoadMenu"
+                            Style="{StaticResource SubMenuButtonStyle}"/>
+                    <Button Content="Electronic Load 2"
+                            Click="Button_Click_ElectronicLoad"
+                            Style="{StaticResource SubMenuButtonStyle}"/>       
 
                     <!-- Spacer -->
                     <Border Height="8"/>

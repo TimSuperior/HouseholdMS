@@ -1,10 +1,11 @@
-﻿using HouseholdMS.View;
+﻿using HouseholdMS.Controls;
+using HouseholdMS.View;
+using HouseholdMS.View.Dashboard;
+using HouseholdMS.View.EqTesting;
+using HouseholdMS.View.Measurement;
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using HouseholdMS.View.EqTesting;
-using HouseholdMS.View.Measurement;
-using HouseholdMS.View.Dashboard;
 
 namespace HouseholdMS
 {
@@ -69,8 +70,6 @@ namespace HouseholdMS
             MainContent.Content = new HouseholdMS.View.UserManagementView(_currentUserRole, _currentUsername);
         }
 
-
-
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
             var loginWindow = new Login();
@@ -91,7 +90,11 @@ namespace HouseholdMS
         private void bt_SwitchTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new SwitchTestMenuView(_currentUserRole);
         private void bt_SettingMenu_Click(object sender, RoutedEventArgs e) => MainContent.Content = new SettingMenuView(_currentUserRole);
         private void bt_MeasurementMenu(object sender, RoutedEventArgs e) => MainContent.Content = new MeasurementView();
-        private void bt_OscilloscopeMenu(object sender, RoutedEventArgs e) => MainContent.Content = new HouseholdMS.View.Measurement.OscilloscopeView();
+        private void bt_OscilloscopeMenu(object sender, RoutedEventArgs e) => MainContent.Content = new OscilloscopeView();
+
+        // NEW: Electronic Load (IT8615) menu handler
+        private void bt_ElectronicLoadMenu(object sender, RoutedEventArgs e) => MainContent.Content = new ElectronicLoadIT8615View();
+
         private void bt_Template_Click(object sender, RoutedEventArgs e) => MainContent.Content = new TemplateView();
         private void bt_Dashboard_Click(object sender, RoutedEventArgs e) => MainContent.Content = new DashboardView(_currentUserRole);
 
@@ -100,5 +103,11 @@ namespace HouseholdMS
             MainContent.Content = new TestReportsView(_currentUserRole);
             MainContent.Content = new SitesView(_currentUserRole);
         }
+
+        private void Button_Click_ElectronicLoad(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new It8615Control();
+        }
+
     }
 }
