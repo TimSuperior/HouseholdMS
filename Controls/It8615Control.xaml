@@ -30,7 +30,7 @@
 
         <!-- Top bar -->
         <DockPanel Margin="8">
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
                 <Label Content="Resource:" VerticalAlignment="Center" Margin="0,0,6,0"/>
                 <ComboBox x:Name="ResourceCombo" Width="320" Margin="0,0,6,0"/>
                 <Button x:Name="BtnRefresh" Content="Discover" Click="BtnRefresh_Click" Margin="0,0,6,0"/>
@@ -39,7 +39,7 @@
                 <TextBlock Text="   IDN:" VerticalAlignment="Center" Margin="12,0,4,0"/>
                 <TextBlock x:Name="TxtIdn" FontWeight="Bold" VerticalAlignment="Center"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
                 <TextBlock Text="Timeout(ms)" VerticalAlignment="Center" Margin="0,0,6,0"/>
                 <TextBox x:Name="TxtTimeout" Width="80" Text="2000" Margin="0,0,10,0"/>
                 <TextBlock Text="Retries" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -97,21 +97,125 @@
                             </StackPanel>
                         </GroupBox>
 
+                        <!-- Meter panel with tiny charts -->
                         <GroupBox Header="Meter (Live)" Grid.Column="1" Margin="4">
-                            <UniformGrid Rows="4" Columns="2" Margin="8">
-                                <TextBlock Text="Vrms:"/>
-                                <TextBlock x:Name="ValVrms" FontSize="16" FontWeight="Bold"/>
-                                <TextBlock Text="Irms:"/>
-                                <TextBlock x:Name="ValIrms" FontSize="16" FontWeight="Bold"/>
-                                <TextBlock Text="Power:"/>
-                                <TextBlock x:Name="ValPower" FontSize="16" FontWeight="Bold"/>
-                                <TextBlock Text="PF:"/>
-                                <TextBlock x:Name="ValPf" FontSize="16" FontWeight="Bold"/>
-                                <TextBlock Text="Freq:"/>
-                                <TextBlock x:Name="ValFreq" FontSize="16" FontWeight="Bold"/>
-                                <TextBlock Text="CrestF:"/>
-                                <TextBlock x:Name="ValCf" FontSize="16" FontWeight="Bold"/>
-                            </UniformGrid>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="8">
+                                    <!-- Vrms -->
+                                    <StackPanel Margin="0,0,0,10">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Vrms:"/>
+                                            <TextBlock x:Name="ValVrms" FontSize="16" FontWeight="Bold" Margin="8,0,0,0"/>
+                                        </StackPanel>
+                                        <chart:SfChart Height="70" Margin="0,4,0,0">
+                                            <chart:SfChart.PrimaryAxis>
+                                                <chart:NumericalAxis Visibility="Collapsed"/>
+                                            </chart:SfChart.PrimaryAxis>
+                                            <chart:SfChart.SecondaryAxis>
+                                                <chart:NumericalAxis Visibility="Collapsed"/>
+                                            </chart:SfChart.SecondaryAxis>
+                                            <chart:LineSeries EnableAnimation="False" StrokeThickness="1.2"
+                                                              ItemsSource="{Binding VrmsHistory}"
+                                                              XBindingPath="Index" YBindingPath="Value"/>
+                                        </chart:SfChart>
+                                    </StackPanel>
+
+                                    <!-- Irms -->
+                                    <StackPanel Margin="0,0,0,10">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Irms:"/>
+                                            <TextBlock x:Name="ValIrms" FontSize="16" FontWeight="Bold" Margin="8,0,0,0"/>
+                                        </StackPanel>
+                                        <chart:SfChart Height="70" Margin="0,4,0,0">
+                                            <chart:SfChart.PrimaryAxis>
+                                                <chart:NumericalAxis Visibility="Collapsed"/>
+                                            </chart:SfChart.PrimaryAxis>
+                                            <chart:SfChart.SecondaryAxis>
+                                                <chart:NumericalAxis Visibility="Collapsed"/>
+                                            </chart:SfChart.SecondaryAxis>
+                                            <chart:LineSeries EnableAnimation="False" StrokeThickness="1.2"
+                                                              ItemsSource="{Binding IrmsHistory}"
+                                                              XBindingPath="Index" YBindingPath="Value"/>
+                                        </chart:SfChart>
+                                    </StackPanel>
+
+                                    <!-- Power -->
+                                    <StackPanel Margin="0,0,0,10">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Power:"/>
+                                            <TextBlock x:Name="ValPower" FontSize="16" FontWeight="Bold" Margin="8,0,0,0"/>
+                                        </StackPanel>
+                                        <chart:SfChart Height="70" Margin="0,4,0,0">
+                                            <chart:SfChart.PrimaryAxis>
+                                                <chart:NumericalAxis Visibility="Collapsed"/>
+                                            </chart:SfChart.PrimaryAxis>
+                                            <chart:SfChart.SecondaryAxis>
+                                                <chart:NumericalAxis Visibility="Collapsed"/>
+                                            </chart:SfChart.SecondaryAxis>
+                                            <chart:LineSeries EnableAnimation="False" StrokeThickness="1.2"
+                                                              ItemsSource="{Binding PowerHistory}"
+                                                              XBindingPath="Index" YBindingPath="Value"/>
+                                        </chart:SfChart>
+                                    </StackPanel>
+
+                                    <!-- PF -->
+                                    <StackPanel Margin="0,0,0,10">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="PF:"/>
+                                            <TextBlock x:Name="ValPf" FontSize="16" FontWeight="Bold" Margin="8,0,0,0"/>
+                                        </StackPanel>
+                                        <chart:SfChart Height="70" Margin="0,4,0,0">
+                                            <chart:SfChart.PrimaryAxis>
+                                                <chart:NumericalAxis Visibility="Collapsed"/>
+                                            </chart:SfChart.PrimaryAxis>
+                                            <chart:SfChart.SecondaryAxis>
+                                                <chart:NumericalAxis Visibility="Collapsed"/>
+                                            </chart:SfChart.SecondaryAxis>
+                                            <chart:LineSeries EnableAnimation="False" StrokeThickness="1.2"
+                                                              ItemsSource="{Binding PfHistory}"
+                                                              XBindingPath="Index" YBindingPath="Value"/>
+                                        </chart:SfChart>
+                                    </StackPanel>
+
+                                    <!-- Freq -->
+                                    <StackPanel Margin="0,0,0,10">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Freq:"/>
+                                            <TextBlock x:Name="ValFreq" FontSize="16" FontWeight="Bold" Margin="8,0,0,0"/>
+                                        </StackPanel>
+                                        <chart:SfChart Height="70" Margin="0,4,0,0">
+                                            <chart:SfChart.PrimaryAxis>
+                                                <chart:NumericalAxis Visibility="Collapsed"/>
+                                            </chart:SfChart.PrimaryAxis>
+                                            <chart:SfChart.SecondaryAxis>
+                                                <chart:NumericalAxis Visibility="Collapsed"/>
+                                            </chart:SfChart.SecondaryAxis>
+                                            <chart:LineSeries EnableAnimation="False" StrokeThickness="1.2"
+                                                              ItemsSource="{Binding FreqHistory}"
+                                                              XBindingPath="Index" YBindingPath="Value"/>
+                                        </chart:SfChart>
+                                    </StackPanel>
+
+                                    <!-- Crest Factor -->
+                                    <StackPanel Margin="0,0,0,6">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="CrestF:"/>
+                                            <TextBlock x:Name="ValCf" FontSize="16" FontWeight="Bold" Margin="8,0,0,0"/>
+                                        </StackPanel>
+                                        <chart:SfChart Height="70" Margin="0,4,0,0">
+                                            <chart:SfChart.PrimaryAxis>
+                                                <chart:NumericalAxis Visibility="Collapsed"/>
+                                            </chart:SfChart.PrimaryAxis>
+                                            <chart:SfChart.SecondaryAxis>
+                                                <chart:NumericalAxis Visibility="Collapsed"/>
+                                            </chart:SfChart.SecondaryAxis>
+                                            <chart:LineSeries EnableAnimation="False" StrokeThickness="1.2"
+                                                              ItemsSource="{Binding CfHistory}"
+                                                              XBindingPath="Index" YBindingPath="Value"/>
+                                        </chart:SfChart>
+                                    </StackPanel>
+                                </StackPanel>
+                            </ScrollViewer>
                         </GroupBox>
 
                         <GroupBox Header="Settings and Results" Grid.Column="2" Margin="4">
@@ -153,7 +257,7 @@
                         <TextBox x:Name="TxtTrigLevel" Width="80" Text="10" Margin="6,0,0,0"/>
                     </WrapPanel>
 
-                    <!-- Syncfusion WPF Chart (single Y axis for compatibility) -->
+                    <!-- Big scope chart -->
                     <chart:SfChart x:Name="ScopeChart" Grid.Row="1">
                         <chart:SfChart.PrimaryAxis>
                             <chart:NumericalAxis Header="Sample"/>
@@ -246,7 +350,11 @@
                         <TextBlock Text="Latest:" VerticalAlignment="Center" Margin="0,0,6,0"/>
                         <TextBlock x:Name="TxtLogPath" VerticalAlignment="Center"/>
                     </StackPanel>
-                    <ListBox x:Name="ListLog"/>
+
+                    <ListBox x:Name="ListLog"
+                             VirtualizingStackPanel.IsVirtualizing="True"
+                             VirtualizingStackPanel.VirtualizationMode="Recycling"
+                             ScrollViewer.CanContentScroll="True"/>
                 </DockPanel>
             </TabItem>
         </TabControl>

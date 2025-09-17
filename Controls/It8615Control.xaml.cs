@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -6,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using HouseholdMS.Drivers;
 using HouseholdMS.Models;
@@ -15,34 +17,74 @@ namespace HouseholdMS.Controls
 {
     public partial class It8615Control : UserControl
     {
-        // Data for Syncfusion charts (bind in XAML)
+        // Big scope series (Syncfusion)
         public ObservableCollection<SamplePoint> ScopeV { get; private set; } = new ObservableCollection<SamplePoint>();
         public ObservableCollection<SamplePoint> ScopeI { get; private set; } = new ObservableCollection<SamplePoint>();
         public ObservableCollection<SamplePoint> Harmonics { get; private set; } = new ObservableCollection<SamplePoint>();
 
+        // Tiny “sparkline” series under each meter
+        public ObservableCollection<SamplePoint> VrmsHistory { get; } = new ObservableCollection<SamplePoint>();
+        public ObservableCollection<SamplePoint> IrmsHistory { get; } = new ObservableCollection<SamplePoint>();
+        public ObservableCollection<SamplePoint> PowerHistory { get; } = new ObservableCollection<SamplePoint>();
+        public ObservableCollection<SamplePoint> PfHistory { get; } = new ObservableCollection<SamplePoint>();
+        public ObservableCollection<SamplePoint> FreqHistory { get; } = new ObservableCollection<SamplePoint>();
+        public ObservableCollection<SamplePoint> CfHistory { get; } = new ObservableCollection<SamplePoint>();
+
+        private int _idxVrms, _idxIrms, _idxPow, _idxPf, _idxFreq, _idxCf;
+        private const int MiniMaxPoints = 200; // keep last N
+
+        // Logging + IO
         private readonly CommandLogger _logger = new CommandLogger();
         private readonly VisaSession _visa = new VisaSession();
         private ItechIt8615 _it;
         private AcquisitionService _acq;
         private readonly ObservableCollection<SequenceStep> _steps = new ObservableCollection<SequenceStep>();
 
+        // Smooth log flushing (prevents UI freeze)
+        private readonly ConcurrentQueue<string> _logQueue = new ConcurrentQueue<string>();
+        private DispatcherTimer _logFlushTimer;
+
         public It8615Control()
         {
             InitializeComponent();
-            this.DataContext = this;
+            DataContext = this;
 
-            _logger.OnLog += delegate (string s)
-            {
-                Dispatcher.Invoke(delegate
-                {
-                    ListLog.Items.Add(s);
-                    if (ListLog.Items.Count > 2000) ListLog.Items.RemoveAt(0);
-                    TxtLogPath.Text = _logger.LogDirectory;
-                });
-            };
+            // Batch logs to UI (every 250ms, up to 100 lines)
+            _logger.OnLog += s => _logQueue.Enqueue(s);
+            _logFlushTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+            _logFlushTimer.Tick += (s, e) => FlushLogs();
+            _logFlushTimer.Start();
+            TxtLogPath.Text = _logger.LogDirectory;
 
+            // Steps
             GridSteps.ItemsSource = _steps;
-            _steps.Add(new SequenceStep { Index = 1, DurationMs = 1000, AcDc = "AC", Function = "CURR", Setpoint = 1.0, Pf = 1.0, Cf = 1.41, Repeat = 1 });
+            _steps.Add(new SequenceStep
+            {
+                Index = 1,
+                DurationMs = 1000,
+                AcDc = "AC",
+                Function = "CURR",
+                Setpoint = 1.0,
+                Pf = 1.0,
+                Cf = 1.41,
+                Repeat = 1
+            });
+
+            // Cleanup when control is unloaded
+            Unloaded += async (_, __) => await SafeShutdownAsync();
+        }
+
+        private void FlushLogs()
+        {
+            int added = 0;
+            while (added < 100 && _logQueue.TryDequeue(out var line))
+            {
+                ListLog.Items.Add(line);
+                added++;
+            }
+            // cap list to keep it light
+            while (ListLog.Items.Count > 500)
+                ListLog.Items.RemoveAt(0);
         }
 
         // ---------- helpers ----------
@@ -55,31 +97,24 @@ namespace HouseholdMS.Controls
 
         private static string GetComboText(ComboBox cbo, string fallback)
         {
-            // ItemsSource may be an array of strings OR ComboBoxItem elements.
             if (cbo.SelectedItem is string s1) return s1;
-            var item = cbo.SelectedItem as ComboBoxItem;
-            if (item != null) return item.Content != null ? item.Content.ToString() : fallback;
+            if (cbo.SelectedItem is ComboBoxItem ci && ci.Content != null) return ci.Content.ToString();
 
             if (cbo.Items.Count > 0)
             {
                 cbo.SelectedIndex = 0;
                 if (cbo.SelectedItem is string s2) return s2;
-                var first = cbo.SelectedItem as ComboBoxItem;
-                if (first != null && first.Content != null) return first.Content.ToString();
+                if (cbo.SelectedItem is ComboBoxItem ci2 && ci2.Content != null) return ci2.Content.ToString();
             }
             return fallback;
         }
 
         private static double ParseDoubleOr(TextBox tb, double @default)
-        {
-            double v;
-            return double.TryParse(tb.Text, out v) ? v : @default;
-        }
+            => double.TryParse(tb.Text, out var v) ? v : @default;
 
         private static int ParseIntOr(TextBox tb, int @default, int min, int max)
         {
-            int v;
-            if (!int.TryParse(tb.Text, out v)) v = @default;
+            if (!int.TryParse(tb.Text, out var v)) v = @default;
             if (v < min) v = min;
             if (v > max) v = max;
             return v;
@@ -90,10 +125,10 @@ namespace HouseholdMS.Controls
         {
             try
             {
-                var list = _visa.DiscoverResources(new string[] { "USB?*INSTR", "TCPIP?*INSTR", "GPIB?*INSTR" });
+                var list = _visa.DiscoverResources(new[] { "USB?*INSTR", "TCPIP?*INSTR", "GPIB?*INSTR" });
                 ResourceCombo.ItemsSource = list;
                 if (list.Count > 0) ResourceCombo.SelectedIndex = 0;
-                SetStatus("Found " + list.Count + " VISA resources.");
+                SetStatus($"Found {list.Count} VISA resources.");
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -102,9 +137,13 @@ namespace HouseholdMS.Controls
         {
             try
             {
-                if (ResourceCombo.SelectedItem == null) { MessageBox.Show("Pick a VISA resource."); return; }
-                int t; if (!int.TryParse(TxtTimeout.Text, out t)) t = 2000; _visa.TimeoutMs = t;
-                int r; if (!int.TryParse(TxtRetries.Text, out r)) r = 2; _visa.Retries = r;
+                if (ResourceCombo.SelectedItem == null)
+                {
+                    MessageBox.Show("Pick a VISA resource.");
+                    return;
+                }
+                _visa.TimeoutMs = int.TryParse(TxtTimeout.Text, out var t) ? t : 2000;
+                _visa.Retries = int.TryParse(TxtRetries.Text, out var r) ? r : 2;
 
                 _visa.Open((string)ResourceCombo.SelectedItem, _logger);
                 _it = new ItechIt8615(_visa, _logger);
@@ -118,10 +157,10 @@ namespace HouseholdMS.Controls
                 TxtLimits.Text = _it.DescribeRanges();
 
                 _acq = new AcquisitionService(_it, _logger);
-                _acq.OnReading += delegate (InstrumentReading rr) { Dispatcher.Invoke(delegate { UpdateMeter(rr); }); };
-                _acq.Start();
+                // Throttle meter updates by dispatching at acquisition cadence (5 Hz default)
+                _acq.OnReading += rr => Dispatcher.Invoke(() => UpdateMeter(rr));
+                _acq.Start(hz: 5); // gentle on UI & instrument
 
-                // Make sure trigger combo boxes have a selection to avoid NREs later
                 if (CboTrigSource.SelectedIndex < 0 && CboTrigSource.Items.Count > 0) CboTrigSource.SelectedIndex = 0;
                 if (CboTrigSlope.SelectedIndex < 0 && CboTrigSlope.Items.Count > 0) CboTrigSlope.SelectedIndex = 0;
 
@@ -147,6 +186,7 @@ namespace HouseholdMS.Controls
         {
             try
             {
+                _logFlushTimer?.Stop();
                 if (_acq != null) _acq.Stop();
                 if (_it != null)
                 {
@@ -157,14 +197,31 @@ namespace HouseholdMS.Controls
             catch { }
         }
 
+        // ----- Meter + tiny charts -----
         private void UpdateMeter(InstrumentReading r)
         {
+            // Text values
             ValVrms.Text = r.Vrms.ToString("F3") + " V";
             ValIrms.Text = r.Irms.ToString("F3") + " A";
             ValPower.Text = r.Power.ToString("F3") + " W";
             ValPf.Text = r.Pf.ToString("F3");
             ValFreq.Text = r.Freq.ToString("F2") + " Hz";
             ValCf.Text = r.CrestFactor.ToString("F2");
+
+            // Append to small charts (keep last MiniMaxPoints)
+            AddMiniPoint(VrmsHistory, ref _idxVrms, r.Vrms);
+            AddMiniPoint(IrmsHistory, ref _idxIrms, r.Irms);
+            AddMiniPoint(PowerHistory, ref _idxPow, r.Power);
+            AddMiniPoint(PfHistory, ref _idxPf, r.Pf);
+            AddMiniPoint(FreqHistory, ref _idxFreq, r.Freq);
+            AddMiniPoint(CfHistory, ref _idxCf, r.CrestFactor);
+        }
+
+        private void AddMiniPoint(ObservableCollection<SamplePoint> series, ref int idx, double value)
+        {
+            series.Add(new SamplePoint { Index = idx++, Value = value });
+            if (series.Count > MiniMaxPoints)
+                series.RemoveAt(0);
         }
 
         // ----- Parameters -----
@@ -289,12 +346,10 @@ namespace HouseholdMS.Controls
             catch (Exception ex) { Fail(ex); }
         }
 
-        // replace the whole method with this
         private async Task RefreshScopeAsync()
         {
             if (!EnsureConnected()) return;
 
-            // ValueTuple cannot be null; check the inner arrays instead
             var tup = await _it.FetchWaveformsAsync();
             var v = tup.v ?? Array.Empty<double>();
             var i = tup.i ?? Array.Empty<double>();
@@ -308,7 +363,6 @@ namespace HouseholdMS.Controls
             for (int k = 0; k < i.Length; k++)
                 ScopeI.Add(new SamplePoint { Index = k, Value = i[k] });
         }
-
 
         // ----- Harmonics -----
         private async void BtnMeasureHarmonics_Click(object sender, RoutedEventArgs e)
@@ -336,8 +390,7 @@ namespace HouseholdMS.Controls
 
         private void BtnDeleteStep_Click(object sender, RoutedEventArgs e)
         {
-            var st = GridSteps.SelectedItem as SequenceStep;
-            if (st != null) _steps.Remove(st);
+            if (GridSteps.SelectedItem is SequenceStep st) _steps.Remove(st);
             Reindex();
         }
 
@@ -361,8 +414,7 @@ namespace HouseholdMS.Controls
 
         private void BtnLoadSeq_Click(object sender, RoutedEventArgs e)
         {
-            var d = new OpenFileDialog();
-            d.Filter = "JSON|*.json";
+            var d = new OpenFileDialog { Filter = "JSON|*.json" };
             if (d.ShowDialog() == true)
             {
                 var arr = Newtonsoft.Json.JsonConvert.DeserializeObject<SequenceStep[]>(File.ReadAllText(d.FileName));
@@ -373,11 +425,11 @@ namespace HouseholdMS.Controls
 
         private void BtnSaveSeq_Click(object sender, RoutedEventArgs e)
         {
-            var d = new SaveFileDialog();
-            d.Filter = "JSON|*.json";
+            var d = new SaveFileDialog { Filter = "JSON|*.json" };
             if (d.ShowDialog() == true)
             {
-                File.WriteAllText(d.FileName, Newtonsoft.Json.JsonConvert.SerializeObject(_steps.ToArray(), Newtonsoft.Json.Formatting.Indented));
+                File.WriteAllText(d.FileName,
+                    Newtonsoft.Json.JsonConvert.SerializeObject(_steps.ToArray(), Newtonsoft.Json.Formatting.Indented));
             }
         }
 
@@ -390,23 +442,25 @@ namespace HouseholdMS.Controls
         // ----- Settings/results -----
         private void BtnSaveSettings_Click(object sender, RoutedEventArgs e)
         {
-            var d = new SaveFileDialog(); d.Filter = "JSON|*.json";
+            var d = new SaveFileDialog { Filter = "JSON|*.json" };
             if (d.ShowDialog() == true)
             {
-                var cfg = new UserSettings();
-                cfg.AcDc = GetComboText(CboAcDc, "AC");
-                cfg.Function = GetComboText(CboFunction, "CURR");
-                cfg.Setpoint = ParseDoubleOr(TxtSetpoint, 1.0);
-                cfg.Pf = ParseDoubleOr(TxtPf, 1.0);
-                cfg.Cf = ParseDoubleOr(TxtCf, 1.41);
-                JsonFileStore.Save<UserSettings>(d.FileName, cfg);
+                var cfg = new UserSettings
+                {
+                    AcDc = GetComboText(CboAcDc, "AC"),
+                    Function = GetComboText(CboFunction, "CURR"),
+                    Setpoint = ParseDoubleOr(TxtSetpoint, 1.0),
+                    Pf = ParseDoubleOr(TxtPf, 1.0),
+                    Cf = ParseDoubleOr(TxtCf, 1.41)
+                };
+                JsonFileStore.Save(d.FileName, cfg);
                 TxtStatus.Text = "Saved " + d.FileName;
             }
         }
 
         private void BtnLoadSettings_Click(object sender, RoutedEventArgs e)
         {
-            var d = new OpenFileDialog(); d.Filter = "JSON|*.json";
+            var d = new OpenFileDialog { Filter = "JSON|*.json" };
             if (d.ShowDialog() == true)
             {
                 var cfg = JsonFileStore.Load<UserSettings>(d.FileName);
@@ -421,7 +475,7 @@ namespace HouseholdMS.Controls
 
         private void BtnExportCsv_Click(object sender, RoutedEventArgs e)
         {
-            var d = new SaveFileDialog(); d.Filter = "CSV|*.csv";
+            var d = new SaveFileDialog { Filter = "CSV|*.csv" };
             if (d.ShowDialog() == true && _acq != null)
             {
                 _acq.ExportCsv(d.FileName);
@@ -431,15 +485,15 @@ namespace HouseholdMS.Controls
 
         private void BtnReport_Click(object sender, RoutedEventArgs e)
         {
-            var d = new SaveFileDialog(); d.Filter = "PDF|*.pdf";
+            var d = new SaveFileDialog { Filter = "PDF|*.pdf" };
             if (d.ShowDialog() == true)
             {
-                var kv = new System.Tuple<string, string>[] {
-                    System.Tuple.Create("Vrms", ValVrms.Text),
-                    System.Tuple.Create("Irms", ValIrms.Text),
-                    System.Tuple.Create("Power", ValPower.Text),
-                    System.Tuple.Create("PF", ValPf.Text),
-                    System.Tuple.Create("Freq", ValFreq.Text)
+                var kv = new Tuple<string, string>[] {
+                    Tuple.Create("Vrms", ValVrms.Text),
+                    Tuple.Create("Irms", ValIrms.Text),
+                    Tuple.Create("Power", ValPower.Text),
+                    Tuple.Create("PF", ValPf.Text),
+                    Tuple.Create("Freq", ValFreq.Text)
                 };
                 ReportBuilderPdf.WriteSimplePdf(d.FileName, "IT8615 Report", kv);
                 TxtStatus.Text = "Report " + d.FileName;
@@ -453,7 +507,11 @@ namespace HouseholdMS.Controls
                 System.Diagnostics.Process.Start("explorer.exe", dir);
         }
 
-        private void SetStatus(string s) { TxtStatus.Text = s; }
-        private void Fail(Exception ex) { _logger.Log("ERR: " + ex.Message); MessageBox.Show(ex.Message, "Error"); }
+        private void SetStatus(string s) => TxtStatus.Text = s;
+        private void Fail(Exception ex)
+        {
+            _logger.Log("ERR: " + ex.Message);
+            MessageBox.Show(ex.Message, "Error");
+        }
     }
 }

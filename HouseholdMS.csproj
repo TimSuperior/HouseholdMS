@@ -136,20 +136,11 @@
     <Compile Include="Controls\It8615Control.xaml.cs">
       <DependentUpon>It8615Control.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Drivers\IInstrument.cs" />
-    <Compile Include="Drivers\ItechIt8615.cs" />
+    <Compile Include="Drivers\It8615.Driver.cs" />
     <Compile Include="Helpers\EpeverRegisters.cs" />
     <Compile Include="Helpers\ModbusRtuRaw.cs" />
-    <Compile Include="Models\SamplePoint.cs" />
-    <Compile Include="Services\AcquisitionService.cs" />
-    <Compile Include="Services\CommandLogger.cs" />
-    <Compile Include="Models\InstrumentReading.cs" />
-    <Compile Include="Services\JsonFileStore.cs" />
-    <Compile Include="Services\ReportBuilder.cs" />
-    <Compile Include="Services\RingBuffer.cs" />
-    <Compile Include="Services\SequenceRunner.cs" />
-    <Compile Include="Models\SequenceStep.cs" />
-    <Compile Include="Models\UserSettings.cs" />
+    <Compile Include="Models\It8615.Models.cs" />
+    <Compile Include="Services\It8615.Services.cs" />
     <Compile Include="Model\AppTypographySettings.cs" />
     <Compile Include="Model\DatabaseHelper.cs" />
     <Compile Include="Model\Household.cs" />
@@ -165,8 +156,6 @@
     <Compile Include="Services\OscilloscopeService.cs" />
     <Compile Include="Services\ScpiDevice.cs" />
     <Compile Include="Services\ScpiDeviceVisa.cs" />
-    <Compile Include="Services\VisaDiscovery.cs" />
-    <Compile Include="Services\VisaSession.cs" />
     <Compile Include="View\DashboardView.xaml.cs">
       <DependentUpon>DashboardView.xaml</DependentUpon>
     </Compile>
