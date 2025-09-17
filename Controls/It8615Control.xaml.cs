@@ -2,8 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,12 +15,12 @@ namespace HouseholdMS.Controls
 {
     public partial class It8615Control : UserControl
     {
-        // Big scope series (Syncfusion)
-        public ObservableCollection<SamplePoint> ScopeV { get; private set; } = new ObservableCollection<SamplePoint>();
-        public ObservableCollection<SamplePoint> ScopeI { get; private set; } = new ObservableCollection<SamplePoint>();
-        public ObservableCollection<SamplePoint> Harmonics { get; private set; } = new ObservableCollection<SamplePoint>();
+        // Big scope series
+        public ObservableCollection<SamplePoint> ScopeV { get; } = new ObservableCollection<SamplePoint>();
+        public ObservableCollection<SamplePoint> ScopeI { get; } = new ObservableCollection<SamplePoint>();
+        public ObservableCollection<SamplePoint> Harmonics { get; } = new ObservableCollection<SamplePoint>();
 
-        // Tiny “sparkline” series under each meter
+        // Tiny sparkline series
         public ObservableCollection<SamplePoint> VrmsHistory { get; } = new ObservableCollection<SamplePoint>();
         public ObservableCollection<SamplePoint> IrmsHistory { get; } = new ObservableCollection<SamplePoint>();
         public ObservableCollection<SamplePoint> PowerHistory { get; } = new ObservableCollection<SamplePoint>();
@@ -31,16 +29,14 @@ namespace HouseholdMS.Controls
         public ObservableCollection<SamplePoint> CfHistory { get; } = new ObservableCollection<SamplePoint>();
 
         private int _idxVrms, _idxIrms, _idxPow, _idxPf, _idxFreq, _idxCf;
-        private const int MiniMaxPoints = 200; // keep last N
+        private const int MiniMaxPoints = 200;
 
-        // Logging + IO
         private readonly CommandLogger _logger = new CommandLogger();
         private readonly VisaSession _visa = new VisaSession();
         private ItechIt8615 _it;
         private AcquisitionService _acq;
-        private readonly ObservableCollection<SequenceStep> _steps = new ObservableCollection<SequenceStep>();
 
-        // Smooth log flushing (prevents UI freeze)
+        // Smooth log flushing
         private readonly ConcurrentQueue<string> _logQueue = new ConcurrentQueue<string>();
         private DispatcherTimer _logFlushTimer;
 
@@ -49,29 +45,28 @@ namespace HouseholdMS.Controls
             InitializeComponent();
             DataContext = this;
 
-            // Batch logs to UI (every 250ms, up to 100 lines)
+            // Seed mini-charts so they render immediately
+            SeedMiniCharts();
+
+            // Batch logs to UI
             _logger.OnLog += s => _logQueue.Enqueue(s);
             _logFlushTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
             _logFlushTimer.Tick += (s, e) => FlushLogs();
             _logFlushTimer.Start();
             TxtLogPath.Text = _logger.LogDirectory;
 
-            // Steps
-            GridSteps.ItemsSource = _steps;
-            _steps.Add(new SequenceStep
-            {
-                Index = 1,
-                DurationMs = 1000,
-                AcDc = "AC",
-                Function = "CURR",
-                Setpoint = 1.0,
-                Pf = 1.0,
-                Cf = 1.41,
-                Repeat = 1
-            });
-
-            // Cleanup when control is unloaded
+            // Cleanup
             Unloaded += async (_, __) => await SafeShutdownAsync();
+        }
+
+        private void SeedMiniCharts()
+        {
+            VrmsHistory.Add(new SamplePoint { Index = 0, Value = 0 });
+            IrmsHistory.Add(new SamplePoint { Index = 0, Value = 0 });
+            PowerHistory.Add(new SamplePoint { Index = 0, Value = 0 });
+            PfHistory.Add(new SamplePoint { Index = 0, Value = 0 });
+            FreqHistory.Add(new SamplePoint { Index = 0, Value = 0 });
+            CfHistory.Add(new SamplePoint { Index = 0, Value = 0 });
         }
 
         private void FlushLogs()
@@ -82,7 +77,6 @@ namespace HouseholdMS.Controls
                 ListLog.Items.Add(line);
                 added++;
             }
-            // cap list to keep it light
             while (ListLog.Items.Count > 500)
                 ListLog.Items.RemoveAt(0);
         }
@@ -97,15 +91,33 @@ namespace HouseholdMS.Controls
 
         private static string GetComboText(ComboBox cbo, string fallback)
         {
-            if (cbo.SelectedItem is string s1) return s1;
-            if (cbo.SelectedItem is ComboBoxItem ci && ci.Content != null) return ci.Content.ToString();
+            // If it's a simple string item (e.g., "AC"/"DC")
+            if (cbo.SelectedItem is string s1)
+                return s1;
 
+            // If it's a ComboBoxItem, prefer Tag (machine token) when present; else use Content (display text)
+            if (cbo.SelectedItem is ComboBoxItem cbi)
+            {
+                if (cbi.Tag != null) return cbi.Tag.ToString();
+                if (cbi.Content != null) return cbi.Content.ToString();
+            }
+
+            // If nothing selected yet, pick first item and try again
             if (cbo.Items.Count > 0)
             {
                 cbo.SelectedIndex = 0;
-                if (cbo.SelectedItem is string s2) return s2;
-                if (cbo.SelectedItem is ComboBoxItem ci2 && ci2.Content != null) return ci2.Content.ToString();
+
+                if (cbo.SelectedItem is string s2)
+                    return s2;
+
+                var first = cbo.SelectedItem as ComboBoxItem;
+                if (first != null)
+                {
+                    if (first.Tag != null) return first.Tag.ToString();
+                    if (first.Content != null) return first.Content.ToString();
+                }
             }
+
             return fallback;
         }
 
@@ -157,9 +169,8 @@ namespace HouseholdMS.Controls
                 TxtLimits.Text = _it.DescribeRanges();
 
                 _acq = new AcquisitionService(_it, _logger);
-                // Throttle meter updates by dispatching at acquisition cadence (5 Hz default)
                 _acq.OnReading += rr => Dispatcher.Invoke(() => UpdateMeter(rr));
-                _acq.Start(hz: 5); // gentle on UI & instrument
+                _acq.Start(hz: 5);
 
                 if (CboTrigSource.SelectedIndex < 0 && CboTrigSource.Items.Count > 0) CboTrigSource.SelectedIndex = 0;
                 if (CboTrigSlope.SelectedIndex < 0 && CboTrigSlope.Items.Count > 0) CboTrigSlope.SelectedIndex = 0;
@@ -187,7 +198,7 @@ namespace HouseholdMS.Controls
             try
             {
                 _logFlushTimer?.Stop();
-                if (_acq != null) _acq.Stop();
+                _acq?.Stop();
                 if (_it != null)
                 {
                     try { await _it.EnableInputAsync(false); } catch { }
@@ -200,7 +211,6 @@ namespace HouseholdMS.Controls
         // ----- Meter + tiny charts -----
         private void UpdateMeter(InstrumentReading r)
         {
-            // Text values
             ValVrms.Text = r.Vrms.ToString("F3") + " V";
             ValIrms.Text = r.Irms.ToString("F3") + " A";
             ValPower.Text = r.Power.ToString("F3") + " W";
@@ -208,7 +218,6 @@ namespace HouseholdMS.Controls
             ValFreq.Text = r.Freq.ToString("F2") + " Hz";
             ValCf.Text = r.CrestFactor.ToString("F2");
 
-            // Append to small charts (keep last MiniMaxPoints)
             AddMiniPoint(VrmsHistory, ref _idxVrms, r.Vrms);
             AddMiniPoint(IrmsHistory, ref _idxIrms, r.Irms);
             AddMiniPoint(PowerHistory, ref _idxPow, r.Power);
@@ -262,7 +271,7 @@ namespace HouseholdMS.Controls
                 double pf = ParseDoubleOr(TxtPf, 1.0);
                 double cf = ParseDoubleOr(TxtCf, 1.41);
                 await _it.SetPfCfAsync(pf, cf);
-                SetStatus("PF/CF applied.");
+                SetStatus("Power factor / crest factor applied.");
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -296,7 +305,7 @@ namespace HouseholdMS.Controls
                 if (!EnsureConnected()) return;
                 await _it.EStopAsync();
                 ChkEnable.IsChecked = false;
-                SetStatus("E-STOP executed.");
+                SetStatus("Emergency stop executed.");
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -359,7 +368,6 @@ namespace HouseholdMS.Controls
 
             for (int k = 0; k < v.Length; k++)
                 ScopeV.Add(new SamplePoint { Index = k, Value = v[k] });
-
             for (int k = 0; k < i.Length; k++)
                 ScopeI.Add(new SamplePoint { Index = k, Value = i[k] });
         }
@@ -382,97 +390,7 @@ namespace HouseholdMS.Controls
             catch (Exception ex) { Fail(ex); }
         }
 
-        // ----- Sequence -----
-        private void BtnAddStep_Click(object sender, RoutedEventArgs e)
-        {
-            _steps.Add(new SequenceStep { Index = _steps.Count + 1, DurationMs = 1000, AcDc = "AC", Function = "CURR", Setpoint = 1, Pf = 1.0, Cf = 1.41, Repeat = 1 });
-        }
-
-        private void BtnDeleteStep_Click(object sender, RoutedEventArgs e)
-        {
-            if (GridSteps.SelectedItem is SequenceStep st) _steps.Remove(st);
-            Reindex();
-        }
-
-        private void BtnPreflight_Click(object sender, RoutedEventArgs e)
-        {
-            if (!EnsureConnected()) return;
-            var list = SequenceRunner.Preflight(_steps.ToList(), _it);
-            if (list.Count > 0) MessageBox.Show("Preflight issues:\n" + string.Join("\n", list), "Preflight");
-            else MessageBox.Show("Preflight OK");
-        }
-
-        private async void BtnRunSeq_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (!EnsureConnected()) return;
-                await SequenceRunner.RunAsync(_steps.ToList(), _it, _logger, ChkLoopSeq.IsChecked == true, CancellationToken.None);
-            }
-            catch (Exception ex) { Fail(ex); }
-        }
-
-        private void BtnLoadSeq_Click(object sender, RoutedEventArgs e)
-        {
-            var d = new OpenFileDialog { Filter = "JSON|*.json" };
-            if (d.ShowDialog() == true)
-            {
-                var arr = Newtonsoft.Json.JsonConvert.DeserializeObject<SequenceStep[]>(File.ReadAllText(d.FileName));
-                _steps.Clear();
-                for (int i = 0; i < arr.Length; i++) { arr[i].Index = i + 1; _steps.Add(arr[i]); }
-            }
-        }
-
-        private void BtnSaveSeq_Click(object sender, RoutedEventArgs e)
-        {
-            var d = new SaveFileDialog { Filter = "JSON|*.json" };
-            if (d.ShowDialog() == true)
-            {
-                File.WriteAllText(d.FileName,
-                    Newtonsoft.Json.JsonConvert.SerializeObject(_steps.ToArray(), Newtonsoft.Json.Formatting.Indented));
-            }
-        }
-
-        private void Reindex()
-        {
-            for (int i = 0; i < _steps.Count; i++) _steps[i].Index = i + 1;
-            GridSteps.Items.Refresh();
-        }
-
-        // ----- Settings/results -----
-        private void BtnSaveSettings_Click(object sender, RoutedEventArgs e)
-        {
-            var d = new SaveFileDialog { Filter = "JSON|*.json" };
-            if (d.ShowDialog() == true)
-            {
-                var cfg = new UserSettings
-                {
-                    AcDc = GetComboText(CboAcDc, "AC"),
-                    Function = GetComboText(CboFunction, "CURR"),
-                    Setpoint = ParseDoubleOr(TxtSetpoint, 1.0),
-                    Pf = ParseDoubleOr(TxtPf, 1.0),
-                    Cf = ParseDoubleOr(TxtCf, 1.41)
-                };
-                JsonFileStore.Save(d.FileName, cfg);
-                TxtStatus.Text = "Saved " + d.FileName;
-            }
-        }
-
-        private void BtnLoadSettings_Click(object sender, RoutedEventArgs e)
-        {
-            var d = new OpenFileDialog { Filter = "JSON|*.json" };
-            if (d.ShowDialog() == true)
-            {
-                var cfg = JsonFileStore.Load<UserSettings>(d.FileName);
-                CboAcDc.SelectedItem = cfg.AcDc;
-                CboFunction.SelectedItem = cfg.Function;
-                TxtSetpoint.Text = cfg.Setpoint.ToString("F3");
-                TxtPf.Text = cfg.Pf.ToString("F2");
-                TxtCf.Text = cfg.Cf.ToString("F2");
-                TxtStatus.Text = "Loaded " + d.FileName;
-            }
-        }
-
+        // ----- Results -----
         private void BtnExportCsv_Click(object sender, RoutedEventArgs e)
         {
             var d = new SaveFileDialog { Filter = "CSV|*.csv" };
@@ -489,11 +407,11 @@ namespace HouseholdMS.Controls
             if (d.ShowDialog() == true)
             {
                 var kv = new Tuple<string, string>[] {
-                    Tuple.Create("Vrms", ValVrms.Text),
-                    Tuple.Create("Irms", ValIrms.Text),
-                    Tuple.Create("Power", ValPower.Text),
-                    Tuple.Create("PF", ValPf.Text),
-                    Tuple.Create("Freq", ValFreq.Text)
+                    Tuple.Create("Voltage RMS", ValVrms.Text),
+                    Tuple.Create("Current RMS", ValIrms.Text),
+                    Tuple.Create("Power",       ValPower.Text),
+                    Tuple.Create("Power Factor",ValPf.Text),
+                    Tuple.Create("Frequency",   ValFreq.Text)
                 };
                 ReportBuilderPdf.WriteSimplePdf(d.FileName, "IT8615 Report", kv);
                 TxtStatus.Text = "Report " + d.FileName;

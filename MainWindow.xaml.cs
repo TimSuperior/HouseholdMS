@@ -1,4 +1,5 @@
-﻿using HouseholdMS.Controls;
+﻿// MainWindow.xaml.cs
+using HouseholdMS.Controls;
 using HouseholdMS.View;
 using HouseholdMS.View.Dashboard;
 using HouseholdMS.View.EqTesting;
@@ -14,12 +15,19 @@ namespace HouseholdMS
         private readonly string _currentUserRole;
         private readonly string _currentUsername;
 
+        // Expose for navbar bindings
+        public string CurrentUserRole => _currentUserRole;
+        public string CurrentUsername => string.IsNullOrWhiteSpace(_currentUsername) ? "Guest" : _currentUsername;
+
         public MainWindow(string userRole, string username)
         {
             InitializeComponent();
 
             _currentUserRole = (userRole ?? string.Empty).Trim();
             _currentUsername = username ?? string.Empty;
+
+            // Bind navbar text to these properties
+            DataContext = this;
 
             bool isAdmin = string.Equals(_currentUserRole, "Admin", StringComparison.OrdinalIgnoreCase);
             bool isTech = string.Equals(_currentUserRole, "Technician", StringComparison.OrdinalIgnoreCase);
@@ -35,7 +43,7 @@ namespace HouseholdMS
 
                 if (isAdmin)
                 {
-                    bt_SettingMenu.Visibility = Visibility.Visible;
+                    bt_SettingMenu.Visibility = Visibility.Visible;   // now top-nav settings button
                     NavManageUsersBtn.Visibility = Visibility.Visible;
                 }
                 else
@@ -51,7 +59,7 @@ namespace HouseholdMS
                 bt_ControllerTest.Visibility = Visibility.Collapsed;
                 bt_InverterTest.Visibility = Visibility.Collapsed;
                 bt_SwitchTest.Visibility = Visibility.Collapsed;
-                bt_SettingMenu.Visibility = Visibility.Collapsed;
+                bt_SettingMenu.Visibility = Visibility.Collapsed; // top-nav
                 bt_TestReports.Visibility = Visibility.Collapsed;
                 NavManageUsersBtn.Visibility = Visibility.Collapsed;
             }
@@ -65,6 +73,7 @@ namespace HouseholdMS
         private void bt_InventoryMenu(object sender, RoutedEventArgs e) => MainContent.Content = new InventoryView(_currentUserRole);
         private void bt_ServiceMenu(object sender, RoutedEventArgs e) => MainContent.Content = new ServiceRecordsView(_currentUserRole);
         private void bt_TestReports_Click(object sender, RoutedEventArgs e) => MainContent.Content = new TestReportsView(_currentUserRole);
+
         private void bt_ManageUsers(object sender, RoutedEventArgs e)
         {
             MainContent.Content = new HouseholdMS.View.UserManagementView(_currentUserRole, _currentUsername);
@@ -92,7 +101,6 @@ namespace HouseholdMS
         private void bt_MeasurementMenu(object sender, RoutedEventArgs e) => MainContent.Content = new MeasurementView();
         private void bt_OscilloscopeMenu(object sender, RoutedEventArgs e) => MainContent.Content = new OscilloscopeView();
 
-        // NEW: Electronic Load (IT8615) menu handler
         private void bt_ElectronicLoadMenu(object sender, RoutedEventArgs e) => MainContent.Content = new ElectronicLoadIT8615View();
 
         private void bt_Template_Click(object sender, RoutedEventArgs e) => MainContent.Content = new TemplateView();
@@ -108,6 +116,5 @@ namespace HouseholdMS
         {
             MainContent.Content = new It8615Control();
         }
-
     }
 }

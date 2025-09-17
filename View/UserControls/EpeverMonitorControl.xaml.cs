@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using HouseholdMS.Helpers;
+using HouseholdMS.Services;
 
 namespace HouseholdMS.View.UserControls
 {
@@ -23,7 +24,7 @@ namespace HouseholdMS.View.UserControls
         public EpeverMonitorControl()
         {
             InitializeComponent();
-            RefreshPorts();
+            _ = RefreshPortsAsync();
             TxtStatus.Text = "Select COM port, set ID, click Connect.";
             this.Unloaded += EpeverMonitorControl_Unloaded;
         }
@@ -31,7 +32,8 @@ namespace HouseholdMS.View.UserControls
         private void EpeverMonitorControl_Unloaded(object sender, RoutedEventArgs e) { Disconnect(); }
 
         // -------- Toolbar --------
-        private void BtnRefresh_Click(object sender, RoutedEventArgs e) { RefreshPorts(); }
+        private async void BtnRefresh_Click(object sender, RoutedEventArgs e) { await RefreshPortsAsync(); }
+
         private void CmbInterval_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_timer != null) _timer.Interval = GetSelectedInterval();
@@ -39,7 +41,8 @@ namespace HouseholdMS.View.UserControls
 
         private void BtnConnect_Click(object sender, RoutedEventArgs e)
         {
-            if (CmbPorts.SelectedItem == null)
+            var portName = ExtractPortName(CmbPorts?.SelectedItem);
+            if (string.IsNullOrWhiteSpace(portName))
             {
                 MessageBox.Show("Select a COM port first.", "EPEVER Monitor", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
@@ -56,18 +59,19 @@ namespace HouseholdMS.View.UserControls
             SetUiState(true);
 
             _timer = new DispatcherTimer { Interval = GetSelectedInterval() };
-            _timer.Tick += (s, ev) => { if (ChkAuto.IsChecked == true) PollOnceSafe(); };
+            _timer.Tick += (s, ev) => { if (ChkAuto.IsChecked == true) _ = PollOnceSafe(); };
             _timer.Start();
 
+            var selectedText = CmbPorts.SelectedItem?.ToString() ?? portName;
             TxtLink.Text = "Connected (idle)";
             TxtLink.Foreground = (System.Windows.Media.Brush)FindResource("Warn");
-            TxtStatus.Text = "Connected to " + (CmbPorts.SelectedItem ?? "?") + " @ " + GetBaudUI() + " (ID=" + unitId + ").";
+            TxtStatus.Text = $"Connected to {selectedText} @ {GetBaudUI()} (ID={unitId}).";
 
-            PollOnceSafe();
+            _ = PollOnceSafe();
         }
 
         private void BtnDisconnect_Click(object sender, RoutedEventArgs e) { Disconnect(); }
-        private void BtnRead_Click(object sender, RoutedEventArgs e) { PollOnceSafe(); }
+        private async void BtnRead_Click(object sender, RoutedEventArgs e) { await PollOnceSafe(); }
 
         // -------- Inspector --------
         private void BtnInspectorRead_Click(object sender, RoutedEventArgs e)
@@ -159,7 +163,7 @@ namespace HouseholdMS.View.UserControls
             }
             catch (Exception ex) { pvErr = ex.Message; }
 
-            // ---- Real-time: Battery (charge side) ----
+            // ---- Battery charge ----
             double? batV = null, batA = null, batW = null; string batErr = null;
             try
             {
@@ -170,8 +174,7 @@ namespace HouseholdMS.View.UserControls
             }
             catch (Exception ex) { batErr = ex.Message; }
 
-
-            // ---- Real-time: Load (discharge) ----
+            // ---- Load ----
             double? loadV = null, loadA = null, loadW = null; string loadErr = null;
             try
             {
@@ -187,7 +190,7 @@ namespace HouseholdMS.View.UserControls
             try { ushort[] s = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.SOC_ADDR, EpeverRegisters.SOC_COUNT, 1500); soc = s[0]; }
             catch (Exception ex) { socErr = ex.Message; }
 
-            // ---- Temperatures: try 0x3110.. (3 regs), fallback to singles and alt map ----
+            // ---- Temps ----
             double? tBatt = null, tAmb = null, tCtrl = null; string tErr = null;
             try
             {
@@ -199,39 +202,34 @@ namespace HouseholdMS.View.UserControls
             catch (Exception ex1)
             {
                 tErr = ex1.Message;
-                // Singles
                 try { ushort[] r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, (ushort)(EpeverRegisters.TEMP1_START + 0), 1, 1500); tBatt = ModbusRtuRaw.S100(r[0]); } catch { }
                 try { ushort[] r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, (ushort)(EpeverRegisters.TEMP1_START + 1), 1, 1500); tAmb = ModbusRtuRaw.S100(r[0]); } catch { }
                 try { ushort[] r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, (ushort)(EpeverRegisters.TEMP1_START + 2), 1, 1500); tCtrl = ModbusRtuRaw.S100(r[0]); } catch { }
-
-                // Alt map if still nulls
                 if (!tBatt.HasValue && !tAmb.HasValue && !tCtrl.HasValue)
                 {
                     try
                     {
                         ushort[] t2 = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.TEMP2_START, EpeverRegisters.TEMP2_COUNT, 1500);
-                        // Map as probe/internal/controller
                         tBatt = ModbusRtuRaw.S100(t2[0]);
                         tAmb = ModbusRtuRaw.S100(t2[1]);
                         tCtrl = ModbusRtuRaw.S100(t2[2]);
-                        tErr = null; // we got something
+                        tErr = null;
                     }
-                    catch { /* leave tErr */ }
+                    catch { }
                 }
             }
 
-            // ---- Status (0x3200, 0x3201) ----
-            string stage = null; string stErr = null; ushort stat3200 = 0, stat3201 = 0; bool statOk = false;
+            // ---- Status ----
+            string stage = null; string stErr = null; ushort stat3201 = 0;
             try
             {
                 ushort[] st = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.STAT_START, EpeverRegisters.STAT_COUNT, 1500);
-                stat3200 = st[0]; stat3201 = st[1];
+                stat3201 = st[1];
                 stage = EpeverRegisters.DecodeChargingStageFrom3201(stat3201) + "  (0x" + stat3201.ToString("X4") + ")";
-                statOk = true;
             }
             catch (Exception ex) { stErr = ex.Message; }
 
-            // ---- Today's extremes ----
+            // ---- Extremes ----
             double? vMaxToday = null, vMinToday = null; string vExtErr = null;
             try
             {
@@ -240,68 +238,23 @@ namespace HouseholdMS.View.UserControls
             }
             catch (Exception ex) { vExtErr = ex.Message; }
 
-            // ---- Energy (kWh ×0.01). Read each pair independently (robust). ----
+            // ---- Energy ----
             double? genToday = null, genMonth = null, genYear = null, genTotal = null, useToday = null, useMonth = null, useYear = null, useTotal = null, co2Ton = null;
             string energyErr = null;
 
-            try
-            {
-                var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_GEN_TODAY_LO, 2, 1500);
-                genToday = ModbusRtuRaw.U32(r[0], r[1]) / 100.0;
-            }
-            catch (Exception ex) { energyErr = ex.Message; }
-            try
-            {
-                var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_GEN_MONTH_LO, 2, 1500);
-                genMonth = ModbusRtuRaw.U32(r[0], r[1]) / 100.0;
-            }
-            catch { }
-            try
-            {
-                var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_GEN_YEAR_LO, 2, 1500);
-                genYear = ModbusRtuRaw.U32(r[0], r[1]) / 100.0;
-            }
-            catch { }
-            try
-            {
-                var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_GEN_TOTAL_LO, 2, 1500);
-                genTotal = ModbusRtuRaw.U32(r[0], r[1]) / 100.0;
-            }
-            catch { }
+            try { var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_GEN_TODAY_LO, 2, 1500); genToday = ModbusRtuRaw.U32(r[0], r[1]) / 100.0; } catch (Exception ex) { energyErr = ex.Message; }
+            try { var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_GEN_MONTH_LO, 2, 1500); genMonth = ModbusRtuRaw.U32(r[0], r[1]) / 100.0; } catch { }
+            try { var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_GEN_YEAR_LO, 2, 1500); genYear = ModbusRtuRaw.U32(r[0], r[1]) / 100.0; } catch { }
+            try { var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_GEN_TOTAL_LO, 2, 1500); genTotal = ModbusRtuRaw.U32(r[0], r[1]) / 100.0; } catch { }
 
-            try
-            {
-                var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_CONS_TODAY_LO, 2, 1500);
-                useToday = ModbusRtuRaw.U32(r[0], r[1]) / 100.0;
-            }
-            catch { }
-            try
-            {
-                var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_CONS_MONTH_LO, 2, 1500);
-                useMonth = ModbusRtuRaw.U32(r[0], r[1]) / 100.0;
-            }
-            catch { }
-            try
-            {
-                var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_CONS_YEAR_LO, 2, 1500);
-                useYear = ModbusRtuRaw.U32(r[0], r[1]) / 100.0;
-            }
-            catch { }
-            try
-            {
-                var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_CONS_TOTAL_LO, 2, 1500);
-                useTotal = ModbusRtuRaw.U32(r[0], r[1]) / 100.0;
-            }
-            catch { }
+            try { var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_CONS_TODAY_LO, 2, 1500); useToday = ModbusRtuRaw.U32(r[0], r[1]) / 100.0; } catch { }
+            try { var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_CONS_MONTH_LO, 2, 1500); useMonth = ModbusRtuRaw.U32(r[0], r[1]) / 100.0; } catch { }
+            try { var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_CONS_YEAR_LO, 2, 1500); useYear = ModbusRtuRaw.U32(r[0], r[1]) / 100.0; } catch { }
+            try { var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_CONS_TOTAL_LO, 2, 1500); useTotal = ModbusRtuRaw.U32(r[0], r[1]) / 100.0; } catch { }
 
-            try
-            {
-                var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_CO2_TON_LO, 2, 1500);
-                co2Ton = ModbusRtuRaw.U32(r[0], r[1]) / 100.0;
-            }
-            catch { }
+            try { var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_CO2_TON_LO, 2, 1500); co2Ton = ModbusRtuRaw.U32(r[0], r[1]) / 100.0; } catch { }
 
-            // ---- Rated (read-only) ----
+            // ---- Rated ----
             double? ratedVin = null, ratedChg = null, ratedLoad = null; string ratedErr = null;
             try { var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.RATED_INPUT_VOLT, 1, 1500); ratedVin = ModbusRtuRaw.S100(r[0]); } catch (Exception ex) { ratedErr = ex.Message; }
             try { var r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.RATED_CHG_CURR, 1, 1500); ratedChg = ModbusRtuRaw.S100(r[0]); } catch { }
@@ -363,7 +316,6 @@ namespace HouseholdMS.View.UserControls
                 if (anyOk) { TxtStatus.Text = "OK"; TxtLink.Text = "Polling"; TxtLink.Foreground = (System.Windows.Media.Brush)FindResource("Good"); }
                 else { TxtStatus.Text = "No data (check wiring/ID/baud)"; TxtLink.Text = "Connected, but no data"; TxtLink.Foreground = (System.Windows.Media.Brush)FindResource("Warn"); }
 
-                // Error summary (avoid spam; hide TEMP error if any temp succeeded)
                 var errs = new List<string>();
                 if (pvErr != null) errs.Add("PV: " + pvErr);
                 if (batErr != null) errs.Add("BAT: " + batErr);
@@ -382,19 +334,42 @@ namespace HouseholdMS.View.UserControls
         }
 
         // -------- Helpers --------
-        private void RefreshPorts()
+        private async Task RefreshPortsAsync()
         {
-            var ports = SerialPort.GetPortNames()
-                .OrderBy(s =>
-                {
-                    int n;
-                    if (s.StartsWith("COM", StringComparison.OrdinalIgnoreCase) && int.TryParse(s.Substring(3), out n)) return n;
+            // quick placeholder list
+            var quick = SerialPort.GetPortNames()
+                .OrderBy(s => {
+                    if (s.StartsWith("COM", StringComparison.OrdinalIgnoreCase) &&
+                        int.TryParse(s.Substring(3), out int n)) return n;
                     return int.MaxValue;
                 })
                 .ThenBy(s => s)
+                .Select(s => new PortDescriptor(s, "Scanning…", "Scan"))
                 .ToList();
-            CmbPorts.ItemsSource = ports;
-            if (ports.Count > 0) CmbPorts.SelectedIndex = 0;
+
+            CmbPorts.ItemsSource = quick;
+            if (quick.Count > 0) CmbPorts.SelectedIndex = 0;
+
+            try
+            {
+                var scanned = await SerialPortInspector.ProbeAllAsync(600);
+                CmbPorts.ItemsSource = scanned; // PortDescriptor
+                if (CmbPorts.Items.Count > 0) CmbPorts.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                // fallback to plain strings if something went wrong
+                var ports = SerialPort.GetPortNames().ToList();
+                CmbPorts.ItemsSource = ports;
+                if (ports.Count > 0) CmbPorts.SelectedIndex = 0;
+                TxtStatus.Text = "Port scan error: " + ex.Message;
+            }
+        }
+
+        private string ExtractPortName(object selected)
+        {
+            if (selected is PortDescriptor pd) return pd.Port;
+            return selected?.ToString();
         }
 
         private int GetBaudUI()
@@ -416,7 +391,7 @@ namespace HouseholdMS.View.UserControls
         private UiSnap GetUiSnap()
         {
             var snap = new UiSnap();
-            snap.Port = CmbPorts.SelectedItem != null ? CmbPorts.SelectedItem.ToString() : null;
+            snap.Port = ExtractPortName(CmbPorts.SelectedItem);
             snap.Baud = GetBaudUI();
             byte parsed; snap.Unit = byte.TryParse(TxtId.Text.Trim(), out parsed) ? parsed : (byte)1;
             return snap;
