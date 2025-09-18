@@ -1,0 +1,408 @@
+﻿<!-- tbs1000c_oscilloscope_view.xaml -->
+<UserControl x:Class="HouseholdMS.View.Measurement.Tbs1000cView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:chart="http://schemas.syncfusion.com/wpf"
+             mc:Ignorable="d"
+             Background="#F6F7FB">
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="Col.Page" Color="#F6F7FB"/>
+        <SolidColorBrush x:Key="Col.Card" Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Col.Border" Color="#E5E7EB"/>
+        <SolidColorBrush x:Key="Col.Muted" Color="#6B7280"/>
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource Col.Card}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="8"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="6" ShadowDepth="0" Opacity="0.08"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="0,0,8,8"/>
+            <Setter Property="Padding" Value="8,6"/>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Width" Value="220"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Margin" Value="0,0,8,0"/>
+        </Style>
+        <Style x:Key="MutedText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Col.Muted}"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="{StaticResource Col.Page}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top bar -->
+        <Border Grid.Row="0" Style="{StaticResource Card}">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <TextBlock Text="VISA:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <TextBox x:Name="VisaAddressBox" Width="360" Text="USB0::0x0699::0x03C4::C044134::INSTR"/>
+                    <Button Content="Connect" Click="Connect_Click"/>
+                    <Button Content="Disconnect" Click="Disconnect_Click"/>
+                    <Button Content="*IDN?" Click="ReadIDN_Click"/>
+                </StackPanel>
+                <TextBlock x:Name="StatusBlock" Style="{StaticResource MutedText}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Body -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="410"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Chart -->
+            <Border Grid.Column="0" Style="{StaticResource Card}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Chart header: cursors & markers -->
+                    <DockPanel>
+                        <TextBlock Text="Waveform" FontWeight="Bold" FontSize="16" Margin="0,0,12,0"/>
+                        <Separator Margin="8,0"/>
+                        <TextBlock Text="Cursors:" Style="{StaticResource MutedText}" Margin="8,0,4,0"/>
+                        <ToggleButton x:Name="BtnEnableGate" Content="Enable Gate" Margin="0,0,4,0" Checked="BtnEnableGate_Checked" Unchecked="BtnEnableGate_Unchecked"/>
+                        <Button Content="Set Cursor A" Click="SetCursorA_Click"/>
+                        <Button Content="Set Cursor B" Click="SetCursorB_Click"/>
+                        <Separator Margin="8,0"/>
+                        <Button Content="Add Marker" Click="AddMarker_Click"/>
+                        <Button Content="Clear Markers" Click="ClearMarkers_Click"/>
+                    </DockPanel>
+
+                    <chart:SfChart x:Name="ScopeChart" Grid.Row="1" Margin="0,4,0,0">
+                        <chart:SfChart.PrimaryAxis>
+                            <chart:NumericalAxis Header="Time (s)" RangePadding="Round" LabelFormat="0.###E+0" ShowGridLines="True"/>
+                        </chart:SfChart.PrimaryAxis>
+                        <chart:SfChart.SecondaryAxis>
+                            <chart:NumericalAxis Header="Voltage (V)" RangePadding="Round" LabelFormat="0.###" ShowGridLines="True"/>
+                        </chart:SfChart.SecondaryAxis>
+                        <chart:SfChart.Legend>
+                            <chart:ChartLegend/>
+                        </chart:SfChart.Legend>
+                        <chart:SfChart.Behaviors>
+                            <chart:ChartZoomPanBehavior EnableSelectionZooming="True" EnablePanning="True"/>
+                            <chart:ChartTrackBallBehavior ShowLine="True"/>
+                        </chart:SfChart.Behaviors>
+
+                        <chart:FastLineBitmapSeries x:Name="SeriesCH1" Label="CH1" XBindingPath="X" YBindingPath="Y" StrokeThickness="1.2" Opacity="0.95"/>
+                        <chart:FastLineBitmapSeries x:Name="SeriesCH2" Label="CH2" XBindingPath="X" YBindingPath="Y" StrokeThickness="1.2" Opacity="0.95"/>
+                        <chart:FastLineBitmapSeries x:Name="SeriesMATH" Label="MATH(CH1-CH2)" XBindingPath="X" YBindingPath="Y" StrokeThickness="1.2" Opacity="0.95"/>
+
+                        <!-- Cursor & Marker layers -->
+                        <chart:SfChart.Annotations>
+                            <chart:VerticalLineAnnotation x:Name="CursorA" Visibility="Collapsed"/>
+                            <chart:VerticalLineAnnotation x:Name="CursorB" Visibility="Collapsed"/>
+                        </chart:SfChart.Annotations>
+                    </chart:SfChart>
+                </Grid>
+            </Border>
+
+            <!-- Right panel: tabs -->
+            <Border Grid.Column="1" Style="{StaticResource Card}">
+                <TabControl>
+                    <!-- Acquisition -->
+                    <TabItem Header="Acquisition">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="8">
+
+                                <TextBlock Text="Run Control" FontWeight="Bold" FontSize="16" Margin="0,0,0,8"/>
+                                <WrapPanel>
+                                    <Button Content="Run" Click="Acq_Run_Click"/>
+                                    <Button Content="Stop" Click="Acq_Stop_Click"/>
+                                    <Button Content="Single" Click="Acq_Single_Click"/>
+                                    <Button Content="Autoset" Click="Acq_Autoset_Click"/>
+                                </WrapPanel>
+
+                                <TextBlock Text="Timebase (s/div)" Style="{StaticResource MutedText}"/>
+                                <ComboBox x:Name="CmbTimebase">
+                                    <ComboBoxItem Content="1e-6"/>
+                                    <ComboBoxItem Content="2e-6"/>
+                                    <ComboBoxItem Content="5e-6"/>
+                                    <ComboBoxItem Content="1e-5"/>
+                                    <ComboBoxItem Content="2e-5"/>
+                                    <ComboBoxItem Content="5e-5"/>
+                                    <ComboBoxItem Content="1e-4"/>
+                                    <ComboBoxItem Content="2e-4"/>
+                                    <ComboBoxItem Content="5e-4"/>
+                                    <ComboBoxItem Content="1e-3"/>
+                                    <ComboBoxItem Content="2e-3"/>
+                                    <ComboBoxItem Content="5e-3"/>
+                                    <ComboBoxItem Content="1e-2"/>
+                                    <ComboBoxItem Content="2e-2"/>
+                                    <ComboBoxItem Content="5e-2"/>
+                                    <ComboBoxItem Content="1e-1"/>
+                                    <ComboBoxItem Content="2e-1"/>
+                                    <ComboBoxItem Content="5e-1"/>
+                                </ComboBox>
+                                <WrapPanel>
+                                    <Button Content="Set Timebase" Click="Acq_SetTimebase_Click"/>
+                                    <Button Content="RecordLength?" Click="Acq_RecordLength_Click"/>
+                                </WrapPanel>
+
+                                <Separator Margin="0,8,0,8"/>
+
+                                <TextBlock Text="Trigger" FontWeight="Bold" FontSize="16" Margin="0,0,0,8"/>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="Type" Grid.Column="0" Style="{StaticResource MutedText}" VerticalAlignment="Center"/>
+                                    <ComboBox x:Name="CmbTrigType" Grid.Column="1">
+                                        <ComboBoxItem Content="EDGE" IsSelected="True"/>
+                                        <ComboBoxItem Content="PULSE"/>
+                                        <ComboBoxItem Content="RUNT"/>
+                                    </ComboBox>
+
+                                    <TextBlock Text="Source" Grid.Column="0" Grid.Row="1" Style="{StaticResource MutedText}" VerticalAlignment="Center"/>
+                                    <ComboBox x:Name="CmbTrigSrc" Grid.Column="1" Grid.Row="1">
+                                        <ComboBoxItem Content="CH1" IsSelected="True"/>
+                                        <ComboBoxItem Content="CH2"/>
+                                    </ComboBox>
+
+                                    <TextBlock Text="Level (V)" Grid.Column="0" Grid.Row="2" Style="{StaticResource MutedText}" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="TxtTrigLevel" Grid.Column="1" Grid.Row="2" Text="0.0"/>
+
+                                    <TextBlock Text="Slope/Polarity" Grid.Column="0" Grid.Row="3" Style="{StaticResource MutedText}" VerticalAlignment="Center"/>
+                                    <ComboBox x:Name="CmbTrigSlope" Grid.Column="1" Grid.Row="3">
+                                        <ComboBoxItem Content="RISE" IsSelected="True"/>
+                                        <ComboBoxItem Content="FALL"/>
+                                        <ComboBoxItem Content="EITHER"/>
+                                    </ComboBox>
+
+                                    <TextBlock Text="Pulse Width (s)" Grid.Column="0" Grid.Row="4" Style="{StaticResource MutedText}" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="TxtPulseWidth" Grid.Column="1" Grid.Row="4" Text="1e-3"/>
+
+                                    <TextBlock Text="Runt Low/High (V)" Grid.Column="0" Grid.Row="5" Style="{StaticResource MutedText}" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" Grid.Row="5" Orientation="Horizontal">
+                                        <TextBox x:Name="TxtRuntLow" Width="100" Text="0.2" Margin="0,0,8,0"/>
+                                        <TextBox x:Name="TxtRuntHigh" Width="100" Text="1.0"/>
+                                    </StackPanel>
+                                </Grid>
+                                <WrapPanel>
+                                    <Button Content="Apply Trigger" Click="Acq_ApplyTrigger_Click"/>
+                                </WrapPanel>
+
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+
+                    <!-- Channels -->
+                    <TabItem Header="Channels">
+                        <StackPanel Margin="8">
+                            <TextBlock Text="Channels" FontWeight="Bold" FontSize="16" Margin="0,0,0,8"/>
+                            <WrapPanel>
+                                <CheckBox x:Name="ChkCh1" Content="Plot CH1" IsChecked="True" Margin="0,0,12,0"/>
+                                <CheckBox x:Name="ChkCh2" Content="Plot CH2" Margin="0,0,12,0"/>
+                                <CheckBox x:Name="ChkMath" Content="Plot MATH (CH1-CH2)"/>
+                            </WrapPanel>
+
+                            <TextBlock Text="Coupling" Style="{StaticResource MutedText}"/>
+                            <ComboBox x:Name="CmbCoupling">
+                                <ComboBoxItem Content="DC" IsSelected="True"/>
+                                <ComboBoxItem Content="AC"/>
+                                <ComboBoxItem Content="GND"/>
+                            </ComboBox>
+
+                            <TextBlock Text="Scale (V/div)" Style="{StaticResource MutedText}"/>
+                            <ComboBox x:Name="CmbVScale">
+                                <ComboBoxItem Content="0.01"/>
+                                <ComboBoxItem Content="0.02"/>
+                                <ComboBoxItem Content="0.05"/>
+                                <ComboBoxItem Content="0.1"/>
+                                <ComboBoxItem Content="0.2"/>
+                                <ComboBoxItem Content="0.5"/>
+                                <ComboBoxItem Content="1" IsSelected="True"/>
+                                <ComboBoxItem Content="2"/>
+                                <ComboBoxItem Content="5"/>
+                            </ComboBox>
+
+                            <WrapPanel>
+                                <Button Content="Apply to CH1" Click="Ch_ApplyCh1_Click"/>
+                                <Button Content="Apply to CH2" Click="Ch_ApplyCh2_Click"/>
+                            </WrapPanel>
+
+                            <TextBlock Text="Probe (×)" Style="{StaticResource MutedText}"/>
+                            <ComboBox x:Name="CmbProbe">
+                                <ComboBoxItem Content="1"/>
+                                <ComboBoxItem Content="10" IsSelected="True"/>
+                                <ComboBoxItem Content="100"/>
+                            </ComboBox>
+                            <Button Content="Set Probe" Click="Ch_SetProbe_Click"/>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- Measurements -->
+                    <TabItem Header="Measurements">
+                        <StackPanel Margin="8">
+                            <TextBlock Text="Measurements" FontWeight="Bold" FontSize="16" Margin="0,0,0,8"/>
+                            <TextBlock Text="Measurement Source" Style="{StaticResource MutedText}"/>
+                            <ComboBox x:Name="CmbSource" Margin="0,0,0,8">
+                                <ComboBoxItem Content="CH1" IsSelected="True"/>
+                                <ComboBoxItem Content="CH2"/>
+                                <ComboBoxItem Content="MATH"/>
+                            </ComboBox>
+
+                            <TextBlock Text="Select metrics to display:" Style="{StaticResource MutedText}" Margin="0,4,0,6"/>
+                            <WrapPanel>
+                                <CheckBox x:Name="M_Vpp"  Content="Vpp"  IsChecked="True" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_Vavg" Content="Vavg" IsChecked="True" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_Vrms" Content="Vrms" IsChecked="True" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_Vmax" Content="Vmax" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_Vmin" Content="Vmin" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_Vpos" Content="Vp+"  Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_Vneg" Content="Vp-"  Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_Freq" Content="Freq" IsChecked="True" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_Per"  Content="Period" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_Duty" Content="Duty %" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_PwPos" Content="+Pulse W" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_PwNeg" Content="-Pulse W" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_Rise" Content="Rise 10-90" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_Fall" Content="Fall 90-10" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_Ripple" Content="Ripple %" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_Crest" Content="Crest" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_Overshoot" Content="Overshoot %" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_Undershoot" Content="Undershoot %" Margin="0,0,12,6"/>
+                                <CheckBox x:Name="M_ZeroCross" Content="Zero-cross rate" Margin="0,0,12,6"/>
+                            </WrapPanel>
+
+                            <TextBlock Text="Polling interval (ms)" Style="{StaticResource MutedText}" Margin="0,4,0,6"/>
+                            <Slider x:Name="SldPoll" Minimum="100" Maximum="2000" Value="500" TickFrequency="100" IsSnapToTickEnabled="True"
+                                    ValueChanged="SldPoll_ValueChanged" Width="240"/>
+
+                            <Separator Margin="8"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- left -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Vpp:"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ValVpp" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Vavg:"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" x:Name="ValVavg" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Vrms:"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ValVrms" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Vmax:"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" x:Name="ValVmax" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Vmin:"/>
+                                <TextBlock Grid.Row="4" Grid.Column="1" x:Name="ValVmin" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Vp+:"/>
+                                <TextBlock Grid.Row="5" Grid.Column="1" x:Name="ValVpos" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="6" Grid.Column="0" Text="Vp-:"/>
+                                <TextBlock Grid.Row="6" Grid.Column="1" x:Name="ValVneg" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="7" Grid.Column="0" Text="Ripple:"/>
+                                <TextBlock Grid.Row="7" Grid.Column="1" x:Name="ValRipple" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="8" Grid.Column="0" Text="Crest:"/>
+                                <TextBlock Grid.Row="8" Grid.Column="1" x:Name="ValCrest" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="9" Grid.Column="0" Text="Zero-cross:"/>
+                                <TextBlock Grid.Row="9" Grid.Column="1" x:Name="ValZeroCross" Margin="8,0,0,0"/>
+
+                                <!-- right -->
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Freq:"/>
+                                <TextBlock Grid.Row="0" Grid.Column="3" x:Name="ValFreq" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Period:"/>
+                                <TextBlock Grid.Row="1" Grid.Column="3" x:Name="ValPer" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="Duty:"/>
+                                <TextBlock Grid.Row="2" Grid.Column="3" x:Name="ValDuty" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="3" Grid.Column="2" Text="Rise:"/>
+                                <TextBlock Grid.Row="3" Grid.Column="3" x:Name="ValRise" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="4" Grid.Column="2" Text="Fall:"/>
+                                <TextBlock Grid.Row="4" Grid.Column="3" x:Name="ValFall" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="5" Grid.Column="2" Text="Overshoot:"/>
+                                <TextBlock Grid.Row="5" Grid.Column="3" x:Name="ValOver" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="6" Grid.Column="2" Text="Undershoot:"/>
+                                <TextBlock Grid.Row="6" Grid.Column="3" x:Name="ValUnder" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="7" Grid.Column="2" Text="+PulseW:"/>
+                                <TextBlock Grid.Row="7" Grid.Column="3" x:Name="ValPwPos" Margin="8,0,0,0"/>
+                                <TextBlock Grid.Row="8" Grid.Column="2" Text="-PulseW:"/>
+                                <TextBlock Grid.Row="8" Grid.Column="3" x:Name="ValPwNeg" Margin="8,0,0,0"/>
+                            </Grid>
+
+                            <Separator Margin="8"/>
+                            <TextBlock Text="Rolling Vpp stats (last N frames)" FontWeight="Bold" Margin="0,0,0,4"/>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock x:Name="RollingStatsBlock" Style="{StaticResource MutedText}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- Cursors & Search -->
+                    <TabItem Header="Cursors &amp; Search">
+                        <StackPanel Margin="8">
+                            <TextBlock Text="Search / Markers" FontWeight="Bold" FontSize="16" Margin="0,0,0,8"/>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Edge threshold (V)" Grid.Column="0" VerticalAlignment="Center" Style="{StaticResource MutedText}"/>
+                                <TextBox x:Name="TxtEdgeThresh" Grid.Column="1" Text="0.0"/>
+
+                                <TextBlock Text="Runt low/high (V)" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Style="{StaticResource MutedText}"/>
+                                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                                    <TextBox x:Name="TxtFindRuntLow" Width="100" Text="0.2" Margin="0,0,8,0"/>
+                                    <TextBox x:Name="TxtFindRuntHigh" Width="100" Text="1.0"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <WrapPanel>
+                                <Button Content="Find Next Rising Edge" Click="FindRising_Click"/>
+                                <Button Content="Find Next Falling Edge" Click="FindFalling_Click"/>
+                                <Button Content="Find Next Runt" Click="FindRunt_Click"/>
+                            </WrapPanel>
+
+                            <Separator Margin="8"/>
+
+                            <TextBlock Text="Markers" FontWeight="Bold" Margin="0,0,0,4"/>
+                            <ListBox x:Name="MarkersList" Height="140"/>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- Export -->
+                    <TabItem Header="Export">
+                        <StackPanel Margin="8">
+                            <TextBlock Text="Export &amp; Files" FontWeight="Bold" FontSize="16" Margin="0,0,0,8"/>
+                            <WrapPanel>
+                                <Button Content="Save CSV" Click="Exp_SaveCsv_Click"/>
+                                <Button Content="Save PNG" Click="Exp_SavePng_Click"/>
+                            </WrapPanel>
+                            <TextBlock x:Name="ExportResult" Style="{StaticResource MutedText}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </TabItem>
+                </TabControl>
+            </Border>
+        </Grid>
+
+        <TextBlock Grid.Row="2" Margin="12,0,12,12" Style="{StaticResource MutedText}"
+               Text="Tips: Run/Single/Autoset in Acquisition; tune Coupling/Scale in Channels; gate metrics with Cursors; Export to CSV/PNG."/>
+    </Grid>
+</UserControl>

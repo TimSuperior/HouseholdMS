@@ -153,10 +153,10 @@
     <Compile Include="Model\TestReport.cs" />
     <Compile Include="Model\User.cs" />
     <Compile Include="Services\LookupSearch.cs" />
-    <Compile Include="Services\OscilloscopeService.cs" />
     <Compile Include="Services\ScpiDevice.cs" />
     <Compile Include="Services\ScpiDeviceVisa.cs" />
     <Compile Include="Services\SerialPortInspector.cs" />
+    <Compile Include="Services\tbs1000c_core.cs" />
     <Compile Include="View\DashboardView.xaml.cs">
       <DependentUpon>DashboardView.xaml</DependentUpon>
     </Compile>
@@ -211,22 +211,13 @@
     <Compile Include="View\InventoryView.xaml.cs">
       <DependentUpon>InventoryView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\Measurement\Controls\AcquisitionTab.xaml.cs">
-      <DependentUpon>AcquisitionTab.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\Measurement\Controls\ChannelsTab.xaml.cs">
-      <DependentUpon>ChannelsTab.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\Measurement\Controls\ExportTab.xaml.cs">
-      <DependentUpon>ExportTab.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\Measurement\Controls\MeasurementsTab.xaml.cs">
-      <DependentUpon>MeasurementsTab.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\Measurement\ElectronicLoadIT8615View.xaml.cs">
       <DependentUpon>ElectronicLoadIT8615View.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Measurement\MeasurementValues.cs" />
+    <Compile Include="View\Measurement\Tbs1000cView.xaml.cs">
+      <DependentUpon>Tbs1000cView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\UserManagementView.xaml.cs">
       <DependentUpon>UserManagementView.xaml</DependentUpon>
     </Compile>
@@ -235,9 +226,6 @@
     </Compile>
     <Compile Include="View\Measurement\MeasurementView.xaml.cs">
       <DependentUpon>MeasurementView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\Measurement\OscilloscopeView.xaml.cs">
-      <DependentUpon>OscilloscopeView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\ServiceRecordsView.xaml.cs">
       <DependentUpon>ServiceRecordsView.xaml</DependentUpon>
@@ -373,23 +361,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Measurement\Controls\AcquisitionTab.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\Measurement\Controls\ChannelsTab.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\Measurement\Controls\ExportTab.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\Measurement\Controls\MeasurementsTab.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="View\Measurement\ElectronicLoadIT8615View.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Measurement\Tbs1000cView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -402,10 +378,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Measurement\MeasurementView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\Measurement\OscilloscopeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -542,7 +514,9 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="View\Measurement\Controls\" />
+  </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.8">
       <Visible>False</Visible>

@@ -6,14 +6,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Syncfusion.Licensing; // licensing
+using System.Windows.Input;
+using Syncfusion.Licensing;            // licensing
+using Syncfusion.UI.Xaml.Charts;       // SfChart, ChartZoomPanBehavior
 
 namespace HouseholdMS.View.Measurement
 {
     /// <summary>
     /// Numeric-time live plot (seconds only) using Syncfusion SfChart.
     /// Plotting happens ONLY when Start/Stop is pressed on this control.
-    /// Stats are fed from device via SetDeviceStats(min,max,avg).
+    /// Stats chips show device stats (when provided) or live local stats as fallback.
     /// </summary>
     public partial class LivePlotControl : UserControl
     {
@@ -49,6 +51,13 @@ namespace HouseholdMS.View.Measurement
         /// <summary>Maximum number of points kept in the series.</summary>
         public int MaxPoints { get; set; } = 2000;
 
+        // Local live stats (fallback when device stats not provided recently)
+        private double _min = double.PositiveInfinity;
+        private double _max = double.NegativeInfinity;
+        private double _sum = 0.0;
+        private long _count = 0;
+        private DateTime _lastDeviceStatsUtc = DateTime.MinValue;
+
         public LivePlotControl()
         {
             InitializeComponent();
@@ -56,6 +65,30 @@ namespace HouseholdMS.View.Measurement
 
             ResetStats();
             SetupAxisForSeconds();
+
+            // Ensure the chart gets mouse wheel even when inside a ScrollViewer.
+            // We listen "handledEventsToo: true" so we can intercept after parent preview handled it,
+            // then re-raise a bubbling MouseWheel on the chart to trigger Syncfusion zoom.
+            AddHandler(UIElement.PreviewMouseWheelEvent,
+                new MouseWheelEventHandler(LivePlotControl_PreviewMouseWheel),
+                handledEventsToo: true);
+
+            // Focus chart when pointer enters so keyboard/mouse shortcuts apply.
+            Chart.MouseEnter += (s, e) => Chart.Focus();
+        }
+
+        // Intercept wheel, forward to the chart (so ZoomPanBehavior receives it), prevent page scroll.
+        private void LivePlotControl_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (Chart == null) return;
+
+            var args = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+            {
+                RoutedEvent = UIElement.MouseWheelEvent,
+                Source = Chart
+            };
+            Chart.RaiseEvent(args);
+            e.Handled = true; // stop ScrollViewer from scrolling the page
         }
 
         /// <summary>Provide a function that returns the raw device string.</summary>
@@ -70,6 +103,8 @@ namespace HouseholdMS.View.Measurement
                 _sw.Reset();
                 _sw.Start();
                 SetupAxisForSeconds();
+                ResetLocalStats();
+                RenderLocalStats(); // show dashes initially
             }));
         }
 
@@ -80,8 +115,6 @@ namespace HouseholdMS.View.Measurement
             TimeAxis.LabelFormat = "0";  // 0,1,2,...
             TimeAxis.Interval = 1;
             TimeAxis.Minimum = 0d;
-            // If your version supports it:
-            // TimeAxis.RangePadding = ChartRangePadding.None;
         }
 
         /// <summary>Stop the internal polling loop if running.</summary>
@@ -148,6 +181,12 @@ namespace HouseholdMS.View.Measurement
                 Points.Add(new PlotPoint { X = t, Y = value });
                 if (Points.Count > MaxPoints)
                     Points.RemoveAt(0);
+
+                UpdateLocalStatsWith(value);
+
+                // Prefer device stats for ~1.2s after they were provided; otherwise show live local stats.
+                if ((DateTime.UtcNow - _lastDeviceStatsUtc).TotalSeconds > 1.2)
+                    RenderLocalStats();
             }));
         }
 
@@ -159,6 +198,7 @@ namespace HouseholdMS.View.Measurement
                 MinText.Text = min.HasValue ? min.Value.ToString("G6", CultureInfo.InvariantCulture) : "-";
                 MaxText.Text = max.HasValue ? max.Value.ToString("G6", CultureInfo.InvariantCulture) : "-";
                 AvgText.Text = avg.HasValue ? avg.Value.ToString("G6", CultureInfo.InvariantCulture) : "-";
+                _lastDeviceStatsUtc = DateTime.UtcNow;
             }));
         }
 
@@ -172,6 +212,63 @@ namespace HouseholdMS.View.Measurement
             }));
         }
 
+        // ---------- Public zoom API for parent view ----------
+        public void ZoomIn() => RaiseSyntheticWheel(+120);  // one notch in
+        public void ZoomOut() => RaiseSyntheticWheel(-120);  // one notch out
+
+        public void ResetView()
+        {
+            try
+            {
+                // Preferred: use Syncfusion behavior's reset if available
+                ZoomPan?.Reset();
+            }
+            catch
+            {
+                // Fallback: recreate behavior (lightweight) and restore axis header & interval.
+                try
+                {
+                    if (Chart != null && ZoomPan != null)
+                    {
+                        int idx = Chart.Behaviors.IndexOf(ZoomPan);
+                        if (idx >= 0)
+                        {
+                            Chart.Behaviors.RemoveAt(idx);
+                            var fresh = new ChartZoomPanBehavior
+                            {
+                                EnableMouseWheelZooming = true,
+                                EnablePanning = true,
+                                ZoomMode = ZoomMode.X
+                            };
+                            Chart.Behaviors.Insert(idx, fresh);
+                            // rebind x:Name pointer
+                            // Note: x:Name-generated field won't update; but we only need behavior present.
+                        }
+                    }
+                }
+                catch { /* ignore */ }
+            }
+
+            // Also reset the X-axis labeling back to seconds baseline.
+            SetupAxisForSeconds();
+        }
+
+        // ---------- Helpers ----------
+        private void RaiseSyntheticWheel(int delta)
+        {
+            if (Chart == null) return;
+
+            // Ensure chart owns focus so zoom behavior is active
+            if (!Chart.IsKeyboardFocusWithin) Chart.Focus();
+
+            var args = new MouseWheelEventArgs(Mouse.PrimaryDevice, Environment.TickCount, delta)
+            {
+                RoutedEvent = UIElement.MouseWheelEvent,
+                Source = Chart
+            };
+            Chart.RaiseEvent(args);
+        }
+
         // tolerant parser: "2.803433E+01,OK" or "  2.80 V"
         private static bool TryParseFirstDouble(string raw, out double v)
         {
@@ -179,6 +276,37 @@ namespace HouseholdMS.View.Measurement
             if (string.IsNullOrWhiteSpace(raw)) return false;
             var first = raw.Trim().Split(new[] { ',', ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries)[0];
             return double.TryParse(first, NumberStyles.Float, CultureInfo.InvariantCulture, out v);
+        }
+
+        private void ResetLocalStats()
+        {
+            _min = double.PositiveInfinity;
+            _max = double.NegativeInfinity;
+            _sum = 0.0;
+            _count = 0;
+        }
+
+        private void UpdateLocalStatsWith(double value)
+        {
+            if (value < _min) _min = value;
+            if (value > _max) _max = value;
+            _sum += value;
+            _count++;
+        }
+
+        private void RenderLocalStats()
+        {
+            if (_count <= 0)
+            {
+                MinText.Text = "-";
+                MaxText.Text = "-";
+                AvgText.Text = "-";
+                return;
+            }
+
+            MinText.Text = double.IsPositiveInfinity(_min) ? "-" : _min.ToString("G6", CultureInfo.InvariantCulture);
+            MaxText.Text = double.IsNegativeInfinity(_max) ? "-" : _max.ToString("G6", CultureInfo.InvariantCulture);
+            AvgText.Text = (_sum / Math.Max(1, _count)).ToString("G6", CultureInfo.InvariantCulture);
         }
     }
 }

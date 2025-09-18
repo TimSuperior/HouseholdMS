@@ -15,6 +15,7 @@ namespace HouseholdMS.View.UserControls
     public partial class EpeverMonitorControl : UserControl
     {
         private CancellationTokenSource _cts;
+        private CancellationTokenSource _portScanCts;
         private DispatcherTimer _timer;
         private bool _connected;
         private bool _polling;
@@ -24,15 +25,23 @@ namespace HouseholdMS.View.UserControls
         public EpeverMonitorControl()
         {
             InitializeComponent();
-            _ = RefreshPortsAsync();
+            _ = RefreshPortsAsync(); // cached
             TxtStatus.Text = "Select COM port, set ID, click Connect.";
             this.Unloaded += EpeverMonitorControl_Unloaded;
         }
 
-        private void EpeverMonitorControl_Unloaded(object sender, RoutedEventArgs e) { Disconnect(); }
+        private void EpeverMonitorControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Disconnect();
+            try { _portScanCts?.Cancel(); _portScanCts?.Dispose(); _portScanCts = null; } catch { }
+        }
 
         // -------- Toolbar --------
-        private async void BtnRefresh_Click(object sender, RoutedEventArgs e) { await RefreshPortsAsync(); }
+        private async void BtnRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            SerialPortInspector.InvalidateCache();
+            await RefreshPortsAsync();
+        }
 
         private void CmbInterval_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -190,7 +199,7 @@ namespace HouseholdMS.View.UserControls
             try { ushort[] s = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.SOC_ADDR, EpeverRegisters.SOC_COUNT, 1500); soc = s[0]; }
             catch (Exception ex) { socErr = ex.Message; }
 
-            // ---- Temps ----
+            // ---- Temperatures ----
             double? tBatt = null, tAmb = null, tCtrl = null; string tErr = null;
             try
             {
@@ -205,6 +214,7 @@ namespace HouseholdMS.View.UserControls
                 try { ushort[] r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, (ushort)(EpeverRegisters.TEMP1_START + 0), 1, 1500); tBatt = ModbusRtuRaw.S100(r[0]); } catch { }
                 try { ushort[] r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, (ushort)(EpeverRegisters.TEMP1_START + 1), 1, 1500); tAmb = ModbusRtuRaw.S100(r[0]); } catch { }
                 try { ushort[] r = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, (ushort)(EpeverRegisters.TEMP1_START + 2), 1, 1500); tCtrl = ModbusRtuRaw.S100(r[0]); } catch { }
+
                 if (!tBatt.HasValue && !tAmb.HasValue && !tCtrl.HasValue)
                 {
                     try
@@ -263,22 +273,18 @@ namespace HouseholdMS.View.UserControls
             // ---- UI update ----
             Dispatcher.Invoke(delegate
             {
-                // PV
                 TxtPvV.Text = "Voltage: " + (pvV.HasValue ? pvV.Value.ToString("F2") + " V" : "—");
                 TxtPvA.Text = "Current: " + (pvA.HasValue ? pvA.Value.ToString("F2") + " A" : "—");
                 TxtPvW.Text = "Power: " + (pvW.HasValue ? pvW.Value.ToString("F1") + " W" : "—");
 
-                // Battery (charge)
                 TxtBatV.Text = "Voltage: " + (batV.HasValue ? batV.Value.ToString("F2") + " V" : "—");
                 TxtBatA.Text = "Charge Current: " + (batA.HasValue ? batA.Value.ToString("F2") + " A" : "—");
                 TxtBatW.Text = "Charge Power: " + (batW.HasValue ? batW.Value.ToString("F1") + " W" : "—");
 
-                // Load
                 TxtLoadV.Text = "Voltage: " + (loadV.HasValue ? loadV.Value.ToString("F2") + " V" : "—");
                 TxtLoadA.Text = "Current: " + (loadA.HasValue ? loadA.Value.ToString("F2") + " A" : "—");
                 TxtLoadW.Text = "Power: " + (loadW.HasValue ? loadW.Value.ToString("F1") + " W" : "—");
 
-                // State + temps
                 TxtSoc.Text = "SOC: " + (soc.HasValue ? soc.Value + " %" : "—");
                 TxtStage.Text = "Charge Stage: " + (stage ?? "—");
 
@@ -286,11 +292,9 @@ namespace HouseholdMS.View.UserControls
                 TxtTempAmb.Text = "Ambient: " + (tAmb.HasValue ? tAmb.Value.ToString("F2") + " °C" : "—");
                 TxtTempCtrl.Text = "Controller: " + (tCtrl.HasValue ? tCtrl.Value.ToString("F2") + " °C" : "—");
 
-                // Extremes
                 TxtBattVmaxToday.Text = "Battery Vmax: " + (vMaxToday.HasValue ? vMaxToday.Value.ToString("F2") + " V" : "—");
                 TxtBattVminToday.Text = "Battery Vmin: " + (vMinToday.HasValue ? vMinToday.Value.ToString("F2") + " V" : "—");
 
-                // Energy (kWh)
                 TxtGenToday.Text = "Today: " + (genToday.HasValue ? genToday.Value.ToString("F2") + " kWh" : "—");
                 TxtGenMonth.Text = "This Month: " + (genMonth.HasValue ? genMonth.Value.ToString("F2") + " kWh" : "—");
                 TxtGenYear.Text = "This Year: " + (genYear.HasValue ? genYear.Value.ToString("F2") + " kWh" : "—");
@@ -301,17 +305,15 @@ namespace HouseholdMS.View.UserControls
                 TxtUseYear.Text = "This Year: " + (useYear.HasValue ? useYear.Value.ToString("F2") + " kWh" : "—");
                 TxtUseTotal.Text = "Total: " + (useTotal.HasValue ? useTotal.Value.ToString("F2") + " kWh" : "—");
 
-                // Rated
                 TxtRatedVin.Text = "PV Rated Input Voltage: " + (ratedVin.HasValue ? ratedVin.Value.ToString("F1") + " V" : "—");
                 TxtRatedChgA.Text = "Rated Charge Current: " + (ratedChg.HasValue ? ratedChg.Value.ToString("F1") + " A" : "—");
                 TxtRatedLoadA.Text = "Rated Load Current: " + (ratedLoad.HasValue ? ratedLoad.Value.ToString("F1") + " A" : "—");
 
                 TxtUpdated.Text = "Last update: " + DateTime.Now.ToString("HH:mm:ss");
 
-                bool anyOk =
-                    pvV.HasValue || batV.HasValue || loadV.HasValue || soc.HasValue ||
-                    tBatt.HasValue || tAmb.HasValue || tCtrl.HasValue ||
-                    genToday.HasValue || useToday.HasValue;
+                bool anyOk = pvV.HasValue || batV.HasValue || loadV.HasValue || soc.HasValue ||
+                             tBatt.HasValue || tAmb.HasValue || tCtrl.HasValue ||
+                             genToday.HasValue || useToday.HasValue;
 
                 if (anyOk) { TxtStatus.Text = "OK"; TxtLink.Text = "Polling"; TxtLink.Foreground = (System.Windows.Media.Brush)FindResource("Good"); }
                 else { TxtStatus.Text = "No data (check wiring/ID/baud)"; TxtLink.Text = "Connected, but no data"; TxtLink.Foreground = (System.Windows.Media.Brush)FindResource("Warn"); }
@@ -336,11 +338,10 @@ namespace HouseholdMS.View.UserControls
         // -------- Helpers --------
         private async Task RefreshPortsAsync()
         {
-            // quick placeholder list
+            // Show placeholders immediately
             var quick = SerialPort.GetPortNames()
                 .OrderBy(s => {
-                    if (s.StartsWith("COM", StringComparison.OrdinalIgnoreCase) &&
-                        int.TryParse(s.Substring(3), out int n)) return n;
+                    if (s.StartsWith("COM", StringComparison.OrdinalIgnoreCase) && int.TryParse(s.Substring(3), out int n)) return n;
                     return int.MaxValue;
                 })
                 .ThenBy(s => s)
@@ -350,12 +351,21 @@ namespace HouseholdMS.View.UserControls
             CmbPorts.ItemsSource = quick;
             if (quick.Count > 0) CmbPorts.SelectedIndex = 0;
 
+            // Cancel any in-flight scan
+            try { _portScanCts?.Cancel(); _portScanCts?.Dispose(); } catch { }
+            _portScanCts = new CancellationTokenSource();
+
             try
             {
-                var scanned = await SerialPortInspector.ProbeAllAsync(600);
+                var scanned = await SerialPortInspector.GetOrProbeAsync(
+                    attemptTimeoutMs: 200,
+                    cacheTtlMs: 15000,
+                    ct: _portScanCts.Token);
+
                 CmbPorts.ItemsSource = scanned; // PortDescriptor
                 if (CmbPorts.Items.Count > 0) CmbPorts.SelectedIndex = 0;
             }
+            catch (OperationCanceledException) { }
             catch (Exception ex)
             {
                 // fallback to plain strings if something went wrong

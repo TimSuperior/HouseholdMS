@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.Measurement.LivePlotControl" 
+﻿<UserControl x:Class="HouseholdMS.View.Measurement.LivePlotControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
@@ -94,7 +94,7 @@
             </Grid.RowDefinitions>
 
             <!-- Syncfusion Chart -->
-            <syncfusion:SfChart x:Name="Chart" Grid.Row="0" Margin="0,0,0,10">
+            <syncfusion:SfChart x:Name="Chart" Grid.Row="0" Margin="0,0,0,10" Focusable="True">
                 <syncfusion:SfChart.PrimaryAxis>
                     <syncfusion:NumericalAxis x:Name="TimeAxis"
                                               Header="Time (s)"
@@ -105,7 +105,8 @@
                 </syncfusion:SfChart.PrimaryAxis>
 
                 <syncfusion:SfChart.SecondaryAxis>
-                    <syncfusion:NumericalAxis Header="Value"
+                    <syncfusion:NumericalAxis x:Name="ValueAxis"
+                                              Header="Value"
                                               LabelFormat="0.###"
                                               MajorGridLineStyle="{StaticResource MajorGridLineStyle}"/>
                 </syncfusion:SfChart.SecondaryAxis>
@@ -113,7 +114,9 @@
                 <syncfusion:SfChart.Behaviors>
                     <syncfusion:ChartTooltipBehavior/>
                     <syncfusion:ChartTrackBallBehavior ShowLine="True"/>
-                    <syncfusion:ChartZoomPanBehavior EnableMouseWheelZooming="True"
+                    <!-- Name the behavior so code-behind can Reset() it -->
+                    <syncfusion:ChartZoomPanBehavior x:Name="ZoomPan"
+                                                     EnableMouseWheelZooming="True"
                                                      EnablePanning="True"
                                                      ZoomMode="X"/>
                 </syncfusion:SfChart.Behaviors>

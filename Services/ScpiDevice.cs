@@ -1,10 +1,11 @@
-﻿using System;
+﻿// File: Services/ScpiDevice.cs
+using System;
+using System.Globalization;
 using System.IO;
 using System.IO.Ports;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Globalization;
 
 namespace HouseholdMS.Services
 {
@@ -34,71 +35,60 @@ namespace HouseholdMS.Services
         // Mode/Function (safe)
         void SetFunction(string function);
         Task SetFunctionAsync(string function);
+        string GetFunction();
 
         // UX helpers (safe)
-        void SetRate(char speedF_M_L);         // 'F','M','S' (tolerates 'L' as 'S')
-        void SetAveraging(bool on);            // CALC:FUNC AVER / CALC:STAT OFF
-        void SetAutoRange(bool on);            // AUTO 1|0
-        void SetRange(string rangeToken);      // RANGE <token>
-        string GetFunction();                  // FUNC? (safe)
-        AveragingStats TryQueryAveragingAll(); // May return null if unsupported
+        void SetRate(char speedF_M_L);                   // 'F','M','S'
+        void SetAveraging(bool on);
+        void SetAutoRange(bool on);
+        void SetRange(string rangeToken);
+        AveragingStats TryQueryAveragingAll();
         void SetLineEnding(string newEnding);
 
-        // ------------- ADDITIVE: cover your listed SCPI -------------
+        // Math suite (safe)
+        void MathRelEnable();
+        void MathRelZero();
+        void MathOff();
+        void MathDb(int referenceOhms);
+        void MathDbm(int referenceOhms);
 
-        // (1) temp:rtd:type?
-        string QueryTempType();
+        // Continuity / beeper (safe)
+        void SetContinuityThreshold(double ohms);
+        void SetBeeper(bool on);
 
-        // (2) CONF:TEMP:THER KITS90
-        void ConfigureTempTherKITS90();
-
-        // (3) MEAS:TEMP?
-        string ReadTempOnce();
-
-        // (4) temp:rtd:unit?
-        string QueryTempUnit();
-
-        // (5/6/7) temp:rtd:unit K|F|C
-        void SetTempUnit(char unitK_F_C);
-
-        // (8) rate?
+        // Remote/Local & queries (safe)
+        void SetRemote();
+        void SetLocal();
         string QueryRate();
-
-        // (12/13/14) calc:aver:max?/min?/aver?
         string QueryAverMax();
         string QueryAverMin();
         string QueryAverAvg();
-
-        // (15/16) syst:rem / syst:loc
-        void SetRemote();
-        void SetLocal();
-
-        // (17) range?
         string QueryRange();
+        string QueryFunction();
 
-        // (18/18b) CONF:VOLT:{DC|AC} [ranges] (V and mV)
+        // Configure ranges (safe)
         void ConfVoltDC(string range);
         void ConfVoltAC(string range);
         void ConfMilliVoltDC(string range);
         void ConfMilliVoltAC(string range);
-
-        // (19) func?
-        string QueryFunction();
-
-        // (20/21) conf:curr:{DC|AC} [A or mA/µA ranges]
-        void ConfCurrDC_Amps(string range); // 5|10
-        void ConfCurrAC_Amps(string range); // 5|10
-        void ConfCurrDC_mA(string range);   // 500E-6|5E-3|50E-3|500E-3
-        void ConfCurrAC_mA(string range);   // 500E-6|5E-3|50E-3|500E-3
-
-        // (22) conf:res
+        void ConfCurrDC_Amps(string range);
+        void ConfCurrAC_Amps(string range);
+        void ConfCurrDC_mA(string range);
+        void ConfCurrAC_mA(string range);
         void ConfRes();
-
-        // (23) conf:cap [50E-9|500E-9|5E-6]
+        void ConfFres(string range); // 4-wire resistance
         void ConfCap(string range);
-
-        // (24) conf:per
         void ConfPer();
+
+        // Temperature helpers (safe)
+        string QueryTempType();
+        void ConfigureTempTherKITS90();
+        string ReadTempOnce();
+        string QueryTempUnit();
+        void SetTempUnit(char unitK_F_C);
+
+        // Watchdog / robustness
+        void WatchdogBump(Exception ex);
     }
 
     public sealed class AveragingStats
@@ -113,11 +103,12 @@ namespace HouseholdMS.Services
 
     public class ScpiDevice : IScpiDevice
     {
+        // ----------------- Fields / Properties -----------------
         protected SerialPort _port;
         protected readonly object _ioLock = new object();
 
         public string PortName { get; }
-        public int BaudRate { get; }
+        public int BaudRate { get; private set; }
         public Parity Parity { get; }
         public int DataBits { get; }
         public StopBits StopBits { get; }
@@ -130,13 +121,17 @@ namespace HouseholdMS.Services
         public ConnectionState State => _state;
         public event EventHandler<ConnectionState> ConnectionStateChanged;
 
+        private int _watchdogConsecutiveTimeouts;
+        private DateTime _lastRestartUtc = DateTime.MinValue;
+
         private void SetState(ConnectionState s)
         {
             if (_state == s) return;
             _state = s;
-            try { ConnectionStateChanged?.Invoke(this, s); } catch { /* swallow */ }
+            try { ConnectionStateChanged?.Invoke(this, s); } catch { }
         }
 
+        // ----------------- Construction -----------------
         public ScpiDevice(
             string portName,
             int baudRate = 9600,
@@ -155,9 +150,10 @@ namespace HouseholdMS.Services
             DataBits = dataBits;
             StopBits = stopBits;
             Handshake = handshake;
-            LineEnding = lineEnding;
+            LineEnding = lineEnding ?? "\n";
         }
 
+        // ----------------- Connect / Disconnect -----------------
         public virtual void Connect()
         {
             Disconnect();
@@ -167,29 +163,46 @@ namespace HouseholdMS.Services
                 SetState(ConnectionState.Connecting);
 
                 _port?.Dispose();
-
-                _port = new SerialPort(PortName, BaudRate, Parity, DataBits)
-                {
-                    StopBits = StopBits,
-                    Handshake = Handshake,
-                    ReadTimeout = 2000,
-                    WriteTimeout = 2000,
-                    NewLine = LineEnding,
-                    DtrEnable = true,
-                    RtsEnable = false,
-                    Encoding = Encoding.ASCII
-                };
-
+                _port = BuildPort(PortName, BaudRate, LineEnding);
                 _port.Open();
 
-                try
+                // Quick handshake: try *IDN? with current line ending first.
+                if (!HandshakeTry())
                 {
-                    // Soft sanity check — will only warn if weird
-                    EnsureDeviceResponds();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Warning: device may not be responding yet. " + ex.Message);
+                    // Try other common line endings first to avoid unnecessary re-open
+                    string originalEnding = LineEnding;
+
+                    // \r\n -> \r -> \n
+                    foreach (var ending in new[] { "\r\n", "\r", "\n" })
+                    {
+                        if (LineEnding != ending)
+                        {
+                            SetLineEnding(ending);
+                            if (HandshakeTry())
+                                break;
+                        }
+                    }
+
+                    if (!IsConnected || string.IsNullOrWhiteSpace(ReadDeviceID()))
+                    {
+                        // Still no IDN: try a tiny baud fallback set
+                        int[] fallbacks = (BaudRate == 9600)
+                            ? new[] { 19200, 115200 }
+                            : (BaudRate == 115200 ? new[] { 9600, 19200 } : new[] { 9600, 115200 });
+
+                        foreach (var b in fallbacks)
+                        {
+                            if (TryOpenWithBaud(b, LineEnding) && HandshakeTry())
+                            {
+                                BaudRate = b; // lock-in working baud
+                                break;
+                            }
+                        }
+                    }
+
+                    // If handshakes failed under altered ending, restore original ending
+                    if (string.IsNullOrWhiteSpace(ReadDeviceID()))
+                        SetLineEnding(originalEnding);
                 }
 
                 SetState(ConnectionState.Connected);
@@ -197,7 +210,6 @@ namespace HouseholdMS.Services
             catch (Exception ex)
             {
                 SetState(ConnectionState.Faulted);
-                // Bubble only as InvalidOperation — caught by your Connect_Click handler
                 throw new InvalidOperationException($"Failed to open port {PortName}: {ex.Message}", ex);
             }
         }
@@ -216,10 +228,51 @@ namespace HouseholdMS.Services
             }
         }
 
-        // -------- Low-level I/O (can throw) --------
+        private SerialPort BuildPort(string port, int baud, string newLine)
+        {
+            var sp = new SerialPort(port, baud, Parity, DataBits)
+            {
+                StopBits = StopBits,
+                Handshake = Handshake,
+                ReadTimeout = 600,      // short to keep UI responsive
+                WriteTimeout = 600,
+                NewLine = newLine ?? "\n",
+                DtrEnable = true,
+                RtsEnable = false,
+                Encoding = Encoding.ASCII
+            };
+            return sp;
+        }
+
+        private bool TryOpenWithBaud(int baud, string ending)
+        {
+            try
+            {
+                if (_port != null)
+                {
+                    try { if (_port.IsOpen) _port.Close(); } catch { }
+                    try { _port.Dispose(); } catch { }
+                }
+                _port = BuildPort(PortName, baud, ending);
+                _port.Open();
+                return true;
+            }
+            catch { return false; }
+        }
+
+        private bool HandshakeTry()
+        {
+            try
+            {
+                var id = ReadDeviceID();
+                return !string.IsNullOrWhiteSpace(id);
+            }
+            catch { return false; }
+        }
+
+        // ----------------- Low-level I/O (can throw) -----------------
         public virtual void Write(string command)
         {
-            Console.WriteLine("Writing SCPI: " + command);
             if (!IsConnected)
                 throw new InvalidOperationException("Device not connected.");
 
@@ -270,7 +323,7 @@ namespace HouseholdMS.Services
 
         public Task<string> QueryAsync(string command) => Task.Run(() => Query(command));
 
-        // -------- Safe wrappers (never throw) --------
+        // ----------------- Safe wrappers (never throw) -----------------
         private string QuerySafe(string command)
         {
             try
@@ -279,27 +332,26 @@ namespace HouseholdMS.Services
             }
             catch (TimeoutException)
             {
+                // Try a different line ending once, then revert
                 string original = LineEnding;
-                try
+                foreach (var ending in new[] { "\r\n", "\r", "\n" })
                 {
-                    // Some devices expect CRLF
-                    SetLineEnding("\r\n");
-                    return Query(command);
+                    try
+                    {
+                        if (ending == original) continue;
+                        SetLineEnding(ending);
+                        return Query(command);
+                    }
+                    catch { /* keep trying */ }
+                    finally { SetLineEnding(original); }
                 }
-                catch
-                {
-                    SetState(ConnectionState.Faulted);
-                    return null;   // swallow for UI safety
-                }
-                finally
-                {
-                    SetLineEnding(original);
-                }
+                SetState(ConnectionState.Faulted);
+                return null;
             }
             catch
             {
                 SetState(ConnectionState.Faulted);
-                return null;       // swallow for UI safety
+                return null;
             }
         }
 
@@ -311,27 +363,34 @@ namespace HouseholdMS.Services
                 if (!string.IsNullOrWhiteSpace(r))
                     return r;
             }
-            return null; // safe: caller decides what to do
+            return null;
         }
 
-        private void EnsureDeviceResponds()
+        private bool TryWrite(string cmd)
         {
-            var id = ReadDeviceID(); // safe call
-            if (string.IsNullOrWhiteSpace(id))
-                throw new IOException("Device returned empty ID.");
-            if (!id.ToLowerInvariant().Contains("mp730889"))
-                throw new IOException("Unexpected device ID: " + id);
+            try { Write(cmd); return true; }
+            catch { return false; }
         }
 
-        // ---------- High-level ops (safe) ----------
+        private bool TryWriteAny(params string[] cmds)
+        {
+            foreach (var c in cmds)
+                if (TryWrite(c)) return true;
+            return false;
+        }
 
-        public virtual string ReadMeasurement() => QuerySafe("MEAS?");
+        // ----------------- High-level ops (safe) -----------------
+        public virtual string ReadMeasurement()
+            => QueryFirstAvailable("MEAS?", "READ?", "FETC?");
 
-        public virtual Task<string> ReadMeasurementAsync() => Task.Run(() => ReadMeasurement());
+        public virtual Task<string> ReadMeasurementAsync()
+            => Task.Run(() => ReadMeasurement());
 
-        public virtual string ReadDeviceID() => QuerySafe("*IDN?") ?? string.Empty;
+        public virtual string ReadDeviceID()
+            => QueryFirstAvailable("*IDN?", "IDN?", "ID?", "SYST:VERS?") ?? string.Empty;
 
-        public virtual Task<string> ReadDeviceIDAsync() => Task.Run(() => ReadDeviceID());
+        public virtual Task<string> ReadDeviceIDAsync()
+            => Task.Run(() => ReadDeviceID());
 
         // --------- Function setting (tolerant, safe) ---------
         public virtual void SetFunction(string function)
@@ -341,64 +400,56 @@ namespace HouseholdMS.Services
 
             string token = NormalizeTokenNoSense(function); // e.g., "VOLT:AC"
 
-            string[] tryWrites =
+            string[] attempts =
             {
                 $"FUNC \"{token}\"",
+                $"FUNC {token}",
+                $"FUNC:MODE {token}",
                 $"CONF:{TokenToConfNoSense(token)}"
             };
 
             lock (_ioLock)
             {
-                try { Write("SYST:REM"); } catch { /* ignore */ }
+                try { Write("SYST:REM"); } catch { }
 
-                bool anyWriteSucceeded = false;
-
-                foreach (var cmd in tryWrites)
+                bool anyWrite = false;
+                foreach (var cmd in attempts)
                 {
                     try
                     {
                         Write(cmd);
-                        anyWriteSucceeded = true;
+                        anyWrite = true;
 
+                        // temperature convenience
                         if (token.StartsWith("TEMP", StringComparison.OrdinalIgnoreCase))
                         {
-                            string[] tempCfg =
-                            {
-                                "CONF:TEMP:RTD PT100",
-                                "TEMP:RTD:TYPE PT100",
-                                "TEMP:UNIT C"
-                            };
-                            foreach (var t in tempCfg) { try { Write(t); } catch { } }
+                            TryWriteAny("CONF:TEMP:RTD PT100",
+                                        "TEMP:RTD:TYPE PT100",
+                                        "TEMP:UNIT C");
                         }
 
-                        // fast confirmation (short timeout, few attempts)
-                        if (ConfirmFunctionWithRetry(token, attempts: 2, perAttemptTimeoutMs: 250))
-                            return; // confirmed OK
+                        if (ConfirmFunctionWithRetry(token, attemptsCount: 2, perAttemptTimeoutMs: 250))
+                            return;
                     }
-                    catch
-                    {
-                        // try next form
-                    }
+                    catch { /* try next */ }
                 }
 
-                // Couldn’t confirm, but at least one write went out — don’t crash the app.
-                if (anyWriteSucceeded)
+                if (anyWrite)
                 {
-                    Console.WriteLine($"[WARN] Could not confirm FUNC '{token}' via readback.");
+                    // Could not confirm, but wrote something; keep going
                     return;
                 }
 
-                Console.WriteLine($"[ERR] Could not send function '{token}'.");
+                // Nothing succeeded
             }
         }
 
         public Task SetFunctionAsync(string function) => Task.Run(() => SetFunction(function));
-
         public string GetFunction() => QueryFirstAvailable("FUNC?", "CONF?") ?? string.Empty;
 
-        private bool ConfirmFunctionWithRetry(string token, int attempts = 2, int perAttemptTimeoutMs = 250)
+        private bool ConfirmFunctionWithRetry(string token, int attemptsCount = 2, int perAttemptTimeoutMs = 250)
         {
-            for (int i = 0; i < attempts; i++)
+            for (int i = 0; i < attemptsCount; i++)
             {
                 var r1 = QueryFast("FUNC?", perAttemptTimeoutMs);
                 if (ReadbackMatches(r1, token)) return true;
@@ -406,7 +457,7 @@ namespace HouseholdMS.Services
                 var r2 = QueryFast("CONF?", perAttemptTimeoutMs);
                 if (ReadbackMatches(r2, token)) return true;
 
-                Thread.Sleep(60 + i * 40); // short backoff
+                Thread.Sleep(60 + i * 40);
             }
             return false;
         }
@@ -469,109 +520,198 @@ namespace HouseholdMS.Services
                 case "CONT": return new[] { "CONTINUITY" };
                 case "DIOD": return new[] { "DIODE" };
                 case "TEMP": return new[] { "TEMP:RTD", "RTD" };
+                case "FRES": return new[] { "4WRES", "FOURWIRE", "4WIRE" };
                 default: return Array.Empty<string>();
             }
         }
 
-        // ---------- Math/Averaging (safe) ----------
-
+        // ----------------- Math / Averaging (safe) -----------------
         public void SetAveraging(bool on)
         {
             try
             {
-                if (on) Write("CALC:FUNC AVER");
-                else Write("CALC:STAT OFF");
+                if (on)
+                {
+                    TryWriteAny("CALC:FUNC AVER");
+                    TryWriteAny("CALC:STAT ON");
+                }
+                else
+                {
+                    TryWriteAny("CALC:STAT OFF");
+                    TryWriteAny("CALC:FUNC OFF");
+                }
             }
             catch { }
         }
 
-        /// <summary>Best-effort query for avg/min/max/count. Returns null if unsupported.</summary>
         public AveragingStats TryQueryAveragingAll()
         {
+            // Preferred vendor aggregate
+            var s = QuerySafe("CALC:AVER:ALL?");
+            if (string.IsNullOrWhiteSpace(s))
+            {
+                // Fallback: query individually
+                var avg = QuerySafe("CALC:AVER:AVER?");
+                var min = QuerySafe("CALC:AVER:MIN?");
+                var max = QuerySafe("CALC:AVER:MAX?");
+                var cnt = QuerySafe("CALC:AVER:COUN?");
+                if (avg == null && min == null && max == null && cnt == null) return null;
+
+                var stats = new AveragingStats();
+                stats.Avg = ParseDoubleSafe(avg);
+                stats.Min = ParseDoubleSafe(min);
+                stats.Max = ParseDoubleSafe(max);
+                stats.Count = (int)Math.Round(ParseDoubleSafe(cnt));
+                return stats;
+            }
+
             try
             {
-                var s = QuerySafe("CALC:AVER:ALL?");
-                if (string.IsNullOrWhiteSpace(s)) return null;
-
                 var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length < 4) return null;
 
-                double a = ParseDouble(parts[0]);
-                double b = ParseDouble(parts[1]);
-                double c = ParseDouble(parts[2]);
-                double d = ParseDouble(parts[3]);
+                // Try to detect which token is count
+                int countIdx = -1; int best = -1;
+                for (int i = 0; i < parts.Length && i < 4; i++)
+                {
+                    if (TryParseInt(parts[i], out int cnt) && cnt > best)
+                    { best = cnt; countIdx = i; }
+                }
 
                 var stats = new AveragingStats();
-
-                int countCandidate = -1, which = -1;
-                for (int i = 0; i < 4; i++)
+                if (countIdx >= 0)
                 {
-                    if (TryParseInt(parts[i], out int cnt) && cnt > countCandidate)
-                    {
-                        countCandidate = cnt; which = i;
-                    }
-                }
-                if (which >= 0)
-                {
-                    stats.Count = countCandidate;
+                    stats.Count = best;
+                    // other three become min/max/avg (order unknown) – sort
                     double[] vals = new double[3];
-                    int idx = 0;
+                    int k = 0;
                     for (int i = 0; i < 4; i++)
-                        if (i != which) vals[idx++] = ParseDouble(parts[i]);
+                        if (i != countIdx) vals[k++] = ParseDouble(parts[i]);
+
                     Array.Sort(vals);
                     stats.Min = vals[0];
-                    stats.Max = vals[2];
                     stats.Avg = vals[1];
+                    stats.Max = vals[2];
                 }
                 else
                 {
-                    stats.Min = a; stats.Max = b; stats.Avg = c; stats.Count = (int)Math.Round(d);
+                    // Assume avg,min,max,count
+                    stats.Avg = ParseDouble(parts[0]);
+                    stats.Min = ParseDouble(parts[1]);
+                    stats.Max = ParseDouble(parts[2]);
+                    stats.Count = (int)Math.Round(ParseDouble(parts[3]));
                 }
-
                 return stats;
             }
-            catch
-            {
-                return null;
-            }
+            catch { return null; }
         }
 
-        // ---------- Speed/Rate (safe) ----------
+        public void MathRelEnable()
+        {
+            TryWriteAny("CALC:FUNC NULL");
+            TryWriteAny("CALC:STAT ON");
+        }
 
+        public void MathRelZero()
+        {
+            TryWriteAny("CALC:NULL:OFFS");
+        }
+
+        public void MathOff()
+        {
+            TryWriteAny("CALC:STAT OFF");
+            TryWriteAny("CALC:FUNC OFF");
+        }
+
+        public void MathDb(int referenceOhms)
+        {
+            TryWriteAny("CALC:FUNC DB");
+            TryWriteAny($"CALC:DB:REF {referenceOhms}");
+            TryWriteAny($"CALC:DBM:REF {referenceOhms}"); // harmless if unsupported
+            TryWriteAny("CALC:STAT ON");
+        }
+
+        public void MathDbm(int referenceOhms)
+        {
+            TryWriteAny("CALC:FUNC DBM");
+            TryWriteAny($"CALC:DBM:REF {referenceOhms}");
+            TryWriteAny($"CALC:DB:REF {referenceOhms}");
+            TryWriteAny("CALC:STAT ON");
+        }
+
+        // ----------------- Speed / Rate (safe) -----------------
         public void SetRate(char speedF_M_L)
         {
             try
             {
-                // Tolerate UI 'L' by mapping to device 'S'
                 char v = char.ToUpperInvariant(speedF_M_L);
                 if (v == 'L') v = 'S';
                 if (v != 'F' && v != 'M' && v != 'S') return;
-                Write("RATE " + v);
+
+                if (!TryWriteAny("RATE " + v))
+                {
+                    TryWriteAny("SAMP:RATE " + v);
+                    TryWriteAny("TRIG:COUN INF"); // keep device streaming
+                }
                 Thread.Sleep(50);
             }
             catch { }
         }
 
-        // ---------- Range/Auto (safe) ----------
-
+        // ----------------- Range / Auto (safe) -----------------
         public void SetAutoRange(bool on)
         {
-            try { Write(on ? "AUTO 1" : "AUTO 0"); } catch { }
+            try
+            {
+                if (on)
+                {
+                    if (!TryWriteAny("AUTO 1", "RANG:AUTO ON"))
+                    {
+                        TryWriteAny("SENS:VOLT:DC:RANG:AUTO ON",
+                                    "SENS:VOLT:AC:RANG:AUTO ON",
+                                    "SENS:RES:RANG:AUTO ON",
+                                    "SENS:CURR:DC:RANG:AUTO ON",
+                                    "SENS:CURR:AC:RANG:AUTO ON");
+                    }
+                }
+                else
+                {
+                    if (!TryWriteAny("AUTO 0", "RANG:AUTO OFF"))
+                    {
+                        TryWriteAny("SENS:VOLT:DC:RANG:AUTO OFF",
+                                    "SENS:VOLT:AC:RANG:AUTO OFF",
+                                    "SENS:RES:RANG:AUTO OFF",
+                                    "SENS:CURR:DC:RANG:AUTO OFF",
+                                    "SENS:CURR:AC:RANG:AUTO OFF");
+                    }
+                }
+            }
+            catch { }
         }
 
         public void SetRange(string rangeToken)
         {
             if (string.IsNullOrWhiteSpace(rangeToken)) return;
-            try { Write("RANGE " + rangeToken); } catch { }
+            try
+            {
+                if (!TryWriteAny("RANGE " + rangeToken))
+                {
+                    // Fallback attempts across common functions
+                    TryWriteAny("SENS:VOLT:DC:RANG " + rangeToken,
+                                "SENS:VOLT:AC:RANG " + rangeToken,
+                                "SENS:RES:RANG " + rangeToken,
+                                "SENS:CURR:DC:RANG " + rangeToken,
+                                "SENS:CURR:AC:RANG " + rangeToken);
+                }
+            }
+            catch { }
         }
 
-        // ---------- Utilities ----------
-
+        // ----------------- Utilities -----------------
         public void SetLineEnding(string newEnding)
         {
-            LineEnding = newEnding;
-            if (_port != null)
-                _port.NewLine = newEnding;
+            LineEnding = string.IsNullOrEmpty(newEnding) ? "\n" : newEnding;
+            if (_port != null) _port.NewLine = LineEnding;
         }
 
         public void Dispose()
@@ -585,13 +725,11 @@ namespace HouseholdMS.Services
             catch { }
         }
 
-        // ---------- ADDITIVE IMPLEMENTATIONS FOR YOUR COMMANDS ----------
-
-        // Temperature
-        public string QueryTempType() => QuerySafe("TEMP:RTD:TYPE?");
-        public void ConfigureTempTherKITS90() { TryWrite("CONF:TEMP:THER KITS90"); }
-        public string ReadTempOnce() => QuerySafe("MEAS:TEMP?");
-        public string QueryTempUnit() => QuerySafe("TEMP:RTD:UNIT?");
+        // ----------------- Temperature -----------------
+        public string QueryTempType() => QueryFirstAvailable("TEMP:RTD:TYPE?");
+        public void ConfigureTempTherKITS90() { TryWriteAny("CONF:TEMP:THER KITS90"); }
+        public string ReadTempOnce() => QueryFirstAvailable("MEAS:TEMP?");
+        public string QueryTempUnit() => QueryFirstAvailable("TEMP:RTD:UNIT?");
         public void SetTempUnit(char unitK_F_C)
         {
             try
@@ -602,53 +740,112 @@ namespace HouseholdMS.Services
             catch { }
         }
 
-        // Rate
-        public string QueryRate() => QuerySafe("RATE?");
+        // ----------------- Queries & Remote/Local -----------------
+        public string QueryRate() => QueryFirstAvailable("RATE?", "SAMP:RATE?");
+        public string QueryAverMax() => QueryFirstAvailable("CALC:AVER:MAX?");
+        public string QueryAverMin() => QueryFirstAvailable("CALC:AVER:MIN?");
+        public string QueryAverAvg() => QueryFirstAvailable("CALC:AVER:AVER?");
 
-        // Averaging individual readbacks
-        public string QueryAverMax() => QuerySafe("CALC:AVER:MAX?");
-        public string QueryAverMin() => QuerySafe("CALC:AVER:MIN?");
-        public string QueryAverAvg() => QuerySafe("CALC:AVER:AVER?");
+        public void SetRemote() { TryWriteAny("SYST:REM"); }
+        public void SetLocal() { TryWriteAny("SYST:LOC"); }
 
-        // Remote/Local
-        public void SetRemote() { TryWrite("SYST:REM"); }
-        public void SetLocal() { TryWrite("SYST:LOC"); }
+        public string QueryRange()
+            => QueryFirstAvailable("RANGE?", "SENS:VOLT:DC:RANG?", "SENS:RES:RANG?", "SENS:CURR:DC:RANG?");
 
-        // Range query
-        public string QueryRange() => QuerySafe("RANGE?");
+        public string QueryFunction() => QueryFirstAvailable("FUNC?") ?? string.Empty;
 
-        // Voltage CONF (V and mV)
-        public void ConfVoltDC(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:VOLT:DC {range}"); }
-        public void ConfVoltAC(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:VOLT:AC {range}"); }
-        public void ConfMilliVoltDC(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:VOLT:DC {range}"); }
-        public void ConfMilliVoltAC(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:VOLT:AC {range}"); }
+        // ----------------- Configure convenience -----------------
+        public void ConfVoltDC(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWriteAny($"CONF:VOLT:DC {range}"); else TryWriteAny("CONF:VOLT:DC"); }
+        public void ConfVoltAC(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWriteAny($"CONF:VOLT:AC {range}"); else TryWriteAny("CONF:VOLT:AC"); }
 
-        // Function query (explicit)
-        public string QueryFunction() => QuerySafe("FUNC?") ?? string.Empty;
+        public void ConfMilliVoltDC(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWriteAny($"CONF:VOLT:DC {range}"); else TryWriteAny("CONF:VOLT:DC"); }
+        public void ConfMilliVoltAC(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWriteAny($"CONF:VOLT:AC {range}"); else TryWriteAny("CONF:VOLT:AC"); }
 
-        // Current CONF (Amps and mA/µA)
-        public void ConfCurrDC_Amps(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:CURR:DC {range}"); }
-        public void ConfCurrAC_Amps(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:CURR:AC {range}"); }
-        public void ConfCurrDC_mA(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:CURR:DC {range}"); }
-        public void ConfCurrAC_mA(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:CURR:AC {range}"); }
+        public void ConfCurrDC_Amps(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWriteAny($"CONF:CURR:DC {range}"); else TryWriteAny("CONF:CURR:DC"); }
+        public void ConfCurrAC_Amps(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWriteAny($"CONF:CURR:AC {range}"); else TryWriteAny("CONF:CURR:AC"); }
 
-        // Resistance / Capacitance / Period
-        public void ConfRes() { TryWrite("CONF:RES"); }
-        public void ConfCap(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWrite($"CONF:CAP {range}"); }
-        public void ConfPer() { TryWrite("CONF:PER"); }
+        public void ConfCurrDC_mA(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWriteAny($"CONF:CURR:DC {range}"); else TryWriteAny("CONF:CURR:DC"); }
+        public void ConfCurrAC_mA(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWriteAny($"CONF:CURR:AC {range}"); else TryWriteAny("CONF:CURR:AC"); }
 
-        // ---------- Private helpers ----------
-        private static double ParseDouble(string s)
+        public void ConfRes() { TryWriteAny("CONF:RES"); }
+
+        public void ConfFres(string range)
         {
-            return double.Parse(s, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
+            if (!string.IsNullOrWhiteSpace(range)) TryWriteAny($"CONF:FRES {range}");
+            else TryWriteAny("CONF:FRES");
+            // Enable 4-wire sense on devices that need it
+            TryWriteAny("SYST:RSEN ON", "SYST:FOUR:WIRE ON");
+        }
+
+        public void ConfCap(string range) { if (!string.IsNullOrWhiteSpace(range)) TryWriteAny($"CONF:CAP {range}"); else TryWriteAny("CONF:CAP"); }
+        public void ConfPer() { TryWriteAny("CONF:PER"); }
+
+        // ----------------- Continuity & Beeper -----------------
+        public void SetContinuityThreshold(double ohms)
+        {
+            TryWriteAny($"CONT:THRE {ohms.ToString("G17", CultureInfo.InvariantCulture)}",
+                        $"SENS:CONT:THR {ohms.ToString("G17", CultureInfo.InvariantCulture)}");
+        }
+
+        public void SetBeeper(bool on)
+        {
+            if (!TryWriteAny(on ? "SYST:BEEP:STAT ON" : "SYST:BEEP:STAT OFF"))
+                TryWriteAny(on ? "SYST:BEEPER:STATE ON" : "SYST:BEEPER:STATE OFF");
+        }
+
+        // ----------------- Watchdog -----------------
+        public void WatchdogBump(Exception ex)
+        {
+            bool isTimeoutLike = ex is TimeoutException || ex is IOException;
+            if (!isTimeoutLike)
+            {
+                _watchdogConsecutiveTimeouts = 0;
+                return;
+            }
+
+            int c = Interlocked.Increment(ref _watchdogConsecutiveTimeouts);
+            if (c < 3) return; // tolerate a couple of hiccups
+
+            var now = DateTime.UtcNow;
+            if ((now - _lastRestartUtc).TotalSeconds < 2) return; // don't flap
+
+            _lastRestartUtc = now;
+            Interlocked.Exchange(ref _watchdogConsecutiveTimeouts, 0);
+
+            // Attempt a quick restart with the same settings.
+            try
+            {
+                lock (_ioLock)
+                {
+                    try { if (_port != null && _port.IsOpen) _port.Close(); } catch { }
+                    try { _port?.Dispose(); } catch { }
+                    _port = BuildPort(PortName, BaudRate, LineEnding);
+                    _port.Open();
+
+                    // Soft handshake; don't throw
+                    _ = ReadDeviceID();
+                    SetState(ConnectionState.Connected);
+                }
+            }
+            catch
+            {
+                SetState(ConnectionState.Faulted);
+            }
+        }
+
+        // ----------------- Helpers -----------------
+        private static double ParseDouble(string s) => double.Parse(s, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
+        private static double ParseDoubleSafe(string s)
+        {
+            if (double.TryParse(s, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var v))
+                return v;
+            return double.NaN;
         }
 
         private static bool TryParseInt(string s, out int value)
         {
-            if (s.IndexOfAny(new[] { 'e', 'E', '.', ',' }) >= 0)
-            {
-                value = 0; return false;
-            }
+            if (string.IsNullOrEmpty(s)) { value = 0; return false; }
+            if (s.IndexOfAny(new[] { 'e', 'E', '.', ',' }) >= 0) { value = 0; return false; }
             return int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
         }
 
@@ -675,7 +872,7 @@ namespace HouseholdMS.Services
                 case "TEMP":
                     return f;
             }
-            return "VOLT:DC"; // safest fallback
+            return "VOLT:DC";
         }
 
         private static string TokenToConfNoSense(string token)
@@ -697,7 +894,5 @@ namespace HouseholdMS.Services
                 default: return "VOLT:DC";
             }
         }
-
-        private void TryWrite(string cmd) { try { Write(cmd); } catch { } }
     }
 }
