@@ -25,7 +25,7 @@ namespace HouseholdMS.Services
             _rm = new ResourceManager();
             _session = (IMessage)_rm.Open(resourceAddress, AccessMode.NO_LOCK, timeoutMs, string.Empty);
             _session.Timeout = timeoutMs;
-            _session.TerminationCharacterEnabled = true;
+            _session.TerminationCharacterEnabled = true; // fine; ReadIEEEBlock ignores it
             _session.TerminationCharacter = 10; // \n
             TryClear();
 

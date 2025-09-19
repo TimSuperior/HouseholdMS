@@ -1,4 +1,4 @@
-﻿// Helpers/EpeverRegisters.cs
+﻿// File: HouseholdMS/Helpers/EpeverRegisters.cs
 namespace HouseholdMS.Helpers
 {
     /// <summary>
@@ -66,33 +66,9 @@ namespace HouseholdMS.Helpers
             }
         }
 
-        // -------- Energy counters (kWh ×0.01) + today’s min/max battery V --------
+        // -------- Today's extremes (keep) --------
         public const ushort EV_BATT_VMAX_TODAY = 0x3302;  // /100 V
         public const ushort EV_BATT_VMIN_TODAY = 0x3303;  // /100 V
-
-        // Consumed energy (load side), kWh×0.01: today/month/year/total
-        public const ushort EV_CONS_TODAY_LO = 0x3304;
-        public const ushort EV_CONS_TODAY_HI = 0x3305;
-        public const ushort EV_CONS_MONTH_LO = 0x3306;
-        public const ushort EV_CONS_MONTH_HI = 0x3307;
-        public const ushort EV_CONS_YEAR_LO = 0x3308;
-        public const ushort EV_CONS_YEAR_HI = 0x3309;
-        public const ushort EV_CONS_TOTAL_LO = 0x330A;
-        public const ushort EV_CONS_TOTAL_HI = 0x330B;
-
-        // Generated energy (PV side), kWh×0.01: today/month/year/total
-        public const ushort EV_GEN_TODAY_LO = 0x330C;
-        public const ushort EV_GEN_TODAY_HI = 0x330D;
-        public const ushort EV_GEN_MONTH_LO = 0x330E;
-        public const ushort EV_GEN_MONTH_HI = 0x330F;
-        public const ushort EV_GEN_YEAR_LO = 0x3310;
-        public const ushort EV_GEN_YEAR_HI = 0x3311;
-        public const ushort EV_GEN_TOTAL_LO = 0x3312;
-        public const ushort EV_GEN_TOTAL_HI = 0x3313;
-
-        // Optional: CO2 reduction (ton ×0.01)
-        public const ushort EV_CO2_TON_LO = 0x3314;
-        public const ushort EV_CO2_TON_HI = 0x3315;
 
         // -------- Rated data (read-only sanity) --------
         public const ushort RATED_INPUT_VOLT = 0x3000;   // /100 V

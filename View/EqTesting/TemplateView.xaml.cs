@@ -8,7 +8,6 @@ namespace HouseholdMS.View.EqTesting
 {
     /// <summary>
     /// Image-only gallery with album "cards" and responsive image viewer.
-    /// Edit the constructor's EDIT REGION or call LoadGallery(...) programmatically.
     /// Arrow keys: Left/Right to navigate images; Home button to go back to album list.
     /// </summary>
     public partial class TemplateView : UserControl
@@ -67,16 +66,16 @@ namespace HouseholdMS.View.EqTesting
             LoadGallery(
                 "Battery Charging Procedures", "1.1",
                 new AlbumSpec("Battery Visual Inspection",
-                    "pack://application:,,,/Assets/Template/1img.png",
-                    "pack://application:,,,/Assets/Manuals/batchar1.png"),
+                    "pack://application:,,,/Assets/Template/333.png",
+                    "pack://application:,,,/Assets/Template/444.png"),
                 new AlbumSpec("Wiring Check",
-                    "pack://application:,,,/Assets/Template/2img.png",
-                    "pack://application:,,,/Assets/Manuals/batchar2.png",
-                    "pack://application:,,,/Assets/Manuals/batchar3.png"),
+                    "pack://application:,,,/Assets/Template/222.png",
+                    "pack://application:,,,/Assets/Template/222.png",
+                    "pack://application:,,,/Assets/Template/222.png"),
                 new AlbumSpec("Voltage Measurement",
-                    "pack://application:,,,/Assets/Template/3img.png"),
+                    "pack://application:,,,/Assets/Template/111.png"),
                 new AlbumSpec("Final Setup",
-                    "pack://application:,,,/Assets/Template/1img.png",
+                    "pack://application:,,,/Assets/Template/111.png",
                     "pack://application:,,,/Assets/Manuals/batchar4.png",
                     "pack://application:,,,/Assets/Manuals/batchar5.png"),
                 new AlbumSpec("Safety Checks",
@@ -116,7 +115,10 @@ namespace HouseholdMS.View.EqTesting
             HeaderVersion.Text = string.IsNullOrWhiteSpace(_gallery?.Version) ? "" : "v" + _gallery.Version;
             HeaderStep.Text = ""; // none on home
 
-            // Toggle views
+            // Show header/footer, hide image viewer
+            HeaderBar.Visibility = Visibility.Visible;
+            FooterBar.Visibility = Visibility.Visible;
+
             HomeScroll.Visibility = Visibility.Visible;
             ImageScroll.Visibility = Visibility.Collapsed;
 
@@ -128,11 +130,8 @@ namespace HouseholdMS.View.EqTesting
             {
                 var album = _gallery.Albums[i];
 
-                // Fancy content for the card
-                var content = new StackPanel
-                {
-                    Orientation = Orientation.Vertical
-                };
+                // Card content
+                var content = new StackPanel { Orientation = Orientation.Vertical };
                 content.Children.Add(new TextBlock
                 {
                     Text = album.Title,
@@ -166,12 +165,11 @@ namespace HouseholdMS.View.EqTesting
             if (_gallery == null || _albumIndex < 0) return;
             var album = _gallery.Albums[_albumIndex];
 
-            // Header + page title
-            HeaderTitle.Text = _gallery.Name;
-            HeaderVersion.Text = string.IsNullOrWhiteSpace(_gallery.Version) ? "" : "v" + _gallery.Version;
-            HeaderStep.Text = $"{album.Title} — Step {_imageIndex + 1} / {album.Images.Length}";
-
-            PageTitle.Text = album.Title;
+            // Hide all titles in image mode (no "Battery Visual Inspection", no step text)
+            HeaderBar.Visibility = Visibility.Collapsed;   // no header/title
+            HeaderTitle.Text = "";
+            HeaderVersion.Text = "";
+            HeaderStep.Text = "";
 
             // Load image
             try
@@ -190,28 +188,21 @@ namespace HouseholdMS.View.EqTesting
             HomeScroll.Visibility = Visibility.Collapsed;
             ImageScroll.Visibility = Visibility.Visible;
 
-            // Footer state
+            // Footer state (keep for navigation)
             PrevBtn.IsEnabled = _imageIndex > 0;
             NextBtn.IsEnabled = _imageIndex < album.Images.Length - 1;
 
-            // Fit image to current viewport
+            // Ensure full-bleed behavior (no caps)
             UpdateImageViewboxMax();
         }
 
-        // ===== Responsive sizing =====
-        private void ImageScroll_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateImageViewboxMax();
-
+        // ===== Immersive sizing =====
         private void UpdateImageViewboxMax()
         {
-            // We cap the viewbox size so the image scales with the window but doesn't overflow
-            if (ImageScroll == null || ImageViewbox == null) return;
-
-            // Account for padding (16 all around in ScrollViewer + Border Padding)
-            double w = Math.Max(0, ImageScroll.ActualWidth - 48);   // approx margins
-            double h = Math.Max(0, ImageScroll.ActualHeight - 80);  // header text + paddings
-
-            ImageViewbox.MaxWidth = w;
-            ImageViewbox.MaxHeight = h;
+            // Remove any capping — let the Viewbox fill the available space
+            if (ImageViewbox == null) return;
+            ImageViewbox.MaxWidth = double.PositiveInfinity;
+            ImageViewbox.MaxHeight = double.PositiveInfinity;
         }
 
         // ===== Events / Navigation =====

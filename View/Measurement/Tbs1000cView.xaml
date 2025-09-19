@@ -1,408 +1,349 @@
-﻿<!-- tbs1000c_oscilloscope_view.xaml -->
-<UserControl x:Class="HouseholdMS.View.Measurement.Tbs1000cView"
+﻿<UserControl x:Class="HouseholdMS.View.Measurement.Tbs1000cView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:chart="http://schemas.syncfusion.com/wpf"
-             mc:Ignorable="d"
-             Background="#F6F7FB">
-
-    <UserControl.Resources>
-        <SolidColorBrush x:Key="Col.Page" Color="#F6F7FB"/>
-        <SolidColorBrush x:Key="Col.Card" Color="#FFFFFFFF"/>
-        <SolidColorBrush x:Key="Col.Border" Color="#E5E7EB"/>
-        <SolidColorBrush x:Key="Col.Muted" Color="#6B7280"/>
-        <Style x:Key="Card" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource Col.Card}"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12"/>
-            <Setter Property="Margin" Value="8"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect BlurRadius="6" ShadowDepth="0" Opacity="0.08"/>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <Style TargetType="Button">
-            <Setter Property="Margin" Value="0,0,8,8"/>
-            <Setter Property="Padding" Value="8,6"/>
-        </Style>
-        <Style TargetType="ComboBox">
-            <Setter Property="Margin" Value="0,0,0,8"/>
-            <Setter Property="Width" Value="220"/>
-        </Style>
-        <Style TargetType="TextBox">
-            <Setter Property="Margin" Value="0,0,8,0"/>
-        </Style>
-        <Style x:Key="MutedText" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource Col.Muted}"/>
-        </Style>
-    </UserControl.Resources>
-
-    <Grid Background="{StaticResource Col.Page}">
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             MinWidth="1040" MinHeight="760"
+             FontFamily="Segoe UI" FontSize="13"
+             SnapsToDevicePixels="True" UseLayoutRounding="True">
+    <Grid Background="#F7F9FC">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="200"/>
         </Grid.RowDefinitions>
 
-        <!-- Top bar -->
-        <Border Grid.Row="0" Style="{StaticResource Card}">
-            <DockPanel>
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                    <TextBlock Text="VISA:" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                    <TextBox x:Name="VisaAddressBox" Width="360" Text="USB0::0x0699::0x03C4::C044134::INSTR"/>
-                    <Button Content="Connect" Click="Connect_Click"/>
-                    <Button Content="Disconnect" Click="Disconnect_Click"/>
-                    <Button Content="*IDN?" Click="ReadIDN_Click"/>
-                </StackPanel>
-                <TextBlock x:Name="StatusBlock" Style="{StaticResource MutedText}" VerticalAlignment="Center" Margin="16,0,0,0"/>
-            </DockPanel>
-        </Border>
+        <!-- Header / Connection -->
+        <DockPanel Grid.Row="0" Margin="12,12,12,6">
+            <TextBlock Text="Tektronix TBS1202C — Remote Control"
+                 FontSize="18" FontWeight="SemiBold" />
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <Button Content="Connect" Click="Connect_Click" Margin="6,0,0,0"/>
+                <Button Content="Disconnect" Click="Disconnect_Click" Margin="6,0,0,0"/>
+                <Separator Width="10"/>
+                <Button Content="*IDN?" Click="BtnIdn_Click" Margin="6,0,0,0"/>
+                <Button Content="*RST" Click="BtnRst_Click" Margin="6,0,0,0"/>
+                <Button Content="*CLS" Click="BtnCls_Click" Margin="6,0,0,0"/>
+                <Separator Width="10"/>
+                <Button Content="AUTOSet" ToolTip="AUTOSet EXECute" Click="BtnAutoset_Click" Margin="6,0,0,0"/>
+            </StackPanel>
+        </DockPanel>
 
-        <!-- Body -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="410"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- Chart -->
-            <Border Grid.Column="0" Style="{StaticResource Card}">
+        <!-- Main Area: Graph first (with left control panel), Measurements as second tab -->
+        <TabControl Grid.Row="1" Margin="12,6,12,12">
+            <!-- GRAPH TAB (main) -->
+            <TabItem Header="Graph">
                 <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="360"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Chart header: cursors & markers -->
-                    <DockPanel>
-                        <TextBlock Text="Waveform" FontWeight="Bold" FontSize="16" Margin="0,0,12,0"/>
-                        <Separator Margin="8,0"/>
-                        <TextBlock Text="Cursors:" Style="{StaticResource MutedText}" Margin="8,0,4,0"/>
-                        <ToggleButton x:Name="BtnEnableGate" Content="Enable Gate" Margin="0,0,4,0" Checked="BtnEnableGate_Checked" Unchecked="BtnEnableGate_Unchecked"/>
-                        <Button Content="Set Cursor A" Click="SetCursorA_Click"/>
-                        <Button Content="Set Cursor B" Click="SetCursorB_Click"/>
-                        <Separator Margin="8,0"/>
-                        <Button Content="Add Marker" Click="AddMarker_Click"/>
-                        <Button Content="Clear Markers" Click="ClearMarkers_Click"/>
+                    <!-- Top toolbar (source selection + actions) -->
+                    <DockPanel Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,10">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                            <TextBlock Text="Sources:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <CheckBox x:Name="SrcCh1" Content="CH1" IsChecked="True" Margin="0,0,6,0"/>
+                            <CheckBox x:Name="SrcCh2" Content="CH2" IsChecked="False" Margin="0,0,12,0"/>
+                            <TextBlock Text="Live (Hz):" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBox x:Name="LiveHz" Width="56" Text="5" Margin="0,0,12,0" ToolTip="Polling rate for CURVe? reads"/>
+                            <Button Content="Fit All" Click="BtnFitAll_Click" Margin="0,0,6,0"/>
+                            <Button Content="Clear" Click="BtnClearCharts_Click" Margin="0,0,6,0"/>
+                            <Button x:Name="BtnPauseLive" Content="Pause Live" Click="BtnPauseLive_Click" Margin="6,0,0,0"/>
+                        </StackPanel>
+
+                        <!-- Axis-range controls -->
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                            <TextBlock Text="X:" VerticalAlignment="Center" Margin="6,0,4,0"/>
+                            <CheckBox x:Name="XAuto" Content="Auto" IsChecked="True" Margin="0,0,6,0"/>
+                            <TextBox x:Name="XMin" Width="80" Margin="0,0,4,0" ToolTip="X Min (s)"/>
+                            <TextBox x:Name="XMax" Width="80" Margin="0,0,8,0" ToolTip="X Max (s)"/>
+
+                            <TextBlock Text="Y:" VerticalAlignment="Center" Margin="6,0,4,0"/>
+                            <CheckBox x:Name="YAuto" Content="Auto" IsChecked="True" Margin="0,0,6,0"/>
+                            <TextBox x:Name="YMin" Width="80" Margin="0,0,4,0" ToolTip="Y Min"/>
+                            <TextBox x:Name="YMax" Width="80" Margin="0,0,6,0" ToolTip="Y Max"/>
+                            <Button Content="Apply Range" Click="BtnApplyAxis_Click" Margin="0,0,6,0"/>
+                            <Button Content="Auto from Data" Click="BtnAutoAxisFromData_Click"/>
+                        </StackPanel>
                     </DockPanel>
 
-                    <chart:SfChart x:Name="ScopeChart" Grid.Row="1" Margin="0,4,0,0">
-                        <chart:SfChart.PrimaryAxis>
-                            <chart:NumericalAxis Header="Time (s)" RangePadding="Round" LabelFormat="0.###E+0" ShowGridLines="True"/>
-                        </chart:SfChart.PrimaryAxis>
-                        <chart:SfChart.SecondaryAxis>
-                            <chart:NumericalAxis Header="Voltage (V)" RangePadding="Round" LabelFormat="0.###" ShowGridLines="True"/>
-                        </chart:SfChart.SecondaryAxis>
-                        <chart:SfChart.Legend>
-                            <chart:ChartLegend/>
-                        </chart:SfChart.Legend>
-                        <chart:SfChart.Behaviors>
-                            <chart:ChartZoomPanBehavior EnableSelectionZooming="True" EnablePanning="True"/>
-                            <chart:ChartTrackBallBehavior ShowLine="True"/>
-                        </chart:SfChart.Behaviors>
+                    <!-- LEFT PANEL: Expanders with graph-affecting settings -->
+                    <ScrollViewer Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,0,10,0">
+                        <StackPanel>
 
-                        <chart:FastLineBitmapSeries x:Name="SeriesCH1" Label="CH1" XBindingPath="X" YBindingPath="Y" StrokeThickness="1.2" Opacity="0.95"/>
-                        <chart:FastLineBitmapSeries x:Name="SeriesCH2" Label="CH2" XBindingPath="X" YBindingPath="Y" StrokeThickness="1.2" Opacity="0.95"/>
-                        <chart:FastLineBitmapSeries x:Name="SeriesMATH" Label="MATH(CH1-CH2)" XBindingPath="X" YBindingPath="Y" StrokeThickness="1.2" Opacity="0.95"/>
-
-                        <!-- Cursor & Marker layers -->
-                        <chart:SfChart.Annotations>
-                            <chart:VerticalLineAnnotation x:Name="CursorA" Visibility="Collapsed"/>
-                            <chart:VerticalLineAnnotation x:Name="CursorB" Visibility="Collapsed"/>
-                        </chart:SfChart.Annotations>
-                    </chart:SfChart>
-                </Grid>
-            </Border>
-
-            <!-- Right panel: tabs -->
-            <Border Grid.Column="1" Style="{StaticResource Card}">
-                <TabControl>
-                    <!-- Acquisition -->
-                    <TabItem Header="Acquisition">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <StackPanel Margin="8">
-
-                                <TextBlock Text="Run Control" FontWeight="Bold" FontSize="16" Margin="0,0,0,8"/>
-                                <WrapPanel>
-                                    <Button Content="Run" Click="Acq_Run_Click"/>
-                                    <Button Content="Stop" Click="Acq_Stop_Click"/>
-                                    <Button Content="Single" Click="Acq_Single_Click"/>
-                                    <Button Content="Autoset" Click="Acq_Autoset_Click"/>
-                                </WrapPanel>
-
-                                <TextBlock Text="Timebase (s/div)" Style="{StaticResource MutedText}"/>
-                                <ComboBox x:Name="CmbTimebase">
-                                    <ComboBoxItem Content="1e-6"/>
-                                    <ComboBoxItem Content="2e-6"/>
-                                    <ComboBoxItem Content="5e-6"/>
-                                    <ComboBoxItem Content="1e-5"/>
-                                    <ComboBoxItem Content="2e-5"/>
-                                    <ComboBoxItem Content="5e-5"/>
-                                    <ComboBoxItem Content="1e-4"/>
-                                    <ComboBoxItem Content="2e-4"/>
-                                    <ComboBoxItem Content="5e-4"/>
-                                    <ComboBoxItem Content="1e-3"/>
-                                    <ComboBoxItem Content="2e-3"/>
-                                    <ComboBoxItem Content="5e-3"/>
-                                    <ComboBoxItem Content="1e-2"/>
-                                    <ComboBoxItem Content="2e-2"/>
-                                    <ComboBoxItem Content="5e-2"/>
-                                    <ComboBoxItem Content="1e-1"/>
-                                    <ComboBoxItem Content="2e-1"/>
-                                    <ComboBoxItem Content="5e-1"/>
-                                </ComboBox>
-                                <WrapPanel>
-                                    <Button Content="Set Timebase" Click="Acq_SetTimebase_Click"/>
-                                    <Button Content="RecordLength?" Click="Acq_RecordLength_Click"/>
-                                </WrapPanel>
-
-                                <Separator Margin="0,8,0,8"/>
-
-                                <TextBlock Text="Trigger" FontWeight="Bold" FontSize="16" Margin="0,0,0,8"/>
-                                <Grid Margin="0,0,0,8">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="120"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock Text="Type" Grid.Column="0" Style="{StaticResource MutedText}" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="CmbTrigType" Grid.Column="1">
-                                        <ComboBoxItem Content="EDGE" IsSelected="True"/>
-                                        <ComboBoxItem Content="PULSE"/>
-                                        <ComboBoxItem Content="RUNT"/>
-                                    </ComboBox>
-
-                                    <TextBlock Text="Source" Grid.Column="0" Grid.Row="1" Style="{StaticResource MutedText}" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="CmbTrigSrc" Grid.Column="1" Grid.Row="1">
-                                        <ComboBoxItem Content="CH1" IsSelected="True"/>
-                                        <ComboBoxItem Content="CH2"/>
-                                    </ComboBox>
-
-                                    <TextBlock Text="Level (V)" Grid.Column="0" Grid.Row="2" Style="{StaticResource MutedText}" VerticalAlignment="Center"/>
-                                    <TextBox x:Name="TxtTrigLevel" Grid.Column="1" Grid.Row="2" Text="0.0"/>
-
-                                    <TextBlock Text="Slope/Polarity" Grid.Column="0" Grid.Row="3" Style="{StaticResource MutedText}" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="CmbTrigSlope" Grid.Column="1" Grid.Row="3">
-                                        <ComboBoxItem Content="RISE" IsSelected="True"/>
-                                        <ComboBoxItem Content="FALL"/>
-                                        <ComboBoxItem Content="EITHER"/>
-                                    </ComboBox>
-
-                                    <TextBlock Text="Pulse Width (s)" Grid.Column="0" Grid.Row="4" Style="{StaticResource MutedText}" VerticalAlignment="Center"/>
-                                    <TextBox x:Name="TxtPulseWidth" Grid.Column="1" Grid.Row="4" Text="1e-3"/>
-
-                                    <TextBlock Text="Runt Low/High (V)" Grid.Column="0" Grid.Row="5" Style="{StaticResource MutedText}" VerticalAlignment="Center"/>
-                                    <StackPanel Grid.Column="1" Grid.Row="5" Orientation="Horizontal">
-                                        <TextBox x:Name="TxtRuntLow" Width="100" Text="0.2" Margin="0,0,8,0"/>
-                                        <TextBox x:Name="TxtRuntHigh" Width="100" Text="1.0"/>
-                                    </StackPanel>
-                                </Grid>
-                                <WrapPanel>
-                                    <Button Content="Apply Trigger" Click="Acq_ApplyTrigger_Click"/>
-                                </WrapPanel>
-
-                            </StackPanel>
-                        </ScrollViewer>
-                    </TabItem>
-
-                    <!-- Channels -->
-                    <TabItem Header="Channels">
-                        <StackPanel Margin="8">
-                            <TextBlock Text="Channels" FontWeight="Bold" FontSize="16" Margin="0,0,0,8"/>
-                            <WrapPanel>
-                                <CheckBox x:Name="ChkCh1" Content="Plot CH1" IsChecked="True" Margin="0,0,12,0"/>
-                                <CheckBox x:Name="ChkCh2" Content="Plot CH2" Margin="0,0,12,0"/>
-                                <CheckBox x:Name="ChkMath" Content="Plot MATH (CH1-CH2)"/>
-                            </WrapPanel>
-
-                            <TextBlock Text="Coupling" Style="{StaticResource MutedText}"/>
-                            <ComboBox x:Name="CmbCoupling">
-                                <ComboBoxItem Content="DC" IsSelected="True"/>
-                                <ComboBoxItem Content="AC"/>
-                                <ComboBoxItem Content="GND"/>
-                            </ComboBox>
-
-                            <TextBlock Text="Scale (V/div)" Style="{StaticResource MutedText}"/>
-                            <ComboBox x:Name="CmbVScale">
-                                <ComboBoxItem Content="0.01"/>
-                                <ComboBoxItem Content="0.02"/>
-                                <ComboBoxItem Content="0.05"/>
-                                <ComboBoxItem Content="0.1"/>
-                                <ComboBoxItem Content="0.2"/>
-                                <ComboBoxItem Content="0.5"/>
-                                <ComboBoxItem Content="1" IsSelected="True"/>
-                                <ComboBoxItem Content="2"/>
-                                <ComboBoxItem Content="5"/>
-                            </ComboBox>
-
-                            <WrapPanel>
-                                <Button Content="Apply to CH1" Click="Ch_ApplyCh1_Click"/>
-                                <Button Content="Apply to CH2" Click="Ch_ApplyCh2_Click"/>
-                            </WrapPanel>
-
-                            <TextBlock Text="Probe (×)" Style="{StaticResource MutedText}"/>
-                            <ComboBox x:Name="CmbProbe">
-                                <ComboBoxItem Content="1"/>
-                                <ComboBoxItem Content="10" IsSelected="True"/>
-                                <ComboBoxItem Content="100"/>
-                            </ComboBox>
-                            <Button Content="Set Probe" Click="Ch_SetProbe_Click"/>
-                        </StackPanel>
-                    </TabItem>
-
-                    <!-- Measurements -->
-                    <TabItem Header="Measurements">
-                        <StackPanel Margin="8">
-                            <TextBlock Text="Measurements" FontWeight="Bold" FontSize="16" Margin="0,0,0,8"/>
-                            <TextBlock Text="Measurement Source" Style="{StaticResource MutedText}"/>
-                            <ComboBox x:Name="CmbSource" Margin="0,0,0,8">
-                                <ComboBoxItem Content="CH1" IsSelected="True"/>
-                                <ComboBoxItem Content="CH2"/>
-                                <ComboBoxItem Content="MATH"/>
-                            </ComboBox>
-
-                            <TextBlock Text="Select metrics to display:" Style="{StaticResource MutedText}" Margin="0,4,0,6"/>
-                            <WrapPanel>
-                                <CheckBox x:Name="M_Vpp"  Content="Vpp"  IsChecked="True" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_Vavg" Content="Vavg" IsChecked="True" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_Vrms" Content="Vrms" IsChecked="True" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_Vmax" Content="Vmax" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_Vmin" Content="Vmin" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_Vpos" Content="Vp+"  Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_Vneg" Content="Vp-"  Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_Freq" Content="Freq" IsChecked="True" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_Per"  Content="Period" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_Duty" Content="Duty %" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_PwPos" Content="+Pulse W" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_PwNeg" Content="-Pulse W" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_Rise" Content="Rise 10-90" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_Fall" Content="Fall 90-10" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_Ripple" Content="Ripple %" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_Crest" Content="Crest" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_Overshoot" Content="Overshoot %" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_Undershoot" Content="Undershoot %" Margin="0,0,12,6"/>
-                                <CheckBox x:Name="M_ZeroCross" Content="Zero-cross rate" Margin="0,0,12,6"/>
-                            </WrapPanel>
-
-                            <TextBlock Text="Polling interval (ms)" Style="{StaticResource MutedText}" Margin="0,4,0,6"/>
-                            <Slider x:Name="SldPoll" Minimum="100" Maximum="2000" Value="500" TickFrequency="100" IsSnapToTickEnabled="True"
-                                    ValueChanged="SldPoll_ValueChanged" Width="240"/>
-
-                            <Separator Margin="8"/>
-
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="150"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="150"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <!-- left -->
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Vpp:"/>
-                                <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ValVpp" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Vavg:"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1" x:Name="ValVavg" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Vrms:"/>
-                                <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ValVrms" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Vmax:"/>
-                                <TextBlock Grid.Row="3" Grid.Column="1" x:Name="ValVmax" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Vmin:"/>
-                                <TextBlock Grid.Row="4" Grid.Column="1" x:Name="ValVmin" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Vp+:"/>
-                                <TextBlock Grid.Row="5" Grid.Column="1" x:Name="ValVpos" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="6" Grid.Column="0" Text="Vp-:"/>
-                                <TextBlock Grid.Row="6" Grid.Column="1" x:Name="ValVneg" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="7" Grid.Column="0" Text="Ripple:"/>
-                                <TextBlock Grid.Row="7" Grid.Column="1" x:Name="ValRipple" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="8" Grid.Column="0" Text="Crest:"/>
-                                <TextBlock Grid.Row="8" Grid.Column="1" x:Name="ValCrest" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="9" Grid.Column="0" Text="Zero-cross:"/>
-                                <TextBlock Grid.Row="9" Grid.Column="1" x:Name="ValZeroCross" Margin="8,0,0,0"/>
-
-                                <!-- right -->
-                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Freq:"/>
-                                <TextBlock Grid.Row="0" Grid.Column="3" x:Name="ValFreq" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Period:"/>
-                                <TextBlock Grid.Row="1" Grid.Column="3" x:Name="ValPer" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="2" Grid.Column="2" Text="Duty:"/>
-                                <TextBlock Grid.Row="2" Grid.Column="3" x:Name="ValDuty" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="3" Grid.Column="2" Text="Rise:"/>
-                                <TextBlock Grid.Row="3" Grid.Column="3" x:Name="ValRise" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="4" Grid.Column="2" Text="Fall:"/>
-                                <TextBlock Grid.Row="4" Grid.Column="3" x:Name="ValFall" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="5" Grid.Column="2" Text="Overshoot:"/>
-                                <TextBlock Grid.Row="5" Grid.Column="3" x:Name="ValOver" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="6" Grid.Column="2" Text="Undershoot:"/>
-                                <TextBlock Grid.Row="6" Grid.Column="3" x:Name="ValUnder" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="7" Grid.Column="2" Text="+PulseW:"/>
-                                <TextBlock Grid.Row="7" Grid.Column="3" x:Name="ValPwPos" Margin="8,0,0,0"/>
-                                <TextBlock Grid.Row="8" Grid.Column="2" Text="-PulseW:"/>
-                                <TextBlock Grid.Row="8" Grid.Column="3" x:Name="ValPwNeg" Margin="8,0,0,0"/>
-                            </Grid>
-
-                            <Separator Margin="8"/>
-                            <TextBlock Text="Rolling Vpp stats (last N frames)" FontWeight="Bold" Margin="0,0,0,4"/>
-                            <StackPanel Orientation="Vertical">
-                                <TextBlock x:Name="RollingStatsBlock" Style="{StaticResource MutedText}"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </TabItem>
-
-                    <!-- Cursors & Search -->
-                    <TabItem Header="Cursors &amp; Search">
-                        <StackPanel Margin="8">
-                            <TextBlock Text="Search / Markers" FontWeight="Bold" FontSize="16" Margin="0,0,0,8"/>
-                            <Grid Margin="0,0,0,12">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="180"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <TextBlock Text="Edge threshold (V)" Grid.Column="0" VerticalAlignment="Center" Style="{StaticResource MutedText}"/>
-                                <TextBox x:Name="TxtEdgeThresh" Grid.Column="1" Text="0.0"/>
-
-                                <TextBlock Text="Runt low/high (V)" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Style="{StaticResource MutedText}"/>
-                                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
-                                    <TextBox x:Name="TxtFindRuntLow" Width="100" Text="0.2" Margin="0,0,8,0"/>
-                                    <TextBox x:Name="TxtFindRuntHigh" Width="100" Text="1.0"/>
+                            <!-- Acquisition -->
+                            <Expander Header="Acquisition" IsExpanded="True" Margin="0,0,0,8">
+                                <StackPanel Margin="8">
+                                    <WrapPanel>
+                                        <Button Content="RUN" Click="BtnRun_Click" Margin="0,0,6,0"/>
+                                        <Button Content="STOP" Click="BtnStop_Click" Margin="0,0,6,0"/>
+                                        <Button Content="SINGLE" Click="BtnSingle_Click" Margin="0,0,6,0"/>
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,6,0,0">
+                                        <TextBlock Text="Mode:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <ComboBox x:Name="AcqMode2" Width="140" SelectedIndex="0">
+                                            <ComboBoxItem Content="SAMPLE"/>
+                                            <ComboBoxItem Content="PEAK"/>
+                                            <ComboBoxItem Content="HIRES"/>
+                                            <ComboBoxItem Content="AVER"/>
+                                        </ComboBox>
+                                        <TextBlock Text="NumAvg:" VerticalAlignment="Center" Margin="8,0,6,0"/>
+                                        <TextBox x:Name="AcqNumAvg2" Width="70" Text="16"/>
+                                        <Button Content="Apply" Click="BtnAcqApply2_Click" Margin="8,0,0,0"/>
+                                    </WrapPanel>
                                 </StackPanel>
-                            </Grid>
+                            </Expander>
 
-                            <WrapPanel>
-                                <Button Content="Find Next Rising Edge" Click="FindRising_Click"/>
-                                <Button Content="Find Next Falling Edge" Click="FindFalling_Click"/>
-                                <Button Content="Find Next Runt" Click="FindRunt_Click"/>
-                            </WrapPanel>
+                            <!-- Timebase -->
+                            <Expander Header="Timebase" IsExpanded="True" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <WrapPanel Margin="8,8,8,0">
+                                        <TextBlock Text="Scale (s/div)" Margin="0,0,6,0"/>
+                                        <TextBox x:Name="TbScale2" Width="90" Text="0.001" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Pos (s)" Margin="0,0,6,0"/>
+                                        <TextBox x:Name="TbPos2" Width="90" Text="0" Margin="0,0,6,0"/>
+                                        <Button Content="Apply" Click="BtnTbApply2_Click" Margin="6,0,0,0"/>
+                                    </WrapPanel>
+                                    <WrapPanel Margin="8,6,8,8">
+                                        <TextBlock Text="Record Len" Margin="0,0,6,0"/>
+                                        <TextBox x:Name="TbRecord" Width="90" Text="2000" Margin="0,0,6,0"/>
+                                        <Button Content="Set" Click="BtnTbRecord_Click" Margin="0,0,6,0"/>
+                                        <CheckBox x:Name="TbRoll" Content="Roll Mode" Margin="0,0,6,0"/>
+                                        <Button Content="Apply" Click="BtnTbRoll_Click" Margin="0,0,6,0"/>
+                                        <Button Content="Sample Rate?" Click="BtnTbSrq_Click"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Expander>
 
-                            <Separator Margin="8"/>
+                            <!-- Channel (applies to checked sources) -->
+                            <Expander Header="Channel" IsExpanded="True" Margin="0,0,0,8">
+                                <StackPanel Margin="8">
+                                    <TextBlock Text="Applies to all checked sources above (CH1/CH2)." Margin="0,0,0,6" Foreground="#555"/>
+                                    <WrapPanel>
+                                        <TextBlock Text="Scale (V/div)" Margin="0,0,6,0"/>
+                                        <TextBox x:Name="ChScaleG" Width="80" Text="1" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Offset (V)" Margin="0,0,6,0"/>
+                                        <TextBox x:Name="ChOffsetG" Width="80" Text="0" Margin="0,0,6,0"/>
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,6,0,0">
+                                        <TextBlock Text="Coupling" Margin="0,0,6,0"/>
+                                        <ComboBox x:Name="ChCouplingG" Width="100" SelectedIndex="0">
+                                            <ComboBoxItem Content="DC"/>
+                                            <ComboBoxItem Content="AC"/>
+                                            <ComboBoxItem Content="GND"/>
+                                        </ComboBox>
+                                        <CheckBox x:Name="ChBWLimitG" Content="20 MHz BW Limit" Margin="8,0,6,0"/>
+                                        <CheckBox x:Name="ChInvertG" Content="Invert" Margin="0,0,6,0"/>
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,6,0,0">
+                                        <Button Content="Apply" Click="BtnChApplyFromChart_Click"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Expander>
 
-                            <TextBlock Text="Markers" FontWeight="Bold" Margin="0,0,0,4"/>
-                            <ListBox x:Name="MarkersList" Height="140"/>
+                            <!-- Trigger -->
+                            <Expander Header="Trigger" IsExpanded="False" Margin="0,0,0,8">
+                                <StackPanel Margin="8">
+                                    <WrapPanel>
+                                        <TextBlock Text="Source" Margin="0,0,6,0"/>
+                                        <ComboBox x:Name="TrigSource" Width="100" Margin="0,0,6,0" SelectedIndex="0">
+                                            <ComboBoxItem Content="CH1"/>
+                                            <ComboBoxItem Content="CH2"/>
+                                        </ComboBox>
+                                        <TextBlock Text="Slope" Margin="0,0,6,0"/>
+                                        <ComboBox x:Name="TrigSlope" Width="100" Margin="0,0,6,0" SelectedIndex="0">
+                                            <ComboBoxItem Content="RISe"/>
+                                            <ComboBoxItem Content="FALL"/>
+                                        </ComboBox>
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,6,0,0">
+                                        <TextBlock Text="Coupling" Margin="0,0,6,0"/>
+                                        <ComboBox x:Name="TrigCoupling" Width="100" Margin="0,0,6,0" SelectedIndex="0">
+                                            <ComboBoxItem Content="DC"/>
+                                            <ComboBoxItem Content="AC"/>
+                                            <ComboBoxItem Content="HFREJ"/>
+                                            <ComboBoxItem Content="LFREJ"/>
+                                        </ComboBox>
+                                        <Button Content="Apply" Click="BtnTrigApply_Click" Margin="8,0,0,0"/>
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,6,0,0">
+                                        <TextBlock Text="Level (V)" Margin="0,0,6,0"/>
+                                        <TextBox x:Name="TrigLevel" Width="90" Text="0.2" Margin="0,0,6,0"/>
+                                        <Button Content="Set Level" Click="BtnTrigLevel_Click" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Holdoff (s)" Margin="0,0,6,0"/>
+                                        <TextBox x:Name="TrigHoldoff" Width="90" Text="0" Margin="0,0,6,0"/>
+                                        <Button Content="Set Holdoff" Click="BtnTrigHoldoff_Click" Margin="0,0,6,0"/>
+                                        <Button Content="State?" Click="BtnTrigState_Click"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Expander>
+
+                            <!-- Cursors -->
+                            <Expander Header="Cursors" IsExpanded="False" Margin="0,0,0,8">
+                                <StackPanel Margin="8">
+                                    <CheckBox x:Name="CurEnable" Content="Enable Cursors" Margin="0,0,0,6"
+                            Checked="CurEnable_CheckedChanged" Unchecked="CurEnable_CheckedChanged"/>
+                                    <WrapPanel Margin="0,0,0,6">
+                                        <TextBlock Text="Function" Margin="0,0,6,0"/>
+                                        <ComboBox x:Name="CurFunc" Width="120" Margin="0,0,6,0" SelectedIndex="1">
+                                            <ComboBoxItem Content="HBARs"/>
+                                            <ComboBoxItem Content="VBARs"/>
+                                            <ComboBoxItem Content="TRACK"/>
+                                        </ComboBox>
+                                        <Button Content="Apply" Click="BtnCurApply_Click"/>
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,0,0,6">
+                                        <TextBlock Text="H1 (s)" Margin="0,0,6,0"/>
+                                        <TextBox x:Name="CurH1" Width="80" Text="0" Margin="0,0,6,0"/>
+                                        <TextBlock Text="H2 (s)" Margin="0,0,6,0"/>
+                                        <TextBox x:Name="CurH2" Width="80" Text="0.001" Margin="0,0,6,0"/>
+                                        <Button Content="Set H" Click="BtnCurSetH_Click" Margin="0,0,6,0"/>
+                                        <Button Content="Δt?" Click="BtnCurDeltaH_Click"/>
+                                    </WrapPanel>
+                                    <WrapPanel>
+                                        <TextBlock Text="V1 (V)" Margin="0,0,6,0"/>
+                                        <TextBox x:Name="CurV1" Width="80" Text="0" Margin="0,0,6,0"/>
+                                        <TextBlock Text="V2 (V)" Margin="0,0,6,0"/>
+                                        <TextBox x:Name="CurV2" Width="80" Text="1" Margin="0,0,6,0"/>
+                                        <Button Content="Set V" Click="BtnCurSetV_Click" Margin="0,0,6,0"/>
+                                        <Button Content="ΔV?" Click="BtnCurDeltaV_Click"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Expander>
+
+                            <!-- Display -->
+                            <Expander Header="Display" IsExpanded="False" Margin="0,0,0,8">
+                                <StackPanel Margin="8">
+                                    <WrapPanel>
+                                        <CheckBox x:Name="DispPersistOn" Content="Persistence On" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Persistence (s)" Margin="6,0,6,0"/>
+                                        <TextBox x:Name="DispPersistSec" Width="80" Text="3"/>
+                                        <Button Content="Apply" Click="BtnDispApply_Click" Margin="6,0,0,0"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Expander>
+
                         </StackPanel>
-                    </TabItem>
+                    </ScrollViewer>
 
-                    <!-- Export -->
-                    <TabItem Header="Export">
-                        <StackPanel Margin="8">
-                            <TextBlock Text="Export &amp; Files" FontWeight="Bold" FontSize="16" Margin="0,0,0,8"/>
-                            <WrapPanel>
-                                <Button Content="Save CSV" Click="Exp_SaveCsv_Click"/>
-                                <Button Content="Save PNG" Click="Exp_SavePng_Click"/>
+                    <!-- CHART -->
+                    <GroupBox Grid.Row="1" Grid.Column="1" Header="Time Domain">
+                        <Grid>
+                            <syncfusion:SfChart x:Name="TimeChart" Background="White" BorderBrush="#DDD" BorderThickness="1">
+                                <syncfusion:SfChart.PrimaryAxis>
+                                    <syncfusion:NumericalAxis x:Name="AxisTimeX" Header="Time (s)" RangePadding="None"/>
+                                </syncfusion:SfChart.PrimaryAxis>
+                                <syncfusion:SfChart.SecondaryAxis>
+                                    <syncfusion:NumericalAxis x:Name="AxisTimeY" Header="Voltage (V)" RangePadding="None"/>
+                                </syncfusion:SfChart.SecondaryAxis>
+                                <syncfusion:SfChart.Behaviors>
+                                    <syncfusion:ChartZoomPanBehavior EnableSelectionZooming="True" ZoomMode="XY"/>
+                                    <syncfusion:ChartTrackBallBehavior/>
+                                </syncfusion:SfChart.Behaviors>
+                            </syncfusion:SfChart>
+                        </Grid>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+
+            <!-- MEASUREMENTS TAB -->
+            <TabItem Header="Measurements">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10">
+
+                        <!-- existing measurement controls -->
+                        <WrapPanel>
+                            <TextBlock Text="Immediate Type" Margin="0,0,6,0"/>
+                            <ComboBox x:Name="MeasType" Width="210" Margin="0,0,6,0" SelectedIndex="0">
+                                <ComboBoxItem Content="FREQuency"/>
+                                <ComboBoxItem Content="PERIod"/>
+                                <ComboBoxItem Content="MEAN"/>
+                                <ComboBoxItem Content="PK2Pk"/>
+                                <ComboBoxItem Content="RMS"/>
+                                <ComboBoxItem Content="RISe"/>
+                                <ComboBoxItem Content="FALL"/>
+                                <ComboBoxItem Content="MAXimum"/>
+                                <ComboBoxItem Content="MINImum"/>
+                                <ComboBoxItem Content="PDUty"/>
+                                <ComboBoxItem Content="NDUty"/>
+                                <ComboBoxItem Content="HIGH"/>
+                                <ComboBoxItem Content="LOW"/>
+                                <ComboBoxItem Content="AMPlitude"/>
+                            </ComboBox>
+                            <TextBlock Text="Source1" Margin="0,0,6,0"/>
+                            <ComboBox x:Name="MeasSrc1" Width="90" Margin="0,0,6,0" SelectedIndex="0">
+                                <ComboBoxItem Content="CH1"/>
+                                <ComboBoxItem Content="CH2"/>
+                            </ComboBox>
+                            <TextBlock Text="Source2" Margin="0,0,6,0"/>
+                            <ComboBox x:Name="MeasSrc2" Width="90" Margin="0,0,6,0" SelectedIndex="0">
+                                <ComboBoxItem Content=""/>
+                                <ComboBoxItem Content="CH1"/>
+                                <ComboBoxItem Content="CH2"/>
+                            </ComboBox>
+                            <Button Content="Apply" Click="BtnMeasApply_Click" Margin="0,0,6,0"/>
+                            <Button Content="Value?" Click="BtnMeasRead_Click"/>
+                        </WrapPanel>
+
+                        <WrapPanel Margin="0,8,0,6">
+                            <Button Content="Discover Supported (src1)" Click="BtnMeasDiscover_Click" Margin="0,0,6,0"/>
+                            <Button Content="Read Selected" Click="BtnMeasReadSelected_Click" Margin="0,0,6,0"/>
+                            <TextBlock Text="(multi-select below)" VerticalAlignment="Center"/>
+                        </WrapPanel>
+
+                        <ListBox x:Name="MeasTypeList" SelectionMode="Extended" Height="160" />
+
+                        <GroupBox Header="On-screen slots (show on scope)">
+                            <WrapPanel Margin="8">
+                                <TextBlock Text="Slot (1..6)" Margin="0,0,6,0"/>
+                                <TextBox x:Name="MeasSlot" Width="60" Text="1" Margin="0,0,6,0"/>
+                                <TextBlock Text="Type" Margin="0,0,6,0"/>
+                                <TextBox x:Name="MeasSlotType" Width="160" Text="FREQuency" Margin="0,0,6,0"/>
+                                <TextBlock Text="Src1" Margin="0,0,6,0"/>
+                                <TextBox x:Name="MeasSlotS1" Width="80" Text="CH1" Margin="0,0,6,0"/>
+                                <TextBlock Text="Src2" Margin="0,0,6,0"/>
+                                <TextBox x:Name="MeasSlotS2" Width="80" Margin="0,0,6,0" ToolTip="use for phase/delay"/>
+                                <Button Content="Configure Slot" Click="BtnMeasSlotCfg_Click" Margin="0,0,6,0"/>
+                                <Button Content="Enable Slot" Click="BtnMeasSlotOn_Click" Margin="0,0,6,0"/>
+                                <Button Content="Disable Slot" Click="BtnMeasSlotOff_Click" Margin="0,0,6,0"/>
+                                <Button Content="Read Slot" Click="BtnMeasSlotRead_Click"/>
                             </WrapPanel>
-                            <TextBlock x:Name="ExportResult" Style="{StaticResource MutedText}" TextWrapping="Wrap"/>
-                        </StackPanel>
-                    </TabItem>
-                </TabControl>
-            </Border>
-        </Grid>
+                        </GroupBox>
 
-        <TextBlock Grid.Row="2" Margin="12,0,12,12" Style="{StaticResource MutedText}"
-               Text="Tips: Run/Single/Autoset in Acquisition; tune Coupling/Scale in Channels; gate metrics with Cursors; Export to CSV/PNG."/>
+                        <WrapPanel Margin="8,8,0,0">
+                            <CheckBox x:Name="MeasGateCursor" Content="Gate by Cursors" Margin="0,0,6,0"/>
+                            <Button Content="Apply Gate" Click="BtnMeasGate_Click"/>
+                            <Button Content="Clear All Slots" Margin="8,0,0,0" Click="BtnMeasClearAllSlots_Click"/>
+                        </WrapPanel>
+
+                        <!-- NEW: Live Mini Graphs -->
+                        <GroupBox Header="Live Mini Graphs (per-channel)" Margin="0,12,0,0">
+                            <StackPanel>
+                                <TextBlock Margin="8,4,8,8"
+                                           Text="Updates ~every 2s while Live is running. Toggle CH1/CH2 in the Graph toolbar." 
+                                           Foreground="#666"/>
+                                <TextBlock Text="CH1" FontWeight="SemiBold" Margin="8,0,0,4"/>
+                                <WrapPanel x:Name="MiniWrapCh1" Margin="6,0,6,6"/>
+                                <Separator/>
+                                <TextBlock Text="CH2" FontWeight="SemiBold" Margin="8,8,0,4"/>
+                                <WrapPanel x:Name="MiniWrapCh2" Margin="6,0,6,6"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <!-- Console / Output -->
+        <TextBox x:Name="ConsoleOut" Grid.Row="2" Margin="12,0,12,12"
+             FontFamily="Consolas" FontSize="12"
+             TextWrapping="NoWrap" AcceptsReturn="True"
+             VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+             IsReadOnly="True"/>
     </Grid>
 </UserControl>

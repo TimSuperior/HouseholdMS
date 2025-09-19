@@ -1,4 +1,5 @@
-﻿using System;
+﻿// File: HouseholdMS/Helpers/ModbusRtuRaw.cs
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Ports;
@@ -19,9 +20,9 @@ namespace HouseholdMS.Helpers
         private static readonly object _ioLock = new object();
 
         // ---------- Public helpers ----------
-        public static double S100(ushort reg) { return reg / 100.0; }            // V/A/°C scaled by 0.01
-        public static double PwrFromU32S100(uint raw) { return raw / 100.0; }    // Power scaled by 0.01 W
-        public static uint U32(ushort lo, ushort hi) { return (uint)(lo | (hi << 16)); }
+        public static double S100(ushort reg) => reg / 100.0;            // V/A/°C scaled by 0.01
+        public static double PwrFromU32S100(uint raw) => raw / 100.0;    // Power scaled by 0.01 W
+        public static uint U32(ushort lo, ushort hi) => (uint)(lo | (hi << 16));
 
         // ---------- 0x04: Read Input Registers ----------
         public static byte[] BuildReadInputRegs(byte slaveId, ushort startAddress, ushort count)
@@ -118,7 +119,6 @@ namespace HouseholdMS.Helpers
                     byte len = resp[idx++];
                     if (idx + len > resp.Length) break;
 
-                    // Per spec, text is ASCII
                     string val = Encoding.ASCII.GetString(resp, idx, len);
                     dict[objId] = val;
                     idx += len;
@@ -136,10 +136,8 @@ namespace HouseholdMS.Helpers
 
         private static byte[] BuildReadDeviceId(byte slaveId, DeviceIdCategory category, byte startObjectId)
         {
-            // RTU frame: addr, 0x2B, 0x0E, ReadDevIdCode(0x01..0x04) choose "Read basic/regular/extended", objectId, CRC
-            // We use "Read Device ID" with category code:
-            // Request PDU: 0x2B, 0x0E, ReadDeviceIdCode(0x01..0x04), objectId
-            byte readDevIdCode = (byte)category; // 0x01 basic, 0x02 regular, 0x03 extended (conformity may limit)
+            // RTU frame: addr, 0x2B, 0x0E, ReadDevIdCode(0x01..0x03), objectId, CRC
+            byte readDevIdCode = (byte)category;
             var frame = new byte[6];
             frame[0] = slaveId;
             frame[1] = 0x2B;
@@ -154,7 +152,6 @@ namespace HouseholdMS.Helpers
         }
 
         // ---------- Serial Exchange ----------
-        // For 0x04, response includes a ByteCount. Use that to know exact size.
         private static byte[] ExchangeRtuFixedByteCount(string portName, int baud, int timeoutMs, byte[] request, byte expectFunc)
         {
             lock (_ioLock)
@@ -177,7 +174,6 @@ namespace HouseholdMS.Helpers
 
                     var sw = Stopwatch.StartNew();
 
-                    // Wait until we at least have addr, func, byteCount (3 bytes)
                     while (sp.BytesToRead < 3)
                     {
                         if (sw.ElapsedMilliseconds > timeoutMs)
@@ -226,7 +222,6 @@ namespace HouseholdMS.Helpers
             }
         }
 
-        // For 0x2B/0x0E, response length is variable. Parse structure to know when to stop.
         private static byte[] ExchangeRtuDeviceId(string portName, int baud, int timeoutMs, byte[] request, byte expectSlave)
         {
             lock (_ioLock)
@@ -256,7 +251,6 @@ namespace HouseholdMS.Helpers
                     if (head[0] != expectSlave) throw new Exception("Slave mismatch: " + head[0]);
                     if (head[1] == 0xAB) // 0x2B|0x80 exception
                     {
-                        // read exception code + CRC
                         var rest = new byte[2]; ReadExact(sp, rest, 0, 2, timeoutMs, sw);
                         var exFrame = new byte[5] { head[0], head[1], head[2], rest[0], rest[1] };
                         return exFrame;
@@ -266,7 +260,6 @@ namespace HouseholdMS.Helpers
 
                     byte numberOfObjects = head[7];
 
-                    // Read objects: [objId, len, data...] repeated
                     var payload = new List<byte>();
                     payload.AddRange(head);
 
@@ -284,17 +277,14 @@ namespace HouseholdMS.Helpers
                         payload.AddRange(data);
                     }
 
-                    // CRC
                     var crc = new byte[2];
                     ReadExact(sp, crc, 0, 2, timeoutMs, sw);
 
-                    // Build frame
                     var frame = new byte[payload.Count + 2];
                     payload.CopyTo(frame, 0);
                     frame[frame.Length - 2] = crc[0];
                     frame[frame.Length - 1] = crc[1];
 
-                    // CRC check
                     ushort crcCalc = Crc16Modbus(frame, frame.Length - 2);
                     ushort crcRecv = (ushort)(frame[frame.Length - 2] | (frame[frame.Length - 1] << 8));
                     if (crcCalc != crcRecv) throw new Exception("CRC mismatch.");
@@ -315,10 +305,10 @@ namespace HouseholdMS.Helpers
             while (read < count)
             {
                 int remaining = timeoutMs - (int)sw.ElapsedMilliseconds;
-                if (remaining <= 0) throw new TimeoutException("Timed out while reading serial data (" + read + "/" + count + ").");
+                if (remaining <= 0) throw new TimeoutException($"Timed out while reading serial data ({read}/{count}).");
                 sp.ReadTimeout = remaining;
                 int n = sp.Read(buffer, offset + read, count - read);
-                if (n <= 0) throw new TimeoutException("Serial read returned no data (" + read + "/" + count + ").");
+                if (n <= 0) throw new TimeoutException($"Serial read returned no data ({read}/{count}).");
                 read += n;
             }
         }
