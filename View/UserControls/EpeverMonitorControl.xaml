@@ -1,9 +1,9 @@
-﻿<!-- File: HouseholdMS/View/UserControls/EpeverMonitorControl.xaml -->
-<UserControl x:Class="HouseholdMS.View.UserControls.EpeverMonitorControl"
+﻿<UserControl x:Class="HouseholdMS.View.UserControls.EpeverMonitorControl" 
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:charts="http://schemas.syncfusion.com/wpf"
              mc:Ignorable="d"
              d:DesignHeight="720" d:DesignWidth="980"
              Background="#F7F8FA" SnapsToDevicePixels="True" UseLayoutRounding="True">
@@ -55,6 +55,40 @@
             <Setter Property="Margin" Value="6,0"/>
             <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
             <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- FIXED: pill header now uses Header, not Content -->
+        <Style x:Key="PillTab" TargetType="TabItem">
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="18,10"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="Bd" Background="#F3F4F6" CornerRadius="8"
+                                BorderBrush="{StaticResource Border}" BorderThickness="1">
+                            <ContentPresenter ContentSource="Header"
+                                              Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#E0E7FF"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#2563EB"/>
+                                <Setter Property="Foreground" Value="#1D4ED8"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </UserControl.Resources>
 
@@ -115,119 +149,201 @@
 
         <!-- Content -->
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <UniformGrid Columns="2" Margin="10">
-                <!-- Device Info -->
-                <Border>
-                    <StackPanel>
-                        <TextBlock Text="Device" FontWeight="Bold"/>
-                        <TextBlock x:Name="TxtDevVendor" Text="Vendor: —" FontSize="18"/>
-                        <TextBlock x:Name="TxtDevProduct" Text="Product: —" FontSize="18"/>
-                        <TextBlock x:Name="TxtDevFw" Text="Firmware: —" FontSize="18"/>
-                    </StackPanel>
+            <StackPanel>
+
+                <!-- Info cards -->
+                <UniformGrid Columns="2" Margin="10">
+                    <Border>
+                        <StackPanel>
+                            <TextBlock Text="Device" FontWeight="Bold"/>
+                            <TextBlock x:Name="TxtDevVendor" Text="Vendor: —" FontSize="18"/>
+                            <TextBlock x:Name="TxtDevProduct" Text="Product: —" FontSize="18"/>
+                            <TextBlock x:Name="TxtDevFw" Text="Firmware: —" FontSize="18"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border>
+                        <StackPanel>
+                            <TextBlock Text="Rated (Read-only)" FontWeight="Bold"/>
+                            <TextBlock x:Name="TxtRatedVin" Text="PV Rated Input Voltage: —" FontSize="18"/>
+                            <TextBlock x:Name="TxtRatedChgA" Text="Rated Charge Current: —" FontSize="18"/>
+                            <TextBlock x:Name="TxtRatedLoadA" Text="Rated Load Current: —" FontSize="18"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border>
+                        <StackPanel>
+                            <TextBlock Text="PV (Array)" FontWeight="Bold"/>
+                            <TextBlock x:Name="TxtPvV" Text="Voltage: —" FontSize="18"/>
+                            <TextBlock x:Name="TxtPvA" Text="Current: —" FontSize="18"/>
+                            <TextBlock x:Name="TxtPvW" Text="Power: —" FontSize="18"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border>
+                        <StackPanel>
+                            <TextBlock Text="Battery (Charge)" FontWeight="Bold"/>
+                            <TextBlock x:Name="TxtBatV" Text="Voltage: —" FontSize="18"/>
+                            <TextBlock x:Name="TxtBatA" Text="Charge Current: —" FontSize="18"/>
+                            <TextBlock x:Name="TxtBatW" Text="Charge Power: —" FontSize="18"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border>
+                        <StackPanel>
+                            <TextBlock Text="Load Output" FontWeight="Bold"/>
+                            <TextBlock x:Name="TxtLoadV" Text="Voltage: —" FontSize="18"/>
+                            <TextBlock x:Name="TxtLoadA" Text="Current: —" FontSize="18"/>
+                            <TextBlock x:Name="TxtLoadW" Text="Power: —" FontSize="18"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border>
+                        <StackPanel>
+                            <TextBlock Text="State" FontWeight="Bold"/>
+                            <TextBlock x:Name="TxtSoc" Text="SOC: —" FontSize="24"/>
+                            <TextBlock x:Name="TxtStage" Text="Charge Stage: —" FontSize="18"/>
+                            <TextBlock x:Name="TxtUpdated" Text="Last update: —" Foreground="{StaticResource Muted}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border>
+                        <StackPanel>
+                            <TextBlock Text="Temperatures" FontWeight="Bold"/>
+                            <TextBlock x:Name="TxtTempBatt" Text="Battery: —" FontSize="18"/>
+                            <TextBlock x:Name="TxtTempAmb" Text="Ambient: —" FontSize="18"/>
+                            <TextBlock x:Name="TxtTempCtrl" Text="Controller: —" FontSize="18"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border>
+                        <StackPanel>
+                            <TextBlock Text="Today's Extremes" FontWeight="Bold"/>
+                            <TextBlock x:Name="TxtBattVmaxToday" Text="Battery Vmax: —" FontSize="18"/>
+                            <TextBlock x:Name="TxtBattVminToday" Text="Battery Vmin: —" FontSize="18"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <!-- === One chart area with tab buttons === -->
+                <Border Margin="10">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                            <TextBlock Text="Real-time Curves" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+                            <Button Content="Reset View" Click="BtnResetZoom_Click" Margin="10,0,0,0"/>
+                        </StackPanel>
+
+                        <TabControl x:Name="TabsRealtime"
+                                    Margin="0,8,0,0"
+                                    ItemContainerStyle="{StaticResource PillTab}"
+                                    SelectionChanged="TabsRealtime_SelectionChanged">
+
+                            <!-- Voltage -->
+                            <TabItem Header="Voltage">
+                                <charts:SfChart x:Name="ChartVoltage" Margin="6,2,6,6" MouseWheel="Chart_MouseWheel">
+                                    <charts:SfChart.PrimaryAxis>
+                                        <charts:DateTimeAxis x:Name="VoltXAxis" Header="Time" IntervalType="Seconds" LabelFormat="HH:mm:ss"/>
+                                    </charts:SfChart.PrimaryAxis>
+                                    <charts:SfChart.SecondaryAxis>
+                                        <charts:NumericalAxis x:Name="VoltYAxis" Header="Volt, V" LabelFormat="0.##"/>
+                                    </charts:SfChart.SecondaryAxis>
+                                    <charts:SfChart.Legend>
+                                        <charts:ChartLegend/>
+                                    </charts:SfChart.Legend>
+                                    <charts:SfChart.Behaviors>
+                                        <charts:ChartZoomPanBehavior x:Name="ZoomPanVolt" EnableMouseWheelZooming="True" EnablePanning="True" ZoomMode="XY"/>
+                                        <charts:ChartTrackBallBehavior ShowLine="True"/>
+                                    </charts:SfChart.Behaviors>
+
+                                    <charts:FastLineSeries ItemsSource="{Binding VoltSolar}"   XBindingPath="Time" YBindingPath="Value" Label="Solar"   StrokeThickness="2"/>
+                                    <charts:FastLineSeries ItemsSource="{Binding VoltBattery}" XBindingPath="Time" YBindingPath="Value" Label="Battery" StrokeThickness="2"/>
+                                    <charts:FastLineSeries ItemsSource="{Binding VoltLoad}"    XBindingPath="Time" YBindingPath="Value" Label="Load"    StrokeThickness="2"/>
+                                </charts:SfChart>
+                            </TabItem>
+
+                            <!-- Current -->
+                            <TabItem Header="Current">
+                                <charts:SfChart x:Name="ChartCurrent" Margin="6,2,6,6" MouseWheel="Chart_MouseWheel">
+                                    <charts:SfChart.PrimaryAxis>
+                                        <charts:DateTimeAxis x:Name="CurrXAxis" Header="Time" IntervalType="Seconds" LabelFormat="HH:mm:ss"/>
+                                    </charts:SfChart.PrimaryAxis>
+                                    <charts:SfChart.SecondaryAxis>
+                                        <charts:NumericalAxis x:Name="CurrYAxis" Header="Curr, A" LabelFormat="0.##"/>
+                                    </charts:SfChart.SecondaryAxis>
+                                    <charts:SfChart.Legend>
+                                        <charts:ChartLegend/>
+                                    </charts:SfChart.Legend>
+                                    <charts:SfChart.Behaviors>
+                                        <charts:ChartZoomPanBehavior x:Name="ZoomPanCurr" EnableMouseWheelZooming="True" EnablePanning="True" ZoomMode="XY"/>
+                                        <charts:ChartTrackBallBehavior ShowLine="True"/>
+                                    </charts:SfChart.Behaviors>
+
+                                    <charts:FastLineSeries ItemsSource="{Binding CurrSolar}"   XBindingPath="Time" YBindingPath="Value" Label="Solar"   StrokeThickness="2"/>
+                                    <charts:FastLineSeries ItemsSource="{Binding CurrBattery}" XBindingPath="Time" YBindingPath="Value" Label="Battery" StrokeThickness="2"/>
+                                    <charts:FastLineSeries ItemsSource="{Binding CurrLoad}"    XBindingPath="Time" YBindingPath="Value" Label="Load"    StrokeThickness="2"/>
+                                </charts:SfChart>
+                            </TabItem>
+
+                            <!-- Power -->
+                            <TabItem Header="Power">
+                                <charts:SfChart x:Name="ChartPower" Margin="6,2,6,6" MouseWheel="Chart_MouseWheel">
+                                    <charts:SfChart.PrimaryAxis>
+                                        <charts:DateTimeAxis x:Name="PowerXAxis" Header="Time" IntervalType="Seconds" LabelFormat="HH:mm:ss"/>
+                                    </charts:SfChart.PrimaryAxis>
+                                    <charts:SfChart.SecondaryAxis>
+                                        <charts:NumericalAxis x:Name="PowerYAxis" Header="Power, W" LabelFormat="0.#"/>
+                                    </charts:SfChart.SecondaryAxis>
+                                    <charts:SfChart.Legend>
+                                        <charts:ChartLegend/>
+                                    </charts:SfChart.Legend>
+                                    <charts:SfChart.Behaviors>
+                                        <charts:ChartZoomPanBehavior x:Name="ZoomPanPower" EnableMouseWheelZooming="True" EnablePanning="True" ZoomMode="XY"/>
+                                        <charts:ChartTrackBallBehavior ShowLine="True"/>
+                                    </charts:SfChart.Behaviors>
+
+                                    <charts:FastLineSeries ItemsSource="{Binding PowerSolar}"   XBindingPath="Time" YBindingPath="Value" Label="Solar"   StrokeThickness="2"/>
+                                    <charts:FastLineSeries ItemsSource="{Binding PowerBattery}" XBindingPath="Time" YBindingPath="Value" Label="Battery" StrokeThickness="2"/>
+                                    <charts:FastLineSeries ItemsSource="{Binding PowerLoad}"    XBindingPath="Time" YBindingPath="Value" Label="Load"    StrokeThickness="2"/>
+                                </charts:SfChart>
+                            </TabItem>
+                        </TabControl>
+                    </DockPanel>
                 </Border>
 
-                <!-- Rated -->
-                <Border>
-                    <StackPanel>
-                        <TextBlock Text="Rated (Read-only)" FontWeight="Bold"/>
-                        <TextBlock x:Name="TxtRatedVin" Text="PV Rated Input Voltage: —" FontSize="18"/>
-                        <TextBlock x:Name="TxtRatedChgA" Text="Rated Charge Current: —" FontSize="18"/>
-                        <TextBlock x:Name="TxtRatedLoadA" Text="Rated Load Current: —" FontSize="18"/>
-                    </StackPanel>
-                </Border>
+                <!-- Raw / Debug and Inspector (unchanged) -->
+                <UniformGrid Columns="2" Margin="10">
+                    <Border>
+                        <StackPanel>
+                            <TextBlock Text="Raw / Debug" FontWeight="Bold"/>
+                            <TextBlock x:Name="TxtRaw" Text="—" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
+                            <TextBlock Text="Tip: Only one master on RS-485. Close other apps." Foreground="{StaticResource Muted}" Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
 
-                <!-- PV -->
-                <Border>
-                    <StackPanel>
-                        <TextBlock Text="PV (Array)" FontWeight="Bold"/>
-                        <TextBlock x:Name="TxtPvV" Text="Voltage: —" FontSize="18"/>
-                        <TextBlock x:Name="TxtPvA" Text="Current: —" FontSize="18"/>
-                        <TextBlock x:Name="TxtPvW" Text="Power: —" FontSize="18"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Battery charge -->
-                <Border>
-                    <StackPanel>
-                        <TextBlock Text="Battery (Charge)" FontWeight="Bold"/>
-                        <TextBlock x:Name="TxtBatV" Text="Voltage: —" FontSize="18"/>
-                        <TextBlock x:Name="TxtBatA" Text="Charge Current: —" FontSize="18"/>
-                        <TextBlock x:Name="TxtBatW" Text="Charge Power: —" FontSize="18"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Load -->
-                <Border>
-                    <StackPanel>
-                        <TextBlock Text="Load Output" FontWeight="Bold"/>
-                        <TextBlock x:Name="TxtLoadV" Text="Voltage: —" FontSize="18"/>
-                        <TextBlock x:Name="TxtLoadA" Text="Current: —" FontSize="18"/>
-                        <TextBlock x:Name="TxtLoadW" Text="Power: —" FontSize="18"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- State -->
-                <Border>
-                    <StackPanel>
-                        <TextBlock Text="State" FontWeight="Bold"/>
-                        <TextBlock x:Name="TxtSoc" Text="SOC: —" FontSize="24"/>
-                        <TextBlock x:Name="TxtStage" Text="Charge Stage: —" FontSize="18"/>
-                        <TextBlock x:Name="TxtUpdated" Text="Last update: —" Foreground="{StaticResource Muted}"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Temperatures -->
-                <Border>
-                    <StackPanel>
-                        <TextBlock Text="Temperatures" FontWeight="Bold"/>
-                        <TextBlock x:Name="TxtTempBatt" Text="Battery: —" FontSize="18"/>
-                        <TextBlock x:Name="TxtTempAmb" Text="Ambient: —" FontSize="18"/>
-                        <TextBlock x:Name="TxtTempCtrl" Text="Controller: —" FontSize="18"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Today's extremes -->
-                <Border>
-                    <StackPanel>
-                        <TextBlock Text="Today's Extremes" FontWeight="Bold"/>
-                        <TextBlock x:Name="TxtBattVmaxToday" Text="Battery Vmax: —" FontSize="18"/>
-                        <TextBlock x:Name="TxtBattVminToday" Text="Battery Vmin: —" FontSize="18"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Raw / Debug -->
-                <Border>
-                    <StackPanel>
-                        <TextBlock Text="Raw / Debug" FontWeight="Bold"/>
-                        <TextBlock x:Name="TxtRaw" Text="—" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
-                        <TextBlock Text="Tip: Only one master on RS-485. Close other apps." Foreground="{StaticResource Muted}" Margin="0,6,0,0"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Advanced Inspector -->
-                <Border>
-                    <StackPanel>
-                        <TextBlock Text="Advanced Inspector (Read Input Registers 0x04)" FontWeight="Bold" Margin="0,0,0,6"/>
-                        <WrapPanel>
-                            <TextBlock Text="Start (hex or dec):" VerticalAlignment="Center"/>
-                            <TextBox x:Name="TxtInspectorStart" Width="90" Text="0x3100"/>
-                            <TextBlock Text="Count:" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                            <TextBox x:Name="TxtInspectorCount" Width="60" Text="32"/>
-                            <Button Content="Read" Click="BtnInspectorRead_Click" Margin="10,0,0,0"/>
-                        </WrapPanel>
-                        <ListView x:Name="ListInspector" Margin="0,8,0,0" Height="160">
-                            <ListView.View>
-                                <GridView>
-                                    <GridViewColumn Header="Index" Width="60" DisplayMemberBinding="{Binding Index}"/>
-                                    <GridViewColumn Header="Value (hex)" Width="90" DisplayMemberBinding="{Binding Hex}"/>
-                                    <GridViewColumn Header="Value (dec)" Width="90" DisplayMemberBinding="{Binding Dec}"/>
-                                    <GridViewColumn Header="/100" Width="90" DisplayMemberBinding="{Binding Scaled}"/>
-                                </GridView>
-                            </ListView.View>
-                        </ListView>
-                    </StackPanel>
-                </Border>
-            </UniformGrid>
+                    <Border>
+                        <StackPanel>
+                            <TextBlock Text="Advanced Inspector (Read Input Registers 0x04)" FontWeight="Bold" Margin="0,0,0,6"/>
+                            <WrapPanel>
+                                <TextBlock Text="Start (hex or dec):" VerticalAlignment="Center"/>
+                                <TextBox x:Name="TxtInspectorStart" Width="90" Text="0x3100"/>
+                                <TextBlock Text="Count:" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                <TextBox x:Name="TxtInspectorCount" Width="60" Text="32"/>
+                                <Button Content="Read" Click="BtnInspectorRead_Click" Margin="10,0,0,0"/>
+                            </WrapPanel>
+                            <ListView x:Name="ListInspector" Margin="0,8,0,0" Height="160">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Index" Width="60" DisplayMemberBinding="{Binding Index}"/>
+                                        <GridViewColumn Header="Value (hex)" Width="90" DisplayMemberBinding="{Binding Hex}"/>
+                                        <GridViewColumn Header="Value (dec)" Width="90" DisplayMemberBinding="{Binding Dec}"/>
+                                        <GridViewColumn Header="/100" Width="90" DisplayMemberBinding="{Binding Scaled}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+            </StackPanel>
         </ScrollViewer>
     </DockPanel>
 </UserControl>

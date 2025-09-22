@@ -1,6 +1,6 @@
-﻿// File: HouseholdMS/View/UserControls/EpeverMonitorControl.xaml.cs
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO.Ports;
 using System.Linq;
 using System.Threading;
@@ -9,7 +9,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using HouseholdMS.Helpers;
-using HouseholdMS.Services; // for PortDescriptor / SerialPortInspector if present
+using HouseholdMS.Services; // for PortDescriptor / SerialPortInspector
+using Syncfusion.UI.Xaml.Charts;   // axes + behaviors
+using System.Windows.Input;
 
 namespace HouseholdMS.View.UserControls
 {
@@ -23,10 +25,27 @@ namespace HouseholdMS.View.UserControls
 
         private struct UiSnap { public string Port; public int Baud; public byte Unit; }
 
+        // ---- chart data (simple time/value) ----
+        public sealed class TimePoint { public DateTime Time { get; set; } public double Value { get; set; } }
+        private const int MaxPoints = 1000;
+
+        public ObservableCollection<TimePoint> VoltSolar { get; } = new ObservableCollection<TimePoint>();
+        public ObservableCollection<TimePoint> VoltBattery { get; } = new ObservableCollection<TimePoint>();
+        public ObservableCollection<TimePoint> VoltLoad { get; } = new ObservableCollection<TimePoint>();
+
+        public ObservableCollection<TimePoint> CurrSolar { get; } = new ObservableCollection<TimePoint>();
+        public ObservableCollection<TimePoint> CurrBattery { get; } = new ObservableCollection<TimePoint>();
+        public ObservableCollection<TimePoint> CurrLoad { get; } = new ObservableCollection<TimePoint>();
+
+        public ObservableCollection<TimePoint> PowerSolar { get; } = new ObservableCollection<TimePoint>();
+        public ObservableCollection<TimePoint> PowerBattery { get; } = new ObservableCollection<TimePoint>();
+        public ObservableCollection<TimePoint> PowerLoad { get; } = new ObservableCollection<TimePoint>();
+
         public EpeverMonitorControl()
         {
             InitializeComponent();
-            _ = RefreshPortsAsync(); // cached
+            DataContext = this; // bind chart series
+            _ = RefreshPortsAsync();
             TxtStatus.Text = "Select COM port, set ID, click Connect.";
             this.Unloaded += EpeverMonitorControl_Unloaded;
         }
@@ -67,6 +86,8 @@ namespace HouseholdMS.View.UserControls
             _connected = true;
             SetUiState(true);
 
+            ClearAllSeries();
+
             _timer = new DispatcherTimer { Interval = GetSelectedInterval() };
             _timer.Tick += (s, ev) => { if (ChkAuto.IsChecked == true) _ = PollOnceSafe(); };
             _timer.Start();
@@ -76,7 +97,7 @@ namespace HouseholdMS.View.UserControls
             TxtLink.Foreground = (System.Windows.Media.Brush)FindResource("Warn");
             TxtStatus.Text = $"Connected to {selectedText} @ {GetBaudUI()} (ID={unitId}).";
 
-            // Query device identification in background (non-blocking)
+            // Device identification (background)
             _ = Task.Run(() => QueryDeviceIdentification(portName, GetBaudUI(), unitId, _cts.Token));
 
             // First poll
@@ -102,7 +123,7 @@ namespace HouseholdMS.View.UserControls
                 return;
             }
 
-            UiSnap snap = Dispatcher.Invoke(new Func<UiSnap>(GetUiSnap));
+            UiSnap snap = UiRead(GetUiSnap);
             ListInspector.ItemsSource = null;
 
             Task.Run(() =>
@@ -144,7 +165,7 @@ namespace HouseholdMS.View.UserControls
             _polling = true;
             try
             {
-                UiSnap snap = Dispatcher.Invoke(new Func<UiSnap>(GetUiSnap));
+                UiSnap snap = UiRead(GetUiSnap);
                 if (string.IsNullOrWhiteSpace(snap.Port)) throw new InvalidOperationException("No COM port selected.");
                 await Task.Run(() => PollOnce(snap.Port, snap.Baud, snap.Unit, _cts != null ? _cts.Token : CancellationToken.None));
             }
@@ -162,31 +183,31 @@ namespace HouseholdMS.View.UserControls
         {
             ct.ThrowIfCancellationRequested();
 
-            // ---- Coalesced block A: 0x3100.. up to SOC (0x311A) ----
+            // ---- Coalesced block A: 0x3100.. (32 regs) ----
             ushort blkAStart = 0x3100;
-            ushort blkACount = 0x20; // 32 regs to cover PV, BATC, LOAD, TEMP1, and near SOC
+            ushort blkACount = 0x20;
             ushort[] blkA = null; string blkAErr = null;
             try { blkA = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, blkAStart, blkACount, 1200); }
             catch (Exception ex) { blkAErr = ex.Message; }
 
             // ---- Status block: 0x3200..0x3201 ----
             ushort[] stat = null; string statErr = null;
-            try { stat = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, Helpers.EpeverRegisters.STAT_START, Helpers.EpeverRegisters.STAT_COUNT, 800); }
+            try { stat = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.STAT_START, EpeverRegisters.STAT_COUNT, 800); }
             catch (Exception ex) { statErr = ex.Message; }
 
-            // ---- Extremes: 0x3302..0x3303 (2 regs) ----
+            // ---- Extremes: 0x3302..0x3303 ----
             ushort[] ext = null; string extErr = null;
-            try { ext = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, Helpers.EpeverRegisters.EV_BATT_VMAX_TODAY, 2, 800); }
+            try { ext = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.EV_BATT_VMAX_TODAY, 2, 800); }
             catch (Exception ex) { extErr = ex.Message; }
 
-            // ---- Rated values (small single reads; safe) ----
+            // ---- Rated values ----
             ushort[] ratedVinRaw = null, ratedChgRaw = null, ratedLoadRaw = null;
             string ratedErr = null;
-            try { ratedVinRaw = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, Helpers.EpeverRegisters.RATED_INPUT_VOLT, 1, 600); } catch (Exception ex) { ratedErr = ex.Message; }
-            try { ratedChgRaw = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, Helpers.EpeverRegisters.RATED_CHG_CURR, 1, 600); } catch { }
-            try { ratedLoadRaw = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, Helpers.EpeverRegisters.RATED_LOAD_CURR, 1, 600); } catch { }
+            try { ratedVinRaw = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.RATED_INPUT_VOLT, 1, 600); } catch (Exception ex) { ratedErr = ex.Message; }
+            try { ratedChgRaw = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.RATED_CHG_CURR, 1, 600); } catch { }
+            try { ratedLoadRaw = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.RATED_LOAD_CURR, 1, 600); } catch { }
 
-            // ---- Parse block A safely ----
+            // ---- Parse block A ----
             double? pvV = null, pvA = null, pvW = null;
             double? batV = null, batA = null, batW = null;
             double? loadV = null, loadA = null, loadW = null;
@@ -197,47 +218,34 @@ namespace HouseholdMS.View.UserControls
             {
                 int off(ushort abs) => abs - blkAStart;
 
-                // PV
                 pvV = ModbusRtuRaw.S100(blkA[off(EpeverRegisters.PV_START) + EpeverRegisters.PV_VOLT]);
                 pvA = ModbusRtuRaw.S100(blkA[off(EpeverRegisters.PV_START) + EpeverRegisters.PV_CURR]);
-                pvW = ModbusRtuRaw.PwrFromU32S100(
-                        ModbusRtuRaw.U32(
-                            blkA[off(EpeverRegisters.PV_START) + EpeverRegisters.PV_PWR_LO],
-                            blkA[off(EpeverRegisters.PV_START) + EpeverRegisters.PV_PWR_HI]));
+                pvW = ModbusRtuRaw.PwrFromU32S100(ModbusRtuRaw.U32(blkA[off(EpeverRegisters.PV_START) + EpeverRegisters.PV_PWR_LO],
+                                                                   blkA[off(EpeverRegisters.PV_START) + EpeverRegisters.PV_PWR_HI]));
 
-                // Battery charge
                 batV = ModbusRtuRaw.S100(blkA[off(EpeverRegisters.BATC_START) + EpeverRegisters.BATC_VOLT]);
                 batA = ModbusRtuRaw.S100(blkA[off(EpeverRegisters.BATC_START) + EpeverRegisters.BATC_CURR]);
-                batW = ModbusRtuRaw.PwrFromU32S100(
-                        ModbusRtuRaw.U32(
-                            blkA[off(EpeverRegisters.BATC_START) + EpeverRegisters.BATC_PWR_LO],
-                            blkA[off(EpeverRegisters.BATC_START) + EpeverRegisters.BATC_PWR_HI]));
+                batW = ModbusRtuRaw.PwrFromU32S100(ModbusRtuRaw.U32(blkA[off(EpeverRegisters.BATC_START) + EpeverRegisters.BATC_PWR_LO],
+                                                                    blkA[off(EpeverRegisters.BATC_START) + EpeverRegisters.BATC_PWR_HI]));
 
-                // Load
                 loadV = ModbusRtuRaw.S100(blkA[off(EpeverRegisters.LOAD_START) + EpeverRegisters.LOAD_VOLT]);
                 loadA = ModbusRtuRaw.S100(blkA[off(EpeverRegisters.LOAD_START) + EpeverRegisters.LOAD_CURR]);
-                loadW = ModbusRtuRaw.PwrFromU32S100(
-                        ModbusRtuRaw.U32(
-                            blkA[off(EpeverRegisters.LOAD_START) + EpeverRegisters.LOAD_PWR_LO],
-                            blkA[off(EpeverRegisters.LOAD_START) + EpeverRegisters.LOAD_PWR_HI]));
+                loadW = ModbusRtuRaw.PwrFromU32S100(ModbusRtuRaw.U32(blkA[off(EpeverRegisters.LOAD_START) + EpeverRegisters.LOAD_PWR_LO],
+                                                                     blkA[off(EpeverRegisters.LOAD_START) + EpeverRegisters.LOAD_PWR_HI]));
 
-                // Temperatures (handle missing gracefully)
                 try { tBatt = ModbusRtuRaw.S100(blkA[off(EpeverRegisters.TEMP1_START) + EpeverRegisters.TEMP1_BATT]); } catch { }
                 try { tAmb = ModbusRtuRaw.S100(blkA[off(EpeverRegisters.TEMP1_START) + EpeverRegisters.TEMP1_AMBIENT]); } catch { }
                 try { tCtrl = ModbusRtuRaw.S100(blkA[off(EpeverRegisters.TEMP1_START) + EpeverRegisters.TEMP1_CTRL]); } catch { }
 
-                // SOC (may sit at 0x311A)
                 int socIdx = off(EpeverRegisters.SOC_ADDR);
                 if (socIdx >= 0 && socIdx < blkA.Length) soc = blkA[socIdx];
             }
             else
             {
-                // Fallback fine-grained reads if big block failed (keeps UI alive)
                 TryReadPiecewise(port, baud, unit, ref pvV, ref pvA, ref pvW, ref batV, ref batA, ref batW,
                                  ref loadV, ref loadA, ref loadW, ref tBatt, ref tAmb, ref tCtrl, ref soc);
             }
 
-            // Status / Stage
             string stage = null;
             if (stat != null && stat.Length >= 2)
             {
@@ -245,7 +253,6 @@ namespace HouseholdMS.View.UserControls
                 stage = EpeverRegisters.DecodeChargingStageFrom3201(reg3201) + $"  (0x{reg3201:X4})";
             }
 
-            // Extremes
             double? vMaxToday = null, vMinToday = null;
             if (ext != null && ext.Length >= 2)
             {
@@ -253,12 +260,10 @@ namespace HouseholdMS.View.UserControls
                 vMinToday = ModbusRtuRaw.S100(ext[1]);
             }
 
-            // Rated
             double? ratedVin = ratedVinRaw != null ? ModbusRtuRaw.S100(ratedVinRaw[0]) : (double?)null;
             double? ratedChg = ratedChgRaw != null ? ModbusRtuRaw.S100(ratedChgRaw[0]) : (double?)null;
             double? ratedLoad = ratedLoadRaw != null ? ModbusRtuRaw.S100(ratedLoadRaw[0]) : (double?)null;
 
-            // ---- UI update ----
             Dispatcher.Invoke(() =>
             {
                 TxtPvV.Text = "Voltage: " + (pvV.HasValue ? pvV.Value.ToString("F2") + " V" : "—");
@@ -303,9 +308,30 @@ namespace HouseholdMS.View.UserControls
 
                 if (errs.Count > 0) TxtRaw.Text = string.Join("\n", errs);
                 else if (string.IsNullOrWhiteSpace(TxtRaw.Text) || TxtRaw.Text.StartsWith("ERR:")) TxtRaw.Text = "OK";
+
+                // feed charts
+                var now = DateTime.Now;
+                if (pvV.HasValue) AppendPoint(VoltSolar, now, pvV.Value);
+                if (batV.HasValue) AppendPoint(VoltBattery, now, batV.Value);
+                if (loadV.HasValue) AppendPoint(VoltLoad, now, loadV.Value);
+
+                if (pvA.HasValue) AppendPoint(CurrSolar, now, pvA.Value);
+                if (batA.HasValue) AppendPoint(CurrBattery, now, batA.Value);
+                if (loadA.HasValue) AppendPoint(CurrLoad, now, loadA.Value);
+
+                if (pvW.HasValue) AppendPoint(PowerSolar, now, pvW.Value);
+                if (batW.HasValue) AppendPoint(PowerBattery, now, batW.Value);
+                if (loadW.HasValue) AppendPoint(PowerLoad, now, loadW.Value);
             });
         }
 
+        private static void AppendPoint(ObservableCollection<TimePoint> col, DateTime t, double v)
+        {
+            col.Add(new TimePoint { Time = t, Value = v });
+            if (col.Count > MaxPoints) col.RemoveAt(0);
+        }
+
+        // -------- Piecewise reads (unchanged from your file) --------
         private void TryReadPiecewise(string port, int baud, byte unit,
             ref double? pvV, ref double? pvA, ref double? pvW,
             ref double? batV, ref double? batA, ref double? batW,
@@ -355,14 +381,14 @@ namespace HouseholdMS.View.UserControls
             try { var s = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.SOC_ADDR, EpeverRegisters.SOC_COUNT, 800); soc = s[0]; } catch { }
         }
 
-        // -------- Device ID (non-blocking) --------
+        // -------- Device ID (unchanged) --------
         private void QueryDeviceIdentification(string port, int baud, byte unit, CancellationToken ct)
         {
             try
             {
                 ct.ThrowIfCancellationRequested();
-                string err;
-                var dict = ModbusRtuRaw.TryReadDeviceIdentification(port, baud, unit, ModbusRtuRaw.DeviceIdCategory.Basic, 1500, out err);
+                string error;
+                var dict = ModbusRtuRaw.TryReadDeviceIdentification(port, baud, unit, ModbusRtuRaw.DeviceIdCategory.Basic, 1500, out error);
                 if (dict == null)
                 {
                     Dispatcher.Invoke(() =>
@@ -370,7 +396,7 @@ namespace HouseholdMS.View.UserControls
                         TxtDevVendor.Text = "Vendor: N/A";
                         TxtDevProduct.Text = "Product: N/A";
                         TxtDevFw.Text = "Firmware: N/A";
-                        if (!string.IsNullOrWhiteSpace(err)) TxtRaw.Text = "DevID ERR: " + err;
+                        if (!string.IsNullOrWhiteSpace(error)) TxtRaw.Text = "DevID ERR: " + error;
                     });
                     return;
                 }
@@ -399,10 +425,38 @@ namespace HouseholdMS.View.UserControls
             }
         }
 
+        // ===== Chart UX: stop page scroll on wheel; reset view =====
+        private void Chart_MouseWheel(object sender, MouseWheelEventArgs e) { e.Handled = true; }
+
+        private void BtnResetZoom_Click(object sender, RoutedEventArgs e)
+        {
+            switch (TabsRealtime.SelectedIndex)
+            {
+                case 0: ResetAxes(VoltXAxis, VoltYAxis); break;
+                case 1: ResetAxes(CurrXAxis, CurrYAxis); break;
+                case 2: ResetAxes(PowerXAxis, PowerYAxis); break;
+            }
+        }
+        private void TabsRealtime_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            BtnResetZoom_Click(null, null);
+        }
+        private void ResetAxes(ChartAxisBase2D xAxis, ChartAxisBase2D yAxis)
+        {
+            if (xAxis != null) { xAxis.ZoomFactor = 1; xAxis.ZoomPosition = 0; }
+            if (yAxis != null) { yAxis.ZoomFactor = 1; yAxis.ZoomPosition = 0; }
+        }
+
         // -------- Helpers --------
+        private T UiRead<T>(Func<T> read)
+        {
+            if (Dispatcher.CheckAccess()) return read();
+            return Dispatcher.Invoke(read);
+        }
+
         private async Task RefreshPortsAsync()
         {
-            // quick placeholder
             var quick = SerialPort.GetPortNames()
                 .OrderBy(s => {
                     if (s.StartsWith("COM", StringComparison.OrdinalIgnoreCase) && int.TryParse(s.Substring(3), out int n)) return n;
@@ -415,7 +469,6 @@ namespace HouseholdMS.View.UserControls
             CmbPorts.ItemsSource = quick;
             if (quick.Count > 0) CmbPorts.SelectedIndex = 0;
 
-            // Cancel previous scan
             try { _portScanCts?.Cancel(); _portScanCts?.Dispose(); } catch { }
             _portScanCts = new CancellationTokenSource();
 
@@ -426,7 +479,7 @@ namespace HouseholdMS.View.UserControls
                     cacheTtlMs: 15000,
                     ct: _portScanCts.Token);
 
-                CmbPorts.ItemsSource = scanned; // PortDescriptor
+                CmbPorts.ItemsSource = scanned;
                 if (CmbPorts.Items.Count > 0) CmbPorts.SelectedIndex = 0;
             }
             catch (OperationCanceledException) { }
@@ -447,13 +500,17 @@ namespace HouseholdMS.View.UserControls
 
         private int GetBaudUI()
         {
-            var item = (CmbBaud.SelectedItem as ComboBoxItem);
-            return (item != null && int.TryParse(item.Content.ToString(), out int b)) ? b : 115200;
+            return UiRead(() =>
+            {
+                var item = CmbBaud.SelectedItem as ComboBoxItem;
+                if (item == null) return 115200;
+                return int.TryParse(item.Content?.ToString(), out var b) ? b : 115200;
+            });
         }
 
         private TimeSpan GetSelectedInterval()
         {
-            var item = (CmbInterval.SelectedItem as ComboBoxItem);
+            var item = CmbInterval.SelectedItem as ComboBoxItem;
             var label = item != null ? item.Content.ToString() : "1s";
             if (label == "2s") return TimeSpan.FromSeconds(2);
             if (label == "5s") return TimeSpan.FromSeconds(5);
@@ -462,11 +519,15 @@ namespace HouseholdMS.View.UserControls
 
         private UiSnap GetUiSnap()
         {
-            var snap = new UiSnap();
-            snap.Port = ExtractPortName(CmbPorts.SelectedItem);
-            snap.Baud = GetBaudUI();
-            snap.Unit = byte.TryParse(TxtId.Text.Trim(), out byte parsed) ? parsed : (byte)1;
-            return snap;
+            return UiRead(() =>
+            {
+                var snap = new UiSnap();
+                object sel = CmbPorts.SelectedItem;
+                snap.Port = (sel is PortDescriptor pd) ? pd.Port : sel?.ToString();
+                snap.Baud = GetBaudUI();
+                snap.Unit = byte.TryParse(TxtId.Text.Trim(), out var parsed) ? parsed : (byte)1;
+                return snap;
+            });
         }
 
         private void Disconnect()
@@ -485,6 +546,13 @@ namespace HouseholdMS.View.UserControls
             TxtDevVendor.Text = "Vendor: —";
             TxtDevProduct.Text = "Product: —";
             TxtDevFw.Text = "Firmware: —";
+
+            ClearAllSeries();
+
+            // Reset zoom for all tabs so next session starts clean
+            ResetAxes(VoltXAxis, VoltYAxis);
+            ResetAxes(CurrXAxis, CurrYAxis);
+            ResetAxes(PowerXAxis, PowerYAxis);
         }
 
         private void SetUiState(bool connected)
@@ -497,6 +565,13 @@ namespace HouseholdMS.View.UserControls
             CmbBaud.IsEnabled = !connected;
             TxtId.IsEnabled = !connected;
             CmbInterval.IsEnabled = connected;
+        }
+
+        private void ClearAllSeries()
+        {
+            VoltSolar.Clear(); VoltBattery.Clear(); VoltLoad.Clear();
+            CurrSolar.Clear(); CurrBattery.Clear(); CurrLoad.Clear();
+            PowerSolar.Clear(); PowerBattery.Clear(); PowerLoad.Clear();
         }
     }
 }

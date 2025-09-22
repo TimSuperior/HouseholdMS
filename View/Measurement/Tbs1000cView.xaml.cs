@@ -33,6 +33,9 @@ namespace HouseholdMS.View.Measurement
         // Connection health flag (only start live when true)
         private volatile bool _connOk;
 
+        // Cursor visible state (based on CURSor:FUNCtion? not OFF)
+        private bool _cursorVisible;
+
         // Chart data (time-domain)
         private readonly Dictionary<string, IList<DataPoint>> _timeSeries =
             new Dictionary<string, IList<DataPoint>>(StringComparer.OrdinalIgnoreCase);
@@ -79,16 +82,10 @@ namespace HouseholdMS.View.Measurement
             {
                 SrcCh1.IsChecked = true;
                 SrcCh2.IsChecked = false;
-                // Ensure both Checked and Unchecked go through the same path even if XAML missed wiring
-                if (CurEnable != null)
-                {
-                    CurEnable.Checked -= CurEnable_CheckedChanged;
-                    CurEnable.Unchecked -= CurEnable_CheckedChanged;
-                    CurEnable.Checked += CurEnable_CheckedChanged;
-                    CurEnable.Unchecked += CurEnable_CheckedChanged;
-                }
                 TryEnsureMiniCharts();
+                UpdateCursorToggleUi();
             };
+
             Unloaded += (_, __) => SafeShutdown();
         }
 
@@ -101,7 +98,6 @@ namespace HouseholdMS.View.Measurement
             _connOk = false; // will probe below
             Append(">>> Initialized transport" + (string.IsNullOrWhiteSpace(displayName) ? "" : (" [" + displayName + "]")) + ".");
             TryEnsureMiniCharts();
-            // Probe and only then start live
             _ = VerifyAndMaybeStartLiveAsync();
         }
 
@@ -111,7 +107,6 @@ namespace HouseholdMS.View.Measurement
         {
             try
             {
-                // If we already have a scheduler/transport, just verify before starting live
                 if (_sched != null && _transport != null)
                 {
                     Append("Already connected. Verifying device responsiveness...");
@@ -127,7 +122,6 @@ namespace HouseholdMS.View.Measurement
                     return;
                 }
 
-                // Open first VISA USB (prefer Tek)
                 _transport = VisaComTransport.OpenFirstTekUsb(out _visaResource, timeoutMs: 3000);
                 _sched = new Tbs1000cCommandScheduler(_transport);
                 Append(">>> Connected via VISA: " + _visaResource + " (pending verification)...");
@@ -180,6 +174,8 @@ namespace HouseholdMS.View.Measurement
                 if (!string.IsNullOrWhiteSpace(idn))
                 {
                     Append("*IDN? -> " + idn.Trim());
+                    // Also refresh cursor state from the scope so the toggle label is right
+                    await RefreshCursorStateFromScopeAsync();
                     return true;
                 }
             }
@@ -364,39 +360,83 @@ namespace HouseholdMS.View.Measurement
 
         #endregion
 
-        #region Cursors
+        #region Cursors (fixed)
 
-        private void CurEnable_CheckedChanged(object sender, RoutedEventArgs e)
+        private async Task RefreshCursorStateFromScopeAsync()
         {
             try
             {
                 RequireConn();
-                var en = CurEnable.IsChecked == true;
-                Send("CURSor:STATE " + OnOff(en));
-                if (!en) UpdateGateOverlay(double.NaN, double.NaN);
+                var s = _sched; if (s == null) return;
+                var fn = await s.EnqueueQueryAsync("CURSor:FUNCtion?");
+                var mode = (fn ?? "").Trim().ToUpperInvariant();
+                _cursorVisible = !(string.IsNullOrEmpty(mode) || mode.Contains("OFF"));
+            }
+            catch
+            {
+                // If query fails, leave local state as-is
+            }
+            UpdateCursorToggleUi();
+        }
+
+        private void UpdateCursorToggleUi()
+        {
+            if (BtnCurToggle == null) return;
+            BtnCurToggle.Content = _cursorVisible ? "Disable Cursors" : "Enable Cursors";
+        }
+
+        private async void BtnCurToggle_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                RequireConn();
+
+                if (_cursorVisible)
+                {
+                    // Hide the cursors from the display
+                    Send("CURSor:FUNCtion OFF");
+                    UpdateGateOverlay(double.NaN, double.NaN);
+                    _cursorVisible = false;
+                }
+                else
+                {
+                    // Ensure the feature is enabled, then select the requested function
+                    Send("CURSor:ENABLE ON"); // feature lock must be ON to allow use (won't force display by itself)
+                    var func = ComboText(CurFunc).ToUpperInvariant();
+                    if (string.IsNullOrWhiteSpace(func) || func == "OFF") func = "HBARS"; // pick a sensible default
+                    Send("CURSor:FUNCtion " + func);
+                    _cursorVisible = true;
+                }
+
+                // Verify from instrument and update label
+                await RefreshCursorStateFromScopeAsync();
             }
             catch (Exception ex) { Append(ex.Message); }
         }
 
-        private void BtnCurApply_Click(object sender, RoutedEventArgs e)
+        private async void BtnCurApply_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 RequireConn();
-                var en = CurEnable.IsChecked == true;
+                var func = ComboText(CurFunc).ToUpperInvariant();
 
-                // Always reflect the checkbox state
-                Send("CURSor:STATE " + OnOff(en));
-
-                // Only push the function if enabled; if disabled, also clear the local overlay
-                if (en)
+                // If they pick OFF here, honor it and consider that as hiding cursors
+                if (func == "OFF")
                 {
-                    Send("CURSor:FUNCtion " + ComboText(CurFunc).ToUpperInvariant());
+                    Send("CURSor:FUNCtion OFF");
+                    UpdateGateOverlay(double.NaN, double.NaN);
+                    _cursorVisible = false;
                 }
                 else
                 {
-                    UpdateGateOverlay(double.NaN, double.NaN);
+                    // Make sure feature is enabled and set the function
+                    Send("CURSor:ENABLE ON");
+                    Send("CURSor:FUNCtion " + func);
+                    _cursorVisible = true;
                 }
+
+                await RefreshCursorStateFromScopeAsync();
             }
             catch (Exception ex) { Append(ex.Message); }
         }
@@ -413,7 +453,9 @@ namespace HouseholdMS.View.Measurement
             }
             catch (Exception ex) { Append(ex.Message); }
         }
-        private void BtnCurDeltaH_Click(object sender, RoutedEventArgs e) { try { RequireConn(); var s = _sched; if (s == null) return; s.EnqueueQuery("CURSor:HBARs:DELTa?", r => Append("CURSor:HBARs:DELTa? -> " + (r == null ? "" : r.Trim()))); } catch (Exception ex) { Append(ex.Message); } }
+
+        private void BtnCurDeltaH_Click(object sender, RoutedEventArgs e)
+        { try { RequireConn(); var s = _sched; if (s == null) return; s.EnqueueQuery("CURSor:HBARs:DELTa?", r => Append("CURSor:HBARs:DELTa? -> " + (r == null ? "" : r.Trim()))); } catch (Exception ex) { Append(ex.Message); } }
 
         private void BtnCurSetV_Click(object sender, RoutedEventArgs e)
         {
@@ -426,7 +468,9 @@ namespace HouseholdMS.View.Measurement
             }
             catch (Exception ex) { Append(ex.Message); }
         }
-        private void BtnCurDeltaV_Click(object sender, RoutedEventArgs e) { try { RequireConn(); var s = _sched; if (s == null) return; s.EnqueueQuery("CURSor:VBARs:DELTa?", r => Append("CURSor:VBARs:DELTa? -> " + (r == null ? "" : r.Trim()))); } catch (Exception ex) { Append(ex.Message); } }
+
+        private void BtnCurDeltaV_Click(object sender, RoutedEventArgs e)
+        { try { RequireConn(); var s = _sched; if (s == null) return; s.EnqueueQuery("CURSor:VBARs:DELTa?", r => Append("CURSor:VBARs:DELTa? -> " + (r == null ? "" : r.Trim()))); } catch (Exception ex) { Append(ex.Message); } }
 
         #endregion
 
@@ -868,12 +912,11 @@ namespace HouseholdMS.View.Measurement
                 if (!forLive)
                     TimeChart?.Behaviors?.OfType<ChartZoomPanBehavior>().FirstOrDefault()?.Reset();
 
-                // Rate-limited measurement pull for mini charts + logs subset
                 var now = DateTime.UtcNow;
                 if ((now - _lastMeasAtUtc).TotalSeconds >= 2)
                 {
                     _lastMeasAtUtc = now;
-                    await UpdateMiniMeasurementsAsync(source, alsoLogSubset: true, s); // await to avoid overlap
+                    await UpdateMiniMeasurementsAsync(source, alsoLogSubset: true, s);
                 }
             }
             finally

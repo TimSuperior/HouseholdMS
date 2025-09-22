@@ -11,8 +11,8 @@ namespace HouseholdMS.Helpers
     /// <summary>
     /// Minimal, robust Modbus RTU client for READ-ONLY ops.
     /// Supports:
-    ///  - 0x04 Read Input Registers (existing)
-    ///  - 0x2B/0x0E Read Device Identification (new) for generic device names
+    ///  - 0x04 Read Input Registers
+    ///  - 0x2B/0x0E Read Device Identification
     /// Adds a global I/O lock to prevent "COMx is denied" when reads overlap.
     /// </summary>
     public static class ModbusRtuRaw
@@ -35,8 +35,8 @@ namespace HouseholdMS.Helpers
             frame[4] = (byte)(count >> 8);
             frame[5] = (byte)(count & 0xFF);
             ushort crc = Crc16Modbus(frame, 6);
-            frame[6] = (byte)(crc & 0xFF);        // CRC lo
-            frame[7] = (byte)((crc >> 8) & 0xFF); // CRC hi
+            frame[6] = (byte)(crc & 0xFF);
+            frame[7] = (byte)((crc >> 8) & 0xFF);
             return frame;
         }
 
@@ -81,12 +81,7 @@ namespace HouseholdMS.Helpers
         }
 
         // ---------- 0x2B/0x0E: Read Device Identification ----------
-        public enum DeviceIdCategory : byte
-        {
-            Basic = 0x01,    // VendorName (00), ProductCode (01), MajorMinorRevision (02)
-            Regular = 0x02,
-            Extended = 0x03
-        }
+        public enum DeviceIdCategory : byte { Basic = 0x01, Regular = 0x02, Extended = 0x03 }
 
         public static Dictionary<byte, string> TryReadDeviceIdentification(
             string portName, int baud, byte slaveId,
@@ -99,18 +94,12 @@ namespace HouseholdMS.Helpers
                 var req = BuildReadDeviceId(slaveId, category, startObjectId: 0x00);
                 var resp = ExchangeRtuDeviceId(portName, baud, timeoutMs, req, slaveId);
 
-                // resp: addr, 0x2B, 0x0E, readDevIdCode, conformity, moreFollows, nextObjectId, numberOfObjects, [obj*], CRClo, CRChi
                 if (resp == null || resp.Length < 11) throw new Exception("Short response.");
-
-                if (resp[1] == 0xAB) // 0x2B | 0x80
-                    throw new Exception("Modbus exception on device-id: " + resp[2]);
-
-                if (resp[1] != 0x2B || resp[2] != 0x0E)
-                    throw new Exception("Unexpected function/MEI: " + resp[1] + "/" + resp[2]);
+                if (resp[1] == 0xAB) throw new Exception("Modbus exception on device-id: " + resp[2]);
+                if (resp[1] != 0x2B || resp[2] != 0x0E) throw new Exception("Unexpected function/MEI.");
 
                 byte n = resp[7];
                 int idx = 8;
-
                 var dict = new Dictionary<byte, string>();
                 for (int i = 0; i < n; i++)
                 {
@@ -118,9 +107,7 @@ namespace HouseholdMS.Helpers
                     byte objId = resp[idx++];
                     byte len = resp[idx++];
                     if (idx + len > resp.Length) break;
-
-                    string val = Encoding.ASCII.GetString(resp, idx, len);
-                    dict[objId] = val;
+                    dict[objId] = Encoding.ASCII.GetString(resp, idx, len);
                     idx += len;
                 }
 
@@ -136,13 +123,11 @@ namespace HouseholdMS.Helpers
 
         private static byte[] BuildReadDeviceId(byte slaveId, DeviceIdCategory category, byte startObjectId)
         {
-            // RTU frame: addr, 0x2B, 0x0E, ReadDevIdCode(0x01..0x03), objectId, CRC
-            byte readDevIdCode = (byte)category;
             var frame = new byte[6];
             frame[0] = slaveId;
             frame[1] = 0x2B;
             frame[2] = 0x0E;
-            frame[3] = readDevIdCode;
+            frame[3] = (byte)category;
             frame[4] = startObjectId;
             ushort crc = Crc16Modbus(frame, 5);
             Array.Resize(ref frame, 7);
@@ -173,7 +158,6 @@ namespace HouseholdMS.Helpers
                     sp.Write(request, 0, request.Length);
 
                     var sw = Stopwatch.StartNew();
-
                     while (sp.BytesToRead < 3)
                     {
                         if (sw.ElapsedMilliseconds > timeoutMs)
@@ -195,8 +179,7 @@ namespace HouseholdMS.Helpers
                         return respEx;
                     }
 
-                    if (header[1] != expectFunc)
-                        throw new Exception("Unexpected function: " + header[1]);
+                    if (header[1] != expectFunc) throw new Exception("Unexpected function: " + header[1]);
 
                     int byteCount = header[2];
                     if (byteCount < 0 || byteCount > 250) throw new Exception("Invalid byteCount " + byteCount);
@@ -208,7 +191,6 @@ namespace HouseholdMS.Helpers
                     Buffer.BlockCopy(header, 0, resp, 0, 3);
                     Buffer.BlockCopy(dataPlusCrc, 0, resp, 3, dataPlusCrc.Length);
 
-                    // CRC check
                     ushort crcCalc = Crc16Modbus(resp, resp.Length - 2);
                     ushort crcRecv = (ushort)(resp[resp.Length - 2] | (resp[resp.Length - 1] << 8));
                     if (crcCalc != crcRecv) throw new Exception("CRC mismatch.");
@@ -244,22 +226,14 @@ namespace HouseholdMS.Helpers
 
                     var sw = Stopwatch.StartNew();
 
-                    // Read minimal header: addr, func, meiType, readDevIdCode, conformity, moreFollows, nextObjectId, numberOfObjects
                     var head = new byte[8];
                     ReadExact(sp, head, 0, 8, timeoutMs, sw);
 
                     if (head[0] != expectSlave) throw new Exception("Slave mismatch: " + head[0]);
-                    if (head[1] == 0xAB) // 0x2B|0x80 exception
-                    {
-                        var rest = new byte[2]; ReadExact(sp, rest, 0, 2, timeoutMs, sw);
-                        var exFrame = new byte[5] { head[0], head[1], head[2], rest[0], rest[1] };
-                        return exFrame;
-                    }
-                    if (head[1] != 0x2B || head[2] != 0x0E)
-                        throw new Exception("Unexpected function/MEI.");
+                    if (head[1] == 0xAB) { var rest = new byte[2]; ReadExact(sp, rest, 0, 2, timeoutMs, sw); return new byte[5] { head[0], head[1], head[2], rest[0], rest[1] }; }
+                    if (head[1] != 0x2B || head[2] != 0x0E) throw new Exception("Unexpected function/MEI.");
 
                     byte numberOfObjects = head[7];
-
                     var payload = new List<byte>();
                     payload.AddRange(head);
 
@@ -288,7 +262,6 @@ namespace HouseholdMS.Helpers
                     ushort crcCalc = Crc16Modbus(frame, frame.Length - 2);
                     ushort crcRecv = (ushort)(frame[frame.Length - 2] | (frame[frame.Length - 1] << 8));
                     if (crcCalc != crcRecv) throw new Exception("CRC mismatch.");
-
                     return frame;
                 }
                 finally

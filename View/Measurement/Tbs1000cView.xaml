@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.Measurement.Tbs1000cView"
+﻿<UserControl x:Class="HouseholdMS.View.Measurement.Tbs1000cView" 
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
@@ -185,17 +185,23 @@
                             <!-- Cursors -->
                             <Expander Header="Cursors" IsExpanded="False" Margin="0,0,0,8">
                                 <StackPanel Margin="8">
-                                    <CheckBox x:Name="CurEnable" Content="Enable Cursors" Margin="0,0,0,6"
-                            Checked="CurEnable_CheckedChanged" Unchecked="CurEnable_CheckedChanged"/>
                                     <WrapPanel Margin="0,0,0,6">
+                                        <Button x:Name="BtnCurToggle"
+                                                Width="140"
+                                                Content="Enable Cursors"
+                                                Click="BtnCurToggle_Click"
+                                                Margin="0,0,8,0"/>
                                         <TextBlock Text="Function" Margin="0,0,6,0"/>
-                                        <ComboBox x:Name="CurFunc" Width="120" Margin="0,0,6,0" SelectedIndex="1">
+                                        <ComboBox x:Name="CurFunc" Width="140" Margin="0,0,6,0" SelectedIndex="1">
                                             <ComboBoxItem Content="HBARs"/>
                                             <ComboBoxItem Content="VBARs"/>
-                                            <ComboBoxItem Content="TRACK"/>
+                                            <ComboBoxItem Content="SCREEN"/>
+                                            <ComboBoxItem Content="WAVEform"/>
+                                            <ComboBoxItem Content="OFF"/>
                                         </ComboBox>
                                         <Button Content="Apply" Click="BtnCurApply_Click"/>
                                     </WrapPanel>
+
                                     <WrapPanel Margin="0,0,0,6">
                                         <TextBlock Text="H1 (s)" Margin="0,0,6,0"/>
                                         <TextBox x:Name="CurH1" Width="80" Text="0" Margin="0,0,6,0"/>
@@ -204,6 +210,7 @@
                                         <Button Content="Set H" Click="BtnCurSetH_Click" Margin="0,0,6,0"/>
                                         <Button Content="Δt?" Click="BtnCurDeltaH_Click"/>
                                     </WrapPanel>
+
                                     <WrapPanel>
                                         <TextBlock Text="V1 (V)" Margin="0,0,6,0"/>
                                         <TextBox x:Name="CurV1" Width="80" Text="0" Margin="0,0,6,0"/>
