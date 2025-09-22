@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Ivi.Visa.Interop;
 
 namespace HouseholdMS.Services
@@ -22,11 +23,13 @@ namespace HouseholdMS.Services
         public bool Open(string resourceAddress, int timeoutMs = 15000)
         {
             CloseInternal();
+
             _rm = new ResourceManager();
             _session = (IMessage)_rm.Open(resourceAddress, AccessMode.NO_LOCK, timeoutMs, string.Empty);
             _session.Timeout = timeoutMs;
-            _session.TerminationCharacterEnabled = true; // fine; ReadIEEEBlock ignores it
-            _session.TerminationCharacter = 10; // \n
+            _session.TerminationCharacterEnabled = true;   // ReadString uses this; ReadIEEEBlock ignores it
+            _session.TerminationCharacter = 10;            // '\n'
+
             TryClear();
 
             _io = new FormattedIO488 { IO = _session };
@@ -43,8 +46,21 @@ namespace HouseholdMS.Services
             if (!IsOpen) throw new InvalidOperationException("VISA session is not open.");
             if (string.IsNullOrEmpty(command)) return;
             if (!command.EndsWith("\n")) command += "\n";
-            try { _io.WriteString(command); }
-            catch (System.Runtime.InteropServices.COMException) { TryClear(); throw; }
+
+            try
+            {
+                _io.WriteString(command);
+            }
+            catch (COMException ex)
+            {
+                TryClear();
+                if (IsVisaTimeout(ex))
+                {
+                    // Swallow write timeouts to keep UI responsive; caller can decide what to do next.
+                    return;
+                }
+                throw;
+            }
         }
 
         public string Query(string command)
@@ -52,8 +68,29 @@ namespace HouseholdMS.Services
             if (!IsOpen) throw new InvalidOperationException("VISA session is not open.");
             if (string.IsNullOrEmpty(command)) return string.Empty;
             if (!command.EndsWith("\n")) command += "\n";
-            try { _io.WriteString(command); return _io.ReadString(); }
-            catch (System.Runtime.InteropServices.COMException) { TryClear(); throw; }
+
+            try
+            {
+                _io.WriteString(command);
+            }
+            catch (COMException ex)
+            {
+                TryClear();
+                if (IsVisaTimeout(ex)) return string.Empty;
+                throw;
+            }
+
+            try
+            {
+                // On some stacks a timeout throws from ReadString().
+                return _io.ReadString();
+            }
+            catch (COMException ex)
+            {
+                TryClear();
+                if (IsVisaTimeout(ex)) return string.Empty;
+                throw;
+            }
         }
 
         public byte[] QueryBinary(string command, int timeoutOverrideMs = 0)
@@ -68,6 +105,17 @@ namespace HouseholdMS.Services
             try
             {
                 _io.WriteString(command);
+            }
+            catch (COMException ex)
+            {
+                TryClear();
+                if (timeoutOverrideMs > 0) _session.Timeout = old;
+                if (IsVisaTimeout(ex)) return new byte[0];
+                throw;
+            }
+
+            try
+            {
                 object block = _io.ReadIEEEBlock(IEEEBinaryType.BinaryType_UI1);
                 if (block is Array arr)
                 {
@@ -78,21 +126,58 @@ namespace HouseholdMS.Services
                 }
                 return new byte[0];
             }
-            catch (System.Runtime.InteropServices.COMException) { TryClear(); throw; }
-            finally { if (timeoutOverrideMs > 0) _session.Timeout = old; }
+            catch (COMException ex)
+            {
+                TryClear();
+                if (IsVisaTimeout(ex)) return new byte[0];
+                throw;
+            }
+            finally
+            {
+                if (timeoutOverrideMs > 0) _session.Timeout = old;
+            }
         }
 
-        private void TryClear() { try { _session?.Clear(); } catch { } }
+        private static bool IsVisaTimeout(COMException ex)
+        {
+            // TekVISA/Keysight VISA COM commonly surfaces this HResult for timeouts.
+            // Fallback to message match to be robust across VISA flavors.
+            uint h = (uint)ex.HResult;
+            if (h == 0x80040011) return true; // "Timeout expired before operation completed."
+            string msg = ex.Message ?? string.Empty;
+            return msg.IndexOf("timeout", StringComparison.OrdinalIgnoreCase) >= 0
+                   || msg.IndexOf("time out", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private void TryClear()
+        {
+            try { _session?.Clear(); } catch { /* ignore */ }
+        }
 
         private void CloseInternal()
         {
             try
             {
-                if (_io != null) { try { _io.IO = null; } catch { } _io = null; }
-                if (_session != null) { try { (_session as IDisposable)?.Dispose(); } catch { } _session = null; }
-                if (_rm != null) { try { (_rm as IDisposable)?.Dispose(); } catch { } _rm = null; }
+                if (_io != null)
+                {
+                    try { _io.IO = null; } catch { }
+                    _io = null;
+                }
+                if (_session != null)
+                {
+                    try { (_session as IDisposable)?.Dispose(); } catch { }
+                    _session = null;
+                }
+                if (_rm != null)
+                {
+                    try { (_rm as IDisposable)?.Dispose(); } catch { }
+                    _rm = null;
+                }
             }
-            finally { IsOpen = false; }
+            finally
+            {
+                IsOpen = false;
+            }
         }
 
         public void Dispose()

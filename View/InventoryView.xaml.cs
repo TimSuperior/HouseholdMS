@@ -25,7 +25,7 @@ namespace HouseholdMS.View
         {
             { "ID", "ItemID" },
             { "Item Type", "ItemType" },
-            { "Total Qty", "TotalQuantity" },
+            { "Available Qty", "TotalQuantity" },   // renamed column header, same backing property
             { "Used Qty", "UsedQuantity" },
             { "Low Threshold", "LowStockThreshold" },
             { "Last Restocked", "LastRestockedDate" },
@@ -406,16 +406,19 @@ namespace HouseholdMS.View
         }
     }
 
-    // ===== Model (kept) =====
+    // ===== Model (kept, with state flags for row colors) =====
     public class InventoryItem
     {
         public int ItemID { get; set; }
         public string ItemType { get; set; }
-        public int TotalQuantity { get; set; }
+        public int TotalQuantity { get; set; }           // acts as Available Qty
         public int UsedQuantity { get; set; }
         public string LastRestockedDate { get; set; }
         public int LowStockThreshold { get; set; }
         public string Note { get; set; }
-        public bool IsLowStock => TotalQuantity <= LowStockThreshold;
+
+        // NEW: explicit flags for row styles
+        public bool IsOutOfStock => TotalQuantity <= 0;
+        public bool IsLowStock => TotalQuantity > 0 && TotalQuantity <= LowStockThreshold;
     }
 }

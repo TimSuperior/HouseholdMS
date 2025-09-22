@@ -1,4 +1,5 @@
-﻿using System;
+﻿// HouseholdMS.Services.cs
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace HouseholdMS.Services
         private readonly CommandLogger _log;
         private readonly RingBuffer<InstrumentReading> _buffer = new RingBuffer<InstrumentReading>(60000);
         private CancellationTokenSource _cts;
+        private Task _runner;
         public event Action<InstrumentReading> OnReading;
 
         public AcquisitionService(IInstrument inst, CommandLogger log) { _inst = inst; _log = log; }
@@ -26,7 +28,7 @@ namespace HouseholdMS.Services
             _cts = new CancellationTokenSource();
             var ct = _cts.Token;
 
-            Task.Run(async () =>
+            _runner = Task.Run(async () =>
             {
                 int ms = 1000 / (hz < 1 ? 1 : hz);
                 if (ms < 20) ms = 20;
@@ -38,13 +40,23 @@ namespace HouseholdMS.Services
                         _buffer.Add(r);
                         OnReading?.Invoke(r);
                     }
+                    catch (OperationCanceledException) { break; }
                     catch (Exception ex) { _log.Log("ACQ: " + ex.Message); }
-                    await Task.Delay(ms, ct);
+                    try { await Task.Delay(ms, ct); } catch (OperationCanceledException) { break; }
                 }
             }, ct);
         }
 
-        public void Stop() { _cts?.Cancel(); }
+        public void Stop()
+        {
+            try
+            {
+                _cts?.Cancel();
+                var t = _runner;
+                if (t != null) Task.WaitAny(new[] { t }, 500); // brief wait so disconnect can close cleanly
+            }
+            catch { }
+        }
 
         public void ExportCsv(string path)
         {

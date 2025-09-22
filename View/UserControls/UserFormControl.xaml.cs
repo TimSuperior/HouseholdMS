@@ -234,10 +234,6 @@ namespace HouseholdMS.View.UserControls
                         sb.AppendLine("• Confirm Password must match the new Password exactly.");
                     }
                 }
-                else
-                {
-                    // no change requested; confirm can be empty
-                }
             }
 
             // Technician-specific requirements
@@ -296,7 +292,6 @@ namespace HouseholdMS.View.UserControls
             string pwd = PasswordBox.Password; // NOTE: hash in production
 
             bool isAdd = (_user.UserID == 0);
-            bool isTech = string.Equals(role, "Technician", StringComparison.OrdinalIgnoreCase);
 
             try
             {
@@ -321,8 +316,6 @@ namespace HouseholdMS.View.UserControls
                             }
                         }
 
-                        // Admin-created accounts: technicians are auto-approved (no approval flow).
-                        // If your Users table lacks TechApproved, create it or remove the column from INSERT.
                         using (var cmd = new SQLiteCommand(@"
 INSERT INTO Users
 (Name, Username, PasswordHash, Role, Phone, Address, AssignedArea, Note, IsActive, TechApproved)
@@ -344,7 +337,6 @@ VALUES
                     }
                     else
                     {
-                        // UPDATE core fields
                         using (var cmd = new SQLiteCommand(@"
 UPDATE Users
 SET Name=@n, Role=@r, Phone=@ph, Address=@ad, AssignedArea=@ar, Note=@no
@@ -360,7 +352,6 @@ WHERE UserID=@id;", conn))
                             cmd.ExecuteNonQuery();
                         }
 
-                        // If role is Technician, ensure it's approved (admin control)
                         using (var cmd = new SQLiteCommand(
                                    "UPDATE Users SET TechApproved=1 WHERE UserID=@id;", conn))
                         {
@@ -368,7 +359,6 @@ WHERE UserID=@id;", conn))
                             cmd.ExecuteNonQuery();
                         }
 
-                        // Optional password change
                         if (!string.IsNullOrWhiteSpace(pwd))
                         {
                             using (var cmd = new SQLiteCommand(
@@ -387,7 +377,6 @@ WHERE UserID=@id;", conn))
             }
             catch (Exception ex)
             {
-                // Most common: schema mismatch or UNIQUE(Username) violation
                 MessageBox.Show($"Error saving user:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

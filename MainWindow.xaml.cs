@@ -101,7 +101,7 @@ namespace HouseholdMS
         private void bt_MeasurementMenu(object sender, RoutedEventArgs e) => MainContent.Content = new MeasurementView();
         private void bt_OscilloscopeMenu(object sender, RoutedEventArgs e) => MainContent.Content = new HouseholdMS.View.Measurement.Tbs1000cView();
 
-        private void bt_ElectronicLoadMenu(object sender, RoutedEventArgs e) => MainContent.Content = new ElectronicLoadIT8615View();
+       
 
         private void bt_Template_Click(object sender, RoutedEventArgs e) => MainContent.Content = new TemplateView();
         private void bt_Dashboard_Click(object sender, RoutedEventArgs e) => MainContent.Content = new DashboardView(_currentUserRole);

@@ -331,7 +331,7 @@ namespace HouseholdMS.View.UserControls
             if (col.Count > MaxPoints) col.RemoveAt(0);
         }
 
-        // -------- Piecewise reads (unchanged from your file) --------
+        // -------- Piecewise reads (unchanged) --------
         private void TryReadPiecewise(string port, int baud, byte unit,
             ref double? pvV, ref double? pvA, ref double? pvW,
             ref double? batV, ref double? batA, ref double? batW,
@@ -425,7 +425,7 @@ namespace HouseholdMS.View.UserControls
             }
         }
 
-        // ===== Chart UX: stop page scroll on wheel; reset view =====
+        // ===== Chart UX =====
         private void Chart_MouseWheel(object sender, MouseWheelEventArgs e) { e.Handled = true; }
 
         private void BtnResetZoom_Click(object sender, RoutedEventArgs e)
@@ -442,7 +442,7 @@ namespace HouseholdMS.View.UserControls
             if (!IsLoaded) return;
             BtnResetZoom_Click(null, null);
         }
-        private void ResetAxes(ChartAxisBase2D xAxis, ChartAxisBase2D yAxis)
+        private static void ResetAxes(ChartAxisBase2D xAxis, ChartAxisBase2D yAxis)
         {
             if (xAxis != null) { xAxis.ZoomFactor = 1; xAxis.ZoomPosition = 0; }
             if (yAxis != null) { yAxis.ZoomFactor = 1; yAxis.ZoomPosition = 0; }
@@ -534,7 +534,7 @@ namespace HouseholdMS.View.UserControls
         {
             if (_timer != null) _timer.Stop();
             if (_cts != null) _cts.Cancel();
-            if (_cts != null) _cts.Dispose();
+            _cts?.Dispose();
             _cts = null;
             _connected = false;
             SetUiState(false);

@@ -1,8 +1,10 @@
-﻿using System;
+﻿// It8615.Driver.cs
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Ivi.Visa.Interop;
 using HouseholdMS.Models;
@@ -65,7 +67,7 @@ namespace HouseholdMS.Drivers
             {
                 string e = await _io.QueryAsync("SYST:ERR?");
                 _log.Log("ERRQ: " + e);
-                if (e.StartsWith("0")) break;
+                if (!string.IsNullOrWhiteSpace(e) && e.StartsWith("0")) break;
             }
         }
 
@@ -136,25 +138,60 @@ namespace HouseholdMS.Drivers
             return sb.ToString();
         }
 
+        private static bool Bad(double v) => double.IsNaN(v) || double.IsInfinity(v);
+
         public async Task<InstrumentReading> ReadAsync()
         {
+            // Robust reads with fallbacks so labels don't stay at 0 when data exists
             double vrms = await _io.QueryNumberAsync("MEAS:VOLT:RMS?");
+            if (Bad(vrms) || vrms == 0) vrms = await _io.QueryNumberAsync("MEAS:VOLT?");
+
             double irms = await _io.QueryNumberAsync("MEAS:CURR:RMS?");
+            if (Bad(irms) || irms == 0) irms = await _io.QueryNumberAsync("MEAS:CURR?");
+
             double pow = await _io.QueryNumberAsync("MEAS:POW?");
             double pf = await _io.QueryNumberAsync("MEAS:POW:PFAC?");
             double cf = await _io.QueryNumberAsync("MEAS:CURR:CFAC?");
             double f = await _io.QueryNumberAsync("MEAS:FREQ?");
-            var r = new InstrumentReading();
-            r.Timestamp = DateTime.UtcNow; r.Vrms = vrms; r.Irms = irms; r.Power = pow; r.Pf = pf; r.CrestFactor = cf; r.Freq = f;
-            return r;
+
+            // Derive PF if missing
+            if ((Bad(pf) || pf == 0) && vrms > 1e-9 && irms > 1e-9 && !Bad(pow) && pow != 0)
+            {
+                var denom = vrms * irms;
+                if (denom > 1e-12) pf = pow / denom;
+            }
+
+            // Derive Power if missing
+            if (Bad(pow) || pow == 0)
+            {
+                if (vrms > 1e-9 && irms > 1e-9)
+                {
+                    var pfUse = (!Bad(pf) && pf > 0) ? pf : 1.0;
+                    pow = vrms * irms * pfUse;
+                }
+            }
+
+            return new InstrumentReading
+            {
+                Timestamp = DateTime.UtcNow,
+                Vrms = vrms,
+                Irms = irms,
+                Power = pow,
+                Pf = pf,
+                CrestFactor = cf,
+                Freq = f
+            };
         }
 
+        // ----- Scope -----
         public async Task ScopeConfigureAsync(string source, string slope, double level)
         {
             await _io.WriteAsync("WAVE:TRIG:SOUR " + source);   // VOLTage|CURRent
             await _io.WriteAsync("WAVE:TRIG:SLOP " + slope);    // POSitive|NEGative|ANY
-            if (source.StartsWith("V")) await _io.WriteAsync("WAVE:TRIG:VOLT:LEV " + level.ToString(_ci));
-            else await _io.WriteAsync("WAVE:TRIG:CURR:LEV " + level.ToString(_ci));
+            if (source.StartsWith("V", StringComparison.OrdinalIgnoreCase))
+                await _io.WriteAsync("WAVE:TRIG:VOLT:LEV " + level.ToString(_ci));
+            else
+                await _io.WriteAsync("WAVE:TRIG:CURR:LEV " + level.ToString(_ci));
         }
         public Task ScopeRunAsync() => _io.WriteAsync("WAVE:RUN");
         public Task ScopeSingleAsync() => _io.WriteAsync("WAVE:SING");
@@ -177,16 +214,14 @@ namespace HouseholdMS.Drivers
 
         private static double[] ParseCsv(string s)
         {
+            if (string.IsNullOrWhiteSpace(s)) return Array.Empty<double>();
             string[] ss = s.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
             double[] vals = new double[ss.Length];
             int k = 0;
             for (int i = 0; i < ss.Length; i++)
             {
-                double v;
-                if (double.TryParse(ss[i], NumberStyles.Any, CultureInfo.InvariantCulture, out v))
-                {
+                if (double.TryParse(ss[i], NumberStyles.Any, CultureInfo.InvariantCulture, out double v))
                     vals[k++] = v;
-                }
             }
             if (k == vals.Length) return vals;
             double[] trimmed = new double[k];
@@ -234,38 +269,51 @@ namespace HouseholdMS.Drivers
 
     public sealed class VisaSession : IDisposable
     {
+        private readonly object _gate = new object();
         private ResourceManager _rm;
         private FormattedIO488 _io;
         private IMessage _session;
         private CommandLogger _log;
+        private bool _isOpen;
 
         public int TimeoutMs { get; set; } = 2000;
         public int Retries { get; set; } = 2;
 
         public void Open(string resource, CommandLogger logger)
         {
-            _log = logger;
-            _rm = new ResourceManager();
-            _session = (IMessage)_rm.Open(resource, AccessMode.NO_LOCK, TimeoutMs, "");
-            _session.Timeout = TimeoutMs;
+            lock (_gate)
+            {
+                _log = logger;
+                _rm = new ResourceManager();
+                _session = (IMessage)_rm.Open(resource, AccessMode.NO_LOCK, TimeoutMs, "");
+                _session.Timeout = TimeoutMs;
+                _session.TerminationCharacterEnabled = true;
+                _session.TerminationCharacter = 10; // '\n'
+                try { _session.Clear(); } catch { }
 
-            _io = new FormattedIO488();
-            _io.IO = _session;
-
-            _log.Log("OPEN: " + resource);
+                _io = new FormattedIO488 { IO = _session };
+                _isOpen = true;
+                _log?.Log("OPEN: " + resource);
+            }
         }
 
         public System.Collections.Generic.List<string> DiscoverResources(string[] patterns)
         {
             var list = new System.Collections.Generic.List<string>();
-            if (_rm == null) _rm = new ResourceManager();
+            lock (_gate)
+            {
+                if (_rm == null) _rm = new ResourceManager();
+            }
             foreach (var p in patterns)
             {
                 try
                 {
                     object result = _rm.FindRsrc(p);
-                    var arr = (object[])result;
-                    foreach (var x in arr) list.Add((string)x);
+                    if (result is object[] arr)
+                        list.AddRange(arr.OfType<string>());
+                    else if (result is Array a)
+                        foreach (var o in a) if (o is string s) list.Add(s);
+                            else if (result is string one) list.Add(one);
                 }
                 catch { /* ignore */ }
             }
@@ -276,6 +324,7 @@ namespace HouseholdMS.Drivers
         {
             return WithRetry(() =>
             {
+                if (!_isOpen || _io == null) return (string)null;
                 _log?.Log(">> " + scpi);
                 _io.WriteString(scpi, true);
                 return (string)null;
@@ -286,22 +335,26 @@ namespace HouseholdMS.Drivers
         {
             return WithRetry(() =>
             {
+                if (!_isOpen || _io == null) return string.Empty;
                 _log?.Log(">> " + scpi);
                 _io.WriteString(scpi, true);
                 string s = _io.ReadString();
                 if (s != null) s = s.Trim();
                 _log?.Log("<< " + s);
-                return s;
+                return s ?? string.Empty;
             });
         }
 
         public async Task<double> QueryNumberAsync(string scpi)
         {
             string s = await QueryAsync(scpi);
-            double v;
-            if (double.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out v)) return v;
+            if (string.IsNullOrWhiteSpace(s)) return double.NaN;
+
+            if (double.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out double v)) return v;
+
             var tok = s.Split(',', ';');
             if (tok.Length > 0 && double.TryParse(tok[0], NumberStyles.Any, CultureInfo.InvariantCulture, out v)) return v;
+
             return double.NaN;
         }
 
@@ -314,14 +367,18 @@ namespace HouseholdMS.Drivers
                 {
                     try
                     {
-                        tries++;
-                        return fn();
+                        lock (_gate)
+                        {
+                            if (!_isOpen || _io == null) return default(T);
+                            return fn();
+                        }
                     }
                     catch (Exception ex)
                     {
-                        if (tries > Retries) throw;
+                        tries++;
+                        if (tries > Retries) return default(T);
                         if (_log != null) _log.Log("I/O retry " + tries + " after: " + ex.Message);
-                        System.Threading.Thread.Sleep(50 * tries);
+                        Thread.Sleep(50 * tries);
                     }
                 }
             });
@@ -329,18 +386,23 @@ namespace HouseholdMS.Drivers
 
         public void Close()
         {
-            try { _log?.Log("CLOSE"); } catch { }
-            try { _session?.Close(); } catch { }
-            try
+            lock (_gate)
             {
-                if (_io != null && _io.IO != null)
-                    Marshal.FinalReleaseComObject(_io.IO);
-            }
-            catch { }
-            try { if (_session != null) Marshal.FinalReleaseComObject(_session); } catch { }
-            try { if (_rm != null) Marshal.FinalReleaseComObject(_rm); } catch { }
+                _isOpen = false;
+                try { _log?.Log("CLOSE"); } catch { }
+                try { _session?.Close(); } catch { }
 
-            _io = null; _session = null; _rm = null;
+                try
+                {
+                    if (_io != null && _io.IO != null)
+                        Marshal.FinalReleaseComObject(_io.IO);
+                }
+                catch { }
+                try { if (_session != null) Marshal.FinalReleaseComObject(_session); } catch { }
+                try { if (_rm != null) Marshal.FinalReleaseComObject(_rm); } catch { }
+
+                _io = null; _session = null; _rm = null;
+            }
         }
 
         public void Dispose() { Close(); }

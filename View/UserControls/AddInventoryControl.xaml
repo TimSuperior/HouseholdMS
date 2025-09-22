@@ -4,43 +4,76 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             d:DesignHeight="560" d:DesignWidth="520"
-             Background="#F6F7FB">
+             d:DesignHeight="860" d:DesignWidth="1200"
+             MinHeight="820" MinWidth="1120"
+             Background="#F6F7FB"
+             TextOptions.TextFormattingMode="Ideal"
+             TextOptions.TextRenderingMode="ClearType"
+             SnapsToDevicePixels="True"
+             UseLayoutRounding="True">
 
     <!-- ===== THEME / STYLES ===== -->
     <UserControl.Resources>
-        <SolidColorBrush x:Key="Col.Page"   Color="#F6F7FB"/>
-        <SolidColorBrush x:Key="Col.Card"   Color="#FFFFFFFF"/>
-        <SolidColorBrush x:Key="Col.Border" Color="#E5E7EB"/>
-        <SolidColorBrush x:Key="Col.Text"   Color="#111827"/>
-        <SolidColorBrush x:Key="Col.Muted"  Color="#6B7280"/>
-        <SolidColorBrush x:Key="Col.Accent" Color="#3B82F6"/>
-        <SolidColorBrush x:Key="Col.Danger" Color="#EF4444"/>
-        <SolidColorBrush x:Key="Col.Warn"   Color="#F59E0B"/>
-        <SolidColorBrush x:Key="Col.Success" Color="#10B981"/>
+        <SolidColorBrush x:Key="Col.Page"     Color="#F6F7FB"/>
+        <SolidColorBrush x:Key="Col.Card"     Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Col.Border"   Color="#E5E7EB"/>
+        <SolidColorBrush x:Key="Col.Text"     Color="#0F172A"/>
+        <SolidColorBrush x:Key="Col.Muted"    Color="#6B7280"/>
+        <SolidColorBrush x:Key="Col.Accent"   Color="#3B82F6"/>
+        <SolidColorBrush x:Key="Col.Danger"   Color="#EF4444"/>
+        <SolidColorBrush x:Key="Col.Warn"     Color="#F59E0B"/>
+        <SolidColorBrush x:Key="Col.Success"  Color="#10B981"/>
 
+        <!-- DataGrid helpers -->
+        <SolidColorBrush x:Key="Col.HeaderBg" Color="#F3F4F6"/>
+        <SolidColorBrush x:Key="Col.HeaderFg" Color="#374151"/>
+        <SolidColorBrush x:Key="Col.RowAlt"   Color="#FAFAFD"/>
+        <SolidColorBrush x:Key="Col.RowHover" Color="#F0F7FF"/>
+        <SolidColorBrush x:Key="Col.RowSel"   Color="#DBEAFE"/>
+        <SolidColorBrush x:Key="Col.GridLine" Color="#D9DCE3"/>
+
+        <!-- Card with subtle shadow -->
         <Style x:Key="Card" TargetType="Border">
             <Setter Property="Background" Value="{StaticResource Col.Card}"/>
             <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="16"/>
-            <Setter Property="SnapsToDevicePixels" Value="True"/>
-            <Setter Property="Margin" Value="12,0,12,12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="16,0,16,16"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#33000000" BlurRadius="14" ShadowDepth="1" Opacity="0.35"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Typography -->
+        <Style x:Key="H1" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
+        </Style>
+        <Style x:Key="Subtle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Col.Muted}"/>
+            <Setter Property="FontSize" Value="13.5"/>
         </Style>
 
         <Style x:Key="LabelText" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource Col.Muted}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,10,0,4"/>
+            <Setter Property="FontSize" Value="14.5"/>
+            <Setter Property="Margin" Value="0,12,0,6"/>
         </Style>
         <Style x:Key="ValueText" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
+            <Setter Property="FontSize" Value="16"/>
         </Style>
 
+        <!-- Inputs -->
         <Style x:Key="ReadOnlyBox" TargetType="TextBox">
-            <Setter Property="Height" Value="36"/>
-            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Padding" Value="12,8"/>
             <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Background" Value="#FAFAFA"/>
@@ -48,12 +81,14 @@
         </Style>
 
         <Style x:Key="InputBox" TargetType="TextBox">
-            <Setter Property="Height" Value="36"/>
-            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Padding" Value="12,8"/>
             <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Background" Value="White"/>
             <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Style.Triggers>
                 <Trigger Property="IsKeyboardFocusWithin" Value="True">
                     <Setter Property="BorderBrush" Value="{StaticResource Col.Accent}"/>
@@ -61,17 +96,20 @@
             </Style.Triggers>
         </Style>
 
+        <!-- Status pill -->
         <Style x:Key="Pill" TargetType="Border">
             <Setter Property="CornerRadius" Value="999"/>
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="MinHeight" Value="28"/>
-            <Setter Property="Background" Value="#F3F4F6"/>
+            <Setter Property="Padding" Value="14,7"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="Background" Value="#EEF2FF"/>
         </Style>
 
+        <!-- Buttons -->
         <Style x:Key="PrimaryButton" TargetType="Button">
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="MinWidth" Value="120"/>
-            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="MinWidth" Value="132"/>
+            <Setter Property="FontSize" Value="14.5"/>
+            <Setter Property="Padding" Value="16,10"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Background" Value="#4CAF50"/>
             <Setter Property="Foreground" Value="White"/>
@@ -83,37 +121,71 @@
         </Style>
         <Style x:Key="CancelButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
             <Setter Property="Background" Value="#F44336"/>
-            <Setter Property="MinWidth" Value="100"/>
-            <Setter Property="Height" Value="38"/>
+            <Setter Property="MinWidth" Value="112"/>
+            <Setter Property="Height" Value="42"/>
         </Style>
 
+        <!-- DataGrid: professional & readable -->
         <Style TargetType="DataGrid">
+            <Setter Property="FontSize" Value="14.5"/>
             <Setter Property="HeadersVisibility" Value="Column"/>
             <Setter Property="AutoGenerateColumns" Value="False"/>
             <Setter Property="CanUserAddRows" Value="False"/>
             <Setter Property="CanUserDeleteRows" Value="False"/>
             <Setter Property="CanUserResizeRows" Value="False"/>
             <Setter Property="RowHeaderWidth" Value="0"/>
-            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-            <Setter Property="Margin" Value="0,8,0,0"/>
+            <Setter Property="GridLinesVisibility" Value="All"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource Col.GridLine}"/>
+            <Setter Property="VerticalGridLinesBrush" Value="{StaticResource Col.GridLine}"/>
+            <Setter Property="AlternationCount" Value="2"/>
+            <Setter Property="AlternatingRowBackground" Value="{StaticResource Col.RowAlt}"/>
+            <Setter Property="Margin" Value="0,10,0,0"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
         </Style>
+
         <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#F3F4F6"/>
-            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="Background" Value="{StaticResource Col.HeaderBg}"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.HeaderFg}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
-            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Height" Value="44"/>
         </Style>
+
         <Style TargetType="DataGridRow">
-            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
             <Setter Property="SnapsToDevicePixels" Value="True"/>
-            <Setter Property="Height" Value="34"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource Col.RowHover}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{StaticResource Col.RowSel}"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
+
+        <!-- Stronger column separation + centered content -->
         <Style TargetType="DataGridCell">
-            <Setter Property="Padding" Value="8,0"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,2"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.GridLine}"/>
+            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Center text in cell templates -->
+        <Style x:Key="CenteredCellText" TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0"/>
         </Style>
     </UserControl.Resources>
 
@@ -125,17 +197,14 @@
         </Grid.RowDefinitions>
 
         <!-- Header Card -->
-        <Border Style="{StaticResource Card}" Grid.Row="0" Padding="14">
+        <Border Style="{StaticResource Card}" Grid.Row="0">
             <DockPanel LastChildFill="False">
-                <StackPanel Orientation="Vertical" DockPanel.Dock="Left">
-                    <TextBlock x:Name="FormHeader"
-                               FontSize="20"
-                               FontWeight="Bold"
-                               Foreground="{StaticResource Col.Text}"/>
-                    <TextBlock Text="Manage inventory item" Foreground="{StaticResource Col.Muted}" Margin="0,4,0,0"/>
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Left" Margin="2,0">
+                    <TextBlock x:Name="FormHeader" Style="{StaticResource H1}"/>
+                    <TextBlock Text="Manage inventory item" Style="{StaticResource Subtle}" Margin="0,6,0,0"/>
                 </StackPanel>
 
-                <!-- CENTERED pill text -->
+                <!-- Status pill (centered text) -->
                 <Border x:Name="StatusPill"
                         DockPanel.Dock="Right"
                         Style="{StaticResource Pill}"
@@ -160,14 +229,14 @@
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
                         <TextBlock Text="Item Type" Style="{StaticResource LabelText}"/>
-                        <TextBox x:Name="ItemTypeBox" Style="{StaticResource InputBox}" Margin="0,0,0,6"/>
+                        <TextBox x:Name="ItemTypeBox" Style="{StaticResource InputBox}" Margin="0,0,0,8"/>
 
                         <!-- Initial Quantity (create mode only) -->
                         <StackPanel x:Name="InitialQtyPanel" Margin="0,0,0,0">
                             <TextBlock Text="Initial Quantity" Style="{StaticResource LabelText}"/>
                             <TextBox x:Name="InitialQtyBox"
                                      Style="{StaticResource InputBox}"
-                                     Margin="0,0,0,6"
+                                     Margin="0,0,0,8"
                                      PreviewTextInput="InitialQtyBox_PreviewTextInput"
                                      PreviewKeyDown="InitialQtyBox_PreviewKeyDown"
                                      DataObject.Pasting="InitialQtyBox_Pasting"/>
@@ -176,14 +245,14 @@
                         <TextBlock Text="Low Stock Threshold" Style="{StaticResource LabelText}"/>
                         <TextBox x:Name="ThresholdBox"
                                  Style="{StaticResource InputBox}"
-                                 Margin="0,0,0,6"
+                                 Margin="0,0,0,8"
                                  PreviewTextInput="ThresholdBox_PreviewTextInput"
                                  PreviewKeyDown="ThresholdBox_PreviewKeyDown"
                                  DataObject.Pasting="ThresholdBox_Pasting"/>
 
                         <TextBlock Text="Note (optional)" Style="{StaticResource LabelText}"/>
                         <TextBox x:Name="NoteBox" Style="{StaticResource InputBox}"
-                                 Height="88" AcceptsReturn="True" TextWrapping="Wrap"
+                                 Height="96" AcceptsReturn="True" TextWrapping="Wrap"
                                  VerticalScrollBarVisibility="Auto"/>
                     </StackPanel>
                 </Border>
@@ -191,8 +260,8 @@
                 <!-- Snapshot + Histories (edit mode only) -->
                 <Border x:Name="SnapshotCard" Style="{StaticResource Card}" Visibility="Collapsed">
                     <StackPanel>
-                        <DockPanel LastChildFill="False" Margin="0,0,0,8">
-                            <TextBlock Text="Item Snapshot" FontSize="16" FontWeight="Bold" Foreground="{StaticResource Col.Text}" DockPanel.Dock="Left"/>
+                        <DockPanel LastChildFill="False" Margin="0,0,0,10">
+                            <TextBlock Text="Item Snapshot" FontSize="18" FontWeight="Bold" Foreground="{StaticResource Col.Text}" DockPanel.Dock="Left"/>
                         </DockPanel>
 
                         <Grid>
@@ -205,58 +274,67 @@
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
 
-                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,6">
+                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,12,8">
                                 <TextBlock Text="Available" Style="{StaticResource LabelText}"/>
-                                <TextBlock x:Name="AvailQtyInfoText" Style="{StaticResource ValueText}" FontSize="14"/>
+                                <TextBlock x:Name="AvailQtyInfoText" Style="{StaticResource ValueText}"/>
                             </StackPanel>
 
-                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,0,6">
+                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="12,0,0,8">
                                 <TextBlock Text="Used" Style="{StaticResource LabelText}"/>
-                                <TextBlock x:Name="UsedQtyInfoText" Style="{StaticResource ValueText}" FontSize="14"/>
+                                <TextBlock x:Name="UsedQtyInfoText" Style="{StaticResource ValueText}"/>
                             </StackPanel>
 
-                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,0">
+                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,12,0">
                                 <TextBlock Text="Last Restocked" Style="{StaticResource LabelText}"/>
                                 <TextBlock x:Name="LastRestockedInfoText" Style="{StaticResource ValueText}" Text="—"/>
                             </StackPanel>
 
-                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,0,0,0">
+                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="12,0,0,0">
                                 <TextBlock Text="Last Used" Style="{StaticResource LabelText}"/>
                                 <TextBlock x:Name="LastUsedInfoText" Style="{StaticResource ValueText}" Text="—"/>
                             </StackPanel>
                         </Grid>
 
                         <Border x:Name="StatusInfoBar"
-                                Margin="0,10,0,0"
-                                Padding="10"
+                                Margin="0,12,0,0"
+                                Padding="12"
                                 CornerRadius="10"
                                 Background="#FFF7ED"
                                 BorderBrush="#FED7AA"
                                 BorderThickness="1"
                                 Visibility="Collapsed">
-                            <TextBlock x:Name="StatusInfoText" Foreground="#9A3412"/>
+                            <TextBlock x:Name="StatusInfoText" Foreground="#9A3412" FontSize="14"/>
                         </Border>
 
                         <!-- Usage -->
-                        <TextBlock Text="Usage History" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource Col.Muted}" Margin="0,14,0,4"/>
-                        <DataGrid x:Name="UsageGrid" IsReadOnly="True" MouseDoubleClick="UsageGrid_MouseDoubleClick" MaxHeight="240">
+                        <TextBlock Text="Usage History" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource Col.Muted}" Margin="0,16,0,6"/>
+                        <DataGrid x:Name="UsageGrid" IsReadOnly="True" MouseDoubleClick="UsageGrid_MouseDoubleClick" MaxHeight="420">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="When"          Binding="{Binding UsedAtLocal}"    Width="160"/>
-                                <DataGridTextColumn Header="Qty Used"      Binding="{Binding Quantity}"       Width="80"/>
-                                <DataGridTextColumn Header="Service"       Binding="{Binding ServiceCol}"     Width="120"/>
-                                <DataGridTextColumn Header="Used By"       Binding="{Binding UsedByCol}"      Width="140"/>
-                                <DataGridTextColumn Header="Technician(s)" Binding="{Binding TechnicianCol}" Width="*"/>
+                                <DataGridTextColumn Header="When"          Binding="{Binding UsedAtLocal}"    Width="180"
+                                                    ElementStyle="{StaticResource CenteredCellText}"/>
+                                <DataGridTextColumn Header="Qty Used"      Binding="{Binding Quantity}"       Width="90"
+                                                    ElementStyle="{StaticResource CenteredCellText}"/>
+                                <DataGridTextColumn Header="Service"       Binding="{Binding ServiceCol}"     Width="140"
+                                                    ElementStyle="{StaticResource CenteredCellText}"/>
+                                <DataGridTextColumn Header="Used By"       Binding="{Binding UsedByCol}"      Width="160"
+                                                    ElementStyle="{StaticResource CenteredCellText}"/>
+                                <DataGridTextColumn Header="Technician(s)" Binding="{Binding TechnicianCol}" Width="*"
+                                                    ElementStyle="{StaticResource CenteredCellText}"/>
                             </DataGrid.Columns>
                         </DataGrid>
 
                         <!-- Restock -->
-                        <TextBlock Text="Restock History" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource Col.Muted}" Margin="0,14,0,4"/>
-                        <DataGrid x:Name="RestockGrid" IsReadOnly="True" MaxHeight="240">
+                        <TextBlock Text="Restock History" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource Col.Muted}" Margin="0,16,0,6"/>
+                        <DataGrid x:Name="RestockGrid" IsReadOnly="True" MaxHeight="420">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="When"     Binding="{Binding RestockedLocal}" Width="160"/>
-                                <DataGridTextColumn Header="Qty"      Binding="{Binding Quantity}"       Width="80"/>
-                                <DataGridTextColumn Header="By"       Binding="{Binding CreatedByName}"  Width="160"/>
-                                <DataGridTextColumn Header="Note"     Binding="{Binding Note}"           Width="*"/>
+                                <DataGridTextColumn Header="When"     Binding="{Binding RestockedLocal}" Width="180"
+                                                    ElementStyle="{StaticResource CenteredCellText}"/>
+                                <DataGridTextColumn Header="Qty"      Binding="{Binding Quantity}"       Width="90"
+                                                    ElementStyle="{StaticResource CenteredCellText}"/>
+                                <DataGridTextColumn Header="By"       Binding="{Binding CreatedByName}"  Width="180"
+                                                    ElementStyle="{StaticResource CenteredCellText}"/>
+                                <DataGridTextColumn Header="Note"     Binding="{Binding Note}"           Width="*"
+                                                    ElementStyle="{StaticResource CenteredCellText}"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>
@@ -265,11 +343,11 @@
         </ScrollViewer>
 
         <!-- Footer Buttons -->
-        <Border Style="{StaticResource Card}" Grid.Row="2" Padding="12">
+        <Border Style="{StaticResource Card}" Grid.Row="2" Padding="16">
             <DockPanel LastChildFill="False">
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                    <Button x:Name="SaveButton" Content="✔ Save Changes" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Click="Save_Click"/>
-                    <Button Content="✖ Cancel" Style="{StaticResource CancelButton}" Margin="0,0,10,0" Click="Cancel_Click"/>
+                    <Button x:Name="SaveButton" Content="✔ Save Changes" Style="{StaticResource PrimaryButton}" Margin="0,0,12,0" Click="Save_Click"/>
+                    <Button Content="✖ Cancel" Style="{StaticResource CancelButton}" Margin="0,0,12,0" Click="Cancel_Click"/>
                     <Button x:Name="DeleteButton" Content="🗑 Delete" Style="{StaticResource DangerButton}" Visibility="Collapsed" Click="Delete_Click"/>
                 </StackPanel>
             </DockPanel>

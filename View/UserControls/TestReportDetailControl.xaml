@@ -5,16 +5,94 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             Background="White"
-             d:DesignHeight="500"
-             d:DesignWidth="440">
+             Background="#F7F9FC"
+             FontFamily="Segoe UI"
+             FontSize="14"
+             SnapsToDevicePixels="True"
+             UseLayoutRounding="True"
+             TextOptions.TextFormattingMode="Ideal"
+             TextOptions.TextRenderingMode="ClearType"
+             d:DesignHeight="780"
+             d:DesignWidth="1100"
+             MinHeight="720"
+             MinWidth="960">
 
-    <Border Padding="25"
-            CornerRadius="10"
-            BorderBrush="#DDD"
+    <UserControl.Resources>
+        <!-- Palette -->
+        <SolidColorBrush x:Key="Col.Page"   Color="#F7F9FC"/>
+        <SolidColorBrush x:Key="Col.Card"   Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Col.Border" Color="#E5E7EB"/>
+        <SolidColorBrush x:Key="Col.Text"   Color="#1F2937"/>
+        <SolidColorBrush x:Key="Col.Muted"  Color="#6B7280"/>
+        <SolidColorBrush x:Key="Col.Accent" Color="#2563EB"/>
+
+        <!-- Section header -->
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
+        <!-- Field label -->
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.Muted}"/>
+            <Setter Property="Margin" Value="0,8,0,4"/>
+        </Style>
+
+        <!-- Readonly TextBox -->
+        <Style TargetType="TextBox">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="Background" Value="#FAFAFA"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- DataGrid modern look -->
+        <Style TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="CanUserDeleteRows" Value="False"/>
+            <Setter Property="CanUserResizeRows" Value="False"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="GridLinesVisibility" Value="None"/>
+            <Setter Property="RowHeight" Value="32"/>
+            <Setter Property="ColumnHeaderHeight" Value="36"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="AlternationCount" Value="2"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        </Style>
+
+        <!-- Wrap text inside DataGrid cells -->
+        <Style x:Key="CellWrap" TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Padding" Value="6,0,6,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Card container -->
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource Col.Card}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="18"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Padding="24"
+            CornerRadius="12"
+            BorderBrush="{StaticResource Col.Border}"
             BorderThickness="1"
-            Background="White"
-            SnapsToDevicePixels="True">
+            Background="{StaticResource Col.Card}"
+            Margin="20">
 
         <Grid>
             <Grid.RowDefinitions>
@@ -24,54 +102,175 @@
             </Grid.RowDefinitions>
 
             <!-- Header -->
-            <TextBlock x:Name="FormHeader"
-                       Grid.Row="0"
-                       FontSize="18"
-                       FontWeight="Bold"
-                       Foreground="#2E3B4E"
-                       Margin="0,0,0,20"
-                       Text="📄 Test Report Details"/>
+            <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,16">
+                <TextBlock x:Name="FormHeader"
+                           DockPanel.Dock="Left"
+                           Text="📄 Test Report Details"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource Col.Text}"/>
+            </DockPanel>
 
-            <!-- Report Details -->
-            <ScrollViewer Grid.Row="1">
-                <StackPanel VerticalAlignment="Top">
-                    <TextBlock Text="Household ID" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="HouseholdIDBox" Height="32" Margin="0,0,0,12" IsReadOnly="True"/>
+            <!-- Content -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
 
-                    <TextBlock Text="Technician ID" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="TechnicianIDBox" Height="32" Margin="0,0,0,12" IsReadOnly="True"/>
+                    <!-- Primary Info -->
+                    <Border Style="{StaticResource Card}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                            </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Test Date" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="TestDateBox" Height="32" Margin="0,0,0,12" IsReadOnly="True"/>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                    <TextBlock Text="Device Status" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="DeviceStatusBox" Height="32" Margin="0,0,0,12" IsReadOnly="True"/>
+                            <TextBlock Text="Primary Info" Style="{StaticResource SectionHeader}" Grid.ColumnSpan="4"/>
 
-                    <TextBlock Text="Inspection Items" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="InspectionItemsBox" Height="80" Margin="0,0,0,12" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True"/>
+                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Household ID" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="HouseholdIDBox"/>
+                            </StackPanel>
 
-                    <TextBlock Text="Annotations" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="AnnotationsBox" Height="80" Margin="0,0,0,12" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True"/>
+                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,12,0">
+                                <TextBlock Text="Technician ID" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="TechnicianIDBox"/>
+                            </StackPanel>
 
-                    <TextBlock Text="Settings Verification" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="SettingsVerificationBox" Height="80" Margin="0,0,0,12" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True"/>
+                            <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,12,0">
+                                <TextBlock Text="Test Date" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="TestDateBox"/>
+                            </StackPanel>
 
-                    <TextBlock Text="Image Paths" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="ImagePathsBox" Height="60" Margin="0,0,0,12" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True"/>
+                            <StackPanel Grid.Row="1" Grid.Column="3">
+                                <TextBlock Text="Device Status" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="DeviceStatusBox"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Inspection Items -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Inspection Items" Style="{StaticResource SectionHeader}"/>
+
+                            <DataGrid x:Name="InspectionGrid"
+                                      MinHeight="160"
+                                      ColumnWidth="*"
+                                      AlternatingRowBackground="#FCFCFC">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Item" Binding="{Binding Name}">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource CellWrap}"/>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+
+                                    <DataGridTextColumn Header="Result" Binding="{Binding Result}">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource CellWrap}"/>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+
+                                    <DataGridTextColumn Header="Annotation" Binding="{Binding Annotation}">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource CellWrap}"/>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <!-- Original TextBox kept (hidden) -->
+                            <TextBox x:Name="InspectionItemsBox" Visibility="Collapsed"
+                                     Height="80" TextWrapping="Wrap" AcceptsReturn="True"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Annotations -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Annotations" Style="{StaticResource SectionHeader}"/>
+                            <TextBox x:Name="AnnotationsBox" Height="120" TextWrapping="Wrap" AcceptsReturn="True"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Settings Verification -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Settings Verification" Style="{StaticResource SectionHeader}"/>
+
+                            <DataGrid x:Name="SettingsGrid"
+                                      MinHeight="160"
+                                      ColumnWidth="*"
+                                      AlternatingRowBackground="#FCFCFC">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Parameter" Binding="{Binding Parameter}">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource CellWrap}"/>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+
+                                    <DataGridTextColumn Header="Value" Binding="{Binding Value}">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource CellWrap}"/>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+
+                                    <DataGridTextColumn Header="Status" Binding="{Binding Status}">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource CellWrap}"/>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <!-- Original TextBox kept (hidden) -->
+                            <TextBox x:Name="SettingsVerificationBox" Visibility="Collapsed"
+                                     Height="80" TextWrapping="Wrap" AcceptsReturn="True"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Image Paths -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Image Paths" Style="{StaticResource SectionHeader}"/>
+                            <ListBox x:Name="ImagePathsList" MinHeight="100"
+                                     BorderBrush="{StaticResource Col.Border}" BorderThickness="1">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" Padding="6,3"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <!-- Original TextBox kept (hidden) -->
+                            <TextBox x:Name="ImagePathsBox" Visibility="Collapsed"
+                                     Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+                        </StackPanel>
+                    </Border>
+
                 </StackPanel>
             </ScrollViewer>
 
-            <!-- Export Button -->
-            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                <Button x:Name="ExportButton"
-                        Content="📤 Export PDF"
-                        Width="140"
-                        Height="36"
-                        FontWeight="Bold"
-                        Background="#2196F3"
-                        Foreground="White"
-                        Click="ExportButton_Click"/>
-            </StackPanel>
+            <!-- Footer -->
+            <DockPanel Grid.Row="2" Margin="0,16,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" DockPanel.Dock="Right">
+                    <Button x:Name="ExportButton"
+                            Content="📤 Export PDF"
+                            Width="160"
+                            Height="40"
+                            FontWeight="Bold"
+                            Background="#2563EB"
+                            Foreground="White"
+                            BorderBrush="#1E40AF"
+                            BorderThickness="1"
+                            Click="ExportButton_Click"/>
+                </StackPanel>
+            </DockPanel>
         </Grid>
     </Border>
 </UserControl>

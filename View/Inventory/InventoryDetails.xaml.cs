@@ -101,7 +101,6 @@ namespace HouseholdMS.View.Inventory
             }
         }
 
-        // Get latest restock timestamp (UTC string) from ItemRestock for this item
         private static string GetLatestRestockUtcString(SQLiteConnection openConn, int itemId)
         {
             try
@@ -128,11 +127,10 @@ namespace HouseholdMS.View.Inventory
 
         private void UpdateComputedFieldsAndStatus()
         {
-            int available = _totalQty - _usedQty;
+            int available = _totalQty;
             if (available < 0) available = 0;
             AvailQtyBox.Text = available.ToString(CultureInfo.InvariantCulture);
 
-            // Resilient resource lookup
             var danger = (Brush)(TryFindResource("DangerBrush") ?? FallbackBrush("#F44336"));
             var warn = (Brush)(TryFindResource("WarningBrush") ?? FallbackBrush("#FF9800"));
             var ok = (Brush)(TryFindResource("SuccessBrush") ?? FallbackBrush("#4CAF50"));
@@ -162,7 +160,6 @@ namespace HouseholdMS.View.Inventory
             StatusChipText.Text = status;
         }
 
-        // Convert a DB timestamp (usually UTC) to Korea Standard Time and format as "yyyy-MM-dd HH:mm"
         private static string ToKstString(string dbValue)
         {
             if (string.IsNullOrWhiteSpace(dbValue)) return "";
@@ -206,7 +203,6 @@ namespace HouseholdMS.View.Inventory
                 {
                     conn.Open();
 
-                    // NOTE: In UNION ALL, ORDER BY must reference output columns.
                     using (var cmd = new SQLiteCommand(@"
 WITH svc AS (
     SELECT 
@@ -258,8 +254,7 @@ UNION ALL
 SELECT
     UsedAt, Quantity, ServiceID, HouseholdID, TechnicianID, TechnicianNames, UsedByName
 FROM manual
-ORDER BY UsedAt DESC;  -- <-- key change: order by the output column
-", conn))
+ORDER BY UsedAt DESC;", conn))
                     {
                         cmd.Parameters.AddWithValue("@id", _itemId);
                         using (var da = new SQLiteDataAdapter(cmd))
@@ -267,7 +262,6 @@ ORDER BY UsedAt DESC;  -- <-- key change: order by the output column
                             var dt = new DataTable();
                             da.Fill(dt);
 
-                            // Friendly columns for the grid
                             if (!dt.Columns.Contains("ServiceCol"))
                                 dt.Columns.Add("ServiceCol", typeof(string));
                             if (!dt.Columns.Contains("UsedAtLocal"))
@@ -279,21 +273,17 @@ ORDER BY UsedAt DESC;  -- <-- key change: order by the output column
 
                             foreach (DataRow row in dt.Rows)
                             {
-                                // Service label
                                 var sid = row["ServiceID"] == DBNull.Value ? "" : Convert.ToString(row["ServiceID"]);
                                 row["ServiceCol"] = string.IsNullOrWhiteSpace(sid) ? "" : ("Service #" + sid);
 
-                                // Local time (KST) display
                                 var raw = row["UsedAt"] == DBNull.Value ? "" : Convert.ToString(row["UsedAt"]);
                                 row["UsedAtLocal"] = ToKstString(raw);
 
-                                // Technician name(s) (service-driven rows); show em dash if empty
                                 var techNames = dt.Columns.Contains("TechnicianNames") && row["TechnicianNames"] != DBNull.Value
                                                 ? Convert.ToString(row["TechnicianNames"])
                                                 : "";
                                 row["TechnicianCol"] = string.IsNullOrWhiteSpace(techNames) ? "—" : techNames;
 
-                                // Used By (manual rows); em dash otherwise
                                 var who = dt.Columns.Contains("UsedByName") && row["UsedByName"] != DBNull.Value
                                           ? Convert.ToString(row["UsedByName"])
                                           : "";
@@ -302,7 +292,6 @@ ORDER BY UsedAt DESC;  -- <-- key change: order by the output column
 
                             UsageGrid.ItemsSource = dt.DefaultView;
 
-                            // "Last Used" from the first row (already DESC)
                             if (dt.Rows.Count > 0)
                                 LastUsedText.Text = Convert.ToString(dt.Rows[0]["UsedAtLocal"]) ?? "—";
                             else
@@ -317,7 +306,6 @@ ORDER BY UsedAt DESC;  -- <-- key change: order by the output column
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
 
         private void LoadRestockHistory()
         {
@@ -364,7 +352,6 @@ ORDER BY datetime(RestockedAt) DESC;", conn))
             }
         }
 
-        // === Open service details by double-clicking a usage row (only when ServiceID present) ===
         private void UsageGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var drv = UsageGrid?.SelectedItem as DataRowView;
@@ -392,7 +379,7 @@ ORDER BY datetime(RestockedAt) DESC;", conn))
                 Owner = this,
                 Width = 560,
                 Height = 700,
-                ResizeMode = ResizeMode.NoResize,
+                ResizeMode = System.Windows.ResizeMode.NoResize,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 ShowInTaskbar = false
             };

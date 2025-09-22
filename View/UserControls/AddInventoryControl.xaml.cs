@@ -29,6 +29,9 @@ namespace HouseholdMS.View.UserControls
         {
             InitializeComponent();
 
+            // Ensure the host window is large enough when this control is shown
+            this.Loaded += (_, __) => EnsureHostWindowSize();
+
             FormHeader.Text = "➕ Add Inventory Item";
             SaveButton.Content = "➕ Add";
 
@@ -65,6 +68,36 @@ namespace HouseholdMS.View.UserControls
                 LoadRestockHistory(item.ItemID);
                 UpdateStatusChip();
             };
+        }
+
+        /// <summary>
+        /// Make sure the window that hosts this control is big enough so all content is visible.
+        /// (No functional logic changes — just sizing.)
+        /// </summary>
+        private void EnsureHostWindowSize()
+        {
+            var win = Window.GetWindow(this);
+            if (win == null) return;
+
+            // Desired sizes for comfortable viewing
+            const double desiredWidth = 1200;
+            const double desiredHeight = 860;
+
+            if (double.IsNaN(win.Width) || win.Width < desiredWidth) win.Width = desiredWidth;
+            if (double.IsNaN(win.Height) || win.Height < desiredHeight) win.Height = desiredHeight;
+
+            // Respect any existing minimums but keep ours if larger
+            win.MinWidth = Math.Max(win.MinWidth, 1120);
+            win.MinHeight = Math.Max(win.MinHeight, 820);
+
+            // Re-center on screen after resize if possible
+            try
+            {
+                var wa = SystemParameters.WorkArea;
+                win.Left = Math.Max(wa.Left, wa.Left + (wa.Width - win.Width) / 2);
+                win.Top = Math.Max(wa.Top, wa.Top + (wa.Height - win.Height) / 2);
+            }
+            catch { /* best effort */ }
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)
@@ -222,7 +255,7 @@ VALUES (@type, @total, 0, @date, @threshold, @note)";
             }
             catch { /* leave defaults */ }
 
-            var available = Math.Max(0, _totalQtyFromDb - _usedQtyFromDb);
+            var available = _totalQtyFromDb;
             AvailQtyInfoText.Text = available.ToString(CultureInfo.InvariantCulture);
             UsedQtyInfoText.Text = _usedQtyFromDb.ToString(CultureInfo.InvariantCulture);
             LastRestockedInfoText.Text = string.IsNullOrWhiteSpace(_lastRestockedUtc) ? "—" : ToKstString(_lastRestockedUtc);
@@ -237,7 +270,7 @@ VALUES (@type, @total, 0, @date, @threshold, @note)";
 
             int threshold = 0;
             int.TryParse(ThresholdBox.Text?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out threshold);
-            var available = Math.Max(0, _totalQtyFromDb - _usedQtyFromDb);
+            var available = _totalQtyFromDb;
 
             string label;
             Brush bg;
@@ -289,8 +322,6 @@ VALUES (@type, @total, 0, @date, @threshold, @note)";
                 {
                     conn.Open();
 
-                    // Try query with ItemUsage (manual usage). If ItemUsage doesn't exist on older DBs,
-                    // fall back to service-only.
                     string sqlWithManual = @"
 WITH svc AS (
     SELECT 
@@ -378,7 +409,6 @@ ORDER BY UsedAt DESC;";
                     }
                     catch (SQLiteException)
                     {
-                        // ItemUsage table might not exist yet; use service-only.
                         using (var cmd = new SQLiteCommand(serviceOnly, conn))
                         {
                             cmd.Parameters.AddWithValue("@id", itemId);
@@ -387,7 +417,6 @@ ORDER BY UsedAt DESC;";
                         }
                     }
 
-                    // Friendly columns for the grid
                     if (!dt.Columns.Contains("ServiceCol"))
                         dt.Columns.Add("ServiceCol", typeof(string));
                     if (!dt.Columns.Contains("UsedAtLocal"))
@@ -399,21 +428,17 @@ ORDER BY UsedAt DESC;";
 
                     foreach (DataRow row in dt.Rows)
                     {
-                        // Service label
                         var sid = row["ServiceID"] == DBNull.Value ? "" : Convert.ToString(row["ServiceID"], CultureInfo.InvariantCulture);
                         row["ServiceCol"] = string.IsNullOrWhiteSpace(sid) ? "" : ("Service #" + sid);
 
-                        // Local time (KST) display
                         var raw = row["UsedAt"] == DBNull.Value ? "" : Convert.ToString(row["UsedAt"], CultureInfo.InvariantCulture);
                         row["UsedAtLocal"] = ToKstString(raw);
 
-                        // Technician name(s)
                         var names = row.Table.Columns.Contains("TechnicianNames") && row["TechnicianNames"] != DBNull.Value
                             ? Convert.ToString(row["TechnicianNames"], CultureInfo.InvariantCulture)
                             : "";
                         row["TechnicianCol"] = string.IsNullOrWhiteSpace(names) ? "—" : names;
 
-                        // Used By (manual usage only)
                         var who = row.Table.Columns.Contains("UsedByName") && row["UsedByName"] != DBNull.Value
                             ? Convert.ToString(row["UsedByName"], CultureInfo.InvariantCulture)
                             : "";

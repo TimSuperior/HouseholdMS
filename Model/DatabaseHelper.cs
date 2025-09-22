@@ -271,8 +271,8 @@ CREATE TABLE IF NOT EXISTS TestReports (
     SettingsVerification TEXT,
     ImagePaths           TEXT,
     DeviceStatus         TEXT,
-    FOREIGN KEY (HouseholdID)  REFERENCES Households(HouseholdID) ON DELETE CASCADE,
-    FOREIGN KEY (TechnicianID) REFERENCES Users(UserID)           ON DELETE CASCADE
+    FOREIGN KEY (HouseholdID)  REFERENCES Households(HouseholdsID) ON DELETE CASCADE,
+    FOREIGN KEY (TechnicianID) REFERENCES Users(UserID)             ON DELETE CASCADE
 );
 
 /* Role/approval checks (unchanged) */
@@ -343,15 +343,17 @@ BEGIN
 END;
 
 /* Views */
-CREATE VIEW IF NOT EXISTS v_ItemOnHand AS
-SELECT ItemID,
-       (TotalQuantity - UsedQuantity) AS OnHand,
-       TotalQuantity,
-       UsedQuantity,
-       LastRestockedDate,
-       LowStockThreshold,
-       ItemType,
-       Note
+DROP VIEW IF EXISTS v_ItemOnHand;
+CREATE VIEW v_ItemOnHand AS
+SELECT
+    ItemID,
+    TotalQuantity AS OnHand,      -- <- single source of truth
+    TotalQuantity,
+    UsedQuantity,
+    LastRestockedDate,
+    LowStockThreshold,
+    ItemType,
+    Note
 FROM StockInventory;
 
 /* REPLACED: include manual uses too */
@@ -444,5 +446,99 @@ FROM ItemUsage u;
             }
         }
 
+        // -----------------------------
+        // Convenience helpers (optional)
+        // -----------------------------
+
+        /// <summary>
+        /// Atomically consumes stock from an item (TotalQuantity -= qty, UsedQuantity += qty),
+        /// and logs into ItemUsage in a single transaction.
+        /// Returns false if there is not enough stock.
+        /// </summary>
+        public static bool TryConsumeStock(int itemId, int qty, string usedByName = null, string reason = null)
+        {
+            if (itemId <= 0) throw new ArgumentOutOfRangeException(nameof(itemId));
+            if (qty <= 0) throw new ArgumentOutOfRangeException(nameof(qty));
+
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                using (var tx = conn.BeginTransaction())
+                {
+                    // Atomic subtract with guard
+                    using (var cmd = new SQLiteCommand(@"
+                        UPDATE StockInventory
+                        SET TotalQuantity = TotalQuantity - @qty,
+                            UsedQuantity  = UsedQuantity + @qty
+                        WHERE ItemID = @id AND TotalQuantity >= @qty;", conn, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@qty", qty);
+                        cmd.Parameters.AddWithValue("@id", itemId);
+                        var affected = cmd.ExecuteNonQuery();
+                        if (affected == 0)
+                        {
+                            tx.Rollback();
+                            return false;
+                        }
+                    }
+
+                    // Log manual usage (optional; keeps your existing table)
+                    using (var cmd2 = new SQLiteCommand(@"
+                        INSERT INTO ItemUsage (ItemID, Quantity, UsedAt, UsedByName, Reason)
+                        VALUES (@id, @qty, datetime('now'), @by, @reason);", conn, tx))
+                    {
+                        cmd2.Parameters.AddWithValue("@id", itemId);
+                        cmd2.Parameters.AddWithValue("@qty", qty);
+                        cmd2.Parameters.AddWithValue("@by", string.IsNullOrWhiteSpace(usedByName) ? (object)DBNull.Value : usedByName.Trim());
+                        cmd2.Parameters.AddWithValue("@reason", string.IsNullOrWhiteSpace(reason) ? (object)DBNull.Value : reason.Trim());
+                        cmd2.ExecuteNonQuery();
+                    }
+
+                    tx.Commit();
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Atomically restocks an item and writes to ItemRestock.
+        /// </summary>
+        public static void RestockItem(int itemId, int qty, string createdByName = null, string note = null)
+        {
+            if (itemId <= 0) throw new ArgumentOutOfRangeException(nameof(itemId));
+            if (qty <= 0) throw new ArgumentOutOfRangeException(nameof(qty));
+
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                using (var tx = conn.BeginTransaction())
+                {
+                    using (var cmd = new SQLiteCommand(@"
+                        UPDATE StockInventory
+                        SET TotalQuantity = TotalQuantity + @qty,
+                            LastRestockedDate = @now
+                        WHERE ItemID = @id;", conn, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@qty", qty);
+                        cmd.Parameters.AddWithValue("@now", DateTime.Now.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@id", itemId);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    using (var cmd2 = new SQLiteCommand(@"
+                        INSERT INTO ItemRestock (ItemID, Quantity, RestockedAt, CreatedByName, Note)
+                        VALUES (@id, @qty, datetime('now'), @by, @note);", conn, tx))
+                    {
+                        cmd2.Parameters.AddWithValue("@id", itemId);
+                        cmd2.Parameters.AddWithValue("@qty", qty);
+                        cmd2.Parameters.AddWithValue("@by", string.IsNullOrWhiteSpace(createdByName) ? (object)DBNull.Value : createdByName.Trim());
+                        cmd2.Parameters.AddWithValue("@note", string.IsNullOrWhiteSpace(note) ? (object)DBNull.Value : note.Trim());
+                        cmd2.ExecuteNonQuery();
+                    }
+
+                    tx.Commit();
+                }
+            }
+        }
     }
 }

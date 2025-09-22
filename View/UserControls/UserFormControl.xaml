@@ -1,39 +1,91 @@
-﻿<UserControl x:Class="HouseholdMS.View.UserControls.UserFormControl" 
+﻿<UserControl x:Class="HouseholdMS.View.UserControls.UserFormControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:System="clr-namespace:System;assembly=mscorlib"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             Background="White"
-             d:DesignHeight="600"
-             d:DesignWidth="480">
+             Background="#F6F7FB"
+             FontFamily="Segoe UI"
+             FontSize="14"
+             SnapsToDevicePixels="True"
+             UseLayoutRounding="True"
+             TextOptions.TextFormattingMode="Ideal"
+             TextOptions.TextRenderingMode="ClearType"
+             d:DesignHeight="760"
+             d:DesignWidth="980"
+             MinHeight="720"
+             MinWidth="960">
 
-    <Border Padding="22"
-            CornerRadius="12"
-            BorderBrush="#e0e0e0"
+    <Border Padding="28"
+            CornerRadius="16"
+            BorderBrush="#E5E7EB"
             BorderThickness="1"
             Background="White"
-            SnapsToDevicePixels="True">
+            SnapsToDevicePixels="True"
+            Margin="12">
+        <!-- Inline shadow (no DynamicResource) -->
+        <Border.Effect>
+            <DropShadowEffect Opacity="0.18" ShadowDepth="2" BlurRadius="16" Direction="270"/>
+        </Border.Effect>
 
         <Grid>
+            <!-- ===== RESOURCES ===== -->
             <Grid.Resources>
+                <!-- Palette -->
+                <SolidColorBrush x:Key="Col.Text"     Color="#1F2937"/>
+                <SolidColorBrush x:Key="Col.Muted"    Color="#6B7280"/>
+                <SolidColorBrush x:Key="Col.Border"   Color="#E5E7EB"/>
+                <SolidColorBrush x:Key="Col.Focus"    Color="#2563EB"/>
+                <SolidColorBrush x:Key="Col.Danger"   Color="#DC2626"/>
+                <SolidColorBrush x:Key="Col.Success"  Color="#16A34A"/>
+
+                <!-- Label -->
+                <Style x:Key="Lbl" TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="Margin" Value="0,12,0,6"/>
+                </Style>
+
+                <!-- Input style (TextBox/ComboBox/PasswordBox) with Tag="error" highlight -->
                 <Style x:Key="ErrorBoxStyle" TargetType="Control">
-                    <Setter Property="BorderBrush" Value="#C0C0C0"/>
+                    <Setter Property="Height" Value="38"/>
+                    <Setter Property="FontSize" Value="14"/>
+                    <Setter Property="Padding" Value="10,6"/>
+                    <Setter Property="Margin" Value="0,0,0,12"/>
+                    <Setter Property="Background" Value="White"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
                     <Setter Property="BorderThickness" Value="1"/>
+                    <Setter Property="SnapsToDevicePixels" Value="True"/>
                     <Style.Triggers>
-                        <Trigger Property="Tag" Value="error">
-                            <Setter Property="BorderBrush" Value="Red"/>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter Property="BorderBrush" Value="{StaticResource Col.Focus}"/>
                             <Setter Property="BorderThickness" Value="1.5"/>
+                        </Trigger>
+                        <Trigger Property="Tag" Value="error">
+                            <Setter Property="BorderBrush" Value="{StaticResource Col.Danger}"/>
+                            <Setter Property="BorderThickness" Value="1.5"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.75"/>
                         </Trigger>
                     </Style.Triggers>
                 </Style>
-                <Style x:Key="Lbl" TargetType="TextBlock">
+
+                <!-- Footer buttons -->
+                <Style x:Key="FooterBtn" TargetType="Button">
+                    <Setter Property="Height" Value="42"/>
+                    <Setter Property="MinWidth" Value="120"/>
+                    <Setter Property="Padding" Value="14,8"/>
+                    <Setter Property="Margin" Value="0,0,12,0"/>
                     <Setter Property="FontWeight" Value="SemiBold"/>
-                    <Setter Property="Margin" Value="0,8,0,4"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="SnapsToDevicePixels" Value="True"/>
                 </Style>
             </Grid.Resources>
 
+            <!-- ===== LAYOUT ===== -->
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -41,96 +93,128 @@
             </Grid.RowDefinitions>
 
             <!-- Header -->
-            <TextBlock x:Name="FormHeader"
-                       Grid.Row="0"
-                       FontSize="18"
-                       FontWeight="Bold"
-                       Foreground="#2E3B4E"
-                       Margin="0,0,0,10"
-                       Text="✏ Edit User"/>
-
-            <!-- Form Fields -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <StackPanel>
-
-                    <TextBlock Text="Name" Style="{StaticResource Lbl}"/>
-                    <TextBox x:Name="NameBox" Height="32" Style="{StaticResource ErrorBoxStyle}"/>
-
-                    <TextBlock Text="Username" Style="{StaticResource Lbl}"/>
-                    <TextBox x:Name="UsernameBox" Height="32" Style="{StaticResource ErrorBoxStyle}"/>
-
-                    <TextBlock Text="Role" Style="{StaticResource Lbl}"/>
-                    <ComboBox x:Name="RoleComboBox" Height="32" Style="{StaticResource ErrorBoxStyle}">
-                        <ComboBoxItem Content="Guest"/>
-                        <ComboBoxItem Content="Technician"/>
-                        <ComboBoxItem Content="Admin"/>
-                    </ComboBox>
-
-                    <!-- Passwords -->
-                    <!-- Required on ADD. Optional on EDIT (but if provided, must pass rules). -->
-                    <TextBlock x:Name="PasswordLabel" Text="Password (required on add)" Style="{StaticResource Lbl}"/>
-                    <PasswordBox x:Name="PasswordBox" Height="32" Style="{StaticResource ErrorBoxStyle}"/>
-
-                    <TextBlock Text="Confirm Password" Style="{StaticResource Lbl}"/>
-                    <PasswordBox x:Name="ConfirmPasswordBox" Height="32" Style="{StaticResource ErrorBoxStyle}"/>
-
-                    <!-- Password rules note (same logic as Login/Register) -->
-                    <TextBlock Margin="0,4,0,8"
+            <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,16">
+                <TextBlock x:Name="FormHeader"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource Col.Text}"
+                           Text="✏ Edit User"
+                           VerticalAlignment="Center"
+                           Margin="0,0,12,0"/>
+                <Border Background="#EEF2FF"
+                        BorderBrush="#E0E7FF"
+                        BorderThickness="1"
+                        Padding="8,4"
+                        CornerRadius="8"
+                        VerticalAlignment="Center">
+                    <TextBlock Foreground="#4F46E5"
                                FontSize="12"
-                               Foreground="#666666"
-                               TextWrapping="Wrap">
-                        Password must be longer than 6 characters and include at least one number or symbol. 
-                        It cannot be the same as the Name or the Username.
-                    </TextBlock>
+                               Text="Fill required fields • Strong password recommended"/>
+                </Border>
+            </DockPanel>
 
-                    <Separator Margin="0,10,0,6"/>
+            <!-- Form (scrollable) -->
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <!-- FIX: 2 rows inside; row 0 has two columns, row 1 holds the Note -->
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="24"/>
+                        <!-- spacer -->
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Phone (Technician required)" Style="{StaticResource Lbl}"/>
-                    <TextBox x:Name="PhoneBox" Height="32" Style="{StaticResource ErrorBoxStyle}"/>
+                    <!-- LEFT COLUMN -->
+                    <StackPanel Grid.Row="0" Grid.Column="0">
+                        <TextBlock Text="Name" Style="{StaticResource Lbl}"/>
+                        <TextBox x:Name="NameBox" Style="{StaticResource ErrorBoxStyle}"/>
 
-                    <TextBlock Text="Address (Technician required)" Style="{StaticResource Lbl}"/>
-                    <TextBox x:Name="AddressBox" Height="32" Style="{StaticResource ErrorBoxStyle}"/>
+                        <TextBlock Text="Username" Style="{StaticResource Lbl}"/>
+                        <TextBox x:Name="UsernameBox" Style="{StaticResource ErrorBoxStyle}"/>
 
-                    <TextBlock Text="Assigned Area (Technician required)" Style="{StaticResource Lbl}"/>
-                    <TextBox x:Name="AreaBox" Height="32" Style="{StaticResource ErrorBoxStyle}"/>
+                        <TextBlock Text="Role" Style="{StaticResource Lbl}"/>
+                        <ComboBox x:Name="RoleComboBox" Style="{StaticResource ErrorBoxStyle}">
+                            <ComboBoxItem Content="Guest"/>
+                            <ComboBoxItem Content="Technician"/>
+                            <ComboBoxItem Content="Admin"/>
+                        </ComboBox>
 
-                    <TextBlock Text="Note" Style="{StaticResource Lbl}"/>
-                    <TextBox x:Name="NoteBox" Height="60" AcceptsReturn="True" TextWrapping="Wrap"
-                             Style="{StaticResource ErrorBoxStyle}"/>
-                </StackPanel>
+                        <TextBlock x:Name="PasswordLabel"
+                                   Text="Password (required on add)"
+                                   Style="{StaticResource Lbl}"/>
+                        <PasswordBox x:Name="PasswordBox" Style="{StaticResource ErrorBoxStyle}"/>
+
+                        <TextBlock Text="Confirm Password" Style="{StaticResource Lbl}"/>
+                        <PasswordBox x:Name="ConfirmPasswordBox" Style="{StaticResource ErrorBoxStyle}"/>
+
+                        <Border Background="#F9FAFB"
+                                BorderBrush="{StaticResource Col.Border}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="10"
+                                Margin="0,0,0,12">
+                            <TextBlock FontSize="12"
+                                       Foreground="{StaticResource Col.Muted}"
+                                       TextWrapping="Wrap">
+                                Password must be longer than 6 characters and include at least one number or symbol.
+                                It cannot be the same as the Name or the Username.
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- RIGHT COLUMN -->
+                    <StackPanel Grid.Row="0" Grid.Column="2">
+                        <TextBlock Text="Phone (Technician required)" Style="{StaticResource Lbl}"/>
+                        <TextBox x:Name="PhoneBox" Style="{StaticResource ErrorBoxStyle}"/>
+
+                        <TextBlock Text="Address (Technician required)" Style="{StaticResource Lbl}"/>
+                        <TextBox x:Name="AddressBox" Style="{StaticResource ErrorBoxStyle}"/>
+
+                        <TextBlock Text="Assigned Area (Technician required)" Style="{StaticResource Lbl}"/>
+                        <TextBox x:Name="AreaBox" Style="{StaticResource ErrorBoxStyle}"/>
+                    </StackPanel>
+
+                    <!-- NOTE (own row under both columns) -->
+                    <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Margin="0,8,0,0">
+                        <Separator Margin="0,8,0,6"/>
+                        <TextBlock Text="Note" Style="{StaticResource Lbl}"/>
+                        <TextBox x:Name="NoteBox"
+                                 Height="90"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 SpellCheck.IsEnabled="True"
+                                 VerticalScrollBarVisibility="Auto"
+                                 Style="{StaticResource ErrorBoxStyle}"/>
+                    </StackPanel>
+                </Grid>
             </ScrollViewer>
 
-            <!-- Buttons -->
-            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
-                <Button x:Name="SaveButton"
-                        Content="✔ Save"
-                        Width="120"
-                        Height="36"
-                        FontWeight="Bold"
-                        Background="#4CAF50"
-                        Foreground="White"
-                        Margin="0,0,10,0"
-                        Click="Save_Click"/>
-
-                <Button Content="✖ Close"
-                        Width="100"
-                        Height="36"
-                        FontWeight="Bold"
-                        Background="#F44336"
-                        Foreground="White"
-                        Margin="0,0,10,0"
-                        Click="Cancel_Click"/>
-
-                <Button x:Name="DeleteButton"
-                        Content="🗑 Delete"
-                        Width="100"
-                        Height="36"
-                        FontWeight="Bold"
-                        Background="#9E1B1B"
-                        Foreground="White"
-                        Visibility="Collapsed"
-                        Click="Delete_Click"/>
-            </StackPanel>
+            <!-- Footer Buttons -->
+            <DockPanel Grid.Row="2" Margin="0,16,0,0" LastChildFill="False">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" DockPanel.Dock="Right">
+                    <Button x:Name="SaveButton"
+                            Content="✔ Save"
+                            Background="{StaticResource Col.Success}"
+                            Style="{StaticResource FooterBtn}"
+                            Click="Save_Click"/>
+                    <Button Content="✖ Close"
+                            Background="#F04343"
+                            Style="{StaticResource FooterBtn}"
+                            Click="Cancel_Click"/>
+                    <Button x:Name="DeleteButton"
+                            Content="🗑 Delete"
+                            Background="#9E1B1B"
+                            Style="{StaticResource FooterBtn}"
+                            Visibility="Collapsed"
+                            Click="Delete_Click"/>
+                </StackPanel>
+            </DockPanel>
         </Grid>
     </Border>
 </UserControl>

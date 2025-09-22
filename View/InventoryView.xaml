@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.InventoryView" 
+﻿<UserControl x:Class="HouseholdMS.View.InventoryView"   
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -26,6 +26,12 @@
         <SolidColorBrush x:Key="Col.GreenHover" Color="#059669"/>
         <SolidColorBrush x:Key="Col.Red" Color="#EF4444"/>
         <SolidColorBrush x:Key="Col.RedHover" Color="#DC2626"/>
+
+        <!-- NEW: background colors for row states -->
+        <SolidColorBrush x:Key="Col.RowWarnBg" Color="#FFFEF3C7"/>
+        <!-- soft yellow -->
+        <SolidColorBrush x:Key="Col.RowDangerBg" Color="#FFFDEAEA"/>
+        <!-- soft red -->
 
         <!-- Buttons -->
         <Style x:Key="ActionButtonStyle" TargetType="Button">
@@ -198,8 +204,13 @@
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.6"/>
                             </Trigger>
+
+                            <!-- NEW: yellow when below threshold (>0), red when out of stock (<=0) -->
                             <DataTrigger Binding="{Binding IsLowStock}" Value="True">
-                                <Setter TargetName="RowOuter" Property="Background" Value="#FFFDEAEA"/>
+                                <Setter TargetName="RowOuter" Property="Background" Value="{StaticResource Col.RowWarnBg}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsOutOfStock}" Value="True">
+                                <Setter TargetName="RowOuter" Property="Background" Value="{StaticResource Col.RowDangerBg}"/>
                             </DataTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -231,7 +242,7 @@
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Item Type:" FontWeight="SemiBold" Margin="0,0,8,6"/>
                     <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ItemType}" Margin="0,0,0,6"/>
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Total Quantity:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Available Quantity:" FontWeight="SemiBold" Margin="0,0,8,6"/>
                     <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding TotalQuantity}" Margin="0,0,0,6"/>
 
                     <TextBlock Grid.Row="3" Grid.Column="0" Text="Used Quantity:" FontWeight="SemiBold" Margin="0,0,8,6"/>
@@ -317,7 +328,8 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Total Qty" Width="110">
+                                <!-- RENAMED header; still binds to TotalQuantity -->
+                                <GridViewColumn Header="Available Qty" Width="110">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding TotalQuantity}"/>
@@ -349,10 +361,9 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <!-- NOTE: “Restock” and “Use” removed from header; we show both as row actions in ONE column -->
+                                <!-- Row actions -->
                                 <GridViewColumn Header="" Width="230">
                                     <GridViewColumn.HeaderTemplate>
-                                        <!-- visually empty header cell -->
                                         <DataTemplate>
                                             <Border Background="Transparent" Height="1"/>
                                         </DataTemplate>
@@ -366,12 +377,22 @@
                                                         Style="{StaticResource RowPillButton}"
                                                         Click="Restock_Click"
                                                         CommandParameter="{Binding}"/>
+                                                <!-- HIDE Use button when out of stock -->
                                                 <Button Content="Use"
                                                         Tag="–"
                                                         Background="{StaticResource Col.Red}"
-                                                        Style="{StaticResource RowPillButton}"
                                                         Click="Use_Click"
-                                                        CommandParameter="{Binding}"/>
+                                                        CommandParameter="{Binding}">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource RowPillButton}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsOutOfStock}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
                                             </StackPanel>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>

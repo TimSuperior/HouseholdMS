@@ -150,6 +150,9 @@ namespace HouseholdMS.View.Dashboard
         private HashSet<int> _preselectedTechIds = new HashSet<int>();
         private Dictionary<int, int> _preselectedInv = new Dictionary<int, int>();
 
+        // track permission baseline so we can re-apply during modal states
+        private readonly bool _canProceedBaseline;
+
         public event EventHandler ServiceFinished;
 
         public ServiceCallDetailControl(Household household, string userRole)
@@ -172,6 +175,8 @@ namespace HouseholdMS.View.Dashboard
             // Permissions
             bool canProceed = string.Equals(_userRole, "Admin", StringComparison.OrdinalIgnoreCase)
                               || string.Equals(_userRole, "Technician", StringComparison.OrdinalIgnoreCase);
+            _canProceedBaseline = canProceed;
+
             FinishBtn.IsEnabled = canProceed;
             SaveOpenBtn.IsEnabled = canProceed;
             CancelBtn.IsEnabled = canProceed;
@@ -201,6 +206,25 @@ namespace HouseholdMS.View.Dashboard
             // Initial filters
             ApplyTechFilter();
             ApplyInvFilter();
+        }
+
+        // ===== Modal helpers =====
+        private bool AnyModalOpen
+        {
+            get
+            {
+                return (TechOverlay.Visibility == Visibility.Visible)
+                    || (InvOverlay.Visibility == Visibility.Visible)
+                    || (QtyPopup != null && QtyPopup.IsOpen);
+            }
+        }
+
+        private void ApplyActionButtonsEnabledState()
+        {
+            bool enabled = _canProceedBaseline && !AnyModalOpen;
+            FinishBtn.IsEnabled = enabled;
+            SaveOpenBtn.IsEnabled = enabled;
+            CancelBtn.IsEnabled = enabled;
         }
 
         // ===== Loaders =====
@@ -487,11 +511,14 @@ namespace HouseholdMS.View.Dashboard
             TechOverlay.Visibility = Visibility.Visible;
             ApplyTechFilter();
             UpdateTechOverlayHeader();
+            ApplyActionButtonsEnabledState();
+            Dispatcher.BeginInvoke(new Action(() => TechSearchBox?.Focus()));
         }
 
         private void TechPickerClose_Click(object sender, RoutedEventArgs e)
         {
             TechOverlay.Visibility = Visibility.Collapsed;
+            ApplyActionButtonsEnabledState();
         }
 
         private void TechPickerSave_Click(object sender, RoutedEventArgs e)
@@ -502,6 +529,7 @@ namespace HouseholdMS.View.Dashboard
 
             UpdateTechButton();
             TechOverlay.Visibility = Visibility.Collapsed;
+            ApplyActionButtonsEnabledState();
         }
 
         private void TechSearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -548,11 +576,14 @@ namespace HouseholdMS.View.Dashboard
             InvOverlay.Visibility = Visibility.Visible;
             ApplyInvFilter();
             UpdateInvOverlayHeader();
+            ApplyActionButtonsEnabledState();
+            Dispatcher.BeginInvoke(new Action(() => InvSearchBox?.Focus()));
         }
 
         private void InvPickerClose_Click(object sender, RoutedEventArgs e)
         {
             InvOverlay.Visibility = Visibility.Collapsed;
+            ApplyActionButtonsEnabledState();
         }
 
         private void InvPickerAdd_Click(object sender, RoutedEventArgs e)
@@ -563,6 +594,7 @@ namespace HouseholdMS.View.Dashboard
                 _invSelected.Add(item);
             }
             InvOverlay.Visibility = Visibility.Collapsed;
+            ApplyActionButtonsEnabledState();
         }
 
         private void InvSearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -660,6 +692,7 @@ namespace HouseholdMS.View.Dashboard
             var inv = lbi.DataContext as InvRow;
             if (inv != null)
             {
+                if (QtyPopup.IsOpen) return; // do not allow changing item while quantity popup active
                 if (inv.CanSelect)
                 {
                     inv.IsSelected = true;
@@ -688,6 +721,7 @@ namespace HouseholdMS.View.Dashboard
             var inv = lbi.DataContext as InvRow;
             if (inv != null)
             {
+                if (QtyPopup.IsOpen) { e.Handled = true; return; }
                 if (inv.CanSelect)
                 {
                     inv.IsSelected = true;
@@ -701,12 +735,14 @@ namespace HouseholdMS.View.Dashboard
         private void OpenQtyPopup(InvRow row, FrameworkElement target)
         {
             if (row == null || target == null) return;
+            if (QtyPopup.IsOpen) return;
+
             if (row.QuantityUsed < 1 && row.CanSelect) row.QuantityUsed = 1;
             if (row.QuantityUsed > row.Available) row.QuantityUsed = row.Available;
 
             QtyPopup.DataContext = row;
             QtyPopup.PlacementTarget = target;
-            QtyPopup.IsOpen = true;
+            QtyPopup.IsOpen = true; // Opened event will make overlay content non-interactive
         }
 
         private void QtyPreset_Click(object sender, RoutedEventArgs e)
@@ -745,6 +781,40 @@ namespace HouseholdMS.View.Dashboard
             var row = QtyPopup.DataContext as InvRow;
             if (row != null && row.QuantityUsed <= 0) row.IsSelected = false;
             QtyPopup.IsOpen = false;
+        }
+
+        private void QtyPopup_Opened(object sender, EventArgs e)
+        {
+            // Disable the overlay content while the popup is active; footer is already disabled by ApplyActionButtonsEnabledState
+            if (InvOverlayRoot != null) InvOverlayRoot.IsEnabled = false;
+            ApplyActionButtonsEnabledState();
+
+            // Focus the quantity box
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                QtyPopupTextBox?.Focus();
+                QtyPopupTextBox?.SelectAll();
+            }));
+        }
+
+        private void QtyPopup_Closed(object sender, EventArgs e)
+        {
+            if (InvOverlayRoot != null) InvOverlayRoot.IsEnabled = true;
+            ApplyActionButtonsEnabledState();
+        }
+
+        private void QtyPopup_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                QtyPopup_OK_Click(sender, e);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                QtyPopup_Cancel_Click(sender, e);
+                e.Handled = true;
+            }
         }
 
         // ===== Confirm helper for missing selections =====
@@ -794,6 +864,12 @@ namespace HouseholdMS.View.Dashboard
             if (_serviceId == 0)
             {
                 MessageBox.Show("No open service ticket found.", "Service", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (AnyModalOpen)
+            {
+                MessageBox.Show("Finish/Save/Cancel is disabled while a dialog is open. Close it first.", "Modal active", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -890,6 +966,12 @@ namespace HouseholdMS.View.Dashboard
             if (_serviceId == 0)
             {
                 MessageBox.Show("No open service ticket found.", "Service", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (AnyModalOpen)
+            {
+                MessageBox.Show("Finish/Save/Cancel is disabled while a dialog is open. Close it first.", "Modal active", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -1012,6 +1094,12 @@ namespace HouseholdMS.View.Dashboard
             if (_serviceId == 0)
             {
                 MessageBox.Show("No open service ticket found.", "Service", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (AnyModalOpen)
+            {
+                MessageBox.Show("Finish/Save/Cancel is disabled while a dialog is open. Close it first.", "Modal active", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 

@@ -1,10 +1,11 @@
-﻿<UserControl x:Class="HouseholdMS.Controls.It8615Control" 
+﻿<!-- It8615Control.xaml -->
+<UserControl x:Class="HouseholdMS.Controls.It8615Control"  
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             xmlns:chart="clr-namespace:Syncfusion.UI.Xaml.Charts;assembly=Syncfusion.SfChart.WPF"
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
              mc:Ignorable="d" d:DesignHeight="900" d:DesignWidth="1300">
 
     <UserControl.Resources>
@@ -12,6 +13,13 @@
             <sys:String>AC</sys:String>
             <sys:String>DC</sys:String>
         </x:Array>
+
+        <!-- Keep it conservative for older SfChart versions -->
+        <Style x:Key="MeterYAxisStyle" TargetType="syncfusion:NumericalAxis">
+            <Setter Property="LabelFormat" Value="0.00"/>
+            <Setter Property="OpposedPosition" Value="True"/>
+            <Setter Property="ShowGridLines" Value="True"/>
+        </Style>
     </UserControl.Resources>
 
     <Grid>
@@ -46,7 +54,7 @@
             <TabItem Header="Parameters">
                 <ScrollViewer>
                     <Grid Margin="10">
-                        <!-- two columns only: left stack (Operating + Results) + Meter -->
+                        <!-- two columns only: left stack (Operating) + Meter -->
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*"/>
                             <ColumnDefinition Width="3*"/>
@@ -97,37 +105,30 @@
                                     <TextBlock x:Name="TxtLimits" TextWrapping="Wrap" Foreground="Gray" Margin="0,6,0,0"/>
                                 </StackPanel>
                             </GroupBox>
-
-                            <!-- RESULTS -->
-                            <GroupBox Header="Results" Margin="4">
-                                <StackPanel Margin="8,8,267,8" Height="73">
-                                    <Button Content="Export Last Capture (CSV)" Click="BtnExportCsv_Click" Margin="0,0,0,6"/>
-                                    <Button Content="Generate Report (PDF)" Click="BtnReport_Click"/>
-                                </StackPanel>
-                            </GroupBox>
                         </StackPanel>
 
                         <!-- RIGHT COLUMN: Meter panel with tiny charts -->
                         <GroupBox Header="Meter (Live)" Grid.Column="1" Margin="4">
                             <ScrollViewer VerticalScrollBarVisibility="Auto">
                                 <StackPanel Margin="8">
+
                                     <!-- Voltage RMS -->
                                     <StackPanel Margin="0,0,0,10">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="Voltage RMS:"/>
                                             <TextBlock x:Name="ValVrms" FontSize="16" FontWeight="Bold" Margin="8,0,0,0"/>
                                         </StackPanel>
-                                        <chart:SfChart Height="70" Margin="0,4,0,0" Background="Transparent">
-                                            <chart:SfChart.PrimaryAxis>
-                                                <chart:NumericalAxis Visibility="Collapsed"/>
-                                            </chart:SfChart.PrimaryAxis>
-                                            <chart:SfChart.SecondaryAxis>
-                                                <chart:NumericalAxis Visibility="Collapsed"/>
-                                            </chart:SfChart.SecondaryAxis>
-                                            <chart:LineSeries EnableAnimation="False" StrokeThickness="1.2"
-                                                              ItemsSource="{Binding VrmsHistory}"
-                                                              XBindingPath="Index" YBindingPath="Value"/>
-                                        </chart:SfChart>
+                                        <syncfusion:SfChart Height="90" Margin="0,4,0,0" Background="Transparent">
+                                            <syncfusion:SfChart.PrimaryAxis>
+                                                <syncfusion:NumericalAxis Visibility="Collapsed"/>
+                                            </syncfusion:SfChart.PrimaryAxis>
+                                            <syncfusion:SfChart.SecondaryAxis>
+                                                <syncfusion:NumericalAxis Style="{StaticResource MeterYAxisStyle}"/>
+                                            </syncfusion:SfChart.SecondaryAxis>
+                                            <syncfusion:LineSeries EnableAnimation="False" StrokeThickness="1.2"
+                                                                   ItemsSource="{Binding VrmsHistory}"
+                                                                   XBindingPath="Index" YBindingPath="Value"/>
+                                        </syncfusion:SfChart>
                                     </StackPanel>
 
                                     <!-- Current RMS -->
@@ -136,17 +137,17 @@
                                             <TextBlock Text="Current RMS:"/>
                                             <TextBlock x:Name="ValIrms" FontSize="16" FontWeight="Bold" Margin="8,0,0,0"/>
                                         </StackPanel>
-                                        <chart:SfChart Height="70" Margin="0,4,0,0" Background="Transparent">
-                                            <chart:SfChart.PrimaryAxis>
-                                                <chart:NumericalAxis Visibility="Collapsed"/>
-                                            </chart:SfChart.PrimaryAxis>
-                                            <chart:SfChart.SecondaryAxis>
-                                                <chart:NumericalAxis Visibility="Collapsed"/>
-                                            </chart:SfChart.SecondaryAxis>
-                                            <chart:LineSeries EnableAnimation="False" StrokeThickness="1.2"
-                                                              ItemsSource="{Binding IrmsHistory}"
-                                                              XBindingPath="Index" YBindingPath="Value"/>
-                                        </chart:SfChart>
+                                        <syncfusion:SfChart Height="90" Margin="0,4,0,0" Background="Transparent">
+                                            <syncfusion:SfChart.PrimaryAxis>
+                                                <syncfusion:NumericalAxis Visibility="Collapsed"/>
+                                            </syncfusion:SfChart.PrimaryAxis>
+                                            <syncfusion:SfChart.SecondaryAxis>
+                                                <syncfusion:NumericalAxis Style="{StaticResource MeterYAxisStyle}"/>
+                                            </syncfusion:SfChart.SecondaryAxis>
+                                            <syncfusion:LineSeries EnableAnimation="False" StrokeThickness="1.2"
+                                                                   ItemsSource="{Binding IrmsHistory}"
+                                                                   XBindingPath="Index" YBindingPath="Value"/>
+                                        </syncfusion:SfChart>
                                     </StackPanel>
 
                                     <!-- Power -->
@@ -155,17 +156,17 @@
                                             <TextBlock Text="Power:"/>
                                             <TextBlock x:Name="ValPower" FontSize="16" FontWeight="Bold" Margin="8,0,0,0"/>
                                         </StackPanel>
-                                        <chart:SfChart Height="70" Margin="0,4,0,0" Background="Transparent">
-                                            <chart:SfChart.PrimaryAxis>
-                                                <chart:NumericalAxis Visibility="Collapsed"/>
-                                            </chart:SfChart.PrimaryAxis>
-                                            <chart:SfChart.SecondaryAxis>
-                                                <chart:NumericalAxis Visibility="Collapsed"/>
-                                            </chart:SfChart.SecondaryAxis>
-                                            <chart:LineSeries EnableAnimation="False" StrokeThickness="1.2"
-                                                              ItemsSource="{Binding PowerHistory}"
-                                                              XBindingPath="Index" YBindingPath="Value"/>
-                                        </chart:SfChart>
+                                        <syncfusion:SfChart Height="90" Margin="0,4,0,0" Background="Transparent">
+                                            <syncfusion:SfChart.PrimaryAxis>
+                                                <syncfusion:NumericalAxis Visibility="Collapsed"/>
+                                            </syncfusion:SfChart.PrimaryAxis>
+                                            <syncfusion:SfChart.SecondaryAxis>
+                                                <syncfusion:NumericalAxis Style="{StaticResource MeterYAxisStyle}"/>
+                                            </syncfusion:SfChart.SecondaryAxis>
+                                            <syncfusion:LineSeries EnableAnimation="False" StrokeThickness="1.2"
+                                                                   ItemsSource="{Binding PowerHistory}"
+                                                                   XBindingPath="Index" YBindingPath="Value"/>
+                                        </syncfusion:SfChart>
                                     </StackPanel>
 
                                     <!-- Power Factor -->
@@ -174,17 +175,17 @@
                                             <TextBlock Text="Power Factor:"/>
                                             <TextBlock x:Name="ValPf" FontSize="16" FontWeight="Bold" Margin="8,0,0,0"/>
                                         </StackPanel>
-                                        <chart:SfChart Height="70" Margin="0,4,0,0" Background="Transparent">
-                                            <chart:SfChart.PrimaryAxis>
-                                                <chart:NumericalAxis Visibility="Collapsed"/>
-                                            </chart:SfChart.PrimaryAxis>
-                                            <chart:SfChart.SecondaryAxis>
-                                                <chart:NumericalAxis Visibility="Collapsed"/>
-                                            </chart:SfChart.SecondaryAxis>
-                                            <chart:LineSeries EnableAnimation="False" StrokeThickness="1.2"
-                                                              ItemsSource="{Binding PfHistory}"
-                                                              XBindingPath="Index" YBindingPath="Value"/>
-                                        </chart:SfChart>
+                                        <syncfusion:SfChart Height="90" Margin="0,4,0,0" Background="Transparent">
+                                            <syncfusion:SfChart.PrimaryAxis>
+                                                <syncfusion:NumericalAxis Visibility="Collapsed"/>
+                                            </syncfusion:SfChart.PrimaryAxis>
+                                            <syncfusion:SfChart.SecondaryAxis>
+                                                <syncfusion:NumericalAxis Style="{StaticResource MeterYAxisStyle}" LabelFormat="0.000"/>
+                                            </syncfusion:SfChart.SecondaryAxis>
+                                            <syncfusion:LineSeries EnableAnimation="False" StrokeThickness="1.2"
+                                                                   ItemsSource="{Binding PfHistory}"
+                                                                   XBindingPath="Index" YBindingPath="Value"/>
+                                        </syncfusion:SfChart>
                                     </StackPanel>
 
                                     <!-- Frequency -->
@@ -193,17 +194,17 @@
                                             <TextBlock Text="Frequency:"/>
                                             <TextBlock x:Name="ValFreq" FontSize="16" FontWeight="Bold" Margin="8,0,0,0"/>
                                         </StackPanel>
-                                        <chart:SfChart Height="70" Margin="0,4,0,0" Background="Transparent">
-                                            <chart:SfChart.PrimaryAxis>
-                                                <chart:NumericalAxis Visibility="Collapsed"/>
-                                            </chart:SfChart.PrimaryAxis>
-                                            <chart:SfChart.SecondaryAxis>
-                                                <chart:NumericalAxis Visibility="Collapsed"/>
-                                            </chart:SfChart.SecondaryAxis>
-                                            <chart:LineSeries EnableAnimation="False" StrokeThickness="1.2"
-                                                              ItemsSource="{Binding FreqHistory}"
-                                                              XBindingPath="Index" YBindingPath="Value"/>
-                                        </chart:SfChart>
+                                        <syncfusion:SfChart Height="90" Margin="0,4,0,0" Background="Transparent">
+                                            <syncfusion:SfChart.PrimaryAxis>
+                                                <syncfusion:NumericalAxis Visibility="Collapsed"/>
+                                            </syncfusion:SfChart.PrimaryAxis>
+                                            <syncfusion:SfChart.SecondaryAxis>
+                                                <syncfusion:NumericalAxis Style="{StaticResource MeterYAxisStyle}"/>
+                                            </syncfusion:SfChart.SecondaryAxis>
+                                            <syncfusion:LineSeries EnableAnimation="False" StrokeThickness="1.2"
+                                                                   ItemsSource="{Binding FreqHistory}"
+                                                                   XBindingPath="Index" YBindingPath="Value"/>
+                                        </syncfusion:SfChart>
                                     </StackPanel>
 
                                     <!-- Crest Factor -->
@@ -212,17 +213,17 @@
                                             <TextBlock Text="Crest Factor:"/>
                                             <TextBlock x:Name="ValCf" FontSize="16" FontWeight="Bold" Margin="8,0,0,0"/>
                                         </StackPanel>
-                                        <chart:SfChart Height="70" Margin="0,4,0,0" Background="Transparent">
-                                            <chart:SfChart.PrimaryAxis>
-                                                <chart:NumericalAxis Visibility="Collapsed"/>
-                                            </chart:SfChart.PrimaryAxis>
-                                            <chart:SfChart.SecondaryAxis>
-                                                <chart:NumericalAxis Visibility="Collapsed"/>
-                                            </chart:SfChart.SecondaryAxis>
-                                            <chart:LineSeries EnableAnimation="False" StrokeThickness="1.2"
-                                                              ItemsSource="{Binding CfHistory}"
-                                                              XBindingPath="Index" YBindingPath="Value"/>
-                                        </chart:SfChart>
+                                        <syncfusion:SfChart Height="90" Margin="0,4,0,0" Background="Transparent">
+                                            <syncfusion:SfChart.PrimaryAxis>
+                                                <syncfusion:NumericalAxis Visibility="Collapsed"/>
+                                            </syncfusion:SfChart.PrimaryAxis>
+                                            <syncfusion:SfChart.SecondaryAxis>
+                                                <syncfusion:NumericalAxis Style="{StaticResource MeterYAxisStyle}"/>
+                                            </syncfusion:SfChart.SecondaryAxis>
+                                            <syncfusion:LineSeries EnableAnimation="False" StrokeThickness="1.2"
+                                                                   ItemsSource="{Binding CfHistory}"
+                                                                   XBindingPath="Index" YBindingPath="Value"/>
+                                        </syncfusion:SfChart>
                                     </StackPanel>
                                 </StackPanel>
                             </ScrollViewer>
@@ -259,25 +260,25 @@
                     </WrapPanel>
 
                     <!-- Big scope chart -->
-                    <chart:SfChart x:Name="ScopeChart" Grid.Row="1">
-                        <chart:SfChart.PrimaryAxis>
-                            <chart:NumericalAxis Header="Sample"/>
-                        </chart:SfChart.PrimaryAxis>
-                        <chart:SfChart.SecondaryAxis>
-                            <chart:NumericalAxis Header="V / A"/>
-                        </chart:SfChart.SecondaryAxis>
+                    <syncfusion:SfChart x:Name="ScopeChart" Grid.Row="1">
+                        <syncfusion:SfChart.PrimaryAxis>
+                            <syncfusion:NumericalAxis Header="Sample"/>
+                        </syncfusion:SfChart.PrimaryAxis>
+                        <syncfusion:SfChart.SecondaryAxis>
+                            <syncfusion:NumericalAxis Header="V / A" LabelFormat="0.00"/>
+                        </syncfusion:SfChart.SecondaryAxis>
 
-                        <chart:LineSeries x:Name="SeriesV"
-                                          ItemsSource="{Binding ScopeV}"
-                                          XBindingPath="Index"
-                                          YBindingPath="Value"
-                                          Label="Voltage"/>
-                        <chart:LineSeries x:Name="SeriesI"
-                                          ItemsSource="{Binding ScopeI}"
-                                          XBindingPath="Index"
-                                          YBindingPath="Value"
-                                          Label="Current"/>
-                    </chart:SfChart>
+                        <syncfusion:LineSeries x:Name="SeriesV"
+                                               ItemsSource="{Binding ScopeV}"
+                                               XBindingPath="Index"
+                                               YBindingPath="Value"
+                                               Label="Voltage"/>
+                        <syncfusion:LineSeries x:Name="SeriesI"
+                                               ItemsSource="{Binding ScopeI}"
+                                               XBindingPath="Index"
+                                               YBindingPath="Value"
+                                               Label="Current"/>
+                    </syncfusion:SfChart>
                 </Grid>
             </TabItem>
 
@@ -295,20 +296,20 @@
                         <TextBox x:Name="TxtHarmonicsN" Width="60" Text="50" Margin="6,0,0,0"/>
                     </WrapPanel>
 
-                    <chart:SfChart x:Name="HarmonicsChart" Grid.Row="1">
-                        <chart:SfChart.PrimaryAxis>
-                            <chart:CategoryAxis Header="Harmonic Order (n)"/>
-                        </chart:SfChart.PrimaryAxis>
-                        <chart:SfChart.SecondaryAxis>
-                            <chart:NumericalAxis Header="Amplitude (normalized)"/>
-                        </chart:SfChart.SecondaryAxis>
+                    <syncfusion:SfChart x:Name="HarmonicsChart" Grid.Row="1">
+                        <syncfusion:SfChart.PrimaryAxis>
+                            <syncfusion:CategoryAxis Header="Harmonic Order (n)"/>
+                        </syncfusion:SfChart.PrimaryAxis>
+                        <syncfusion:SfChart.SecondaryAxis>
+                            <syncfusion:NumericalAxis Header="Amplitude (normalized)" LabelFormat="0.00"/>
+                        </syncfusion:SfChart.SecondaryAxis>
 
-                        <chart:ColumnSeries x:Name="SeriesHarm"
-                                            ItemsSource="{Binding Harmonics}"
-                                            XBindingPath="Index"
-                                            YBindingPath="Value"
-                                            Label="Voltage Harmonics"/>
-                    </chart:SfChart>
+                        <syncfusion:ColumnSeries x:Name="SeriesHarm"
+                                                 ItemsSource="{Binding Harmonics}"
+                                                 XBindingPath="Index"
+                                                 YBindingPath="Value"
+                                                 Label="Voltage Harmonics"/>
+                    </syncfusion:SfChart>
                 </Grid>
             </TabItem>
 

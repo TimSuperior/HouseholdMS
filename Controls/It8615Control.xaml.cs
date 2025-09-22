@@ -1,12 +1,13 @@
-﻿using System;
+﻿// It8615Control.xaml.cs
+using System;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using Microsoft.Win32;
 using HouseholdMS.Drivers;
 using HouseholdMS.Models;
 using HouseholdMS.Services;
@@ -91,18 +92,15 @@ namespace HouseholdMS.Controls
 
         private static string GetComboText(ComboBox cbo, string fallback)
         {
-            // If it's a simple string item (e.g., "AC"/"DC")
             if (cbo.SelectedItem is string s1)
                 return s1;
 
-            // If it's a ComboBoxItem, prefer Tag (machine token) when present; else use Content (display text)
             if (cbo.SelectedItem is ComboBoxItem cbi)
             {
                 if (cbi.Tag != null) return cbi.Tag.ToString();
                 if (cbi.Content != null) return cbi.Content.ToString();
             }
 
-            // If nothing selected yet, pick first item and try again
             if (cbo.Items.Count > 0)
             {
                 cbo.SelectedIndex = 0;
@@ -133,13 +131,22 @@ namespace HouseholdMS.Controls
         }
 
         // ----- Connection -----
-        private async void BtnRefresh_Click(object sender, RoutedEventArgs e)
+        private void BtnRefresh_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                var list = _visa.DiscoverResources(new[] { "USB?*INSTR", "TCPIP?*INSTR", "GPIB?*INSTR" });
+                // Only discover — DO NOT open sessions here
+                var list = _visa.DiscoverResources(new[] { "USB?*INSTR", "TCPIP?*INSTR", "GPIB?*INSTR" })
+                                .Distinct()
+                                .ToList();
                 ResourceCombo.ItemsSource = list;
-                if (list.Count > 0) ResourceCombo.SelectedIndex = 0;
+
+                // Try to select likely IT8615 by name pattern (no connection)
+                int idx = list.FindIndex(s =>
+                    s.IndexOf("IT8615", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    s.IndexOf("ITECH", StringComparison.OrdinalIgnoreCase) >= 0);
+                ResourceCombo.SelectedIndex = (idx >= 0) ? idx : (list.Count > 0 ? 0 : -1);
+
                 SetStatus($"Found {list.Count} VISA resources.");
             }
             catch (Exception ex) { Fail(ex); }
@@ -154,13 +161,25 @@ namespace HouseholdMS.Controls
                     MessageBox.Show("Pick a VISA resource.");
                     return;
                 }
+
                 _visa.TimeoutMs = int.TryParse(TxtTimeout.Text, out var t) ? t : 2000;
                 _visa.Retries = int.TryParse(TxtRetries.Text, out var r) ? r : 2;
 
+                // Open and verify it's an IT8615 before starting acquisition
                 _visa.Open((string)ResourceCombo.SelectedItem, _logger);
-                _it = new ItechIt8615(_visa, _logger);
+                var probe = new ItechIt8615(_visa, _logger);
+                string idn = (await probe.IdentifyAsync()) ?? string.Empty;
 
-                string idn = await _it.IdentifyAsync();
+                if (!(idn.IndexOf("ITECH", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                      (idn.IndexOf("IT8615", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                       idn.IndexOf("IT86", StringComparison.OrdinalIgnoreCase) >= 0)))
+                {
+                    _visa.Close();
+                    MessageBox.Show("The selected resource is not an ITECH IT8615. Choose the correct device.", "Wrong instrument");
+                    return;
+                }
+
+                _it = probe;
                 TxtIdn.Text = idn;
 
                 await _it.ToRemoteAsync();
@@ -199,6 +218,8 @@ namespace HouseholdMS.Controls
             {
                 _logFlushTimer?.Stop();
                 _acq?.Stop();
+                await Task.Delay(150); // brief drain so VISA can close without races
+
                 if (_it != null)
                 {
                     try { await _it.EnableInputAsync(false); } catch { }
@@ -390,34 +411,7 @@ namespace HouseholdMS.Controls
             catch (Exception ex) { Fail(ex); }
         }
 
-        // ----- Results -----
-        private void BtnExportCsv_Click(object sender, RoutedEventArgs e)
-        {
-            var d = new SaveFileDialog { Filter = "CSV|*.csv" };
-            if (d.ShowDialog() == true && _acq != null)
-            {
-                _acq.ExportCsv(d.FileName);
-                TxtStatus.Text = "Exported " + d.FileName;
-            }
-        }
-
-        private void BtnReport_Click(object sender, RoutedEventArgs e)
-        {
-            var d = new SaveFileDialog { Filter = "PDF|*.pdf" };
-            if (d.ShowDialog() == true)
-            {
-                var kv = new Tuple<string, string>[] {
-                    Tuple.Create("Voltage RMS", ValVrms.Text),
-                    Tuple.Create("Current RMS", ValIrms.Text),
-                    Tuple.Create("Power",       ValPower.Text),
-                    Tuple.Create("Power Factor",ValPf.Text),
-                    Tuple.Create("Frequency",   ValFreq.Text)
-                };
-                ReportBuilderPdf.WriteSimplePdf(d.FileName, "IT8615 Report", kv);
-                TxtStatus.Text = "Report " + d.FileName;
-            }
-        }
-
+        // ----- Logger -----
         private void BtnOpenLogFolder_Click(object sender, RoutedEventArgs e)
         {
             var dir = _logger.LogDirectory;

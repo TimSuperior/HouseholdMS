@@ -55,6 +55,9 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>App.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CsvHelper, Version=33.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
       <HintPath>packages\CsvHelper.33.1.0\lib\net48\CsvHelper.dll</HintPath>
@@ -196,9 +199,6 @@
     <Compile Include="View\EqTesting\TemplateView.xaml.cs">
       <DependentUpon>TemplateView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\InputDialogWindow.xaml.cs">
-      <DependentUpon>InputDialogWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\Inventory\InventoryDetails.xaml.cs">
       <DependentUpon>InventoryDetails.xaml</DependentUpon>
     </Compile>
@@ -210,9 +210,6 @@
     </Compile>
     <Compile Include="View\InventoryView.xaml.cs">
       <DependentUpon>InventoryView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\Measurement\ElectronicLoadIT8615View.xaml.cs">
-      <DependentUpon>ElectronicLoadIT8615View.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Measurement\MeasurementValues.cs" />
     <Compile Include="View\Measurement\Tbs1000cView.xaml.cs">
@@ -341,10 +338,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\InputDialogWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="View\Inventory\InventoryDetails.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -358,10 +351,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\InventoryView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\Measurement\ElectronicLoadIT8615View.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -460,6 +449,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <Resource Include="Assets\MainMenuPics\mainpic.png" />
+    <SplashScreen Include="Assets\Logo\splash_720.png" />
+    <Resource Include="Assets\Logo\App.ico" />
+    <Resource Include="App.ico" />
     <Content Include="Assets\Manuals\VictronConnect_Manual.pdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

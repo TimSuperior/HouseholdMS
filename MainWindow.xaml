@@ -315,8 +315,8 @@
                     <Button x:Name="bt_BatteryTest" Content="🔋 MPPT Monitoring" Click="bt_BatteryTest_Click" Style="{StaticResource SubMenuButtonStyle}"/>
                     <Button Content="📈 Oscilloscope" Click="bt_OscilloscopeMenu" Style="{StaticResource SubMenuButtonStyle}"/>
                     <Button Content="📊 Multimeter" Click="bt_MeasurementMenu" Style="{StaticResource SubMenuButtonStyle}"/>
-                    <Button Content="⚡ Electronic Load (IT8615)" Click="bt_ElectronicLoadMenu" Style="{StaticResource SubMenuButtonStyle}"/>
-                    <Button Content="Electronic Load 2" Click="Button_Click_ElectronicLoad" Style="{StaticResource SubMenuButtonStyle}"/>
+                    
+                    <Button Content="⚡Electronic Load" Click="Button_Click_ElectronicLoad" Style="{StaticResource SubMenuButtonStyle}"/>
 
                     <Border Height="8"/>
 
