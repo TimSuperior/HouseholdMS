@@ -1,0 +1,210 @@
+﻿<UserControl x:Class="HouseholdMS.View.EqTesting.MpptMiniPanelControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:charts="http://schemas.syncfusion.com/wpf"
+             mc:Ignorable="d"
+             d:DesignWidth="460" d:DesignHeight="520"
+             Background="White" SnapsToDevicePixels="True" UseLayoutRounding="True">
+
+    <UserControl.Resources>
+        <!-- Palette -->
+        <SolidColorBrush x:Key="Col.Border" Color="#E5E7EB"/>
+        <SolidColorBrush x:Key="Col.Muted"  Color="#6B7280"/>
+        <SolidColorBrush x:Key="Col.Accent" Color="#2563EB"/>
+        <SolidColorBrush x:Key="Col.Good"   Color="#16A34A"/>
+        <SolidColorBrush x:Key="Col.Warn"   Color="#D97706"/>
+        <SolidColorBrush x:Key="Col.Bad"    Color="#DC2626"/>
+
+        <!-- Card -->
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="8"/>
+        </Style>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Foreground" Value="#111827"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- No header, no connection toolbar. Auto-connect only. -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+
+            <!-- ESSENTIAL VALUES -->
+            <UniformGrid Columns="2" Margin="4">
+                <!-- PV -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="PV (Array)" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="TxtPvV" Text="Voltage: —" FontSize="18"/>
+                        <TextBlock x:Name="TxtPvA" Text="Current: —" FontSize="18"/>
+                        <TextBlock x:Name="TxtPvW" Text="Power: —"   FontSize="18"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Battery -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Battery (Charge)" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="TxtBatV" Text="Voltage: —" FontSize="18"/>
+                        <TextBlock x:Name="TxtBatA" Text="Current: —" FontSize="18"/>
+                        <TextBlock x:Name="TxtBatW" Text="Power: —"   FontSize="18"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- State -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="State" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="TxtSoc"   Text="SOC: —" FontSize="22" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="TxtStage" Text="Stage: —" FontSize="16"/>
+                        <TextBlock x:Name="TxtUpdated" Text="Last update: —" Foreground="{StaticResource Col.Muted}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Load -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Load Output" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="TxtLoadV" Text="Voltage: —" FontSize="18"/>
+                        <TextBlock x:Name="TxtLoadA" Text="Current: —" FontSize="18"/>
+                        <TextBlock x:Name="TxtLoadW" Text="Power: —"   FontSize="18"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- PV TRENDS: V / A / W -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="PV Trends" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Text="Voltage (V)" Foreground="{StaticResource Col.Muted}" Margin="0,2,0,2"/>
+                    <charts:SfChart Height="90">
+                        <charts:SfChart.PrimaryAxis>
+                            <charts:DateTimeAxis IntervalType="Seconds" LabelFormat="HH:mm:ss" ShowGridLines="False"/>
+                        </charts:SfChart.PrimaryAxis>
+                        <charts:SfChart.SecondaryAxis>
+                            <charts:NumericalAxis LabelFormat="0.##" ShowGridLines="False"/>
+                        </charts:SfChart.SecondaryAxis>
+                        <charts:FastLineSeries ItemsSource="{Binding PvVolt}" XBindingPath="Time" YBindingPath="Value" StrokeThickness="2"/>
+                    </charts:SfChart>
+
+                    <TextBlock Text="Current (A)" Foreground="{StaticResource Col.Muted}" Margin="0,8,0,2"/>
+                    <charts:SfChart Height="90">
+                        <charts:SfChart.PrimaryAxis>
+                            <charts:DateTimeAxis IntervalType="Seconds" LabelFormat="HH:mm:ss" ShowGridLines="False"/>
+                        </charts:SfChart.PrimaryAxis>
+                        <charts:SfChart.SecondaryAxis>
+                            <charts:NumericalAxis LabelFormat="0.##" ShowGridLines="False"/>
+                        </charts:SfChart.SecondaryAxis>
+                        <charts:FastLineSeries ItemsSource="{Binding PvCurr}" XBindingPath="Time" YBindingPath="Value" StrokeThickness="2"/>
+                    </charts:SfChart>
+
+                    <TextBlock Text="Power (W)" Foreground="{StaticResource Col.Muted}" Margin="0,8,0,2"/>
+                    <charts:SfChart Height="90">
+                        <charts:SfChart.PrimaryAxis>
+                            <charts:DateTimeAxis IntervalType="Seconds" LabelFormat="HH:mm:ss" ShowGridLines="False"/>
+                        </charts:SfChart.PrimaryAxis>
+                        <charts:SfChart.SecondaryAxis>
+                            <charts:NumericalAxis LabelFormat="0.#" ShowGridLines="False"/>
+                        </charts:SfChart.SecondaryAxis>
+                        <charts:FastLineSeries ItemsSource="{Binding PvPower}" XBindingPath="Time" YBindingPath="Value" StrokeThickness="2"/>
+                    </charts:SfChart>
+                </StackPanel>
+            </Border>
+
+            <!-- BATTERY TRENDS: V / A / W -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Battery Trends" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Text="Voltage (V)" Foreground="{StaticResource Col.Muted}" Margin="0,2,0,2"/>
+                    <charts:SfChart Height="90">
+                        <charts:SfChart.PrimaryAxis>
+                            <charts:DateTimeAxis IntervalType="Seconds" LabelFormat="HH:mm:ss" ShowGridLines="False"/>
+                        </charts:SfChart.PrimaryAxis>
+                        <charts:SfChart.SecondaryAxis>
+                            <charts:NumericalAxis LabelFormat="0.##" ShowGridLines="False"/>
+                        </charts:SfChart.SecondaryAxis>
+                        <charts:FastLineSeries ItemsSource="{Binding BatVolt}" XBindingPath="Time" YBindingPath="Value" StrokeThickness="2"/>
+                    </charts:SfChart>
+
+                    <TextBlock Text="Current (A)" Foreground="{StaticResource Col.Muted}" Margin="0,8,0,2"/>
+                    <charts:SfChart Height="90">
+                        <charts:SfChart.PrimaryAxis>
+                            <charts:DateTimeAxis IntervalType="Seconds" LabelFormat="HH:mm:ss" ShowGridLines="False"/>
+                        </charts:SfChart.PrimaryAxis>
+                        <charts:SfChart.SecondaryAxis>
+                            <charts:NumericalAxis LabelFormat="0.##" ShowGridLines="False"/>
+                        </charts:SfChart.SecondaryAxis>
+                        <charts:FastLineSeries ItemsSource="{Binding BatCurr}" XBindingPath="Time" YBindingPath="Value" StrokeThickness="2"/>
+                    </charts:SfChart>
+
+                    <TextBlock Text="Power (W)" Foreground="{StaticResource Col.Muted}" Margin="0,8,0,2"/>
+                    <charts:SfChart Height="90">
+                        <charts:SfChart.PrimaryAxis>
+                            <charts:DateTimeAxis IntervalType="Seconds" LabelFormat="HH:mm:ss" ShowGridLines="False"/>
+                        </charts:SfChart.PrimaryAxis>
+                        <charts:SfChart.SecondaryAxis>
+                            <charts:NumericalAxis LabelFormat="0.#" ShowGridLines="False"/>
+                        </charts:SfChart.SecondaryAxis>
+                        <charts:FastLineSeries ItemsSource="{Binding BatPower}" XBindingPath="Time" YBindingPath="Value" StrokeThickness="2"/>
+                    </charts:SfChart>
+                </StackPanel>
+            </Border>
+
+            <!-- LOAD TRENDS: V / A / W -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Load Trends" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Text="Voltage (V)" Foreground="{StaticResource Col.Muted}" Margin="0,2,0,2"/>
+                    <charts:SfChart Height="90">
+                        <charts:SfChart.PrimaryAxis>
+                            <charts:DateTimeAxis IntervalType="Seconds" LabelFormat="HH:mm:ss" ShowGridLines="False"/>
+                        </charts:SfChart.PrimaryAxis>
+                        <charts:SfChart.SecondaryAxis>
+                            <charts:NumericalAxis LabelFormat="0.##" ShowGridLines="False"/>
+                        </charts:SfChart.SecondaryAxis>
+                        <charts:FastLineSeries ItemsSource="{Binding LoadVolt}" XBindingPath="Time" YBindingPath="Value" StrokeThickness="2"/>
+                    </charts:SfChart>
+
+                    <TextBlock Text="Current (A)" Foreground="{StaticResource Col.Muted}" Margin="0,8,0,2"/>
+                    <charts:SfChart Height="90">
+                        <charts:SfChart.PrimaryAxis>
+                            <charts:DateTimeAxis IntervalType="Seconds" LabelFormat="HH:mm:ss" ShowGridLines="False"/>
+                        </charts:SfChart.PrimaryAxis>
+                        <charts:SfChart.SecondaryAxis>
+                            <charts:NumericalAxis LabelFormat="0.##" ShowGridLines="False"/>
+                        </charts:SfChart.SecondaryAxis>
+                        <charts:FastLineSeries ItemsSource="{Binding LoadCurr}" XBindingPath="Time" YBindingPath="Value" StrokeThickness="2"/>
+                    </charts:SfChart>
+
+                    <TextBlock Text="Power (W)" Foreground="{StaticResource Col.Muted}" Margin="0,8,0,2"/>
+                    <charts:SfChart Height="90">
+                        <charts:SfChart.PrimaryAxis>
+                            <charts:DateTimeAxis IntervalType="Seconds" LabelFormat="HH:mm:ss" ShowGridLines="False"/>
+                        </charts:SfChart.PrimaryAxis>
+                        <charts:SfChart.SecondaryAxis>
+                            <charts:NumericalAxis LabelFormat="0.#" ShowGridLines="False"/>
+                        </charts:SfChart.SecondaryAxis>
+                        <charts:FastLineSeries ItemsSource="{Binding LoadPower}" XBindingPath="Time" YBindingPath="Value" StrokeThickness="2"/>
+                    </charts:SfChart>
+                </StackPanel>
+            </Border>
+
+            <!-- RAW MSG (compact) -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Raw" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="TxtRaw" Text="—" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

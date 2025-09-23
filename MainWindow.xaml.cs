@@ -37,7 +37,7 @@ namespace HouseholdMS
                 bt_AllTest.Visibility = Visibility.Visible;
                 bt_BatteryTest.Visibility = Visibility.Visible;
                 bt_ControllerTest.Visibility = Visibility.Visible;
-                bt_InverterTest.Visibility = Visibility.Visible;
+                bt_TestProcedure.Visibility = Visibility.Visible;
                 bt_SwitchTest.Visibility = Visibility.Visible;
                 bt_TestReports.Visibility = Visibility.Visible;
 
@@ -57,7 +57,7 @@ namespace HouseholdMS
                 bt_AllTest.Visibility = Visibility.Collapsed;
                 bt_BatteryTest.Visibility = Visibility.Collapsed;
                 bt_ControllerTest.Visibility = Visibility.Collapsed;
-                bt_InverterTest.Visibility = Visibility.Collapsed;
+                bt_TestProcedure.Visibility = Visibility.Collapsed;
                 bt_SwitchTest.Visibility = Visibility.Collapsed;
                 bt_SettingMenu.Visibility = Visibility.Collapsed; // top-nav
                 bt_TestReports.Visibility = Visibility.Collapsed;
@@ -95,7 +95,7 @@ namespace HouseholdMS
 
         private void bt_BatteryTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new HouseholdMS.View.UserControls.EpeverMonitorControl();
         private void bt_ControllerTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new ControllerTestMenuView(_currentUserRole);
-        private void bt_InverterTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new InverterTestMenuView(_currentUserRole);
+        
         private void bt_SwitchTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new SwitchTestMenuView(_currentUserRole);
         private void bt_SettingMenu_Click(object sender, RoutedEventArgs e) => MainContent.Content = new SettingMenuView(_currentUserRole);
         private void bt_MeasurementMenu(object sender, RoutedEventArgs e) => MainContent.Content = new MeasurementView();
@@ -115,6 +115,11 @@ namespace HouseholdMS
         private void Button_Click_ElectronicLoad(object sender, RoutedEventArgs e)
         {
             MainContent.Content = new It8615Control();
+        }
+
+        private void bt_TestProcedure_Click(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new TestProcedure();
         }
     }
 }

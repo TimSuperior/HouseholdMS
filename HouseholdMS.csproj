@@ -190,14 +190,20 @@
     <Compile Include="View\EqTesting\ControllerTestMenuView.xaml.cs">
       <DependentUpon>ControllerTestMenuView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\EqTesting\InverterTestMenuView.xaml.cs">
-      <DependentUpon>InverterTestMenuView.xaml</DependentUpon>
+    <Compile Include="View\EqTesting\It8615MiniPanelControl.xaml.cs">
+      <DependentUpon>It8615MiniPanelControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\EqTesting\MpptMiniPanelControl.xaml.cs">
+      <DependentUpon>MpptMiniPanelControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\EqTesting\SwitchTestMenuView.xaml.cs">
       <DependentUpon>SwitchTestMenuView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\EqTesting\TemplateView.xaml.cs">
       <DependentUpon>TemplateView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\EqTesting\TestProcedure.xaml.cs">
+      <DependentUpon>TestProcedure.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Inventory\InventoryDetails.xaml.cs">
       <DependentUpon>InventoryDetails.xaml</DependentUpon>
@@ -326,7 +332,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\EqTesting\InverterTestMenuView.xaml">
+    <Page Include="View\EqTesting\It8615MiniPanelControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\EqTesting\MpptMiniPanelControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -335,6 +345,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\EqTesting\TemplateView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\EqTesting\TestProcedure.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -429,6 +443,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Resource Include="Assets\Procedures\111.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Assets\Template\333.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>

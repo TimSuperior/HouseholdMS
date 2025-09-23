@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace HouseholdMS.View.EqTesting
@@ -111,18 +112,17 @@ namespace HouseholdMS.View.EqTesting
             _imageIndex = -1;
 
             // Header
-            HeaderTitle.Text = _gallery?.Name ?? "Gallery";
+            HeaderTitle.Text = _gallery?.Name ?? "Gallery"; // e.g., "Battery Charging Procedures"
             HeaderVersion.Text = string.IsNullOrWhiteSpace(_gallery?.Version) ? "" : "v" + _gallery.Version;
             HeaderStep.Text = ""; // none on home
 
-            // Show header/footer, hide image viewer
+            // Show header/footer, show album list, hide image viewer
             HeaderBar.Visibility = Visibility.Visible;
             FooterBar.Visibility = Visibility.Visible;
-
             HomeScroll.Visibility = Visibility.Visible;
             ImageScroll.Visibility = Visibility.Collapsed;
 
-            // Build album cards
+            // Build album cards (with a thumbnail that fits the card area)
             AlbumList.Children.Clear();
             if (_gallery == null) return;
 
@@ -130,8 +130,30 @@ namespace HouseholdMS.View.EqTesting
             {
                 var album = _gallery.Albums[i];
 
-                // Card content
                 var content = new StackPanel { Orientation = Orientation.Vertical };
+
+                // Thumbnail (use first image of the album). Fit inside the card and never overflow screen.
+                try
+                {
+                    var img = new Image
+                    {
+                        Height = 140,
+                        Margin = new Thickness(0, 0, 0, 8),
+                        Stretch = Stretch.Uniform,         // show whole image; avoid cropping/spilling
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        ClipToBounds = true
+                    };
+                    RenderOptions.SetBitmapScalingMode(img, BitmapScalingMode.Fant);
+                    img.Source = new BitmapImage(new Uri(album.Images[0], UriKind.RelativeOrAbsolute));
+                    content.Children.Add(img);
+                }
+                catch
+                {
+                    // no thumbnail if image load fails
+                }
+
+                // Title + count
                 content.Children.Add(new TextBlock
                 {
                     Text = album.Title,
@@ -142,7 +164,7 @@ namespace HouseholdMS.View.EqTesting
                 {
                     Text = $"{album.Images.Length} image(s)",
                     FontSize = 12,
-                    Foreground = System.Windows.Media.Brushes.Gray
+                    Foreground = Brushes.Gray
                 });
 
                 var btn = new Button
@@ -165,13 +187,13 @@ namespace HouseholdMS.View.EqTesting
             if (_gallery == null || _albumIndex < 0) return;
             var album = _gallery.Albums[_albumIndex];
 
-            // Hide all titles in image mode (no "Battery Visual Inspection", no step text)
-            HeaderBar.Visibility = Visibility.Collapsed;   // no header/title
-            HeaderTitle.Text = "";
-            HeaderVersion.Text = "";
-            HeaderStep.Text = "";
+            // Header: keep visible and populate with gallery name + step info
+            HeaderBar.Visibility = Visibility.Visible;
+            HeaderTitle.Text = _gallery.Name; // e.g., "Battery Charging Procedures"
+            HeaderVersion.Text = string.IsNullOrWhiteSpace(_gallery.Version) ? "" : "v" + _gallery.Version;
+            HeaderStep.Text = $"{album.Title} — {_imageIndex + 1}/{album.Images.Length}";
 
-            // Load image
+            // Load image (fit, not overflow)
             try
             {
                 var uri = album.Images[_imageIndex];
@@ -188,19 +210,18 @@ namespace HouseholdMS.View.EqTesting
             HomeScroll.Visibility = Visibility.Collapsed;
             ImageScroll.Visibility = Visibility.Visible;
 
-            // Footer state (keep for navigation)
+            // Footer state
             PrevBtn.IsEnabled = _imageIndex > 0;
             NextBtn.IsEnabled = _imageIndex < album.Images.Length - 1;
 
-            // Ensure full-bleed behavior (no caps)
             UpdateImageViewboxMax();
         }
 
         // ===== Immersive sizing =====
         private void UpdateImageViewboxMax()
         {
-            // Remove any capping — let the Viewbox fill the available space
             if (ImageViewbox == null) return;
+            // no caps: allow it to grow to fill available space
             ImageViewbox.MaxWidth = double.PositiveInfinity;
             ImageViewbox.MaxHeight = double.PositiveInfinity;
         }

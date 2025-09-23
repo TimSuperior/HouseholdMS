@@ -324,7 +324,7 @@
                     <TextBlock Text="Test Modules" Style="{StaticResource SidebarCaption}"/>
                     <Button x:Name="bt_AllTest" Content="🔌 Blue Smart Charger" Click="bt_AllTest_Click" Style="{StaticResource SubMenuButtonStyle}"/>
                     <Button x:Name="bt_ControllerTest" Content="🧭 Controller Test" Click="bt_ControllerTest_Click" Style="{StaticResource SubMenuButtonStyle}"/>
-                    <Button x:Name="bt_InverterTest" Content="⚡ Inverter Test" Click="bt_InverterTest_Click" Style="{StaticResource SubMenuButtonStyle}"/>
+                    <Button x:Name="bt_TestProcedure" Content="TestProcedure" Click="bt_TestProcedure_Click" Style="{StaticResource SubMenuButtonStyle}"/>
                     <Button x:Name="bt_SwitchTest" Content="🔀 Switch Test" Click="bt_SwitchTest_Click" Style="{StaticResource SubMenuButtonStyle}"/>
 
                     <TextBlock Text="Documentation" Style="{StaticResource SidebarCaption}"/>

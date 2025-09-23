@@ -1,0 +1,149 @@
+﻿<UserControl x:Class="HouseholdMS.View.EqTesting.It8615MiniPanelControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             mc:Ignorable="d"
+             d:DesignHeight="420" d:DesignWidth="420"
+             Background="Transparent">
+
+    <UserControl.Resources>
+        <!-- Tiny chart Y axis styling -->
+        <Style x:Key="MiniAxisStyle" TargetType="syncfusion:NumericalAxis">
+            <Setter Property="ShowGridLines" Value="True"/>
+            <Setter Property="OpposedPosition" Value="True"/>
+            <Setter Property="LabelFormat" Value="0.00"/>
+        </Style>
+
+        <!-- Card look -->
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+        </Style>
+
+        <!-- Big numeric readout -->
+        <Style x:Key="ValueText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="6,0,0,0"/>
+        </Style>
+
+        <!-- Label text -->
+        <Style x:Key="LabelText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#6B7280"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- (empty top bar; no connection/enable/info UI) -->
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Essentials + tiny charts -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <UniformGrid Columns="1" Rows="6" Margin="0" IsItemsHost="False">
+                <!-- Vrms -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,8">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Voltage RMS:" Style="{StaticResource LabelText}"/>
+                            <TextBlock x:Name="TxtVrms" Style="{StaticResource ValueText}"/>
+                        </StackPanel>
+                        <syncfusion:SfChart Height="80" Margin="0,6,0,0" Background="Transparent">
+                            <syncfusion:SfChart.PrimaryAxis>
+                                <syncfusion:NumericalAxis Visibility="Collapsed"/>
+                            </syncfusion:SfChart.PrimaryAxis>
+                            <syncfusion:SfChart.SecondaryAxis>
+                                <syncfusion:NumericalAxis Style="{StaticResource MiniAxisStyle}"/>
+                            </syncfusion:SfChart.SecondaryAxis>
+                            <syncfusion:LineSeries StrokeThickness="1.2"
+                                                   ItemsSource="{Binding VrmsHistory}"
+                                                   XBindingPath="Index" YBindingPath="Value"/>
+                        </syncfusion:SfChart>
+                    </StackPanel>
+                </Border>
+
+                <!-- Irms -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,8">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Current RMS:" Style="{StaticResource LabelText}"/>
+                            <TextBlock x:Name="TxtIrms" Style="{StaticResource ValueText}"/>
+                        </StackPanel>
+                        <syncfusion:SfChart Height="80" Margin="0,6,0,0" Background="Transparent">
+                            <syncfusion:SfChart.PrimaryAxis>
+                                <syncfusion:NumericalAxis Visibility="Collapsed"/>
+                            </syncfusion:SfChart.PrimaryAxis>
+                            <syncfusion:SfChart.SecondaryAxis>
+                                <syncfusion:NumericalAxis Style="{StaticResource MiniAxisStyle}"/>
+                            </syncfusion:SfChart.SecondaryAxis>
+                            <syncfusion:LineSeries StrokeThickness="1.2"
+                                                   ItemsSource="{Binding IrmsHistory}"
+                                                   XBindingPath="Index" YBindingPath="Value"/>
+                        </syncfusion:SfChart>
+                    </StackPanel>
+                </Border>
+
+                <!-- Power -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,8">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Power:" Style="{StaticResource LabelText}"/>
+                            <TextBlock x:Name="TxtPower" Style="{StaticResource ValueText}"/>
+                        </StackPanel>
+                        <syncfusion:SfChart Height="80" Margin="0,6,0,0" Background="Transparent">
+                            <syncfusion:SfChart.PrimaryAxis>
+                                <syncfusion:NumericalAxis Visibility="Collapsed"/>
+                            </syncfusion:SfChart.PrimaryAxis>
+                            <syncfusion:SfChart.SecondaryAxis>
+                                <syncfusion:NumericalAxis Style="{StaticResource MiniAxisStyle}"/>
+                            </syncfusion:SfChart.SecondaryAxis>
+                            <syncfusion:LineSeries StrokeThickness="1.2"
+                                                   ItemsSource="{Binding PowerHistory}"
+                                                   XBindingPath="Index" YBindingPath="Value"/>
+                        </syncfusion:SfChart>
+                    </StackPanel>
+                </Border>
+
+                <!-- Power Factor -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,8">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Power Factor:" Style="{StaticResource LabelText}"/>
+                        <TextBlock x:Name="TxtPf" Style="{StaticResource ValueText}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Frequency -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,8">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Frequency:" Style="{StaticResource LabelText}"/>
+                        <TextBlock x:Name="TxtFreq" Style="{StaticResource ValueText}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Crest Factor -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Crest Factor:" Style="{StaticResource LabelText}"/>
+                        <TextBlock x:Name="TxtCf" Style="{StaticResource ValueText}"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+        </ScrollViewer>
+
+        <!-- Status -->
+        <StatusBar Grid.Row="2">
+            <StatusBarItem>
+                <TextBlock x:Name="TxtStatus" Text="Idle"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</UserControl>
