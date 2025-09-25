@@ -1,8 +1,12 @@
 ﻿<UserControl x:Class="HouseholdMS.View.Dashboard.DashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:ctrls="clr-namespace:HouseholdMS.View.UserControls"
-             xmlns:local="clr-namespace:HouseholdMS.View.Dashboard">
+             xmlns:uc="clr-namespace:HouseholdMS.View.UserControls"
+             xmlns:local="clr-namespace:HouseholdMS.View.Dashboard"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+
     <UserControl.Resources>
 
         <!-- Base tile look -->
@@ -88,7 +92,6 @@
 
                     <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0">
                         <TextBlock Text="{Binding LowStockThreshold, StringFormat=Threshold: {0}}" Margin="0,0,12,0"/>
-                        <!-- LastRestockedDate is TEXT in DB; StringFormat will still render -->
                         <TextBlock Text="{Binding LastRestockedDate, StringFormat=Restocked: {0}}"/>
                     </StackPanel>
                 </Grid>
@@ -145,14 +148,14 @@
                             <TextBlock x:Name="OperationalCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
                         </StackPanel>
 
-                        <ctrls:CircularProgressBar x:Name="OperationalProgress"
-                                                   Width="72" Height="72"
-                                                   StrokeThickness="8"
-                                                   ProgressBrush="#4CAF50"
-                                                   TrackBrush="#E6E6E6"
-                                                   Grid.Column="1"
-                                                   HorizontalAlignment="Right"
-                                                   VerticalAlignment="Center"/>
+                        <uc:CircularProgressBar x:Name="OperationalProgress"
+                                                Width="72" Height="72"
+                                                StrokeThickness="8"
+                                                ProgressBrush="#4CAF50"
+                                                TrackBrush="#E6E6E6"
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"/>
                     </Grid>
                 </Button>
 
@@ -169,14 +172,14 @@
                             <TextBlock x:Name="OutOfServiceCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
                         </StackPanel>
 
-                        <ctrls:CircularProgressBar x:Name="OutOfServiceProgress"
-                                                   Width="72" Height="72"
-                                                   StrokeThickness="8"
-                                                   ProgressBrush="#F44336"
-                                                   TrackBrush="#E6E6E6"
-                                                   Grid.Column="1"
-                                                   HorizontalAlignment="Right"
-                                                   VerticalAlignment="Center"/>
+                        <uc:CircularProgressBar x:Name="OutOfServiceProgress"
+                                                Width="72" Height="72"
+                                                StrokeThickness="8"
+                                                ProgressBrush="#F44336"
+                                                TrackBrush="#E6E6E6"
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"/>
                     </Grid>
                 </Button>
             </UniformGrid>
@@ -212,15 +215,41 @@
             </Border>
         </StackPanel>
 
-        <!-- Row 3: Placeholder -->
+        <!-- Row 3: three tiles; the third is the Weather (replaced) -->
         <Grid Grid.Row="3" Margin="12,12,12,12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
+                <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Border CornerRadius="16" Background="#FFFFFF" BorderBrush="#EEEEEE" BorderThickness="1" Margin="0,0,6,0"/>
-            <Border Grid.Column="1" CornerRadius="16" Background="#FFFFFF" BorderBrush="#EEEEEE" BorderThickness="1" Margin="6,0,0,0"/>
-            <TextBlock Text="(Reserved for future tiles…)" Foreground="#888" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+            <!-- Placeholder tile A -->
+            <Button Grid.Column="0" Style="{StaticResource TileButton}">
+                <StackPanel>
+                    <TextBlock Text="Tile A" FontWeight="Bold"/>
+                    <TextBlock Text="(your content here)" Foreground="#777" Margin="0,6,0,0"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Placeholder tile B -->
+            <Button Grid.Column="1" Style="{StaticResource TileButton}">
+                <StackPanel>
+                    <TextBlock Text="Tile B" FontWeight="Bold"/>
+                    <TextBlock Text="(your content here)" Foreground="#777" Margin="0,6,0,0"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Weather Forecast tile (Yr.no meteogram for Sucre Department) -->
+            <Button Grid.Column="2" Style="{StaticResource TileButton}">
+                <uc:YrMeteogramControl
+    LocationId="2-3667725"
+    Latitude="-19.1"
+    Longitude="-63.4"
+    CompactMode="True"
+    YrLanguage="en"/>
+
+            </Button>
+
         </Grid>
 
     </Grid>

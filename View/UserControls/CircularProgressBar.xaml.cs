@@ -81,19 +81,11 @@ namespace HouseholdMS.View.UserControls
         private static void OnVisualPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var ctrl = d as CircularProgressBar;
-            if (ctrl != null)
-                ctrl.UpdateVisuals();
+            if (ctrl != null) ctrl.UpdateVisuals();
         }
 
-        private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            UpdateVisuals();
-        }
-
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            UpdateVisuals();
-        }
+        private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateVisuals();
+        private void UserControl_Loaded(object sender, RoutedEventArgs e) => UpdateVisuals();
 
         private void UpdateVisuals()
         {
@@ -101,21 +93,13 @@ namespace HouseholdMS.View.UserControls
             double h = this.ActualHeight;
             if (w <= 0 || h <= 0) return;
 
-            // Track ellipse fills the control bounds
-            if (TrackEllipse != null)
-            {
-                // Ellipse auto-sizes to the control; no extra work required
-            }
-
             if (Percentage >= 99.999)
             {
-                // Full ring visible, hide the arc path
                 if (FullRing != null) FullRing.Visibility = Visibility.Visible;
                 if (ProgressPath != null) ProgressPath.Visibility = Visibility.Collapsed;
             }
             else if (Percentage <= 0.001)
             {
-                // Nothing to draw
                 if (FullRing != null) FullRing.Visibility = Visibility.Collapsed;
                 if (ProgressPath != null)
                 {
@@ -134,24 +118,16 @@ namespace HouseholdMS.View.UserControls
             }
         }
 
-        /// <summary>
-        /// Builds an arc PathGeometry starting at 12 o'clock and sweeping clockwise
-        /// for the given percentage. 100% is handled outside via FullRing.
-        /// </summary>
         private static Geometry BuildArcGeometry(double percentage, double width, double height, double strokeThickness)
         {
-            // Use the smaller dimension
             double size = Math.Min(width, height);
             double radius = (size - strokeThickness) / 2.0;
             if (radius <= 0) radius = 1;
 
-            // Center point
             double cx = width / 2.0;
             double cy = height / 2.0;
 
-            // Start angle = -90 degrees (12 o'clock)
             double startAngle = -90.0;
-            // End angle based on percentage (avoid 360; handled by FullRing)
             double sweepAngle = 360.0 * (percentage / 100.0);
             if (sweepAngle > 359.999) sweepAngle = 359.999;
             double endAngle = startAngle + sweepAngle;
@@ -179,9 +155,7 @@ namespace HouseholdMS.View.UserControls
         private static Point PointOnCircle(double cx, double cy, double r, double angleDeg)
         {
             double rad = angleDeg * Math.PI / 180.0;
-            double x = cx + r * Math.Cos(rad);
-            double y = cy + r * Math.Sin(rad);
-            return new Point(x, y);
+            return new Point(cx + r * Math.Cos(rad), cy + r * Math.Sin(rad));
         }
     }
 }

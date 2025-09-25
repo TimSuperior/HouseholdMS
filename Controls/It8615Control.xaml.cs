@@ -1,9 +1,9 @@
-﻿// It8615Control.xaml.cs
-using System;
-using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.ObjectModel;
-using System.IO;
+using System.Globalization;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;  // ← add this here
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,10 +12,49 @@ using HouseholdMS.Drivers;
 using HouseholdMS.Models;
 using HouseholdMS.Services;
 
+
 namespace HouseholdMS.Controls
 {
     public partial class It8615Control : UserControl
     {
+
+        private async void BtnMeasureHarmonics_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!EnsureConnected()) return;
+
+                // n from textbox with sane bounds
+                int n = ParseIntOr(TxtHarmonicsN, 50, 1, 1000);
+
+                // Query voltage harmonics from the instrument
+                var amps = await _it.MeasureVoltageHarmonicsAsync(n);
+                if (amps == null || amps.Length == 0)
+                {
+                    Harmonics.Clear();
+                    SetStatus("Harmonics: no data.");
+                    return;
+                }
+
+                // Normalize to fundamental to match the chart label "Amplitude (normalized)"
+                double fundamental = Math.Abs(amps[0]);
+                Harmonics.Clear();
+                for (int k = 0; k < amps.Length && k < n; k++)
+                {
+                    double a = amps[k];
+                    double y = (fundamental > 1e-12) ? (a / fundamental) : a; // fallback: raw if fundamental ~ 0
+                    Harmonics.Add(new SamplePoint { Index = k + 1, Value = y }); // 1 = fundamental, 2 = 2nd, ...
+                }
+
+                SetStatus($"Harmonics captured: n={Harmonics.Count}");
+            }
+            catch (Exception ex)
+            {
+                Fail(ex);
+            }
+        }
+
+
         // Big scope series
         public ObservableCollection<SamplePoint> ScopeV { get; } = new ObservableCollection<SamplePoint>();
         public ObservableCollection<SamplePoint> ScopeI { get; } = new ObservableCollection<SamplePoint>();
@@ -32,31 +71,29 @@ namespace HouseholdMS.Controls
         private int _idxVrms, _idxIrms, _idxPow, _idxPf, _idxFreq, _idxCf;
         private const int MiniMaxPoints = 200;
 
-        private readonly CommandLogger _logger = new CommandLogger();
         private readonly VisaSession _visa = new VisaSession();
         private ItechIt8615 _it;
         private AcquisitionService _acq;
 
-        // Smooth log flushing
-        private readonly ConcurrentQueue<string> _logQueue = new ConcurrentQueue<string>();
-        private DispatcherTimer _logFlushTimer;
+        // LIVE scope polling
+        private DispatcherTimer _scopeTimer;
+        private bool _scopeTickBusy;
 
         public It8615Control()
         {
             InitializeComponent();
             DataContext = this;
 
-            // Seed mini-charts so they render immediately
             SeedMiniCharts();
 
-            // Batch logs to UI
-            _logger.OnLog += s => _logQueue.Enqueue(s);
-            _logFlushTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
-            _logFlushTimer.Tick += (s, e) => FlushLogs();
-            _logFlushTimer.Start();
-            TxtLogPath.Text = _logger.LogDirectory;
+            // LIVE scope timer (~6-7 Hz)
+            _scopeTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
+            _scopeTimer.Tick += async (s, e) => await ScopeTimerTickAsync();
 
-            // Cleanup
+            // Safe defaults for trigger pickers even before connect
+            if (CboTrigSource != null && CboTrigSource.Items.Count > 0 && CboTrigSource.SelectedIndex < 0) CboTrigSource.SelectedIndex = 0; // VOLTage
+            if (CboTrigSlope != null && CboTrigSlope.Items.Count > 0 && CboTrigSlope.SelectedIndex < 0) CboTrigSlope.SelectedIndex = 0; // POSitive
+
             Unloaded += async (_, __) => await SafeShutdownAsync();
         }
 
@@ -70,18 +107,6 @@ namespace HouseholdMS.Controls
             CfHistory.Add(new SamplePoint { Index = 0, Value = 0 });
         }
 
-        private void FlushLogs()
-        {
-            int added = 0;
-            while (added < 100 && _logQueue.TryDequeue(out var line))
-            {
-                ListLog.Items.Add(line);
-                added++;
-            }
-            while (ListLog.Items.Count > 500)
-                ListLog.Items.RemoveAt(0);
-        }
-
         // ---------- helpers ----------
         private bool EnsureConnected()
         {
@@ -92,8 +117,9 @@ namespace HouseholdMS.Controls
 
         private static string GetComboText(ComboBox cbo, string fallback)
         {
-            if (cbo.SelectedItem is string s1)
-                return s1;
+            if (cbo == null) return fallback;
+
+            if (cbo.SelectedItem is string s1) return s1;
 
             if (cbo.SelectedItem is ComboBoxItem cbi)
             {
@@ -105,8 +131,7 @@ namespace HouseholdMS.Controls
             {
                 cbo.SelectedIndex = 0;
 
-                if (cbo.SelectedItem is string s2)
-                    return s2;
+                if (cbo.SelectedItem is string s2) return s2;
 
                 var first = cbo.SelectedItem as ComboBoxItem;
                 if (first != null)
@@ -120,14 +145,37 @@ namespace HouseholdMS.Controls
         }
 
         private static double ParseDoubleOr(TextBox tb, double @default)
-            => double.TryParse(tb.Text, out var v) ? v : @default;
+            => (tb != null && double.TryParse(tb.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out var v)) ? v : @default;
 
         private static int ParseIntOr(TextBox tb, int @default, int min, int max)
         {
-            if (!int.TryParse(tb.Text, out var v)) v = @default;
+            int v;
+            if (tb == null || !int.TryParse(tb.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out v)) v = @default;
             if (v < min) v = min;
             if (v > max) v = max;
             return v;
+        }
+
+        private static void ReplaceSeries(ObservableCollection<SamplePoint> series, double[] data)
+        {
+            series.Clear();
+            if (data == null || data.Length == 0) return;
+            for (int k = 0; k < data.Length; k++)
+                series.Add(new SamplePoint { Index = k, Value = data[k] });
+        }
+
+        private void ReplaceScopeSeries(double[] v, double[] i)
+        {
+            ReplaceSeries(ScopeV, v);
+            ReplaceSeries(ScopeI, i);
+        }
+
+        private (string src, string slp, double lvl) ReadTriggerInputs()
+        {
+            var src = GetComboText(CboTrigSource, "VOLTage");
+            var slp = GetComboText(CboTrigSlope, "POSitive");
+            var lvl = ParseDoubleOr(TxtTrigLevel, 0);
+            return (src, slp, lvl);
         }
 
         // ----- Connection -----
@@ -135,13 +183,11 @@ namespace HouseholdMS.Controls
         {
             try
             {
-                // Only discover — DO NOT open sessions here
                 var list = _visa.DiscoverResources(new[] { "USB?*INSTR", "TCPIP?*INSTR", "GPIB?*INSTR" })
                                 .Distinct()
                                 .ToList();
                 ResourceCombo.ItemsSource = list;
 
-                // Try to select likely IT8615 by name pattern (no connection)
                 int idx = list.FindIndex(s =>
                     s.IndexOf("IT8615", StringComparison.OrdinalIgnoreCase) >= 0 ||
                     s.IndexOf("ITECH", StringComparison.OrdinalIgnoreCase) >= 0);
@@ -165,9 +211,9 @@ namespace HouseholdMS.Controls
                 _visa.TimeoutMs = int.TryParse(TxtTimeout.Text, out var t) ? t : 2000;
                 _visa.Retries = int.TryParse(TxtRetries.Text, out var r) ? r : 2;
 
-                // Open and verify it's an IT8615 before starting acquisition
-                _visa.Open((string)ResourceCombo.SelectedItem, _logger);
-                var probe = new ItechIt8615(_visa, _logger);
+                _visa.Open((string)ResourceCombo.SelectedItem);
+
+                var probe = new ItechIt8615(_visa);
                 string idn = (await probe.IdentifyAsync()) ?? string.Empty;
 
                 if (!(idn.IndexOf("ITECH", StringComparison.OrdinalIgnoreCase) >= 0 &&
@@ -187,12 +233,12 @@ namespace HouseholdMS.Controls
                 await _it.CacheRangesAsync();
                 TxtLimits.Text = _it.DescribeRanges();
 
-                _acq = new AcquisitionService(_it, _logger);
+                _acq = new AcquisitionService(_it);
                 _acq.OnReading += rr => Dispatcher.Invoke(() => UpdateMeter(rr));
                 _acq.Start(hz: 5);
 
-                if (CboTrigSource.SelectedIndex < 0 && CboTrigSource.Items.Count > 0) CboTrigSource.SelectedIndex = 0;
-                if (CboTrigSlope.SelectedIndex < 0 && CboTrigSlope.Items.Count > 0) CboTrigSlope.SelectedIndex = 0;
+                if (CboTrigSource != null && CboTrigSource.SelectedIndex < 0 && CboTrigSource.Items.Count > 0) CboTrigSource.SelectedIndex = 0;
+                if (CboTrigSlope != null && CboTrigSlope.SelectedIndex < 0 && CboTrigSlope.Items.Count > 0) CboTrigSlope.SelectedIndex = 0;
 
                 SetStatus("Connected.");
             }
@@ -216,9 +262,9 @@ namespace HouseholdMS.Controls
         {
             try
             {
-                _logFlushTimer?.Stop();
+                StopScopeLive();
                 _acq?.Stop();
-                await Task.Delay(150); // brief drain so VISA can close without races
+                await Task.Delay(150);
 
                 if (_it != null)
                 {
@@ -331,20 +377,57 @@ namespace HouseholdMS.Controls
             catch (Exception ex) { Fail(ex); }
         }
 
-        // ----- Scope -----
+        // ===================== SCOPE =====================
+        private void StartScopeLive()
+        {
+            if (_scopeTimer != null && !_scopeTimer.IsEnabled)
+                _scopeTimer.Start();
+        }
+
+        private void StopScopeLive()
+        {
+            if (_scopeTimer != null && _scopeTimer.IsEnabled)
+                _scopeTimer.Stop();
+        }
+
+        private async Task ScopeTimerTickAsync()
+        {
+            if (_scopeTickBusy || _it == null) return;
+            _scopeTickBusy = true;
+
+            try
+            {
+                var tup = await _it.FetchWaveformsAsync();
+                var v = tup.v ?? Array.Empty<double>();
+                var i = tup.i ?? Array.Empty<double>();
+
+                if (v.Length > 0 || i.Length > 0)
+                {
+                    ReplaceScopeSeries(v, i);
+                    SetStatus($"Scope LIVE: V[{v.Length}], I[{i.Length}]");
+                }
+            }
+            catch (Exception ex)
+            {
+                StopScopeLive();
+                Fail(ex);
+            }
+            finally
+            {
+                _scopeTickBusy = false;
+            }
+        }
+
         private async void BtnScopeRun_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 if (!EnsureConnected()) return;
 
-                string src = GetComboText(CboTrigSource, "VOLTage");
-                string slp = GetComboText(CboTrigSlope, "POSitive");
-                double lev = ParseDoubleOr(TxtTrigLevel, 0);
-
-                await _it.ScopeConfigureAsync(src, slp, lev);
+                await ApplyTriggerInternalAsync();
                 await _it.ScopeRunAsync();
-                await RefreshScopeAsync();
+
+                StartScopeLive();
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -355,11 +438,8 @@ namespace HouseholdMS.Controls
             {
                 if (!EnsureConnected()) return;
 
-                string src = GetComboText(CboTrigSource, "VOLTage");
-                string slp = GetComboText(CboTrigSlope, "POSitive");
-                double lev = ParseDoubleOr(TxtTrigLevel, 0);
-
-                await _it.ScopeConfigureAsync(src, slp, lev);
+                StopScopeLive();
+                await ApplyTriggerInternalAsync();
                 await _it.ScopeSingleAsync();
                 await RefreshScopeAsync();
             }
@@ -372,6 +452,8 @@ namespace HouseholdMS.Controls
             {
                 if (!EnsureConnected()) return;
                 await _it.ScopeStopAsync();
+                StopScopeLive();
+                SetStatus("Scope stopped.");
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -380,50 +462,290 @@ namespace HouseholdMS.Controls
         {
             if (!EnsureConnected()) return;
 
-            var tup = await _it.FetchWaveformsAsync();
-            var v = tup.v ?? Array.Empty<double>();
-            var i = tup.i ?? Array.Empty<double>();
+            const int maxTries = 10;
+            const int delayMs = 120;
 
-            ScopeV.Clear();
-            ScopeI.Clear();
+            double[] v = null;
+            double[] i = null;
 
-            for (int k = 0; k < v.Length; k++)
-                ScopeV.Add(new SamplePoint { Index = k, Value = v[k] });
-            for (int k = 0; k < i.Length; k++)
-                ScopeI.Add(new SamplePoint { Index = k, Value = i[k] });
+            for (int t = 0; t < maxTries; t++)
+            {
+                var tup = await _it.FetchWaveformsAsync();
+                v = tup.v ?? Array.Empty<double>();
+                i = tup.i ?? Array.Empty<double>();
+
+                if ((v.Length > 8) || (i.Length > 8)) break;
+                await Task.Delay(delayMs);
+            }
+
+            ReplaceScopeSeries(v, i);
+
+            if ((v == null || v.Length == 0) && (i == null || i.Length == 0))
+                SetStatus("Scope: no data yet (check trigger level/mode or press Run again).");
+            else
+                SetStatus($"Scope: V[{(v != null ? v.Length : 0)}], I[{(i != null ? i.Length : 0)}] points.");
         }
 
-        // ----- Harmonics -----
-        private async void BtnMeasureHarmonics_Click(object sender, RoutedEventArgs e)
+        private async void BtnApplyDivTime_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 if (!EnsureConnected()) return;
-
-                int n = ParseIntOr(TxtHarmonicsN, 50, 1, 50);
-                double[] harm = await _it.MeasureVoltageHarmonicsAsync(n);
-                if (harm == null) return;
-
-                Harmonics.Clear();
-                for (int k = 0; k < harm.Length; k++)
-                    Harmonics.Add(new SamplePoint { Index = k + 1, Value = harm[k] });
+                var t = (CboDivTime.SelectedItem as string) ?? "0.01";
+                await _it.ScopeSetDivTimeAsync(t);
+                SetStatus("Time/Div = " + t + " s");
             }
             catch (Exception ex) { Fail(ex); }
         }
 
-        // ----- Logger -----
-        private void BtnOpenLogFolder_Click(object sender, RoutedEventArgs e)
+        private async void BtnApplyTrigger_Click(object sender, RoutedEventArgs e)
         {
-            var dir = _logger.LogDirectory;
-            if (Directory.Exists(dir))
-                System.Diagnostics.Process.Start("explorer.exe", dir);
+            try
+            {
+                if (!EnsureConnected()) return;
+                await ApplyTriggerInternalAsync();
+                await RefreshTrigStateAsync();
+                SetStatus("Trigger applied.");
+            }
+            catch (Exception ex) { Fail(ex); }
+        }
+
+        private async void BtnApplyVertical_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!EnsureConnected()) return;
+                double vb = ParseDoubleOr(TxtVBase, 0);
+                double vr = ParseDoubleOr(TxtVRange, 260);
+                double ab = ParseDoubleOr(TxtABase, 0);
+                double ar = ParseDoubleOr(TxtARange, 20);
+
+                await _it.ScopeSetVoltageBaseAsync(vb);
+                await _it.ScopeSetVoltageRangeAsync(vr);
+                await _it.ScopeSetCurrentBaseAsync(ab);
+                await _it.ScopeSetCurrentRangeAsync(ar);
+                SetStatus(string.Format(CultureInfo.InvariantCulture, "Vertical set VBase={0}, VRange={1}, ABase={2}, ARange={3}", vb, vr, ab, ar));
+            }
+            catch (Exception ex) { Fail(ex); }
+        }
+
+        private async void BtnApplyDisplayAndAverage_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!EnsureConnected()) return;
+                var disp = (CboScopeSel.SelectedItem as string) ?? "UA";
+                int avg = ParseIntOr(TxtAvgCount, 4, 1, 16);
+                await _it.ScopeSetDisplaySelectionAsync(disp);
+                await _it.ScopeSetAverageCountAsync(avg);
+                SetStatus("Display=" + disp + ", Average=" + avg);
+            }
+            catch (Exception ex) { Fail(ex); }
+        }
+
+        private async void BtnApplyKnob_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!EnsureConnected()) return;
+                var human = (CboKnob.SelectedItem as string) ?? "UR (Volt Range)";
+                var token = human.StartsWith("UR") ? "UR"
+                         : human.StartsWith("AR") ? "AR"
+                         : human.StartsWith("UB") ? "UB"
+                         : human.StartsWith("AB") ? "AB"
+                         : human.StartsWith("TL") ? "TL"
+                         : human.StartsWith("TD") ? "TD"
+                         : "T/d";
+                await _it.ScopeSetKnobSelectionAsync(token);
+                SetStatus("Knob → " + token);
+            }
+            catch (Exception ex) { Fail(ex); }
+        }
+
+        private async Task ApplyTriggerInternalAsync()
+        {
+            var t = ReadTriggerInputs();
+            string mode = GetComboText(CboTrigMode, "AUTO");
+            double dly = ParseDoubleOr(TxtTrigDelay, 0);
+
+            await _it.ScopeSetTriggerSourceAsync(t.src);
+            await _it.ScopeSetTriggerSlopeAsync(t.slp);
+            await _it.ScopeSetTriggerModeAsync(mode);
+            await _it.ScopeSetTriggerDelayAsync(dly);
+
+            if (t.src.Equals("VOLTage", StringComparison.OrdinalIgnoreCase))
+                await _it.ScopeSetTriggerLevelVoltageAsync(t.lvl);
+            else
+                await _it.ScopeSetTriggerLevelCurrentAsync(t.lvl);
+        }
+
+        private async Task RefreshTrigStateAsync()
+        {
+            try
+            {
+                var s = await _it.ScopeQueryTriggerStateAsync();
+                if (TxtTrigState != null) TxtTrigState.Text = "Trig:" + s;
+            }
+            catch
+            {
+                if (TxtTrigState != null) TxtTrigState.Text = "";
+            }
         }
 
         private void SetStatus(string s) => TxtStatus.Text = s;
+
         private void Fail(Exception ex)
         {
-            _logger.Log("ERR: " + ex.Message);
+            SetStatus("ERR: " + ex.Message);
             MessageBox.Show(ex.Message, "Error");
         }
+    }
+
+    internal static class ItechIt8615ScopeExtensions
+    {
+        private static object GetVisa(ItechIt8615 it)
+        {
+            var t = it.GetType();
+            var flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+
+            string[] fieldNames = { "_io", "_visa", "io", "visa" };
+            for (int i = 0; i < fieldNames.Length; i++)
+            {
+                var f = t.GetField(fieldNames[i], flags);
+                if (f != null)
+                {
+                    var v = f.GetValue(it);
+                    if (v != null) return v;
+                }
+            }
+
+            string[] propNames = { "Io", "IO", "Visa", "Session" };
+            for (int i = 0; i < propNames.Length; i++)
+            {
+                var p = t.GetProperty(propNames[i], flags);
+                if (p != null)
+                {
+                    var v = p.GetValue(it, null);
+                    if (v != null) return v;
+                }
+            }
+
+            var anyVisa = t.GetFields(flags)
+                           .Select(f => f.GetValue(it))
+                           .FirstOrDefault(v => v != null && v.GetType().Name.Contains("VisaSession"));
+            if (anyVisa != null) return anyVisa;
+
+            throw new InvalidOperationException("Could not access internal Visa session of ItechIt8615.");
+        }
+
+        // Cache reflection per driver instance to avoid repeated lookups.
+        private sealed class SessionAccessor
+        {
+            public object Visa;
+            public MethodInfo WriteMethod;
+            public MethodInfo QueryMethod;
+        }
+
+        private static readonly ConditionalWeakTable<ItechIt8615, SessionAccessor> _cache =
+            new ConditionalWeakTable<ItechIt8615, SessionAccessor>();
+
+        private static SessionAccessor GetAccessor(ItechIt8615 it)
+        {
+            SessionAccessor acc;
+            if (_cache.TryGetValue(it, out acc)) return acc;
+
+            var visa = GetVisa(it);
+            var vt = visa.GetType();
+            var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+            var write = vt.GetMethod("WriteAsync", flags)
+                    ?? vt.GetMethod("WriteLineAsync", flags)
+                    ?? vt.GetMethod("Write", flags);
+
+            var query = vt.GetMethod("QueryAsync", flags)
+                    ?? vt.GetMethod("QueryStringAsync", flags)
+                    ?? vt.GetMethod("Query", flags);
+
+            if (write == null) throw new MissingMethodException("VisaSession.WriteAsync/Write not found.");
+            if (query == null) throw new MissingMethodException("VisaSession.QueryAsync/Query not found.");
+
+            acc = new SessionAccessor { Visa = visa, WriteMethod = write, QueryMethod = query };
+            _cache.Add(it, acc);
+            return acc;
+        }
+
+        private static async Task ScpiWriteAsync(ItechIt8615 it, string cmd)
+        {
+            var acc = GetAccessor(it);
+            var ret = acc.WriteMethod.Invoke(acc.Visa, new object[] { cmd });
+            var task = ret as Task;
+            if (task != null) await task;
+        }
+
+        private static async Task<string> ScpiQueryStringAsync(ItechIt8615 it, string cmd)
+        {
+            var acc = GetAccessor(it);
+            var ret = acc.QueryMethod.Invoke(acc.Visa, new object[] { cmd });
+
+            var ts = ret as Task<string>;
+            if (ts != null) return await ts;
+
+            var s = ret as string;
+            if (s != null) return s;
+
+            var t = ret as Task;
+            if (t != null) { await t; return string.Empty; }
+
+            return string.Empty;
+        }
+
+        private static string F(double v) => v.ToString("G", CultureInfo.InvariantCulture);
+
+        public static Task ScopeSetTriggerSourceAsync(this ItechIt8615 it, string src)
+            => ScpiWriteAsync(it, "WAVE:TRIGger:SOURce " + src);
+
+        public static Task ScopeSetTriggerSlopeAsync(this ItechIt8615 it, string slope)
+            => ScpiWriteAsync(it, "WAVE:TRIGger:SLOPe " + slope);
+
+        public static Task ScopeSetTriggerModeAsync(this ItechIt8615 it, string mode)
+            => ScpiWriteAsync(it, "WAVE:TRIGger:MODE " + mode);
+
+        public static Task ScopeSetTriggerDelayAsync(this ItechIt8615 it, double seconds)
+            => ScpiWriteAsync(it, "WAVE:TRIGger:DELay:TIME " + F(seconds));
+
+        public static Task ScopeSetTriggerLevelVoltageAsync(this ItechIt8615 it, double levelV)
+            => ScpiWriteAsync(it, "WAVE:TRIGger:VOLTage:LEVel " + F(levelV));
+
+        public static Task ScopeSetTriggerLevelCurrentAsync(this ItechIt8615 it, double levelA)
+            => ScpiWriteAsync(it, "WAVE:TRIGger:CURRent:LEVel " + F(levelA));
+
+        public static Task ScopeSetDivTimeAsync(this ItechIt8615 it, string secondsPerDiv)
+            => ScpiWriteAsync(it, "WAVE:TRIGger:DIVTime " + secondsPerDiv);
+
+        public static Task ScopeSetVoltageBaseAsync(this ItechIt8615 it, double vBase)
+            => ScpiWriteAsync(it, "WAVE:VOLTage:BASE " + F(vBase));
+
+        public static Task ScopeSetVoltageRangeAsync(this ItechIt8615 it, double vRange)
+            => ScpiWriteAsync(it, "WAVE:VOLTage:RANGe " + F(vRange));
+
+        public static Task ScopeSetCurrentBaseAsync(this ItechIt8615 it, double aBase)
+            => ScpiWriteAsync(it, "WAVE:CURRent:BASE " + F(aBase));
+
+        public static Task ScopeSetCurrentRangeAsync(this ItechIt8615 it, double aRange)
+            => ScpiWriteAsync(it, "WAVE:CURRent:RANGe " + F(aRange));
+
+        public static Task ScopeSetDisplaySelectionAsync(this ItechIt8615 it, string selection /* U|A|UA */)
+            => ScpiWriteAsync(it, "WAVE:SCOPe:SELection " + selection);
+
+        public static Task ScopeSetAverageCountAsync(this ItechIt8615 it, int count /*1-16*/)
+            => ScpiWriteAsync(it, "AVERage:COUNt " + count);
+
+        public static Task ScopeSetKnobSelectionAsync(this ItechIt8615 it, string token /*UR|AR|UB|AB|TL|TD|T/d*/)
+            => ScpiWriteAsync(it, "WAVE:KNOB:SELection " + token);
+
+        public static Task<string> ScopeQueryTriggerStateAsync(this ItechIt8615 it)
+            => ScpiQueryStringAsync(it, "WAVE:TRIGger:STATe?");
+
+
     }
 }

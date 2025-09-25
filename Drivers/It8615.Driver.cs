@@ -1,14 +1,14 @@
-﻿// It8615.Driver.cs
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Ivi.Visa.Interop;
 using HouseholdMS.Models;
 using HouseholdMS.Services;
+using Ivi.Visa.Interop;
 
 namespace HouseholdMS.Drivers
 {
@@ -49,13 +49,20 @@ namespace HouseholdMS.Drivers
     public class ItechIt8615 : IInstrument
     {
         private readonly VisaSession _io;
-        private readonly CommandLogger _log;
+        private readonly CommandLogger _log; // optional
         private readonly CultureInfo _ci = CultureInfo.InvariantCulture;
 
         private double _iMin, _iMax, _rMin, _rMax, _vMin, _vMax, _pMin, _pMax, _pfMin, _pfMax, _cfMin, _cfMax;
         public string CurrentUnits { get; private set; } = "A";
 
-        public ItechIt8615(VisaSession io, CommandLogger log) { _io = io; _log = log; }
+        // No-logger convenience ctor
+        public ItechIt8615(VisaSession io) : this(io, null) { }
+
+        public ItechIt8615(VisaSession io, CommandLogger log)
+        {
+            _io = io;
+            _log = log; // may be null
+        }
 
         public Task<string> IdentifyAsync() => _io.QueryAsync("*IDN?");
         public Task ToRemoteAsync() => _io.WriteAsync("SYST:REM");
@@ -66,7 +73,7 @@ namespace HouseholdMS.Drivers
             for (int i = 0; i < 10; i++)
             {
                 string e = await _io.QueryAsync("SYST:ERR?");
-                _log.Log("ERRQ: " + e);
+                _log?.Log("ERRQ: " + e);
                 if (!string.IsNullOrWhiteSpace(e) && e.StartsWith("0")) break;
             }
         }
@@ -142,7 +149,6 @@ namespace HouseholdMS.Drivers
 
         public async Task<InstrumentReading> ReadAsync()
         {
-            // Robust reads with fallbacks so labels don't stay at 0 when data exists
             double vrms = await _io.QueryNumberAsync("MEAS:VOLT:RMS?");
             if (Bad(vrms) || vrms == 0) vrms = await _io.QueryNumberAsync("MEAS:VOLT?");
 
@@ -154,14 +160,12 @@ namespace HouseholdMS.Drivers
             double cf = await _io.QueryNumberAsync("MEAS:CURR:CFAC?");
             double f = await _io.QueryNumberAsync("MEAS:FREQ?");
 
-            // Derive PF if missing
             if ((Bad(pf) || pf == 0) && vrms > 1e-9 && irms > 1e-9 && !Bad(pow) && pow != 0)
             {
                 var denom = vrms * irms;
                 if (denom > 1e-12) pf = pow / denom;
             }
 
-            // Derive Power if missing
             if (Bad(pow) || pow == 0)
             {
                 if (vrms > 1e-9 && irms > 1e-9)
@@ -186,8 +190,9 @@ namespace HouseholdMS.Drivers
         // ----- Scope -----
         public async Task ScopeConfigureAsync(string source, string slope, double level)
         {
+            // Keep existing tokens as-is (no behavioral change)
             await _io.WriteAsync("WAVE:TRIG:SOUR " + source);   // VOLTage|CURRent
-            await _io.WriteAsync("WAVE:TRIG:SLOP " + slope);    // POSitive|NEGative|ANY
+            await _io.WriteAsync("WAVE:TRIG:SLOP " + slope);    // POSitive|NEGative|ANY  (spelling per your prior code)
             if (source.StartsWith("V", StringComparison.OrdinalIgnoreCase))
                 await _io.WriteAsync("WAVE:TRIG:VOLT:LEV " + level.ToString(_ci));
             else
@@ -220,7 +225,8 @@ namespace HouseholdMS.Drivers
             int k = 0;
             for (int i = 0; i < ss.Length; i++)
             {
-                if (double.TryParse(ss[i], NumberStyles.Any, CultureInfo.InvariantCulture, out double v))
+                double v;
+                if (double.TryParse(ss[i], NumberStyles.Any, CultureInfo.InvariantCulture, out v))
                     vals[k++] = v;
             }
             if (k == vals.Length) return vals;
@@ -235,16 +241,15 @@ namespace HouseholdMS.Drivers
     /// </summary>
     public static class VisaDiscovery
     {
-        public static System.Collections.Generic.List<string> Find(string expression)
+        public static List<string> Find(string expression)
         {
-            var results = new System.Collections.Generic.List<string>();
+            var results = new List<string>();
             ResourceManager rm = null;
             try
             {
                 rm = new ResourceManager();
                 object raw = rm.FindRsrc(expression);
-                var arr = raw as Array;
-                if (arr != null)
+                if (raw is Array arr)
                 {
                     foreach (var o in arr)
                     {
@@ -254,7 +259,7 @@ namespace HouseholdMS.Drivers
                 }
                 else
                 {
-                    string one = raw as string;
+                    var one = raw as string;
                     if (!string.IsNullOrWhiteSpace(one)) results.Add(one.Trim());
                 }
             }
@@ -273,11 +278,14 @@ namespace HouseholdMS.Drivers
         private ResourceManager _rm;
         private FormattedIO488 _io;
         private IMessage _session;
-        private CommandLogger _log;
+        private CommandLogger _log; // optional
         private bool _isOpen;
 
         public int TimeoutMs { get; set; } = 2000;
         public int Retries { get; set; } = 2;
+
+        // No-logger overload
+        public void Open(string resource) => Open(resource, null);
 
         public void Open(string resource, CommandLogger logger)
         {
@@ -297,25 +305,29 @@ namespace HouseholdMS.Drivers
             }
         }
 
-        public System.Collections.Generic.List<string> DiscoverResources(string[] patterns)
+        public List<string> DiscoverResources(string[] patterns)
         {
-            var list = new System.Collections.Generic.List<string>();
+            var list = new List<string>();
             lock (_gate)
             {
                 if (_rm == null) _rm = new ResourceManager();
             }
-            foreach (var p in patterns)
+            foreach (var p in patterns ?? Array.Empty<string>())
             {
                 try
                 {
                     object result = _rm.FindRsrc(p);
-                    if (result is object[] arr)
-                        list.AddRange(arr.OfType<string>());
-                    else if (result is Array a)
-                        foreach (var o in a) if (o is string s) list.Add(s);
-                            else if (result is string one) list.Add(one);
+                    if (result is Array a)
+                    {
+                        foreach (var o in a)
+                            if (o is string s && !string.IsNullOrWhiteSpace(s)) list.Add(s.Trim());
+                    }
+                    else if (result is string one && !string.IsNullOrWhiteSpace(one))
+                    {
+                        list.Add(one.Trim());
+                    }
                 }
-                catch { /* ignore */ }
+                catch { /* ignore individual pattern failures */ }
             }
             return list.Distinct().ToList();
         }
@@ -350,7 +362,8 @@ namespace HouseholdMS.Drivers
             string s = await QueryAsync(scpi);
             if (string.IsNullOrWhiteSpace(s)) return double.NaN;
 
-            if (double.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out double v)) return v;
+            double v;
+            if (double.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out v)) return v;
 
             var tok = s.Split(',', ';');
             if (tok.Length > 0 && double.TryParse(tok[0], NumberStyles.Any, CultureInfo.InvariantCulture, out v)) return v;
@@ -377,7 +390,7 @@ namespace HouseholdMS.Drivers
                     {
                         tries++;
                         if (tries > Retries) return default(T);
-                        if (_log != null) _log.Log("I/O retry " + tries + " after: " + ex.Message);
+                        _log?.Log("I/O retry " + tries + " after: " + ex.Message);
                         Thread.Sleep(50 * tries);
                     }
                 }
