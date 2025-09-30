@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:res="clr-namespace:HouseholdMS.Resources"
              mc:Ignorable="d"
              d:DesignHeight="860" d:DesignWidth="1200"
              MinHeight="820" MinWidth="1120"
@@ -201,7 +202,8 @@
             <DockPanel LastChildFill="False">
                 <StackPanel Orientation="Vertical" DockPanel.Dock="Left" Margin="2,0">
                     <TextBlock x:Name="FormHeader" Style="{StaticResource H1}"/>
-                    <TextBlock Text="Manage inventory item" Style="{StaticResource Subtle}" Margin="0,6,0,0"/>
+                    <TextBlock Text="{x:Static res:Strings.AIC_Header_Subtitle}"
+                               Style="{StaticResource Subtle}" Margin="0,6,0,0"/>
                 </StackPanel>
 
                 <!-- Status pill (centered text) -->
@@ -228,12 +230,12 @@
                 <!-- Form card -->
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="Item Type" Style="{StaticResource LabelText}"/>
+                        <TextBlock Text="{x:Static res:Strings.AIC_Label_ItemType}" Style="{StaticResource LabelText}"/>
                         <TextBox x:Name="ItemTypeBox" Style="{StaticResource InputBox}" Margin="0,0,0,8"/>
 
                         <!-- Initial Quantity (create mode only) -->
                         <StackPanel x:Name="InitialQtyPanel" Margin="0,0,0,0">
-                            <TextBlock Text="Initial Quantity" Style="{StaticResource LabelText}"/>
+                            <TextBlock Text="{x:Static res:Strings.AIC_Label_InitialQty}" Style="{StaticResource LabelText}"/>
                             <TextBox x:Name="InitialQtyBox"
                                      Style="{StaticResource InputBox}"
                                      Margin="0,0,0,8"
@@ -242,7 +244,7 @@
                                      DataObject.Pasting="InitialQtyBox_Pasting"/>
                         </StackPanel>
 
-                        <TextBlock Text="Low Stock Threshold" Style="{StaticResource LabelText}"/>
+                        <TextBlock Text="{x:Static res:Strings.AIC_Label_Threshold}" Style="{StaticResource LabelText}"/>
                         <TextBox x:Name="ThresholdBox"
                                  Style="{StaticResource InputBox}"
                                  Margin="0,0,0,8"
@@ -250,7 +252,7 @@
                                  PreviewKeyDown="ThresholdBox_PreviewKeyDown"
                                  DataObject.Pasting="ThresholdBox_Pasting"/>
 
-                        <TextBlock Text="Note (optional)" Style="{StaticResource LabelText}"/>
+                        <TextBlock Text="{x:Static res:Strings.AIC_Label_NoteOptional}" Style="{StaticResource LabelText}"/>
                         <TextBox x:Name="NoteBox" Style="{StaticResource InputBox}"
                                  Height="96" AcceptsReturn="True" TextWrapping="Wrap"
                                  VerticalScrollBarVisibility="Auto"/>
@@ -261,7 +263,10 @@
                 <Border x:Name="SnapshotCard" Style="{StaticResource Card}" Visibility="Collapsed">
                     <StackPanel>
                         <DockPanel LastChildFill="False" Margin="0,0,0,10">
-                            <TextBlock Text="Item Snapshot" FontSize="18" FontWeight="Bold" Foreground="{StaticResource Col.Text}" DockPanel.Dock="Left"/>
+                            <TextBlock Text="{x:Static res:Strings.AIC_Snapshot_Title}"
+                                       FontSize="18" FontWeight="Bold"
+                                       Foreground="{StaticResource Col.Text}"
+                                       DockPanel.Dock="Left"/>
                         </DockPanel>
 
                         <Grid>
@@ -275,22 +280,22 @@
                             </Grid.RowDefinitions>
 
                             <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,12,8">
-                                <TextBlock Text="Available" Style="{StaticResource LabelText}"/>
+                                <TextBlock Text="{x:Static res:Strings.AIC_Snapshot_Available}" Style="{StaticResource LabelText}"/>
                                 <TextBlock x:Name="AvailQtyInfoText" Style="{StaticResource ValueText}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Row="0" Grid.Column="1" Margin="12,0,0,8">
-                                <TextBlock Text="Used" Style="{StaticResource LabelText}"/>
+                                <TextBlock Text="{x:Static res:Strings.AIC_Snapshot_Used}" Style="{StaticResource LabelText}"/>
                                 <TextBlock x:Name="UsedQtyInfoText" Style="{StaticResource ValueText}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,12,0">
-                                <TextBlock Text="Last Restocked" Style="{StaticResource LabelText}"/>
+                                <TextBlock Text="{x:Static res:Strings.AIC_Snapshot_LastRestocked}" Style="{StaticResource LabelText}"/>
                                 <TextBlock x:Name="LastRestockedInfoText" Style="{StaticResource ValueText}" Text="—"/>
                             </StackPanel>
 
                             <StackPanel Grid.Row="1" Grid.Column="1" Margin="12,0,0,0">
-                                <TextBlock Text="Last Used" Style="{StaticResource LabelText}"/>
+                                <TextBlock Text="{x:Static res:Strings.AIC_Snapshot_LastUsed}" Style="{StaticResource LabelText}"/>
                                 <TextBlock x:Name="LastUsedInfoText" Style="{StaticResource ValueText}" Text="—"/>
                             </StackPanel>
                         </Grid>
@@ -303,37 +308,42 @@
                                 BorderBrush="#FED7AA"
                                 BorderThickness="1"
                                 Visibility="Collapsed">
+                            <!-- Text set in code-behind; keys provided in Strings if you want to use them -->
                             <TextBlock x:Name="StatusInfoText" Foreground="#9A3412" FontSize="14"/>
                         </Border>
 
                         <!-- Usage -->
-                        <TextBlock Text="Usage History" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource Col.Muted}" Margin="0,16,0,6"/>
+                        <TextBlock Text="{x:Static res:Strings.AIC_UsageHistory_Title}"
+                                   FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{StaticResource Col.Muted}" Margin="0,16,0,6"/>
                         <DataGrid x:Name="UsageGrid" IsReadOnly="True" MouseDoubleClick="UsageGrid_MouseDoubleClick" MaxHeight="420">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="When"          Binding="{Binding UsedAtLocal}"    Width="180"
+                                <DataGridTextColumn Header="{x:Static res:Strings.AIC_UH_Col_When}"          Binding="{Binding UsedAtLocal}"    Width="180"
                                                     ElementStyle="{StaticResource CenteredCellText}"/>
-                                <DataGridTextColumn Header="Qty Used"      Binding="{Binding Quantity}"       Width="90"
+                                <DataGridTextColumn Header="{x:Static res:Strings.AIC_UH_Col_QtyUsed}"      Binding="{Binding Quantity}"       Width="90"
                                                     ElementStyle="{StaticResource CenteredCellText}"/>
-                                <DataGridTextColumn Header="Service"       Binding="{Binding ServiceCol}"     Width="140"
+                                <DataGridTextColumn Header="{x:Static res:Strings.AIC_UH_Col_Service}"       Binding="{Binding ServiceCol}"     Width="140"
                                                     ElementStyle="{StaticResource CenteredCellText}"/>
-                                <DataGridTextColumn Header="Used By"       Binding="{Binding UsedByCol}"      Width="160"
+                                <DataGridTextColumn Header="{x:Static res:Strings.AIC_UH_Col_UsedBy}"       Binding="{Binding UsedByCol}"      Width="160"
                                                     ElementStyle="{StaticResource CenteredCellText}"/>
-                                <DataGridTextColumn Header="Technician(s)" Binding="{Binding TechnicianCol}" Width="*"
+                                <DataGridTextColumn Header="{x:Static res:Strings.AIC_UH_Col_Technicians}"  Binding="{Binding TechnicianCol}" Width="*"
                                                     ElementStyle="{StaticResource CenteredCellText}"/>
                             </DataGrid.Columns>
                         </DataGrid>
 
                         <!-- Restock -->
-                        <TextBlock Text="Restock History" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource Col.Muted}" Margin="0,16,0,6"/>
+                        <TextBlock Text="{x:Static res:Strings.AIC_RestockHistory_Title}"
+                                   FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{StaticResource Col.Muted}" Margin="0,16,0,6"/>
                         <DataGrid x:Name="RestockGrid" IsReadOnly="True" MaxHeight="420">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="When"     Binding="{Binding RestockedLocal}" Width="180"
+                                <DataGridTextColumn Header="{x:Static res:Strings.AIC_RH_Col_When}"     Binding="{Binding RestockedLocal}" Width="180"
                                                     ElementStyle="{StaticResource CenteredCellText}"/>
-                                <DataGridTextColumn Header="Qty"      Binding="{Binding Quantity}"       Width="90"
+                                <DataGridTextColumn Header="{x:Static res:Strings.AIC_RH_Col_Qty}"      Binding="{Binding Quantity}"       Width="90"
                                                     ElementStyle="{StaticResource CenteredCellText}"/>
-                                <DataGridTextColumn Header="By"       Binding="{Binding CreatedByName}"  Width="180"
+                                <DataGridTextColumn Header="{x:Static res:Strings.AIC_RH_Col_By}"       Binding="{Binding CreatedByName}"  Width="180"
                                                     ElementStyle="{StaticResource CenteredCellText}"/>
-                                <DataGridTextColumn Header="Note"     Binding="{Binding Note}"           Width="*"
+                                <DataGridTextColumn Header="{x:Static res:Strings.AIC_RH_Col_Note}"     Binding="{Binding Note}"           Width="*"
                                                     ElementStyle="{StaticResource CenteredCellText}"/>
                             </DataGrid.Columns>
                         </DataGrid>
@@ -346,9 +356,9 @@
         <Border Style="{StaticResource Card}" Grid.Row="2" Padding="16">
             <DockPanel LastChildFill="False">
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                    <Button x:Name="SaveButton" Content="✔ Save Changes" Style="{StaticResource PrimaryButton}" Margin="0,0,12,0" Click="Save_Click"/>
-                    <Button Content="✖ Cancel" Style="{StaticResource CancelButton}" Margin="0,0,12,0" Click="Cancel_Click"/>
-                    <Button x:Name="DeleteButton" Content="🗑 Delete" Style="{StaticResource DangerButton}" Visibility="Collapsed" Click="Delete_Click"/>
+                    <Button x:Name="SaveButton" Content="{x:Static res:Strings.AIC_Btn_Save}" Style="{StaticResource PrimaryButton}" Margin="0,0,12,0" Click="Save_Click"/>
+                    <Button Content="{x:Static res:Strings.AIC_Btn_Cancel}" Style="{StaticResource CancelButton}" Margin="0,0,12,0" Click="Cancel_Click"/>
+                    <Button x:Name="DeleteButton" Content="{x:Static res:Strings.AIC_Btn_Delete}" Style="{StaticResource DangerButton}" Visibility="Collapsed" Click="Delete_Click"/>
                 </StackPanel>
             </DockPanel>
         </Border>

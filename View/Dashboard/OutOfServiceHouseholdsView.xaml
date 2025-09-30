@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:res="clr-namespace:HouseholdMS.Resources"
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="1200">
@@ -23,7 +24,7 @@
         <SolidColorBrush x:Key="Col.Primary"  Color="#FF3B82F6"/>
         <SolidColorBrush x:Key="Col.PrimaryHover" Color="#FF2563EB"/>
 
-        <!-- Search box (match AllHouseholdsView: Margin 0,0,10,0 and Padding 12,6) -->
+        <!-- Search box -->
         <Style x:Key="SearchBoxStyle" TargetType="TextBox">
             <Setter Property="Height" Value="36"/>
             <Setter Property="Padding" Value="12,6"/>
@@ -139,7 +140,7 @@
                     CornerRadius="999"
                     Background="#FFE5E7EB"
                     HorizontalAlignment="Left"
-                    ToolTip="Click to change status (Admins only)">
+                    ToolTip="{x:Static res:Strings.OOSV_Status_Tooltip}">
                 <TextBlock Text="{Binding Statuss}"
                            Margin="0"
                            VerticalAlignment="Center"
@@ -170,7 +171,7 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <!-- ========== LAYOUT (match AllHouseholdsView padding/margins) ========== -->
+    <!-- ========== LAYOUT ========== -->
     <Border Background="{StaticResource Col.BgPage}" Padding="20">
         <Grid>
             <Grid.RowDefinitions>
@@ -178,7 +179,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Top bar: use DockPanel with bottom margin 10 like in AllHouseholdsView -->
+            <!-- Top bar -->
             <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,10">
                 <TextBox x:Name="SearchBox"
                          Style="{StaticResource SearchBoxStyle}"
@@ -186,8 +187,7 @@
                          VerticalContentAlignment="Center"
                          Foreground="{StaticResource Col.TextMut}"
                          FontStyle="Italic"
-                         Text="Search by owner, user, area or contact"
-                         Tag="Search by owner, user, area or contact"
+                         Tag="{x:Static res:Strings.OOSV_SearchPlaceholder}"
                          GotFocus="ClearText"
                          LostFocus="ResetText"
                          TextChanged="SearchBox_TextChanged"
@@ -213,7 +213,12 @@
                               MouseDoubleClick="HouseholdListView_MouseDoubleClick">
                         <ListView.View>
                             <GridView AllowsColumnReorder="True">
-                                <GridViewColumn Header="ID" Width="60">
+
+                                <!-- Each header is a TextBlock with Tag = property name (locale-safe sorting) -->
+                                <GridViewColumn Width="60">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="{x:Static res:Strings.OOSV_Column_ID}" Tag="HouseholdID"/>
+                                    </GridViewColumn.Header>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
@@ -223,7 +228,10 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Owner Name" Width="150">
+                                <GridViewColumn Width="150">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="{x:Static res:Strings.OOSV_Column_OwnerName}" Tag="OwnerName"/>
+                                    </GridViewColumn.Header>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding OwnerName}"/>
@@ -231,7 +239,10 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="User Name" Width="150">
+                                <GridViewColumn Width="150">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="{x:Static res:Strings.OOSV_Column_UserName}" Tag="UserName"/>
+                                    </GridViewColumn.Header>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding UserName}"/>
@@ -239,7 +250,10 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Municipality" Width="140">
+                                <GridViewColumn Width="140">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="{x:Static res:Strings.OOSV_Column_Municipality}" Tag="Municipality"/>
+                                    </GridViewColumn.Header>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding Municipality}"/>
@@ -247,7 +261,10 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="District" Width="140">
+                                <GridViewColumn Width="140">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="{x:Static res:Strings.OOSV_Column_District}" Tag="District"/>
+                                    </GridViewColumn.Header>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding District}"/>
@@ -255,7 +272,10 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Contact" Width="120">
+                                <GridViewColumn Width="120">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="{x:Static res:Strings.OOSV_Column_Contact}" Tag="ContactNum"/>
+                                    </GridViewColumn.Header>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding ContactNum}"/>
@@ -263,7 +283,10 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Installed" Width="110">
+                                <GridViewColumn Width="110">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="{x:Static res:Strings.OOSV_Column_Installed}" Tag="InstallDate"/>
+                                    </GridViewColumn.Header>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
@@ -272,7 +295,10 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Last Inspect" Width="120">
+                                <GridViewColumn Width="120">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="{x:Static res:Strings.OOSV_Column_LastInspect}" Tag="LastInspect"/>
+                                    </GridViewColumn.Header>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
@@ -281,11 +307,17 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <!-- Status chip -->
-                                <GridViewColumn Header="Status" Width="150"
-                                                CellTemplate="{StaticResource StatusChipTemplate}"/>
+                                <GridViewColumn Width="150"
+                                                CellTemplate="{StaticResource StatusChipTemplate}">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="{x:Static res:Strings.OOSV_Column_Status}" Tag="Statuss"/>
+                                    </GridViewColumn.Header>
+                                </GridViewColumn>
 
-                                <GridViewColumn Header="Comment" Width="220">
+                                <GridViewColumn Width="220">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="{x:Static res:Strings.OOSV_Column_Comment}" Tag="UserComm"/>
+                                    </GridViewColumn.Header>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
@@ -294,12 +326,13 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
+
                             </GridView>
                         </ListView.View>
                     </ListView>
 
                     <!-- Empty state -->
-                    <TextBlock Text="No out-of-service households found"
+                    <TextBlock Text="{x:Static res:Strings.OOSV_EmptyState}"
                                Foreground="{StaticResource Col.TextMut}"
                                FontStyle="Italic"
                                HorizontalAlignment="Center"

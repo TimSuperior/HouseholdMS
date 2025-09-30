@@ -1,8 +1,9 @@
-﻿<UserControl x:Class="HouseholdMS.View.Dashboard.OperationalHouseholdsView"  
+﻿<UserControl x:Class="HouseholdMS.View.Dashboard.OperationalHouseholdsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:res="clr-namespace:HouseholdMS.Resources"
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="1200">
@@ -174,7 +175,7 @@
                     CornerRadius="999"
                     Background="#FFE5E7EB"
                     HorizontalAlignment="Left"
-                    ToolTip="Status (read-only in this view)"
+                    ToolTip="{x:Static res:Strings.OHV_Status_Tooltip}"
                     IsHitTestVisible="False">
                 <TextBlock Text="{Binding Statuss}"
                            Margin="0"
@@ -220,8 +221,8 @@
                          VerticalContentAlignment="Center"
                          Foreground="{StaticResource Col.TextMut}"
                          FontStyle="Italic"
-                         Text="Search by owner, user, area or contact"
-                         Tag="Search by owner, user, area or contact"
+                         Text="{x:Static res:Strings.OHV_SearchPlaceholder}"
+                         Tag="{x:Static res:Strings.OHV_SearchPlaceholder}"
                          GotFocus="ClearText"
                          LostFocus="ResetText"
                          TextChanged="SearchBox_TextChanged"
@@ -247,7 +248,7 @@
                               MouseDoubleClick="HouseholdListView_MouseDoubleClick">
                         <ListView.View>
                             <GridView AllowsColumnReorder="True">
-                                <GridViewColumn Header="ID" Width="60">
+                                <GridViewColumn Header="{x:Static res:Strings.OHV_Column_ID}" Width="60">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
@@ -257,7 +258,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Owner Name" Width="150">
+                                <GridViewColumn Header="{x:Static res:Strings.OHV_Column_OwnerName}" Width="150">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding OwnerName}"/>
@@ -265,7 +266,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="User Name" Width="150">
+                                <GridViewColumn Header="{x:Static res:Strings.OHV_Column_UserName}" Width="150">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding UserName}"/>
@@ -273,7 +274,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Municipality" Width="140">
+                                <GridViewColumn Header="{x:Static res:Strings.OHV_Column_Municipality}" Width="140">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding Municipality}"/>
@@ -281,7 +282,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="District" Width="140">
+                                <GridViewColumn Header="{x:Static res:Strings.OHV_Column_District}" Width="140">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding District}"/>
@@ -289,7 +290,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Contact" Width="120">
+                                <GridViewColumn Header="{x:Static res:Strings.OHV_Column_Contact}" Width="120">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding ContactNum}"/>
@@ -297,7 +298,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Installed" Width="110">
+                                <GridViewColumn Header="{x:Static res:Strings.OHV_Column_Installed}" Width="110">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
@@ -306,7 +307,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Last Inspect" Width="120">
+                                <GridViewColumn Header="{x:Static res:Strings.OHV_Column_LastInspect}" Width="120">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
@@ -316,10 +317,10 @@
                                 </GridViewColumn>
 
                                 <!-- Status chip (read-only) -->
-                                <GridViewColumn Header="Status" Width="150"
+                                <GridViewColumn Header="{x:Static res:Strings.OHV_Column_Status}" Width="150"
                                                 CellTemplate="{StaticResource StatusChipTemplate}"/>
 
-                                <GridViewColumn Header="Comment" Width="220">
+                                <GridViewColumn Header="{x:Static res:Strings.OHV_Column_Comment}" Width="220">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
@@ -333,7 +334,7 @@
                     </ListView>
 
                     <!-- Empty state -->
-                    <TextBlock Text="No operational households found"
+                    <TextBlock Text="{x:Static res:Strings.OHV_EmptyState}"
                                Foreground="{StaticResource Col.TextMut}"
                                FontStyle="Italic"
                                HorizontalAlignment="Center"

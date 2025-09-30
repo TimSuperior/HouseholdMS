@@ -9,6 +9,7 @@ using HouseholdMS.View.UserControls; // AddHouseholdControl (edit form)
 using HouseholdMS.Model;
 using System.Data.SQLite;
 using System.Windows.Media;
+using HouseholdMS.Resources; // <-- for Strings (localized resources)
 
 namespace HouseholdMS.View.Dashboard
 {
@@ -16,7 +17,7 @@ namespace HouseholdMS.View.Dashboard
     {
         // DB canonical labels (match your schema/triggers)
         private const string OPERATIONAL = "Operational";
-        private const string IN_SERVICE = "In Service";        // This is your "Out of Service" bucket in UI
+        private const string IN_SERVICE = "In Service";        // UI bucket "Out of Service"
         private const string NOT_OPERATIONAL = "Not Operational";
 
         private readonly ObservableCollection<Household> allHouseholds = new ObservableCollection<Household>();
@@ -24,20 +25,8 @@ namespace HouseholdMS.View.Dashboard
         private GridViewColumnHeader _lastHeaderClicked;
         private ListSortDirection _lastDirection = ListSortDirection.Ascending;
 
-        private readonly Dictionary<string, string> _headerToProperty = new Dictionary<string, string>
-        {
-            { "ID", "HouseholdID" },
-            { "Owner Name", "OwnerName" },
-            { "User Name", "UserName" },
-            { "Municipality", "Municipality" },
-            { "District", "District" },
-            { "Contact", "ContactNum" },
-            { "Installed", "InstallDate" },
-            { "Last Inspect", "LastInspect" },
-            { "Status", "Statuss" },
-            { "Comment", "UserComm" }
-        };
-
+        // NOTE: header text is localized now; sorting uses Header.Tag instead (see click handler).
+        private readonly string _currentUserRoleDefault = "Admin";
         private string _currentUserRole = "Admin";
 
         // Default to only show "In Service" (out-of-service) in this view
@@ -73,6 +62,11 @@ namespace HouseholdMS.View.Dashboard
 
             if (!string.IsNullOrWhiteSpace(userRole))
                 _currentUserRole = userRole;
+            else
+                _currentUserRole = _currentUserRoleDefault;
+
+            // Ensure placeholder is localized & not treated as a real query
+            UpdateSearchPlaceholder();  // sets Tag and (if empty) sets Text = Tag
 
             LoadHouseholds();
 
@@ -82,7 +76,6 @@ namespace HouseholdMS.View.Dashboard
             // Double-click = open appropriate modal (ServiceCall for In Service; Edit otherwise)
             HouseholdListView.MouseDoubleClick += HouseholdListView_MouseDoubleClick;
 
-            UpdateSearchPlaceholder();
             ApplyFilter();
         }
 
@@ -104,7 +97,6 @@ namespace HouseholdMS.View.Dashboard
             {
                 conn.Open();
 
-                // Pull all; UI filter will scope to "In Service" for this view.
                 using (var cmd = new SQLiteCommand("SELECT HouseholdID, OwnerName, UserName, Municipality, District, ContactNum, InstallDate, LastInspect, UserComm, Statuss FROM Households;", conn))
                 using (var reader = cmd.ExecuteReader())
                 {
@@ -160,30 +152,42 @@ namespace HouseholdMS.View.Dashboard
 
         private static string DisplayStatusLabel(string normalized)
         {
-            // UI-friendly label (your product language)
+            // keep original behavior
             return string.Equals(normalized, IN_SERVICE, StringComparison.Ordinal) ? "Out of Service" : normalized;
         }
 
+        // ===== Placeholder helpers (locale-safe) =====
         private void UpdateSearchPlaceholder()
         {
             if (SearchBox == null) return;
 
-            string ph = _categoryFilterActive
-                ? "Search within \"" + DisplayStatusLabel(_normalizedStatusFilter) + "\""
-                : "Search all households";
-
+            string ph = Strings.OOSV_SearchPlaceholder; // localized resource
             SearchBox.Tag = ph;
 
-            if (string.IsNullOrWhiteSpace(SearchBox.Text) ||
-                SearchBox.Text == "Search by owner, user, area or contact" ||
-                SearchBox.Text == "Search all households")
+            if (string.IsNullOrWhiteSpace(SearchBox.Text))
             {
-                SearchBox.Text = ph;
-                SearchBox.Foreground = Brushes.Gray;
-                SearchBox.FontStyle = FontStyles.Italic;
+                SetPlaceholder(SearchBox, ph);
+                _searchText = string.Empty;
             }
+            else if (IsPlaceholder(SearchBox.Text, ph))
+            {
+                SetPlaceholder(SearchBox, ph);
+                _searchText = string.Empty;
+            }
+            // else: user already typed something; leave it.
         }
 
+        private static void SetPlaceholder(TextBox box, string text)
+        {
+            box.Text = text;
+            box.Foreground = Brushes.Gray;
+            box.FontStyle = FontStyles.Italic;
+        }
+
+        private static bool IsPlaceholder(string text, string tagValue)
+            => string.Equals(text ?? string.Empty, tagValue ?? string.Empty, StringComparison.Ordinal);
+
+        // ===== Filtering =====
         private void ApplyFilter()
         {
             if (view == null) return;
@@ -206,14 +210,12 @@ namespace HouseholdMS.View.Dashboard
 
                 if (string.IsNullOrEmpty(search)) return true;
 
-                // string contains search on several fields
                 if (!string.IsNullOrEmpty(h.OwnerName) && h.OwnerName.ToLowerInvariant().Contains(search)) return true;
                 if (!string.IsNullOrEmpty(h.UserName) && h.UserName.ToLowerInvariant().Contains(search)) return true;
                 if (!string.IsNullOrEmpty(h.Municipality) && h.Municipality.ToLowerInvariant().Contains(search)) return true;
                 if (!string.IsNullOrEmpty(h.District) && h.District.ToLowerInvariant().Contains(search)) return true;
                 if (!string.IsNullOrEmpty(h.ContactNum) && h.ContactNum.ToLowerInvariant().Contains(search)) return true;
 
-                // Numeric search for ID (optional)
                 int id;
                 if (int.TryParse(search, out id) && h.HouseholdID == id) return true;
 
@@ -225,7 +227,10 @@ namespace HouseholdMS.View.Dashboard
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (SearchBox != null && SearchBox.Text == (SearchBox.Tag as string))
+            var tagText = SearchBox?.Tag as string ?? string.Empty;
+
+            // If Text equals Tag (placeholder), treat as empty search
+            if (SearchBox != null && IsPlaceholder(SearchBox.Text, tagText))
                 _searchText = string.Empty;
             else
                 _searchText = SearchBox == null ? string.Empty : SearchBox.Text;
@@ -236,11 +241,11 @@ namespace HouseholdMS.View.Dashboard
         private void ResetText(object sender, RoutedEventArgs e)
         {
             var box = sender as TextBox;
-            if (box != null && string.IsNullOrWhiteSpace(box.Text))
+            if (box == null) return;
+
+            if (string.IsNullOrWhiteSpace(box.Text))
             {
-                box.Text = box.Tag as string;
-                box.Foreground = Brushes.Gray;
-                box.FontStyle = FontStyles.Italic;
+                SetPlaceholder(box, box.Tag as string ?? string.Empty);
                 _searchText = string.Empty;
                 ApplyFilter();
             }
@@ -251,7 +256,7 @@ namespace HouseholdMS.View.Dashboard
             var box = sender as TextBox;
             if (box == null) return;
 
-            if (box.Text == box.Tag as string)
+            if (IsPlaceholder(box.Text, box.Tag as string ?? string.Empty))
                 box.Text = string.Empty;
 
             box.Foreground = Brushes.Black;
@@ -261,15 +266,20 @@ namespace HouseholdMS.View.Dashboard
             ApplyFilter();
         }
 
+        // ===== Locale-safe sorting using Header.Tag (property name) =====
         private void GridViewColumnHeader_Click(object sender, RoutedEventArgs e)
         {
             var header = e.OriginalSource as GridViewColumnHeader;
             if (header == null) return;
 
-            string headerText = header.Content == null ? null : header.Content.ToString();
-            if (string.IsNullOrEmpty(headerText) || !_headerToProperty.ContainsKey(headerText)) return;
+            string sortBy = null;
 
-            string sortBy = _headerToProperty[headerText];
+            if (header.Content is FrameworkElement fe && fe.Tag is string tag && !string.IsNullOrWhiteSpace(tag))
+            {
+                sortBy = tag;
+            }
+
+            if (string.IsNullOrWhiteSpace(sortBy)) return;
 
             ListSortDirection direction =
                 (_lastHeaderClicked == header && _lastDirection == ListSortDirection.Ascending)
@@ -311,12 +321,10 @@ namespace HouseholdMS.View.Dashboard
                     Background = Brushes.White
                 };
 
-                // Close when service finished (event raised by control)
                 ctl.ServiceFinished += delegate { try { win.DialogResult = true; } catch { } win.Close(); };
 
                 win.ShowDialog();
 
-                // Reload & notify after closing
                 LoadHouseholds();
                 ApplyFilter();
                 HouseholdListView.SelectedItem = null;
@@ -324,7 +332,6 @@ namespace HouseholdMS.View.Dashboard
             }
             else
             {
-                // Non "In Service": open edit form
                 var ctl = new AddHouseholdControl(selected); // edit mode when instance is passed
 
                 var win = new Window
@@ -365,16 +372,16 @@ namespace HouseholdMS.View.Dashboard
 
             var cm = new ContextMenu();
 
-            Action<string> addItem = delegate (string text)
+            void AddItem(string text)
             {
                 var mi = new MenuItem { Header = text };
                 mi.Click += delegate { ChangeStatus(h, text); };
                 cm.Items.Add(mi);
-            };
+            }
 
-            addItem(OPERATIONAL);
-            addItem(IN_SERVICE);
-            addItem(NOT_OPERATIONAL);
+            AddItem(OPERATIONAL);
+            AddItem(IN_SERVICE);
+            AddItem(NOT_OPERATIONAL);
 
             cm.PlacementTarget = tb;
             cm.IsOpen = true;
@@ -382,11 +389,9 @@ namespace HouseholdMS.View.Dashboard
 
         private void ChangeStatus(Household h, string newStatus)
         {
-            // Avoid unnecessary writes
             if (string.Equals(NormalizeStatus(h.Statuss), NormalizeStatus(newStatus), StringComparison.Ordinal))
                 return;
 
-            // Warn when moving into "In Service" because a Service ticket will be opened by trigger
             if (NormalizeStatus(newStatus) == IN_SERVICE)
             {
                 var confirm = MessageBox.Show(
@@ -411,8 +416,6 @@ namespace HouseholdMS.View.Dashboard
                             cmd.Parameters.AddWithValue("@id", h.HouseholdID);
                             cmd.ExecuteNonQuery();
                         }
-
-                        // The DB trigger will auto-create a Service row when Statuss becomes 'In Service'.
                         tx.Commit();
                     }
                 }

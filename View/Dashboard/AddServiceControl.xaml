@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:res="clr-namespace:HouseholdMS.Resources"
              mc:Ignorable="d"
              d:DesignHeight="760"
              d:DesignWidth="980"
@@ -73,7 +74,7 @@
                         <Trigger Property="Tag" Value="error">
                             <Setter Property="BorderBrush" Value="Red"/>
                             <Setter Property="BorderThickness" Value="1.5"/>
-                            <Setter Property="ToolTip" Value="This field is required."/>
+                            <Setter Property="ToolTip" Value="{x:Static res:Strings.AS_FieldRequired}"/>
                         </Trigger>
                     </Style.Triggers>
                 </Style>
@@ -145,7 +146,7 @@
             <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0,0,0,14">
                 <DockPanel LastChildFill="False">
                     <TextBlock Text="🛠" FontSize="26" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                    <TextBlock Text="Start Service Call" Style="{StaticResource HeaderTitle}"/>
+                    <TextBlock Text="{x:Static res:Strings.AS_Header}" Style="{StaticResource HeaderTitle}"/>
                 </DockPanel>
 
                 <!-- Filled by code-behind SetInfoText(...) -->
@@ -166,36 +167,23 @@
                             Background="{StaticResource CardBgBrush}"
                             Padding="16">
                         <StackPanel>
-                            <TextBlock Text="Household summary" Style="{StaticResource FormLabel}" Margin="0,0,0,10"/>
+                            <TextBlock Text="{x:Static res:Strings.AS_Summary_Title}" Style="{StaticResource FormLabel}" Margin="0,0,0,10"/>
                             <Grid>
                                 <!-- Explicit rows: content/divider pairs to prevent overlap -->
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
-                                    <!-- 0: ID -->
                                     <RowDefinition Height="1"/>
-                                    <!-- 1: line -->
                                     <RowDefinition Height="Auto"/>
-                                    <!-- 2: Owner -->
                                     <RowDefinition Height="1"/>
-                                    <!-- 3: line -->
                                     <RowDefinition Height="Auto"/>
-                                    <!-- 4: User -->
                                     <RowDefinition Height="1"/>
-                                    <!-- 5: line -->
                                     <RowDefinition Height="Auto"/>
-                                    <!-- 6: Municipality -->
                                     <RowDefinition Height="1"/>
-                                    <!-- 7: line -->
                                     <RowDefinition Height="Auto"/>
-                                    <!-- 8: District -->
                                     <RowDefinition Height="1"/>
-                                    <!-- 9: line -->
                                     <RowDefinition Height="Auto"/>
-                                    <!-- 10: Contact -->
                                     <RowDefinition Height="1"/>
-                                    <!-- 11: line -->
                                     <RowDefinition Height="Auto"/>
-                                    <!-- 12: Status -->
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="220"/>
@@ -203,43 +191,43 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Row 0 -->
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Household ID:" Style="{StaticResource SummaryLabelStyle}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Static res:Strings.AS_Summary_HouseholdID}" Style="{StaticResource SummaryLabelStyle}"/>
                                 <TextBlock x:Name="HHIdText" Grid.Row="0" Grid.Column="1" Style="{StaticResource SummaryValueStyle}"/>
 
                                 <Border Grid.Row="1" Grid.ColumnSpan="2" Background="{StaticResource DividerBrush}" />
 
                                 <!-- Row 2 -->
-                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Owner:" Style="{StaticResource SummaryLabelStyle}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="{x:Static res:Strings.AS_Summary_Owner}" Style="{StaticResource SummaryLabelStyle}"/>
                                 <TextBlock x:Name="OwnerText" Grid.Row="2" Grid.Column="1" Style="{StaticResource SummaryValueStyle}"/>
 
                                 <Border Grid.Row="3" Grid.ColumnSpan="2" Background="{StaticResource DividerBrush}" />
 
                                 <!-- Row 4 -->
-                                <TextBlock Grid.Row="4" Grid.Column="0" Text="User:" Style="{StaticResource SummaryLabelStyle}"/>
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="{x:Static res:Strings.AS_Summary_User}" Style="{StaticResource SummaryLabelStyle}"/>
                                 <TextBlock x:Name="UserText" Grid.Row="4" Grid.Column="1" Style="{StaticResource SummaryValueStyle}"/>
 
                                 <Border Grid.Row="5" Grid.ColumnSpan="2" Background="{StaticResource DividerBrush}" />
 
                                 <!-- Row 6 -->
-                                <TextBlock Grid.Row="6" Grid.Column="0" Text="Municipality:" Style="{StaticResource SummaryLabelStyle}"/>
+                                <TextBlock Grid.Row="6" Grid.Column="0" Text="{x:Static res:Strings.AS_Summary_Municipality}" Style="{StaticResource SummaryLabelStyle}"/>
                                 <TextBlock x:Name="MunicipalityText" Grid.Row="6" Grid.Column="1" Style="{StaticResource SummaryValueStyle}"/>
 
                                 <Border Grid.Row="7" Grid.ColumnSpan="2" Background="{StaticResource DividerBrush}" />
 
                                 <!-- Row 8 -->
-                                <TextBlock Grid.Row="8" Grid.Column="0" Text="District:" Style="{StaticResource SummaryLabelStyle}"/>
+                                <TextBlock Grid.Row="8" Grid.Column="0" Text="{x:Static res:Strings.AS_Summary_District}" Style="{StaticResource SummaryLabelStyle}"/>
                                 <TextBlock x:Name="DistrictText" Grid.Row="8" Grid.Column="1" Style="{StaticResource SummaryValueStyle}"/>
 
                                 <Border Grid.Row="9" Grid.ColumnSpan="2" Background="{StaticResource DividerBrush}" />
 
                                 <!-- Row 10 -->
-                                <TextBlock Grid.Row="10" Grid.Column="0" Text="Contact:" Style="{StaticResource SummaryLabelStyle}"/>
+                                <TextBlock Grid.Row="10" Grid.Column="0" Text="{x:Static res:Strings.AS_Summary_Contact}" Style="{StaticResource SummaryLabelStyle}"/>
                                 <TextBlock x:Name="ContactText" Grid.Row="10" Grid.Column="1" Style="{StaticResource SummaryValueStyle}"/>
 
                                 <Border Grid.Row="11" Grid.ColumnSpan="2" Background="{StaticResource DividerBrush}" />
 
                                 <!-- Row 12 -->
-                                <TextBlock Grid.Row="12" Grid.Column="0" Text="Status:" Style="{StaticResource SummaryLabelStyle}"/>
+                                <TextBlock Grid.Row="12" Grid.Column="0" Text="{x:Static res:Strings.AS_Summary_Status}" Style="{StaticResource SummaryLabelStyle}"/>
                                 <TextBlock x:Name="StatusText" Grid.Row="12" Grid.Column="1" Style="{StaticResource SummaryValueStyle}"/>
                             </Grid>
                         </StackPanel>
@@ -248,7 +236,7 @@
                     <Border Height="14" Background="Transparent"/>
 
                     <!-- Problem -->
-                    <TextBlock Text="Problem description (optional)" Style="{StaticResource FormLabel}" Margin="0,0,0,6"/>
+                    <TextBlock Text="{x:Static res:Strings.AS_Problem_Label}" Style="{StaticResource FormLabel}" Margin="0,0,0,6"/>
                     <TextBox x:Name="ProblemBox"
                              Style="{StaticResource InputTextBox}"
                              AcceptsReturn="True"
@@ -265,11 +253,11 @@
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button x:Name="ConfirmBtn"
-                            Content="✔ Confirm Service"
+                            Content="{x:Static res:Strings.AS_Confirm}"
                             Style="{StaticResource PrimaryButton}"
                             Click="ConfirmBtn_Click"/>
                     <Button x:Name="CancelBtn"
-                            Content="✖ Cancel"
+                            Content="{x:Static res:Strings.AS_Cancel}"
                             Style="{StaticResource CancelButton}"
                             Click="CancelBtn_Click"/>
                 </StackPanel>

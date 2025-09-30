@@ -3,11 +3,25 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data; // for IValueConverter
 using HouseholdMS.Model;
 using System.Data.SQLite;
 
 namespace HouseholdMS.View.UserControls
 {
+    // Responsive width converter: returns true if the control is narrower than Threshold
+    public class IsNarrowConverter : IValueConverter
+    {
+        public double Threshold { get; set; } = 1100;
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value is double d) return d < Threshold;
+            return false;
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
     public partial class UserFormControl : UserControl
     {
         private readonly User _user;
@@ -73,7 +87,6 @@ namespace HouseholdMS.View.UserControls
         {
             var item = RoleComboBox.SelectedItem as ComboBoxItem;
             var role = (item?.Content as string) ?? "Guest";
-            // Normalize capitalization
             if (string.Equals(role, "user", StringComparison.OrdinalIgnoreCase)) role = "Guest";
             return role;
         }
@@ -86,7 +99,7 @@ namespace HouseholdMS.View.UserControls
             RoleComboBox.SelectedItem = target ?? RoleComboBox.Items.Cast<ComboBoxItem>().First();
         }
 
-        // ===== Helpers (same logic as Login/Register) =====
+        // ===== Helpers =====
         private static bool HasDigit(string s)
         {
             if (string.IsNullOrEmpty(s)) return false;
@@ -116,7 +129,7 @@ namespace HouseholdMS.View.UserControls
 
         /// <summary>
         /// Validates inputs. For ADD: password required + confirm; For EDIT: password optional (but if provided, must pass + confirm).
-        /// Technician requires Phone(8–15 digits), Address(>=5), Area(>=2). Username rules: >=4 chars, no spaces, != Name.
+        /// Technician requires Phone(8–15 digits), Address(>=5), Area(>=2).
         /// </summary>
         private bool ValidateForm(out string errorMessage, out string sanitizedPhone)
         {
@@ -141,7 +154,7 @@ namespace HouseholdMS.View.UserControls
                 sb.AppendLine("• Name must be at least 2 characters.");
             }
 
-            // Username (only when adding; edit is read-only)
+            // Username (add-only)
             if (isAdd)
             {
                 if (string.IsNullOrWhiteSpace(username) || username.Length < 4)
@@ -165,7 +178,6 @@ namespace HouseholdMS.View.UserControls
             // Password rules
             if (isAdd)
             {
-                // required on add
                 if (string.IsNullOrEmpty(pwd) || pwd.Length <= 6)
                 {
                     PasswordBox.Tag = "error"; ok = false;
@@ -204,7 +216,6 @@ namespace HouseholdMS.View.UserControls
             }
             else
             {
-                // optional on edit — but if provided, enforce rules + confirm
                 if (!string.IsNullOrWhiteSpace(pwd))
                 {
                     if (pwd.Length <= 6)
@@ -257,7 +268,6 @@ namespace HouseholdMS.View.UserControls
             }
             else
             {
-                // Optional phone: if provided, must be a valid length after digit-filter
                 if (sanitizedPhone.Length > 0 && (sanitizedPhone.Length < 8 || sanitizedPhone.Length > 15))
                 {
                     PhoneBox.Tag = "error"; ok = false;
@@ -289,7 +299,7 @@ namespace HouseholdMS.View.UserControls
             string addr = (AddressBox.Text ?? "").Trim();
             string area = (AreaBox.Text ?? "").Trim();
             string note = (NoteBox.Text ?? "").Trim();
-            string pwd = PasswordBox.Password; // NOTE: hash in production
+            string pwd = PasswordBox.Password;
 
             bool isAdd = (_user.UserID == 0);
 
@@ -301,8 +311,7 @@ namespace HouseholdMS.View.UserControls
 
                     if (isAdd)
                     {
-                        // Unique username (case-insensitive)
-                        using (var check = new SQLiteCommand(
+                        using (var check = new System.Data.SQLite.SQLiteCommand(
                                    "SELECT COUNT(*) FROM Users WHERE LOWER(Username)=LOWER(@u);", conn))
                         {
                             check.Parameters.AddWithValue("@u", usern);
@@ -320,8 +329,7 @@ namespace HouseholdMS.View.UserControls
 INSERT INTO Users
 (Name, Username, PasswordHash, Role, Phone, Address, AssignedArea, Note, IsActive, TechApproved)
 VALUES
-(@n, @u, @p, @r, @ph, @ad, @ar, @no, 1, @ta);
-", conn))
+(@n, @u, @p, @r, @ph, @ad, @ar, @no, 1, @ta);", conn))
                         {
                             cmd.Parameters.AddWithValue("@n", name);
                             cmd.Parameters.AddWithValue("@u", usern);
@@ -331,7 +339,7 @@ VALUES
                             cmd.Parameters.AddWithValue("@ad", (object)(string.IsNullOrWhiteSpace(addr) ? null : addr) ?? DBNull.Value);
                             cmd.Parameters.AddWithValue("@ar", (object)(string.IsNullOrWhiteSpace(area) ? null : area) ?? DBNull.Value);
                             cmd.Parameters.AddWithValue("@no", (object)(string.IsNullOrWhiteSpace(note) ? null : note) ?? DBNull.Value);
-                            cmd.Parameters.AddWithValue("@ta", 1); // auto-approved
+                            cmd.Parameters.AddWithValue("@ta", 1);
                             cmd.ExecuteNonQuery();
                         }
                     }

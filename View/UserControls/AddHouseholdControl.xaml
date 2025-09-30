@@ -1,9 +1,10 @@
-﻿<UserControl x:Class="HouseholdMS.View.UserControls.AddHouseholdControl"  
+﻿<UserControl x:Class="HouseholdMS.View.UserControls.AddHouseholdControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:System="clr-namespace:System;assembly=mscorlib"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:res="clr-namespace:HouseholdMS.Resources"
              mc:Ignorable="d"
              Background="White"
              d:DesignHeight="600"
@@ -70,7 +71,7 @@
                         <Trigger Property="Tag" Value="error">
                             <Setter Property="BorderBrush" Value="Red"/>
                             <Setter Property="BorderThickness" Value="1.5"/>
-                            <Setter Property="ToolTip" Value="This field is required."/>
+                            <Setter Property="ToolTip" Value="{x:Static res:Strings.AHC_FieldRequired}"/>
                         </Trigger>
                     </Style.Triggers>
                 </Style>
@@ -191,7 +192,7 @@
 
                     <!-- Status chip -->
                     <Border x:Name="StatusChip" Style="{StaticResource ChipBorder}" Background="{StaticResource SuccessBrush}">
-                        <TextBlock x:Name="StatusChipText" Style="{StaticResource ChipText}" Text="Operational"/>
+                        <TextBlock x:Name="StatusChipText" Style="{StaticResource ChipText}" Text="{x:Static res:Strings.Common_Status_Operational}"/>
                     </Border>
                 </StackPanel>
             </Grid>
@@ -207,7 +208,7 @@
                     Margin="0,0,0,10"
                     Visibility="Collapsed">
                 <TextBlock Foreground="{StaticResource InfoFgBrush}"
-                           Text="Status is set to Out of Service. Please add a short note describing the reason and consider opening a Service Call from the dashboard."/>
+                           Text="{x:Static res:Strings.AHC_Info_OutOfService}"/>
             </Border>
 
             <!-- ===== SCROLLABLE CONTENT: Form Fields + Service History (together) ===== -->
@@ -216,42 +217,42 @@
 
                     <!-- ===== Form Fields ===== -->
                     <!-- Owner Name (required) -->
-                    <TextBlock Text="Owner Name" Style="{StaticResource FormLabel}"/>
+                    <TextBlock Text="{x:Static res:Strings.AHC_Label_OwnerName}" Style="{StaticResource FormLabel}"/>
                     <TextBox x:Name="OwnerBox"
                              Style="{StaticResource ErrorBoxStyle}"
                              Margin="0,0,0,10"
                              TabIndex="1"/>
 
                     <!-- User Name -->
-                    <TextBlock Text="User Name" Style="{StaticResource FormLabel}"/>
+                    <TextBlock Text="{x:Static res:Strings.AHC_Label_UserName}" Style="{StaticResource FormLabel}"/>
                     <TextBox x:Name="UserNameBox"
                              Style="{StaticResource InputTextBox}"
                              Margin="0,0,0,10"
                              TabIndex="2"/>
 
                     <!-- Municipality -->
-                    <TextBlock Text="Municipality" Style="{StaticResource FormLabel}"/>
+                    <TextBlock Text="{x:Static res:Strings.AHC_Label_Municipality}" Style="{StaticResource FormLabel}"/>
                     <TextBox x:Name="MunicipalityBox"
                              Style="{StaticResource InputTextBox}"
                              Margin="0,0,0,10"
                              TabIndex="3"/>
 
                     <!-- District -->
-                    <TextBlock Text="District" Style="{StaticResource FormLabel}"/>
+                    <TextBlock Text="{x:Static res:Strings.AHC_Label_District}" Style="{StaticResource FormLabel}"/>
                     <TextBox x:Name="DistrictBox"
                              Style="{StaticResource InputTextBox}"
                              Margin="0,0,0,10"
                              TabIndex="4"/>
 
                     <!-- Contact Number (required) -->
-                    <TextBlock Text="Contact Number" Style="{StaticResource FormLabel}"/>
+                    <TextBlock Text="{x:Static res:Strings.AHC_Label_ContactNumber}" Style="{StaticResource FormLabel}"/>
                     <TextBox x:Name="ContactBox"
                              Style="{StaticResource ErrorBoxStyle}"
                              Margin="0,0,0,10"
                              TabIndex="5"/>
 
                     <!-- Installation Date -->
-                    <TextBlock Text="Installation Date" Style="{StaticResource FormLabel}"/>
+                    <TextBlock Text="{x:Static res:Strings.AHC_Label_InstallDate}" Style="{StaticResource FormLabel}"/>
                     <DatePicker x:Name="InstDatePicker"
                                 Style="{StaticResource InputDatePicker}"
                                 DisplayDateEnd="{x:Static System:DateTime.Today}"
@@ -259,7 +260,7 @@
                                 TabIndex="6"/>
 
                     <!-- Last Inspection Date -->
-                    <TextBlock Text="Last Inspection Date" Style="{StaticResource FormLabel}"/>
+                    <TextBlock Text="{x:Static res:Strings.AHC_Label_LastInspectDate}" Style="{StaticResource FormLabel}"/>
                     <DatePicker x:Name="LastInspPicker"
                                 Style="{StaticResource InputDatePicker}"
                                 DisplayDateEnd="{x:Static System:DateTime.Today}"
@@ -267,7 +268,7 @@
                                 TabIndex="7"/>
 
                     <!-- Status -->
-                    <TextBlock Text="Status" Style="{StaticResource FormLabel}"/>
+                    <TextBlock Text="{x:Static res:Strings.AHC_Label_Status}" Style="{StaticResource FormLabel}"/>
                     <ComboBox x:Name="StatusCombo"
                               Style="{StaticResource InputComboBox}"
                               Margin="0,0,0,10"
@@ -275,12 +276,12 @@
                               SelectionChanged="StatusCombo_SelectionChanged"
                               SelectedIndex="0"
                               IsEditable="False">
-                        <ComboBoxItem Content="Operational"/>
-                        <ComboBoxItem Content="Out of Service"/>
+                        <ComboBoxItem Content="{x:Static res:Strings.Common_Status_Operational}" Tag="Operational"/>
+                        <ComboBoxItem Content="{x:Static res:Strings.Common_Status_OutOfService}" Tag="Out of Service"/>
                     </ComboBox>
 
                     <!-- Note -->
-                    <TextBlock Text="Note (optional)" Style="{StaticResource FormLabel}"/>
+                    <TextBlock Text="{x:Static res:Strings.AHC_Label_NoteOptional}" Style="{StaticResource FormLabel}"/>
                     <TextBox x:Name="NoteBox"
                              Height="60"
                              AcceptsReturn="True"
@@ -314,7 +315,7 @@
 
                             <!-- Header -->
                             <DockPanel Grid.Row="0" LastChildFill="False">
-                                <TextBlock Text="🛠 Service History"
+                                <TextBlock Text="{x:Static res:Strings.AHC_ServiceHistory_Title}"
                                            FontSize="16"
                                            FontWeight="Bold"
                                            Foreground="#2E3B4E"
@@ -328,7 +329,7 @@
                                     <TextBlock x:Name="ServiceHistoryCountText"
                                                Foreground="#37474F"
                                                FontWeight="SemiBold"
-                                               Text="0 records"/>
+                                               Text="{x:Static res:Strings.AHC_ServiceHistory_Zero}"/>
                                 </Border>
                             </DockPanel>
 
@@ -337,7 +338,7 @@
                                        Grid.Row="1"
                                        Margin="0,6,0,8"
                                        Foreground="{StaticResource MutedBrush}"
-                                       Text="No service records yet."
+                                       Text="{x:Static res:Strings.AHC_ServiceHistory_Empty}"
                                        Visibility="Collapsed"/>
 
                             <!-- Grid -->
@@ -375,11 +376,11 @@
                                 </DataGrid.Resources>
 
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Binding="{Binding ServiceID}" Header="#" Width="50"/>
-                                    <DataGridTextColumn Binding="{Binding Date}" Header="Date" Width="110"/>
-                                    <DataGridTextColumn Binding="{Binding Technician}" Header="Technician" Width="150"/>
-                                    <DataGridTextColumn Binding="{Binding Summary}" Header="Summary" Width="*"/>
-                                    <DataGridTextColumn Binding="{Binding Status}" Header="Status" Width="120"/>
+                                    <DataGridTextColumn Binding="{Binding ServiceID}" Header="{x:Static res:Strings.AHC_SH_Col_Id}" Width="50"/>
+                                    <DataGridTextColumn Binding="{Binding Date}" Header="{x:Static res:Strings.AHC_SH_Col_Date}" Width="110"/>
+                                    <DataGridTextColumn Binding="{Binding Technician}" Header="{x:Static res:Strings.AHC_SH_Col_Technician}" Width="150"/>
+                                    <DataGridTextColumn Binding="{Binding Summary}" Header="{x:Static res:Strings.AHC_SH_Col_Summary}" Width="*"/>
+                                    <DataGridTextColumn Binding="{Binding Status}" Header="{x:Static res:Strings.AHC_SH_Col_Status}" Width="120"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Grid>
@@ -391,16 +392,16 @@
             <!-- Footer buttons -->
             <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
                 <Button x:Name="SaveButton"
-                        Content="💾 Save"
+                        Content="{x:Static res:Strings.AHC_Btn_Save}"
                         Style="{StaticResource PrimaryButton}"
                         Click="Save_Click"
                         TabIndex="10"/>
-                <Button Content="✖ Cancel"
+                <Button Content="{x:Static res:Strings.AHC_Btn_Cancel}"
                         Style="{StaticResource CancelButton}"
                         Click="Cancel_Click"
                         TabIndex="11"/>
                 <Button x:Name="DeleteButton"
-                        Content="🗑 Delete"
+                        Content="{x:Static res:Strings.AHC_Btn_Delete}"
                         Style="{StaticResource DeleteButtonStyle}"
                         Visibility="Collapsed"
                         Click="Delete_Click"

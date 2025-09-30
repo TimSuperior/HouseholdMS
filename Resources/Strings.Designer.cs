@@ -61,11 +61,1127 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ✖ Cancel.
+        /// </summary>
+        public static string AHC_Btn_Cancel {
+            get {
+                return ResourceManager.GetString("AHC_Btn_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🗑 Delete.
+        /// </summary>
+        public static string AHC_Btn_Delete {
+            get {
+                return ResourceManager.GetString("AHC_Btn_Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 💾 Save.
+        /// </summary>
+        public static string AHC_Btn_Save {
+            get {
+                return ResourceManager.GetString("AHC_Btn_Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This field is required..
+        /// </summary>
+        public static string AHC_FieldRequired {
+            get {
+                return ResourceManager.GetString("AHC_FieldRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status is set to Out of Service. Please add a short note describing the reason and consider opening a Service Call from the dashboard..
+        /// </summary>
+        public static string AHC_Info_OutOfService {
+            get {
+                return ResourceManager.GetString("AHC_Info_OutOfService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contact Number.
+        /// </summary>
+        public static string AHC_Label_ContactNumber {
+            get {
+                return ResourceManager.GetString("AHC_Label_ContactNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to District.
+        /// </summary>
+        public static string AHC_Label_District {
+            get {
+                return ResourceManager.GetString("AHC_Label_District", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Installation Date.
+        /// </summary>
+        public static string AHC_Label_InstallDate {
+            get {
+                return ResourceManager.GetString("AHC_Label_InstallDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last Inspection Date.
+        /// </summary>
+        public static string AHC_Label_LastInspectDate {
+            get {
+                return ResourceManager.GetString("AHC_Label_LastInspectDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Municipality.
+        /// </summary>
+        public static string AHC_Label_Municipality {
+            get {
+                return ResourceManager.GetString("AHC_Label_Municipality", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Note (optional).
+        /// </summary>
+        public static string AHC_Label_NoteOptional {
+            get {
+                return ResourceManager.GetString("AHC_Label_NoteOptional", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Owner Name.
+        /// </summary>
+        public static string AHC_Label_OwnerName {
+            get {
+                return ResourceManager.GetString("AHC_Label_OwnerName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        public static string AHC_Label_Status {
+            get {
+                return ResourceManager.GetString("AHC_Label_Status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User Name.
+        /// </summary>
+        public static string AHC_Label_UserName {
+            get {
+                return ResourceManager.GetString("AHC_Label_UserName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No service records yet..
+        /// </summary>
+        public static string AHC_ServiceHistory_Empty {
+            get {
+                return ResourceManager.GetString("AHC_ServiceHistory_Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🛠 Service History.
+        /// </summary>
+        public static string AHC_ServiceHistory_Title {
+            get {
+                return ResourceManager.GetString("AHC_ServiceHistory_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 0 records.
+        /// </summary>
+        public static string AHC_ServiceHistory_Zero {
+            get {
+                return ResourceManager.GetString("AHC_ServiceHistory_Zero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date.
+        /// </summary>
+        public static string AHC_SH_Col_Date {
+            get {
+                return ResourceManager.GetString("AHC_SH_Col_Date", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #.
+        /// </summary>
+        public static string AHC_SH_Col_Id {
+            get {
+                return ResourceManager.GetString("AHC_SH_Col_Id", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        public static string AHC_SH_Col_Status {
+            get {
+                return ResourceManager.GetString("AHC_SH_Col_Status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Summary.
+        /// </summary>
+        public static string AHC_SH_Col_Summary {
+            get {
+                return ResourceManager.GetString("AHC_SH_Col_Summary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Technician.
+        /// </summary>
+        public static string AHC_SH_Col_Technician {
+            get {
+                return ResourceManager.GetString("AHC_SH_Col_Technician", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ➕ Add Household.
+        /// </summary>
+        public static string AHV_AddHousehold {
+            get {
+                return ResourceManager.GetString("AHV_AddHousehold", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Comment.
+        /// </summary>
+        public static string AHV_Column_Comment {
+            get {
+                return ResourceManager.GetString("AHV_Column_Comment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contact.
+        /// </summary>
+        public static string AHV_Column_Contact {
+            get {
+                return ResourceManager.GetString("AHV_Column_Contact", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to District.
+        /// </summary>
+        public static string AHV_Column_District {
+            get {
+                return ResourceManager.GetString("AHV_Column_District", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ID.
+        /// </summary>
+        public static string AHV_Column_ID {
+            get {
+                return ResourceManager.GetString("AHV_Column_ID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Installed.
+        /// </summary>
+        public static string AHV_Column_Installed {
+            get {
+                return ResourceManager.GetString("AHV_Column_Installed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last Inspect.
+        /// </summary>
+        public static string AHV_Column_LastInspect {
+            get {
+                return ResourceManager.GetString("AHV_Column_LastInspect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Municipality.
+        /// </summary>
+        public static string AHV_Column_Municipality {
+            get {
+                return ResourceManager.GetString("AHV_Column_Municipality", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Owner Name.
+        /// </summary>
+        public static string AHV_Column_OwnerName {
+            get {
+                return ResourceManager.GetString("AHV_Column_OwnerName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        public static string AHV_Column_Status {
+            get {
+                return ResourceManager.GetString("AHV_Column_Status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User Name.
+        /// </summary>
+        public static string AHV_Column_UserName {
+            get {
+                return ResourceManager.GetString("AHV_Column_UserName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No households found.
+        /// </summary>
+        public static string AHV_EmptyState {
+            get {
+                return ResourceManager.GetString("AHV_EmptyState", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Comment:.
+        /// </summary>
+        public static string AHV_RO_Comment {
+            get {
+                return ResourceManager.GetString("AHV_RO_Comment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contact:.
+        /// </summary>
+        public static string AHV_RO_Contact {
+            get {
+                return ResourceManager.GetString("AHV_RO_Contact", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to District:.
+        /// </summary>
+        public static string AHV_RO_District {
+            get {
+                return ResourceManager.GetString("AHV_RO_District", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Installed:.
+        /// </summary>
+        public static string AHV_RO_Installed {
+            get {
+                return ResourceManager.GetString("AHV_RO_Installed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last Inspect:.
+        /// </summary>
+        public static string AHV_RO_LastInspect {
+            get {
+                return ResourceManager.GetString("AHV_RO_LastInspect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Municipality:.
+        /// </summary>
+        public static string AHV_RO_Municipality {
+            get {
+                return ResourceManager.GetString("AHV_RO_Municipality", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Owner Name:.
+        /// </summary>
+        public static string AHV_RO_OwnerName {
+            get {
+                return ResourceManager.GetString("AHV_RO_OwnerName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status:.
+        /// </summary>
+        public static string AHV_RO_Status {
+            get {
+                return ResourceManager.GetString("AHV_RO_Status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User Name:.
+        /// </summary>
+        public static string AHV_RO_UserName {
+            get {
+                return ResourceManager.GetString("AHV_RO_UserName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search by owner, user, area or contact.
+        /// </summary>
+        public static string AHV_SearchPlaceholder {
+            get {
+                return ResourceManager.GetString("AHV_SearchPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status is read-only in this view. Change it in the Service/Status view..
+        /// </summary>
+        public static string AHV_Status_Tooltip {
+            get {
+                return ResourceManager.GetString("AHV_Status_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ✖ Cancel.
+        /// </summary>
+        public static string AIC_Btn_Cancel {
+            get {
+                return ResourceManager.GetString("AIC_Btn_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🗑 Delete.
+        /// </summary>
+        public static string AIC_Btn_Delete {
+            get {
+                return ResourceManager.GetString("AIC_Btn_Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ✔ Save Changes.
+        /// </summary>
+        public static string AIC_Btn_Save {
+            get {
+                return ResourceManager.GetString("AIC_Btn_Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manage inventory item.
+        /// </summary>
+        public static string AIC_Header_Subtitle {
+            get {
+                return ResourceManager.GetString("AIC_Header_Subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This item is low on stock..
+        /// </summary>
+        public static string AIC_Info_LowStock {
+            get {
+                return ResourceManager.GetString("AIC_Info_LowStock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This item is out of stock..
+        /// </summary>
+        public static string AIC_Info_OutOfStock {
+            get {
+                return ResourceManager.GetString("AIC_Info_OutOfStock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Initial Quantity.
+        /// </summary>
+        public static string AIC_Label_InitialQty {
+            get {
+                return ResourceManager.GetString("AIC_Label_InitialQty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item Type.
+        /// </summary>
+        public static string AIC_Label_ItemType {
+            get {
+                return ResourceManager.GetString("AIC_Label_ItemType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Note (optional).
+        /// </summary>
+        public static string AIC_Label_NoteOptional {
+            get {
+                return ResourceManager.GetString("AIC_Label_NoteOptional", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Low Stock Threshold.
+        /// </summary>
+        public static string AIC_Label_Threshold {
+            get {
+                return ResourceManager.GetString("AIC_Label_Threshold", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restock History.
+        /// </summary>
+        public static string AIC_RestockHistory_Title {
+            get {
+                return ResourceManager.GetString("AIC_RestockHistory_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to By.
+        /// </summary>
+        public static string AIC_RH_Col_By {
+            get {
+                return ResourceManager.GetString("AIC_RH_Col_By", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Note.
+        /// </summary>
+        public static string AIC_RH_Col_Note {
+            get {
+                return ResourceManager.GetString("AIC_RH_Col_Note", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Qty.
+        /// </summary>
+        public static string AIC_RH_Col_Qty {
+            get {
+                return ResourceManager.GetString("AIC_RH_Col_Qty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to When.
+        /// </summary>
+        public static string AIC_RH_Col_When {
+            get {
+                return ResourceManager.GetString("AIC_RH_Col_When", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Available.
+        /// </summary>
+        public static string AIC_Snapshot_Available {
+            get {
+                return ResourceManager.GetString("AIC_Snapshot_Available", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last Restocked.
+        /// </summary>
+        public static string AIC_Snapshot_LastRestocked {
+            get {
+                return ResourceManager.GetString("AIC_Snapshot_LastRestocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last Used.
+        /// </summary>
+        public static string AIC_Snapshot_LastUsed {
+            get {
+                return ResourceManager.GetString("AIC_Snapshot_LastUsed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item Snapshot.
+        /// </summary>
+        public static string AIC_Snapshot_Title {
+            get {
+                return ResourceManager.GetString("AIC_Snapshot_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Used.
+        /// </summary>
+        public static string AIC_Snapshot_Used {
+            get {
+                return ResourceManager.GetString("AIC_Snapshot_Used", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to In Stock.
+        /// </summary>
+        public static string AIC_Status_InStock {
+            get {
+                return ResourceManager.GetString("AIC_Status_InStock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Low Stock.
+        /// </summary>
+        public static string AIC_Status_LowStock {
+            get {
+                return ResourceManager.GetString("AIC_Status_LowStock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Out of Stock.
+        /// </summary>
+        public static string AIC_Status_OutOfStock {
+            get {
+                return ResourceManager.GetString("AIC_Status_OutOfStock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Qty Used.
+        /// </summary>
+        public static string AIC_UH_Col_QtyUsed {
+            get {
+                return ResourceManager.GetString("AIC_UH_Col_QtyUsed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service.
+        /// </summary>
+        public static string AIC_UH_Col_Service {
+            get {
+                return ResourceManager.GetString("AIC_UH_Col_Service", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Technician(s).
+        /// </summary>
+        public static string AIC_UH_Col_Technicians {
+            get {
+                return ResourceManager.GetString("AIC_UH_Col_Technicians", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Used By.
+        /// </summary>
+        public static string AIC_UH_Col_UsedBy {
+            get {
+                return ResourceManager.GetString("AIC_UH_Col_UsedBy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to When.
+        /// </summary>
+        public static string AIC_UH_Col_When {
+            get {
+                return ResourceManager.GetString("AIC_UH_Col_When", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Usage History.
+        /// </summary>
+        public static string AIC_UsageHistory_Title {
+            get {
+                return ResourceManager.GetString("AIC_UsageHistory_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to PV Testing Workbench.
         /// </summary>
         public static string App_Title {
             get {
                 return ResourceManager.GetString("App_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ✖ Cancel.
+        /// </summary>
+        public static string AS_Cancel {
+            get {
+                return ResourceManager.GetString("AS_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ✔ Confirm Service.
+        /// </summary>
+        public static string AS_Confirm {
+            get {
+                return ResourceManager.GetString("AS_Confirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This field is required..
+        /// </summary>
+        public static string AS_FieldRequired {
+            get {
+                return ResourceManager.GetString("AS_FieldRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start Service Call.
+        /// </summary>
+        public static string AS_Header {
+            get {
+                return ResourceManager.GetString("AS_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Problem description (optional).
+        /// </summary>
+        public static string AS_Problem_Label {
+            get {
+                return ResourceManager.GetString("AS_Problem_Label", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contact:.
+        /// </summary>
+        public static string AS_Summary_Contact {
+            get {
+                return ResourceManager.GetString("AS_Summary_Contact", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to District:.
+        /// </summary>
+        public static string AS_Summary_District {
+            get {
+                return ResourceManager.GetString("AS_Summary_District", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Household ID:.
+        /// </summary>
+        public static string AS_Summary_HouseholdID {
+            get {
+                return ResourceManager.GetString("AS_Summary_HouseholdID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Municipality:.
+        /// </summary>
+        public static string AS_Summary_Municipality {
+            get {
+                return ResourceManager.GetString("AS_Summary_Municipality", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Owner:.
+        /// </summary>
+        public static string AS_Summary_Owner {
+            get {
+                return ResourceManager.GetString("AS_Summary_Owner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status:.
+        /// </summary>
+        public static string AS_Summary_Status {
+            get {
+                return ResourceManager.GetString("AS_Summary_Status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Household summary.
+        /// </summary>
+        public static string AS_Summary_Title {
+            get {
+                return ResourceManager.GetString("AS_Summary_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User:.
+        /// </summary>
+        public static string AS_Summary_User {
+            get {
+                return ResourceManager.GetString("AS_Summary_User", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ✖ Close.
+        /// </summary>
+        public static string ASRC_Btn_Close {
+            get {
+                return ResourceManager.GetString("ASRC_Btn_Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🗑 Delete.
+        /// </summary>
+        public static string ASRC_Btn_Delete {
+            get {
+                return ResourceManager.GetString("ASRC_Btn_Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ✔ Save.
+        /// </summary>
+        public static string ASRC_Btn_Save {
+            get {
+                return ResourceManager.GetString("ASRC_Btn_Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Action:.
+        /// </summary>
+        public static string ASRC_Det_Action {
+            get {
+                return ResourceManager.GetString("ASRC_Det_Action", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finished:.
+        /// </summary>
+        public static string ASRC_Det_Finished {
+            get {
+                return ResourceManager.GetString("ASRC_Det_Finished", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Household:.
+        /// </summary>
+        public static string ASRC_Det_Household {
+            get {
+                return ResourceManager.GetString("ASRC_Det_Household", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Inventory Used:.
+        /// </summary>
+        public static string ASRC_Det_Inventory {
+            get {
+                return ResourceManager.GetString("ASRC_Det_Inventory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Problem:.
+        /// </summary>
+        public static string ASRC_Det_Problem {
+            get {
+                return ResourceManager.GetString("ASRC_Det_Problem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service ID:.
+        /// </summary>
+        public static string ASRC_Det_ServiceId {
+            get {
+                return ResourceManager.GetString("ASRC_Det_ServiceId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Started:.
+        /// </summary>
+        public static string ASRC_Det_Started {
+            get {
+                return ResourceManager.GetString("ASRC_Det_Started", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Technicians:.
+        /// </summary>
+        public static string ASRC_Det_Technicians {
+            get {
+                return ResourceManager.GetString("ASRC_Det_Technicians", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Action Taken.
+        /// </summary>
+        public static string ASRC_Form_ActionTaken {
+            get {
+                return ResourceManager.GetString("ASRC_Form_ActionTaken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Household ID.
+        /// </summary>
+        public static string ASRC_Form_HouseholdID {
+            get {
+                return ResourceManager.GetString("ASRC_Form_HouseholdID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last Inspect Date.
+        /// </summary>
+        public static string ASRC_Form_LastInspectDate {
+            get {
+                return ResourceManager.GetString("ASRC_Form_LastInspectDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Problem.
+        /// </summary>
+        public static string ASRC_Form_Problem {
+            get {
+                return ResourceManager.GetString("ASRC_Form_Problem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Repair Date.
+        /// </summary>
+        public static string ASRC_Form_RepairDate {
+            get {
+                return ResourceManager.GetString("ASRC_Form_RepairDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Technician ID.
+        /// </summary>
+        public static string ASRC_Form_TechnicianID {
+            get {
+                return ResourceManager.GetString("ASRC_Form_TechnicianID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service details and activity.
+        /// </summary>
+        public static string ASRC_Header_Subtitle {
+            get {
+                return ResourceManager.GetString("ASRC_Header_Subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ➕ Add Service Record.
+        /// </summary>
+        public static string ASRC_Header_Title {
+            get {
+                return ResourceManager.GetString("ASRC_Header_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Canceled.
+        /// </summary>
+        public static string ASRC_Status_Canceled {
+            get {
+                return ResourceManager.GetString("ASRC_Status_Canceled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finished.
+        /// </summary>
+        public static string ASRC_Status_Finished {
+            get {
+                return ResourceManager.GetString("ASRC_Status_Finished", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open.
+        /// </summary>
+        public static string ASRC_Status_Open {
+            get {
+                return ResourceManager.GetString("ASRC_Status_Open", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Operational.
+        /// </summary>
+        public static string Common_Status_Operational {
+            get {
+                return ResourceManager.GetString("Common_Status_Operational", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Out of Service.
+        /// </summary>
+        public static string Common_Status_OutOfService {
+            get {
+                return ResourceManager.GetString("Common_Status_OutOfService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dashboard.
+        /// </summary>
+        public static string Dash_Header {
+            get {
+                return ResourceManager.GetString("Dash_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open List.
+        /// </summary>
+        public static string Dash_OpenList {
+            get {
+                return ResourceManager.GetString("Dash_OpenList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Operational.
+        /// </summary>
+        public static string Dash_Operational {
+            get {
+                return ResourceManager.GetString("Dash_Operational", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Out of Service.
+        /// </summary>
+        public static string Dash_OutOfService {
+            get {
+                return ResourceManager.GetString("Dash_OutOfService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remaining.
+        /// </summary>
+        public static string Dash_Remaining {
+            get {
+                return ResourceManager.GetString("Dash_Remaining", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restocked.
+        /// </summary>
+        public static string Dash_Restocked_Label {
+            get {
+                return ResourceManager.GetString("Dash_Restocked_Label", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🏠 Household.
+        /// </summary>
+        public static string Dash_Section_Household {
+            get {
+                return ResourceManager.GetString("Dash_Section_Household", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 📦 Inventory.
+        /// </summary>
+        public static string Dash_Section_Inventory {
+            get {
+                return ResourceManager.GetString("Dash_Section_Inventory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to LOW.
+        /// </summary>
+        public static string Dash_Status_Low {
+            get {
+                return ResourceManager.GetString("Dash_Status_Low", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        public static string Dash_Status_Ok {
+            get {
+                return ResourceManager.GetString("Dash_Status_Ok", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OUT.
+        /// </summary>
+        public static string Dash_Status_Out {
+            get {
+                return ResourceManager.GetString("Dash_Status_Out", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Threshold.
+        /// </summary>
+        public static string Dash_Threshold_Label {
+            get {
+                return ResourceManager.GetString("Dash_Threshold_Label", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total Households.
+        /// </summary>
+        public static string Dash_TotalHouseholds {
+            get {
+                return ResourceManager.GetString("Dash_TotalHouseholds", resourceCulture);
             }
         }
         
@@ -246,6 +1362,204 @@ namespace HouseholdMS.Resources {
         public static string Inv_SearchPlaceholder {
             get {
                 return ResourceManager.GetString("Inv_SearchPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Available.
+        /// </summary>
+        public static string InvDet_Available {
+            get {
+                return ResourceManager.GetString("InvDet_Available", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ✖ Close.
+        /// </summary>
+        public static string InvDet_Close {
+            get {
+                return ResourceManager.GetString("InvDet_Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item Type.
+        /// </summary>
+        public static string InvDet_ItemType {
+            get {
+                return ResourceManager.GetString("InvDet_ItemType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last Restocked.
+        /// </summary>
+        public static string InvDet_LastRestocked {
+            get {
+                return ResourceManager.GetString("InvDet_LastRestocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last Used.
+        /// </summary>
+        public static string InvDet_LastUsed {
+            get {
+                return ResourceManager.GetString("InvDet_LastUsed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This item is low on stock..
+        /// </summary>
+        public static string InvDet_LowStockMsg {
+            get {
+                return ResourceManager.GetString("InvDet_LowStockMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Note.
+        /// </summary>
+        public static string InvDet_Note {
+            get {
+                return ResourceManager.GetString("InvDet_Note", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restocked By.
+        /// </summary>
+        public static string InvDet_Restock_By {
+            get {
+                return ResourceManager.GetString("InvDet_Restock_By", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Note.
+        /// </summary>
+        public static string InvDet_Restock_Note {
+            get {
+                return ResourceManager.GetString("InvDet_Restock_Note", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Qty.
+        /// </summary>
+        public static string InvDet_Restock_Qty {
+            get {
+                return ResourceManager.GetString("InvDet_Restock_Qty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to When.
+        /// </summary>
+        public static string InvDet_Restock_When {
+            get {
+                return ResourceManager.GetString("InvDet_Restock_When", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restock History.
+        /// </summary>
+        public static string InvDet_RestockHistory {
+            get {
+                return ResourceManager.GetString("InvDet_RestockHistory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to In Stock.
+        /// </summary>
+        public static string InvDet_Status_InStock {
+            get {
+                return ResourceManager.GetString("InvDet_Status_InStock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Inventory Details.
+        /// </summary>
+        public static string InvDet_Title {
+            get {
+                return ResourceManager.GetString("InvDet_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Household.
+        /// </summary>
+        public static string InvDet_Usage_Household {
+            get {
+                return ResourceManager.GetString("InvDet_Usage_Household", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Qty Used.
+        /// </summary>
+        public static string InvDet_Usage_QtyUsed {
+            get {
+                return ResourceManager.GetString("InvDet_Usage_QtyUsed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service.
+        /// </summary>
+        public static string InvDet_Usage_Service {
+            get {
+                return ResourceManager.GetString("InvDet_Usage_Service", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Technician(s).
+        /// </summary>
+        public static string InvDet_Usage_Technicians {
+            get {
+                return ResourceManager.GetString("InvDet_Usage_Technicians", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Used By.
+        /// </summary>
+        public static string InvDet_Usage_UsedBy {
+            get {
+                return ResourceManager.GetString("InvDet_Usage_UsedBy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to When.
+        /// </summary>
+        public static string InvDet_Usage_When {
+            get {
+                return ResourceManager.GetString("InvDet_Usage_When", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Usage History.
+        /// </summary>
+        public static string InvDet_UsageHistory {
+            get {
+                return ResourceManager.GetString("InvDet_UsageHistory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Used.
+        /// </summary>
+        public static string InvDet_Used {
+            get {
+                return ResourceManager.GetString("InvDet_Used", resourceCulture);
             }
         }
         
@@ -520,6 +1834,240 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Comment.
+        /// </summary>
+        public static string OHV_Column_Comment {
+            get {
+                return ResourceManager.GetString("OHV_Column_Comment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contact.
+        /// </summary>
+        public static string OHV_Column_Contact {
+            get {
+                return ResourceManager.GetString("OHV_Column_Contact", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to District.
+        /// </summary>
+        public static string OHV_Column_District {
+            get {
+                return ResourceManager.GetString("OHV_Column_District", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ID.
+        /// </summary>
+        public static string OHV_Column_ID {
+            get {
+                return ResourceManager.GetString("OHV_Column_ID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Installed.
+        /// </summary>
+        public static string OHV_Column_Installed {
+            get {
+                return ResourceManager.GetString("OHV_Column_Installed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last Inspect.
+        /// </summary>
+        public static string OHV_Column_LastInspect {
+            get {
+                return ResourceManager.GetString("OHV_Column_LastInspect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Municipality.
+        /// </summary>
+        public static string OHV_Column_Municipality {
+            get {
+                return ResourceManager.GetString("OHV_Column_Municipality", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Owner Name.
+        /// </summary>
+        public static string OHV_Column_OwnerName {
+            get {
+                return ResourceManager.GetString("OHV_Column_OwnerName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        public static string OHV_Column_Status {
+            get {
+                return ResourceManager.GetString("OHV_Column_Status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User Name.
+        /// </summary>
+        public static string OHV_Column_UserName {
+            get {
+                return ResourceManager.GetString("OHV_Column_UserName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No operational households found.
+        /// </summary>
+        public static string OHV_EmptyState {
+            get {
+                return ResourceManager.GetString("OHV_EmptyState", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search by owner, user, area or contact.
+        /// </summary>
+        public static string OHV_SearchPlaceholder {
+            get {
+                return ResourceManager.GetString("OHV_SearchPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status (read-only in this view).
+        /// </summary>
+        public static string OHV_Status_Tooltip {
+            get {
+                return ResourceManager.GetString("OHV_Status_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Comment.
+        /// </summary>
+        public static string OOSV_Column_Comment {
+            get {
+                return ResourceManager.GetString("OOSV_Column_Comment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contact.
+        /// </summary>
+        public static string OOSV_Column_Contact {
+            get {
+                return ResourceManager.GetString("OOSV_Column_Contact", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to District.
+        /// </summary>
+        public static string OOSV_Column_District {
+            get {
+                return ResourceManager.GetString("OOSV_Column_District", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ID.
+        /// </summary>
+        public static string OOSV_Column_ID {
+            get {
+                return ResourceManager.GetString("OOSV_Column_ID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Installed.
+        /// </summary>
+        public static string OOSV_Column_Installed {
+            get {
+                return ResourceManager.GetString("OOSV_Column_Installed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last Inspect.
+        /// </summary>
+        public static string OOSV_Column_LastInspect {
+            get {
+                return ResourceManager.GetString("OOSV_Column_LastInspect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Municipality.
+        /// </summary>
+        public static string OOSV_Column_Municipality {
+            get {
+                return ResourceManager.GetString("OOSV_Column_Municipality", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Owner Name.
+        /// </summary>
+        public static string OOSV_Column_OwnerName {
+            get {
+                return ResourceManager.GetString("OOSV_Column_OwnerName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        public static string OOSV_Column_Status {
+            get {
+                return ResourceManager.GetString("OOSV_Column_Status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User Name.
+        /// </summary>
+        public static string OOSV_Column_UserName {
+            get {
+                return ResourceManager.GetString("OOSV_Column_UserName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No out-of-service households found.
+        /// </summary>
+        public static string OOSV_EmptyState {
+            get {
+                return ResourceManager.GetString("OOSV_EmptyState", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search by owner, user, area or contact.
+        /// </summary>
+        public static string OOSV_SearchPlaceholder {
+            get {
+                return ResourceManager.GetString("OOSV_SearchPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Click to change status (Admins only).
+        /// </summary>
+        public static string OOSV_Status_Tooltip {
+            get {
+                return ResourceManager.GetString("OOSV_Status_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Address (required for technician).
         /// </summary>
         public static string Register_AddressLabel {
@@ -700,6 +2248,195 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Action.
+        /// </summary>
+        public static string SR_Column_Action {
+            get {
+                return ResourceManager.GetString("SR_Column_Action", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finish.
+        /// </summary>
+        public static string SR_Column_Finish {
+            get {
+                return ResourceManager.GetString("SR_Column_Finish", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Household.
+        /// </summary>
+        public static string SR_Column_Household {
+            get {
+                return ResourceManager.GetString("SR_Column_Household", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ID.
+        /// </summary>
+        public static string SR_Column_ID {
+            get {
+                return ResourceManager.GetString("SR_Column_ID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Inv. Used.
+        /// </summary>
+        public static string SR_Column_InventoryUsed {
+            get {
+                return ResourceManager.GetString("SR_Column_InventoryUsed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Problem.
+        /// </summary>
+        public static string SR_Column_Problem {
+            get {
+                return ResourceManager.GetString("SR_Column_Problem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start.
+        /// </summary>
+        public static string SR_Column_Start {
+            get {
+                return ResourceManager.GetString("SR_Column_Start", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        public static string SR_Column_Status {
+            get {
+                return ResourceManager.GetString("SR_Column_Status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Technicians.
+        /// </summary>
+        public static string SR_Column_Technicians {
+            get {
+                return ResourceManager.GetString("SR_Column_Technicians", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Action:.
+        /// </summary>
+        public static string SR_Detail_Action {
+            get {
+                return ResourceManager.GetString("SR_Detail_Action", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finished:.
+        /// </summary>
+        public static string SR_Detail_Finished {
+            get {
+                return ResourceManager.GetString("SR_Detail_Finished", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Household:.
+        /// </summary>
+        public static string SR_Detail_Household {
+            get {
+                return ResourceManager.GetString("SR_Detail_Household", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Inventory Used:.
+        /// </summary>
+        public static string SR_Detail_InventoryUsed {
+            get {
+                return ResourceManager.GetString("SR_Detail_InventoryUsed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Primary Tech:.
+        /// </summary>
+        public static string SR_Detail_PrimaryTech {
+            get {
+                return ResourceManager.GetString("SR_Detail_PrimaryTech", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Problem:.
+        /// </summary>
+        public static string SR_Detail_Problem {
+            get {
+                return ResourceManager.GetString("SR_Detail_Problem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service ID:.
+        /// </summary>
+        public static string SR_Detail_ServiceID {
+            get {
+                return ResourceManager.GetString("SR_Detail_ServiceID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Started:.
+        /// </summary>
+        public static string SR_Detail_Started {
+            get {
+                return ResourceManager.GetString("SR_Detail_Started", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status:.
+        /// </summary>
+        public static string SR_Detail_Status {
+            get {
+                return ResourceManager.GetString("SR_Detail_Status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Team:.
+        /// </summary>
+        public static string SR_Detail_Team {
+            get {
+                return ResourceManager.GetString("SR_Detail_Team", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No service records found.
+        /// </summary>
+        public static string SR_EmptyState {
+            get {
+                return ResourceManager.GetString("SR_EmptyState", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search by household/tech/problem/action/status.
+        /// </summary>
+        public static string SR_SearchPlaceholder {
+            get {
+                return ResourceManager.GetString("SR_SearchPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to active.
         /// </summary>
         public static string Status_Active {
@@ -768,6 +2505,96 @@ namespace HouseholdMS.Resources {
         public static string Status_User {
             get {
                 return ResourceManager.GetString("Status_User", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Back to Dashboard.
+        /// </summary>
+        public static string SV_BackToDashboard {
+            get {
+                return ResourceManager.GetString("SV_BackToDashboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Back to Dashboard (Alt+Left).
+        /// </summary>
+        public static string SV_BackToDashboard_Tooltip {
+            get {
+                return ResourceManager.GetString("SV_BackToDashboard_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dashboard.
+        /// </summary>
+        public static string SV_Breadcrumb_Dashboard {
+            get {
+                return ResourceManager.GetString("SV_Breadcrumb_Dashboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Go to Dashboard.
+        /// </summary>
+        public static string SV_Breadcrumb_Dashboard_Tooltip {
+            get {
+                return ResourceManager.GetString("SV_Breadcrumb_Dashboard_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sites.
+        /// </summary>
+        public static string SV_Breadcrumb_Sites {
+            get {
+                return ResourceManager.GetString("SV_Breadcrumb_Sites", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select a tile to show details here….
+        /// </summary>
+        public static string SV_Placeholder {
+            get {
+                return ResourceManager.GetString("SV_Placeholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Operational.
+        /// </summary>
+        public static string SV_Tile_Operational {
+            get {
+                return ResourceManager.GetString("SV_Tile_Operational", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Out of Service.
+        /// </summary>
+        public static string SV_Tile_OutOfService {
+            get {
+                return ResourceManager.GetString("SV_Tile_OutOfService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total Households.
+        /// </summary>
+        public static string SV_Tile_TotalHouseholds {
+            get {
+                return ResourceManager.GetString("SV_Tile_TotalHouseholds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sites.
+        /// </summary>
+        public static string SV_Title {
+            get {
+                return ResourceManager.GetString("SV_Title", resourceCulture);
             }
         }
         

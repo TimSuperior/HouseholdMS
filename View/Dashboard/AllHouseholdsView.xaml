@@ -1,14 +1,16 @@
-﻿<UserControl x:Class="HouseholdMS.View.Dashboard.AllHouseholdsView"
+﻿<!-- FILE: View/Dashboard/AllHouseholdsView.xaml -->
+<UserControl x:Class="HouseholdMS.View.Dashboard.AllHouseholdsView" 
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:model="clr-namespace:HouseholdMS.Model"
+             xmlns:res="clr-namespace:HouseholdMS.Resources"
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="1200">
 
-    <!-- (resources unchanged) -->
+    <!-- (resources unchanged except for the search box template, which now shows a watermark) -->
     <UserControl.Resources>
         <!-- Palette -->
         <SolidColorBrush x:Key="Col.BgCard" Color="#FFFFFFFF"/>
@@ -60,7 +62,7 @@
             </Setter>
         </Style>
 
-        <!-- Search box -->
+        <!-- Search box with WATERMARK (placeholder not stored in Text) -->
         <Style x:Key="SearchBoxStyle" TargetType="TextBox">
             <Setter Property="Height" Value="36"/>
             <Setter Property="Padding" Value="12,6"/>
@@ -74,19 +76,40 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="10"
-                                SnapsToDevicePixels="True">
-                            <ScrollViewer x:Name="PART_ContentHost"/>
-                        </Border>
+                        <Grid>
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="10"
+                                    SnapsToDevicePixels="True">
+                                <ScrollViewer x:Name="PART_ContentHost"/>
+                            </Border>
+
+                            <!-- watermark appears when Text.Length == 0 -->
+                            <TextBlock x:Name="Watermark"
+                                       Text="{TemplateBinding Tag}"
+                                       Margin="12,0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource Col.TextMut}"
+                                       FontStyle="Italic"
+                                       IsHitTestVisible="False"
+                                       Visibility="Collapsed"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <!-- show watermark only when empty -->
+                            <DataTrigger Binding="{Binding Text.Length, RelativeSource={RelativeSource TemplatedParent}}" Value="0">
+                                <Setter TargetName="Watermark" Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <!-- GridView headers, cells, row style (same as before) -->
+        <!-- GridView headers, cells, row style -->
         <Style TargetType="GridViewColumnHeader">
             <Setter Property="Background" Value="{StaticResource Col.HeaderBg}"/>
             <Setter Property="Foreground" Value="{StaticResource Col.HeaderFg}"/>
@@ -167,7 +190,7 @@
                     CornerRadius="999"
                     Background="#FFE5E7EB"
                     HorizontalAlignment="Left"
-                    ToolTip="Status is read-only in this view. Change it in the Service/Status view.">
+                    ToolTip="{x:Static res:Strings.AHV_Status_Tooltip}">
                 <TextBlock Text="{Binding Statuss}"
                            Margin="0"
                            VerticalAlignment="Center"
@@ -215,31 +238,31 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Owner Name:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Static res:Strings.AHV_RO_OwnerName}" FontWeight="SemiBold" Margin="0,0,8,6"/>
                     <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding OwnerName}" Margin="0,0,0,6"/>
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="User Name:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{x:Static res:Strings.AHV_RO_UserName}" FontWeight="SemiBold" Margin="0,0,8,6"/>
                     <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding UserName}" Margin="0,0,0,6"/>
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Municipality:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{x:Static res:Strings.AHV_RO_Municipality}" FontWeight="SemiBold" Margin="0,0,8,6"/>
                     <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Municipality}" Margin="0,0,0,6"/>
 
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="District:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="{x:Static res:Strings.AHV_RO_District}" FontWeight="SemiBold" Margin="0,0,8,6"/>
                     <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding District}" Margin="0,0,0,6"/>
 
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Contact:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="{x:Static res:Strings.AHV_RO_Contact}" FontWeight="SemiBold" Margin="0,0,8,6"/>
                     <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding ContactNum}" Margin="0,0,0,6"/>
 
-                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Installed:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="{x:Static res:Strings.AHV_RO_Installed}" FontWeight="SemiBold" Margin="0,0,8,6"/>
                     <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding InstallDate, StringFormat='{}{0:yyyy-MM-dd}'}" Margin="0,0,0,6"/>
 
-                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Last Inspect:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="6" Grid.Column="0" Text="{x:Static res:Strings.AHV_RO_LastInspect}" FontWeight="SemiBold" Margin="0,0,8,6"/>
                     <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding LastInspect, StringFormat='{}{0:yyyy-MM-dd}'}" Margin="0,0,0,6"/>
 
-                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Status:" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="7" Grid.Column="0" Text="{x:Static res:Strings.AHV_RO_Status}" FontWeight="SemiBold" Margin="0,0,8,6"/>
                     <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Statuss}" Margin="0,0,0,6"/>
 
-                    <TextBlock Grid.Row="8" Grid.Column="0" Text="Comment:" FontWeight="SemiBold" Margin="0,0,8,0"/>
+                    <TextBlock Grid.Row="8" Grid.Column="0" Text="{x:Static res:Strings.AHV_RO_Comment}" FontWeight="SemiBold" Margin="0,0,8,0"/>
                     <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding UserComm}" TextWrapping="Wrap"/>
                 </Grid>
             </Border>
@@ -259,17 +282,11 @@
                 <TextBox x:Name="SearchBox"
                          Style="{StaticResource SearchBoxStyle}"
                          Width="320"
-                         VerticalContentAlignment="Center"
-                         Foreground="{StaticResource Col.TextMut}"
-                         FontStyle="Italic"
-                         Text="Search by owner, user, area or contact"
-                         Tag="Search by owner, user, area or contact"
-                         GotFocus="ClearText"
-                         LostFocus="ResetText"
+                         Tag="{x:Static res:Strings.AHV_SearchPlaceholder}"
                          TextChanged="SearchBox_TextChanged"
                          DockPanel.Dock="Left"/>
                 <Button x:Name="AddHouseholdButton"
-                        Content="➕ Add Household"
+                        Content="{x:Static res:Strings.AHV_AddHousehold}"
                         Style="{StaticResource ActionButtonStyle}"
                         Width="170"
                         DockPanel.Dock="Right"
@@ -295,7 +312,7 @@
                               MouseDoubleClick="HouseholdListView_MouseDoubleClick">
                         <ListView.View>
                             <GridView AllowsColumnReorder="True">
-                                <GridViewColumn Header="ID" Width="60">
+                                <GridViewColumn Header="{x:Static res:Strings.AHV_Column_ID}" Width="60">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
@@ -305,7 +322,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Owner Name" Width="150">
+                                <GridViewColumn Header="{x:Static res:Strings.AHV_Column_OwnerName}" Width="150">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding OwnerName}"/>
@@ -313,7 +330,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="User Name" Width="150">
+                                <GridViewColumn Header="{x:Static res:Strings.AHV_Column_UserName}" Width="150">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding UserName}"/>
@@ -321,7 +338,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Municipality" Width="140">
+                                <GridViewColumn Header="{x:Static res:Strings.AHV_Column_Municipality}" Width="140">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding Municipality}"/>
@@ -329,7 +346,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="District" Width="140">
+                                <GridViewColumn Header="{x:Static res:Strings.AHV_Column_District}" Width="140">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding District}"/>
@@ -337,7 +354,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Contact" Width="120">
+                                <GridViewColumn Header="{x:Static res:Strings.AHV_Column_Contact}" Width="120">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding ContactNum}"/>
@@ -345,7 +362,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Installed" Width="110">
+                                <GridViewColumn Header="{x:Static res:Strings.AHV_Column_Installed}" Width="110">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
@@ -354,7 +371,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Last Inspect" Width="120">
+                                <GridViewColumn Header="{x:Static res:Strings.AHV_Column_LastInspect}" Width="120">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
@@ -363,10 +380,10 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Status" Width="150"
+                                <GridViewColumn Header="{x:Static res:Strings.AHV_Column_Status}" Width="150"
                                                 CellTemplate="{StaticResource StatusChipTemplate}"/>
 
-                                <GridViewColumn Header="Comment" Width="220">
+                                <GridViewColumn Header="{x:Static res:Strings.AHV_Column_Comment}" Width="220">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
@@ -380,7 +397,7 @@
                     </ListView>
 
                     <!-- Empty state -->
-                    <TextBlock Text="No households found"
+                    <TextBlock Text="{x:Static res:Strings.AHV_EmptyState}"
                                Foreground="{StaticResource Col.TextMut}"
                                FontStyle="Italic"
                                HorizontalAlignment="Center"

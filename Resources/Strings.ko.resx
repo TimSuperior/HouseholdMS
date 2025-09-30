@@ -189,4 +189,264 @@
 	<data name="Inv_Detail_LastRestockedLabel" xml:space="preserve"><value>마지막 입고:</value></data>
 	<data name="Inv_Detail_NoteLabel" xml:space="preserve"><value>메모:</value></data>
 
+	<!-- ServiceRecordsView-->
+	<data name="SR_SearchPlaceholder" xml:space="preserve"><value>세대/기술자/문제/조치/상태로 검색</value></data>
+	<data name="SR_Column_ID" xml:space="preserve"><value>ID</value></data>
+	<data name="SR_Column_Household" xml:space="preserve"><value>세대</value></data>
+	<data name="SR_Column_Technicians" xml:space="preserve"><value>기술자</value></data>
+	<data name="SR_Column_Problem" xml:space="preserve"><value>문제</value></data>
+	<data name="SR_Column_Action" xml:space="preserve"><value>조치</value></data>
+	<data name="SR_Column_InventoryUsed" xml:space="preserve"><value>사용한 재고</value></data>
+	<data name="SR_Column_Start" xml:space="preserve"><value>시작</value></data>
+	<data name="SR_Column_Finish" xml:space="preserve"><value>완료</value></data>
+	<data name="SR_Column_Status" xml:space="preserve"><value>상태</value></data>
+	<data name="SR_EmptyState" xml:space="preserve"><value>서비스 기록이 없습니다</value></data>
+
+	<data name="SR_Detail_ServiceID" xml:space="preserve"><value>서비스 ID:</value></data>
+	<data name="SR_Detail_Household" xml:space="preserve"><value>세대:</value></data>
+	<data name="SR_Detail_PrimaryTech" xml:space="preserve"><value>담당 기술자:</value></data>
+	<data name="SR_Detail_Team" xml:space="preserve"><value>팀:</value></data>
+	<data name="SR_Detail_Problem" xml:space="preserve"><value>문제:</value></data>
+	<data name="SR_Detail_Action" xml:space="preserve"><value>조치:</value></data>
+	<data name="SR_Detail_InventoryUsed" xml:space="preserve"><value>사용한 재고:</value></data>
+	<data name="SR_Detail_Started" xml:space="preserve"><value>시작일:</value></data>
+	<data name="SR_Detail_Finished" xml:space="preserve"><value>완료일:</value></data>
+	<data name="SR_Detail_Status" xml:space="preserve"><value>상태:</value></data>
+
+	<!-- DashboardView-->
+	<data name="Dash_Header" xml:space="preserve"><value>대시보드</value></data>
+	<data name="Dash_Section_Household" xml:space="preserve"><value>🏠 세대</value></data>
+	<data name="Dash_TotalHouseholds" xml:space="preserve"><value>총 세대 수</value></data>
+	<data name="Dash_Operational" xml:space="preserve"><value>정상 가동</value></data>
+	<data name="Dash_OutOfService" xml:space="preserve"><value>서비스 중지</value></data>
+
+	<data name="Dash_Section_Inventory" xml:space="preserve"><value>📦 재고</value></data>
+	<data name="Dash_OpenList" xml:space="preserve"><value>목록 열기</value></data>
+
+	<data name="Dash_Remaining" xml:space="preserve"><value>잔여</value></data>
+	<data name="Dash_Threshold_Label" xml:space="preserve"><value>임계값</value></data>
+	<data name="Dash_Restocked_Label" xml:space="preserve"><value>재입고</value></data>
+
+	<data name="Dash_Status_Out" xml:space="preserve"><value>없음</value></data>
+	<data name="Dash_Status_Low" xml:space="preserve"><value>부족</value></data>
+	<data name="Dash_Status_Ok"  xml:space="preserve"><value>양호</value></data>
+
+	<!--InventoryDetails-->
+	<data name="InvDet_Title" xml:space="preserve"><value>재고 상세</value></data>
+	<data name="InvDet_Status_InStock" xml:space="preserve"><value>재고 있음</value></data>
+	<data name="InvDet_LowStockMsg" xml:space="preserve"><value>이 품목은 재고가 부족합니다.</value></data>
+
+	<data name="InvDet_ItemType" xml:space="preserve"><value>품목 유형</value></data>
+	<data name="InvDet_Available" xml:space="preserve"><value>보유 수량</value></data>
+	<data name="InvDet_Used" xml:space="preserve"><value>사용 수량</value></data>
+	<data name="InvDet_LastRestocked" xml:space="preserve"><value>마지막 입고</value></data>
+	<data name="InvDet_LastUsed" xml:space="preserve"><value>마지막 사용</value></data>
+	<data name="InvDet_Note" xml:space="preserve"><value>비고</value></data>
+
+	<data name="InvDet_UsageHistory" xml:space="preserve"><value>사용 이력</value></data>
+	<data name="InvDet_Usage_When" xml:space="preserve"><value>일시</value></data>
+	<data name="InvDet_Usage_QtyUsed" xml:space="preserve"><value>사용 수량</value></data>
+	<data name="InvDet_Usage_Service" xml:space="preserve"><value>서비스</value></data>
+	<data name="InvDet_Usage_Household" xml:space="preserve"><value>가구</value></data>
+	<data name="InvDet_Usage_Technicians" xml:space="preserve"><value>기술자</value></data>
+	<data name="InvDet_Usage_UsedBy" xml:space="preserve"><value>사용자</value></data>
+
+	<data name="InvDet_RestockHistory" xml:space="preserve"><value>입고 이력</value></data>
+	<data name="InvDet_Restock_When" xml:space="preserve"><value>일시</value></data>
+	<data name="InvDet_Restock_Qty" xml:space="preserve"><value>수량</value></data>
+	<data name="InvDet_Restock_By" xml:space="preserve"><value>입고 담당</value></data>
+	<data name="InvDet_Restock_Note" xml:space="preserve"><value>비고</value></data>
+
+	<data name="InvDet_Close" xml:space="preserve"><value>✖ 닫기</value></data>
+
+	<!--AllHouseholdsView-->
+	<data name="AHV_SearchPlaceholder" xml:space="preserve"><value>소유자, 사용자, 지역 또는 연락처로 검색</value></data>
+	<data name="AHV_AddHousehold" xml:space="preserve"><value>➕ 가구 추가</value></data>
+
+	<data name="AHV_Column_ID" xml:space="preserve"><value>ID</value></data>
+	<data name="AHV_Column_OwnerName" xml:space="preserve"><value>소유자 이름</value></data>
+	<data name="AHV_Column_UserName" xml:space="preserve"><value>사용자 이름</value></data>
+	<data name="AHV_Column_Municipality" xml:space="preserve"><value>자치단체</value></data>
+	<data name="AHV_Column_District" xml:space="preserve"><value>행정구</value></data>
+	<data name="AHV_Column_Contact" xml:space="preserve"><value>연락처</value></data>
+	<data name="AHV_Column_Installed" xml:space="preserve"><value>설치일</value></data>
+	<data name="AHV_Column_LastInspect" xml:space="preserve"><value>마지막 점검</value></data>
+	<data name="AHV_Column_Status" xml:space="preserve"><value>상태</value></data>
+	<data name="AHV_Column_Comment" xml:space="preserve"><value>비고</value></data>
+
+	<data name="AHV_EmptyState" xml:space="preserve"><value>가구를 찾을 수 없습니다</value></data>
+	<data name="AHV_Status_Tooltip" xml:space="preserve"><value>이 보기에서는 상태가 읽기 전용입니다. 서비스/상태 보기에서 변경하세요.</value></data>
+
+	<data name="AHV_RO_OwnerName" xml:space="preserve"><value>소유자 이름:</value></data>
+	<data name="AHV_RO_UserName" xml:space="preserve"><value>사용자 이름:</value></data>
+	<data name="AHV_RO_Municipality" xml:space="preserve"><value>자치단체:</value></data>
+	<data name="AHV_RO_District" xml:space="preserve"><value>행정구:</value></data>
+	<data name="AHV_RO_Contact" xml:space="preserve"><value>연락처:</value></data>
+	<data name="AHV_RO_Installed" xml:space="preserve"><value>설치일:</value></data>
+	<data name="AHV_RO_LastInspect" xml:space="preserve"><value>마지막 점검:</value></data>
+	<data name="AHV_RO_Status" xml:space="preserve"><value>상태:</value></data>
+	<data name="AHV_RO_Comment" xml:space="preserve"><value>비고:</value></data>
+
+	<!--Operational-->
+	<data name="OHV_SearchPlaceholder" xml:space="preserve"><value>소유자, 사용자, 지역 또는 연락처로 검색</value></data>
+
+	<data name="OHV_Column_ID" xml:space="preserve"><value>ID</value></data>
+	<data name="OHV_Column_OwnerName" xml:space="preserve"><value>소유자 이름</value></data>
+	<data name="OHV_Column_UserName" xml:space="preserve"><value>사용자 이름</value></data>
+	<data name="OHV_Column_Municipality" xml:space="preserve"><value>자치단체</value></data>
+	<data name="OHV_Column_District" xml:space="preserve"><value>행정구</value></data>
+	<data name="OHV_Column_Contact" xml:space="preserve"><value>연락처</value></data>
+	<data name="OHV_Column_Installed" xml:space="preserve"><value>설치일</value></data>
+	<data name="OHV_Column_LastInspect" xml:space="preserve"><value>마지막 점검</value></data>
+	<data name="OHV_Column_Status" xml:space="preserve"><value>상태</value></data>
+	<data name="OHV_Column_Comment" xml:space="preserve"><value>비고</value></data>
+
+	<data name="OHV_EmptyState" xml:space="preserve"><value>운영 중인 가구를 찾을 수 없습니다</value></data>
+	<data name="OHV_Status_Tooltip" xml:space="preserve"><value>이 보기에서는 상태가 읽기 전용입니다</value></data>
+
+	<!--OutOfServiceHouseholdsView-->
+	<data name="OOSV_SearchPlaceholder" xml:space="preserve"><value>소유자, 사용자, 지역 또는 연락처로 검색</value></data>
+
+	<data name="OOSV_Column_ID" xml:space="preserve"><value>ID</value></data>
+	<data name="OOSV_Column_OwnerName" xml:space="preserve"><value>소유자 이름</value></data>
+	<data name="OOSV_Column_UserName" xml:space="preserve"><value>사용자 이름</value></data>
+	<data name="OOSV_Column_Municipality" xml:space="preserve"><value>자치단체</value></data>
+	<data name="OOSV_Column_District" xml:space="preserve"><value>행정구</value></data>
+	<data name="OOSV_Column_Contact" xml:space="preserve"><value>연락처</value></data>
+	<data name="OOSV_Column_Installed" xml:space="preserve"><value>설치일</value></data>
+	<data name="OOSV_Column_LastInspect" xml:space="preserve"><value>마지막 점검</value></data>
+	<data name="OOSV_Column_Status" xml:space="preserve"><value>상태</value></data>
+	<data name="OOSV_Column_Comment" xml:space="preserve"><value>비고</value></data>
+
+	<data name="OOSV_EmptyState" xml:space="preserve"><value>서비스 중지 가구를 찾을 수 없습니다</value></data>
+	<data name="OOSV_Status_Tooltip" xml:space="preserve"><value>상태를 변경하려면 클릭 (관리자 전용)</value></data>
+
+	<!--SitesView-->
+	<data name="SV_Breadcrumb_Dashboard" xml:space="preserve"><value>대시보드</value></data>
+	<data name="SV_Breadcrumb_Dashboard_Tooltip" xml:space="preserve"><value>대시보드로 이동</value></data>
+	<data name="SV_Breadcrumb_Sites" xml:space="preserve"><value>사이트</value></data>
+	<data name="SV_Title" xml:space="preserve"><value>사이트</value></data>
+	<data name="SV_BackToDashboard" xml:space="preserve"><value>대시보드로 돌아가기</value></data>
+	<data name="SV_BackToDashboard_Tooltip" xml:space="preserve"><value>대시보드로 돌아가기 (Alt+왼쪽)</value></data>
+
+	<data name="SV_Tile_TotalHouseholds" xml:space="preserve"><value>총 가구 수</value></data>
+	<data name="SV_Tile_Operational" xml:space="preserve"><value>정상 운영</value></data>
+	<data name="SV_Tile_OutOfService" xml:space="preserve"><value>서비스 중지</value></data>
+
+	<data name="SV_Placeholder" xml:space="preserve"><value>상세를 보려면 타일을 선택하세요…</value></data>
+
+	<!--AddServiceControl-->
+	<data name="AS_Header" xml:space="preserve"><value>서비스 호출 시작</value></data>
+
+	<data name="AS_Summary_Title" xml:space="preserve"><value>가구 요약</value></data>
+	<data name="AS_Summary_HouseholdID" xml:space="preserve"><value>가구 ID:</value></data>
+	<data name="AS_Summary_Owner" xml:space="preserve"><value>소유자:</value></data>
+	<data name="AS_Summary_User" xml:space="preserve"><value>사용자:</value></data>
+	<data name="AS_Summary_Municipality" xml:space="preserve"><value>지자체:</value></data>
+	<data name="AS_Summary_District" xml:space="preserve"><value>구/군:</value></data>
+	<data name="AS_Summary_Contact" xml:space="preserve"><value>연락처:</value></data>
+	<data name="AS_Summary_Status" xml:space="preserve"><value>상태:</value></data>
+
+	<data name="AS_Problem_Label" xml:space="preserve"><value>문제 설명(선택 사항)</value></data>
+	<data name="AS_FieldRequired" xml:space="preserve"><value>이 필드는 필수입니다.</value></data>
+
+	<data name="AS_Confirm" xml:space="preserve"><value>✔ 서비스 확인</value></data>
+	<data name="AS_Cancel" xml:space="preserve"><value>✖ 취소</value></data>
+
+	<!--AddHouseholdControl-->
+	<data name="AHC_FieldRequired" xml:space="preserve"><value>이 필드는 필수입니다.</value></data>
+	<data name="AHC_Info_OutOfService" xml:space="preserve"><value>상태가 서비스 중지로 설정되었습니다. 사유를 간단히 메모로 남기고 대시보드에서 서비스 콜을 여는 것을 고려하세요.</value></data>
+
+	<data name="AHC_Label_OwnerName" xml:space="preserve"><value>소유자 이름</value></data>
+	<data name="AHC_Label_UserName" xml:space="preserve"><value>사용자 이름</value></data>
+	<data name="AHC_Label_Municipality" xml:space="preserve"><value>지자체</value></data>
+	<data name="AHC_Label_District" xml:space="preserve"><value>구/군</value></data>
+	<data name="AHC_Label_ContactNumber" xml:space="preserve"><value>연락처</value></data>
+	<data name="AHC_Label_InstallDate" xml:space="preserve"><value>설치 날짜</value></data>
+	<data name="AHC_Label_LastInspectDate" xml:space="preserve"><value>최근 점검 날짜</value></data>
+	<data name="AHC_Label_Status" xml:space="preserve"><value>상태</value></data>
+	<data name="AHC_Label_NoteOptional" xml:space="preserve"><value>메모(선택 사항)</value></data>
+
+	<data name="AHC_ServiceHistory_Title" xml:space="preserve"><value>🛠 서비스 기록</value></data>
+	<data name="AHC_ServiceHistory_Zero" xml:space="preserve"><value>0건</value></data>
+	<data name="AHC_ServiceHistory_Empty" xml:space="preserve"><value>서비스 기록이 아직 없습니다.</value></data>
+
+	<data name="AHC_SH_Col_Id" xml:space="preserve"><value>#</value></data>
+	<data name="AHC_SH_Col_Date" xml:space="preserve"><value>날짜</value></data>
+	<data name="AHC_SH_Col_Technician" xml:space="preserve"><value>기술자</value></data>
+	<data name="AHC_SH_Col_Summary" xml:space="preserve"><value>요약</value></data>
+	<data name="AHC_SH_Col_Status" xml:space="preserve"><value>상태</value></data>
+
+	<data name="AHC_Btn_Save" xml:space="preserve"><value>💾 저장</value></data>
+	<data name="AHC_Btn_Cancel" xml:space="preserve"><value>✖ 취소</value></data>
+	<data name="AHC_Btn_Delete" xml:space="preserve"><value>🗑 삭제</value></data>
+
+	<data name="Common_Status_Operational" xml:space="preserve"><value>정상 운영</value></data>
+	<data name="Common_Status_OutOfService" xml:space="preserve"><value>서비스 중지</value></data>
+
+	<!--AddInventoryControl-->
+	<data name="AIC_Header_Subtitle" xml:space="preserve"><value>재고 항목 관리</value></data>
+
+	<data name="AIC_Label_ItemType" xml:space="preserve"><value>항목 유형</value></data>
+	<data name="AIC_Label_InitialQty" xml:space="preserve"><value>초기 수량</value></data>
+	<data name="AIC_Label_Threshold" xml:space="preserve"><value>재고 부족 임계값</value></data>
+	<data name="AIC_Label_NoteOptional" xml:space="preserve"><value>메모(선택 사항)</value></data>
+
+	<data name="AIC_Snapshot_Title" xml:space="preserve"><value>항목 요약</value></data>
+	<data name="AIC_Snapshot_Available" xml:space="preserve"><value>보유 수량</value></data>
+	<data name="AIC_Snapshot_Used" xml:space="preserve"><value>사용 수량</value></data>
+	<data name="AIC_Snapshot_LastRestocked" xml:space="preserve"><value>최근 입고</value></data>
+	<data name="AIC_Snapshot_LastUsed" xml:space="preserve"><value>최근 사용</value></data>
+
+	<data name="AIC_UsageHistory_Title" xml:space="preserve"><value>사용 이력</value></data>
+	<data name="AIC_UH_Col_When" xml:space="preserve"><value>일시</value></data>
+	<data name="AIC_UH_Col_QtyUsed" xml:space="preserve"><value>사용 수량</value></data>
+	<data name="AIC_UH_Col_Service" xml:space="preserve"><value>서비스</value></data>
+	<data name="AIC_UH_Col_UsedBy" xml:space="preserve"><value>사용자</value></data>
+	<data name="AIC_UH_Col_Technicians" xml:space="preserve"><value>기술자</value></data>
+
+	<data name="AIC_RestockHistory_Title" xml:space="preserve"><value>입고 이력</value></data>
+	<data name="AIC_RH_Col_When" xml:space="preserve"><value>일시</value></data>
+	<data name="AIC_RH_Col_Qty" xml:space="preserve"><value>수량</value></data>
+	<data name="AIC_RH_Col_By" xml:space="preserve"><value>입고자</value></data>
+	<data name="AIC_RH_Col_Note" xml:space="preserve"><value>메모</value></data>
+
+	<data name="AIC_Btn_Save" xml:space="preserve"><value>✔ 변경 사항 저장</value></data>
+	<data name="AIC_Btn_Cancel" xml:space="preserve"><value>✖ 취소</value></data>
+	<data name="AIC_Btn_Delete" xml:space="preserve"><value>🗑 삭제</value></data>
+
+	<data name="AIC_Info_LowStock" xml:space="preserve"><value>이 항목의 재고가 부족합니다.</value></data>
+	<data name="AIC_Info_OutOfStock" xml:space="preserve"><value>이 항목의 재고가 소진되었습니다.</value></data>
+	<data name="AIC_Status_InStock" xml:space="preserve"><value>재고 있음</value></data>
+	<data name="AIC_Status_LowStock" xml:space="preserve"><value>재고 부족</value></data>
+	<data name="AIC_Status_OutOfStock" xml:space="preserve"><value>재고 소진</value></data>
+
+	<!--AddServiceRecordControl-->
+	<data name="ASRC_Header_Title" xml:space="preserve"><value>➕ 서비스 기록 추가</value></data>
+	<data name="ASRC_Header_Subtitle" xml:space="preserve"><value>서비스 상세 및 활동</value></data>
+
+	<data name="ASRC_Det_ServiceId" xml:space="preserve"><value>서비스 ID:</value></data>
+	<data name="ASRC_Det_Household" xml:space="preserve"><value>가구:</value></data>
+	<data name="ASRC_Det_Technicians" xml:space="preserve"><value>기술자:</value></data>
+	<data name="ASRC_Det_Problem" xml:space="preserve"><value>문제:</value></data>
+	<data name="ASRC_Det_Action" xml:space="preserve"><value>조치:</value></data>
+	<data name="ASRC_Det_Inventory" xml:space="preserve"><value>사용한 재고:</value></data>
+	<data name="ASRC_Det_Started" xml:space="preserve"><value>시작:</value></data>
+	<data name="ASRC_Det_Finished" xml:space="preserve"><value>완료:</value></data>
+
+	<data name="ASRC_Form_HouseholdID" xml:space="preserve"><value>가구 ID</value></data>
+	<data name="ASRC_Form_TechnicianID" xml:space="preserve"><value>기술자 ID</value></data>
+	<data name="ASRC_Form_LastInspectDate" xml:space="preserve"><value>최근 점검 날짜</value></data>
+	<data name="ASRC_Form_Problem" xml:space="preserve"><value>문제</value></data>
+	<data name="ASRC_Form_ActionTaken" xml:space="preserve"><value>수행한 조치</value></data>
+	<data name="ASRC_Form_RepairDate" xml:space="preserve"><value>수리 날짜</value></data>
+
+	<data name="ASRC_Btn_Delete" xml:space="preserve"><value>🗑 삭제</value></data>
+	<data name="ASRC_Btn_Save" xml:space="preserve"><value>✔ 저장</value></data>
+	<data name="ASRC_Btn_Close" xml:space="preserve"><value>✖ 닫기</value></data>
+
+	<data name="ASRC_Status_Open" xml:space="preserve"><value>진행 중</value></data>
+	<data name="ASRC_Status_Finished" xml:space="preserve"><value>완료</value></data>
+	<data name="ASRC_Status_Canceled" xml:space="preserve"><value>취소됨</value></data>
+
 </root>

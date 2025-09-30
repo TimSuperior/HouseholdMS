@@ -1,4 +1,5 @@
-﻿using System;
+﻿// FILE: View/Dashboard/AllHouseholdsView.xaml.cs
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,14 +10,14 @@ using System.Windows.Media;
 using System.Windows.Input;
 using HouseholdMS.Model;
 using HouseholdMS.View.UserControls;     // AddHouseholdControl
+using HouseholdMS.Resources;             // Strings.*
 
 namespace HouseholdMS.View.Dashboard
 {
     public partial class AllHouseholdsView : UserControl
     {
-        // Canonical DB labels (match your schema)
         private const string OPERATIONAL = "Operational";
-        private const string IN_SERVICE = "In Service";          // UI shows this as "Out of Service"
+        private const string IN_SERVICE = "In Service";
         private const string NOT_OPERATIONAL = "Not Operational";
 
         private readonly ObservableCollection<Household> allHouseholds = new ObservableCollection<Household>();
@@ -24,48 +25,24 @@ namespace HouseholdMS.View.Dashboard
         private GridViewColumnHeader _lastHeaderClicked;
         private ListSortDirection _lastDirection = ListSortDirection.Ascending;
 
-        // Prevent re-entrancy / reopen when closing dialogs
         private bool _modalOpen = false;
 
-        // GridView header → Household property map
-        private readonly Dictionary<string, string> _headerToProperty = new Dictionary<string, string>
-        {
-            { "ID", "HouseholdID" },
-            { "Owner Name", "OwnerName" },
-            { "User Name", "UserName" },
-            { "Municipality", "Municipality" },
-            { "District", "District" },
-            { "Contact", "ContactNum" },
-            { "Installed", "InstallDate" },
-            { "Last Inspect", "LastInspect" },
-            { "Status", "Statuss" },
-            { "Comment", "UserComm" }
-        };
+        // GridView header → Household property map (uses localized captions)
+        private Dictionary<string, string> _headerToProperty;
 
         private readonly string _currentUserRole;
-        private bool IsAdmin { get { return string.Equals(_currentUserRole, "Admin", StringComparison.OrdinalIgnoreCase); } }
+        private bool IsAdmin => string.Equals(_currentUserRole, "Admin", StringComparison.OrdinalIgnoreCase);
 
         // Filters
-        private string _normalizedStatusFilter = string.Empty; // empty → all statuses
+        private string _normalizedStatusFilter = string.Empty;
         private bool _categoryFilterActive = false;
         private string _searchText = string.Empty;
 
-        // === Optional parent refresh hook (no extra files) ===
+        // Optional parent refresh hook
         private Action _notifyParent;
-        public Action NotifyParent
-        {
-            get { return _notifyParent; }
-            set { _notifyParent = value; }
-        }
-        public void SetParentRefreshCallback(Action cb)
-        {
-            _notifyParent = cb;
-        }
-        private void RaiseParentRefresh()
-        {
-            var cb = _notifyParent;
-            if (cb != null) { try { cb(); } catch { } }
-        }
+        public Action NotifyParent { get => _notifyParent; set => _notifyParent = value; }
+        public void SetParentRefreshCallback(Action cb) => _notifyParent = cb;
+        private void RaiseParentRefresh() { var cb = _notifyParent; if (cb != null) { try { cb(); } catch { } } }
 
         // === Constructors ===
         public AllHouseholdsView(string userRole)
@@ -86,17 +63,32 @@ namespace HouseholdMS.View.Dashboard
         {
             InitializeComponent();
 
+            BuildHeaderMap();
             LoadHouseholds();
 
-            // Sort on header click
             HouseholdListView.AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(GridViewColumnHeader_Click));
-
-            // Double-click open → ALWAYS open AddHouseholdControl (admin=edit, non-admin=read-only)
             HouseholdListView.MouseDoubleClick += HouseholdListView_MouseDoubleClick;
 
             ApplyAccessRestrictions();
-            UpdateSearchPlaceholder();
+            UpdateSearchPlaceholder();   // sets Tag only (watermark handles visuals)
             ApplyFilter();
+        }
+
+        private void BuildHeaderMap()
+        {
+            _headerToProperty = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { Strings.AHV_Column_ID,          "HouseholdID" },
+                { Strings.AHV_Column_OwnerName,   "OwnerName" },
+                { Strings.AHV_Column_UserName,    "UserName" },
+                { Strings.AHV_Column_Municipality,"Municipality" },
+                { Strings.AHV_Column_District,    "District" },
+                { Strings.AHV_Column_Contact,     "ContactNum" },
+                { Strings.AHV_Column_Installed,   "InstallDate" },
+                { Strings.AHV_Column_LastInspect, "LastInspect" },
+                { Strings.AHV_Column_Status,      "Statuss" },
+                { Strings.AHV_Column_Comment,     "UserComm" }
+            };
         }
 
         private void ApplyAccessRestrictions()
@@ -119,14 +111,11 @@ namespace HouseholdMS.View.Dashboard
                 {
                     while (reader.Read())
                     {
-                        DateTime installDate;
-                        DateTime lastInspect;
-
                         var installRaw = reader["InstallDate"] == DBNull.Value ? null : Convert.ToString(reader["InstallDate"]);
                         var lastRaw = reader["LastInspect"] == DBNull.Value ? null : Convert.ToString(reader["LastInspect"]);
 
-                        installDate = DateTime.TryParse(installRaw, out var dt1) ? dt1 : DateTime.MinValue;
-                        lastInspect = DateTime.TryParse(lastRaw, out var dt2) ? dt2 : DateTime.MinValue;
+                        var installDate = DateTime.TryParse(installRaw, out var dt1) ? dt1 : DateTime.MinValue;
+                        var lastInspect = DateTime.TryParse(lastRaw, out var dt2) ? dt2 : DateTime.MinValue;
 
                         var h = new Household
                         {
@@ -151,7 +140,7 @@ namespace HouseholdMS.View.Dashboard
             HouseholdListView.ItemsSource = view;
         }
 
-        // === Status helpers ===
+        // === Status helpers (kept for future use) ===
         private static string NormalizeStatus(string s)
         {
             if (string.IsNullOrWhiteSpace(s)) return string.Empty;
@@ -167,38 +156,19 @@ namespace HouseholdMS.View.Dashboard
             return s.Trim();
         }
 
-        private static string DisplayStatusLabel(string normalized)
-        {
-            // Product copy: show "Out of Service" for the DB value "In Service"
-            return string.Equals(normalized, IN_SERVICE, StringComparison.Ordinal) ? "Out of Service" : normalized;
-        }
-
         // === Search & filter ===
         private void UpdateSearchPlaceholder()
         {
             if (SearchBox == null) return;
-
-            string ph = _categoryFilterActive
-                ? "Search within \"" + DisplayStatusLabel(_normalizedStatusFilter) + "\""
-                : "Search all households";
-
-            SearchBox.Tag = ph;
-
-            if (string.IsNullOrWhiteSpace(SearchBox.Text) ||
-                SearchBox.Text == "Search by owner, user, area or contact" ||
-                SearchBox.Text == "Search all households")
-            {
-                SearchBox.Text = ph;
-                SearchBox.Foreground = Brushes.Gray;
-                SearchBox.FontStyle = FontStyles.Italic;
-            }
+            // Tag is the localized watermark text; template shows it when Text is empty.
+            SearchBox.Tag = Strings.AHV_SearchPlaceholder;
         }
 
         private void ApplyFilter()
         {
             if (view == null) return;
 
-            string search = _searchText == null ? string.Empty : _searchText.Trim().ToLowerInvariant();
+            string search = string.IsNullOrWhiteSpace(_searchText) ? string.Empty : _searchText.Trim().ToLowerInvariant();
             bool useCategory = _categoryFilterActive && !string.IsNullOrWhiteSpace(_normalizedStatusFilter);
 
             view.Filter = delegate (object obj)
@@ -206,26 +176,21 @@ namespace HouseholdMS.View.Dashboard
                 var h = obj as Household;
                 if (h == null) return false;
 
-                bool categoryOk = true;
                 if (useCategory)
                 {
                     var hn = NormalizeStatus(h.Statuss);
-                    categoryOk = hn == _normalizedStatusFilter;
+                    if (hn != _normalizedStatusFilter) return false;
                 }
-                if (!categoryOk) return false;
 
                 if (string.IsNullOrEmpty(search)) return true;
 
-                // String contains on several text fields
                 if (!string.IsNullOrEmpty(h.OwnerName) && h.OwnerName.ToLowerInvariant().Contains(search)) return true;
                 if (!string.IsNullOrEmpty(h.UserName) && h.UserName.ToLowerInvariant().Contains(search)) return true;
                 if (!string.IsNullOrEmpty(h.Municipality) && h.Municipality.ToLowerInvariant().Contains(search)) return true;
                 if (!string.IsNullOrEmpty(h.District) && h.District.ToLowerInvariant().Contains(search)) return true;
                 if (!string.IsNullOrEmpty(h.ContactNum) && h.ContactNum.ToLowerInvariant().Contains(search)) return true;
 
-                // Numeric search for exact ID
-                int id;
-                if (int.TryParse(search, out id) && h.HouseholdID == id) return true;
+                if (int.TryParse(search, out int id) && h.HouseholdID == id) return true;
 
                 return false;
             };
@@ -235,41 +200,13 @@ namespace HouseholdMS.View.Dashboard
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (SearchBox != null && SearchBox.Text == (SearchBox.Tag as string))
-                _searchText = string.Empty;
-            else
-                _searchText = SearchBox == null ? string.Empty : SearchBox.Text;
-
+            _searchText = SearchBox?.Text ?? string.Empty;
             ApplyFilter();
         }
 
-        private void ResetText(object sender, RoutedEventArgs e)
-        {
-            var box = sender as TextBox;
-            if (box != null && string.IsNullOrWhiteSpace(box.Text))
-            {
-                box.Text = box.Tag as string;
-                box.Foreground = Brushes.Gray;
-                box.FontStyle = FontStyles.Italic;
-                _searchText = string.Empty;
-                ApplyFilter();
-            }
-        }
-
-        private void ClearText(object sender, RoutedEventArgs e)
-        {
-            var box = sender as TextBox;
-            if (box == null) return;
-
-            if (box.Text == box.Tag as string)
-                box.Text = string.Empty;
-
-            box.Foreground = Brushes.Black;
-            box.FontStyle = FontStyles.Normal;
-
-            _searchText = string.Empty;
-            ApplyFilter();
-        }
+        // (Handlers retained for compatibility; watermark makes them no-ops)
+        private void ResetText(object sender, RoutedEventArgs e) { /* not used by watermark style */ }
+        private void ClearText(object sender, RoutedEventArgs e) { /* not used by watermark style */ }
 
         // === Sorting ===
         private void GridViewColumnHeader_Click(object sender, RoutedEventArgs e)
@@ -277,8 +214,8 @@ namespace HouseholdMS.View.Dashboard
             var header = e.OriginalSource as GridViewColumnHeader;
             if (header == null) return;
 
-            string headerText = header.Content == null ? null : header.Content.ToString();
-            if (string.IsNullOrEmpty(headerText) || !_headerToProperty.ContainsKey(headerText)) return;
+            string headerText = header.Content?.ToString();
+            if (string.IsNullOrEmpty(headerText) || _headerToProperty == null || !_headerToProperty.ContainsKey(headerText)) return;
 
             string sortBy = _headerToProperty[headerText];
 
@@ -305,7 +242,7 @@ namespace HouseholdMS.View.Dashboard
                 return;
             }
 
-            if (_modalOpen) return; // guard against re-entry
+            if (_modalOpen) return;
 
             var form = new AddHouseholdControl();
             form.Loaded += delegate { LockStatusInputsInForm(form); };
@@ -329,8 +266,8 @@ namespace HouseholdMS.View.Dashboard
             ShowDialogSafe(dialog);
         }
 
-        // === Double-click open → ALWAYS open AddHouseholdControl ===
-        private void HouseholdListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        // === Double-click row: open AddHouseholdControl (admin edit, others read-only) ===
+        private void HouseholdListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
             if (_modalOpen) return;
@@ -338,23 +275,16 @@ namespace HouseholdMS.View.Dashboard
             var selected = HouseholdListView.SelectedItem as Household;
             if (selected == null) return;
 
-            var form = new AddHouseholdControl(selected); // edit mode when entity is passed
+            var form = new AddHouseholdControl(selected);
             form.Loaded += delegate
             {
-                // Keep existing lock for status inputs
                 LockStatusInputsInForm(form);
-
-                // Non-admins: open the same control but read-only (preserves previous "read-only details" behavior)
-                if (!IsAdmin)
-                {
-                    SetFormReadOnly(form);
-                }
+                if (!IsAdmin) SetFormReadOnly(form);
             };
 
             var dlg = CreateWideDialog(form, "Edit Household #" + selected.HouseholdID);
             form.OnSavedSuccessfully += delegate
             {
-                // Only fires for admins (Save shown). Non-admins won't see Save/Delete.
                 try { dlg.DialogResult = true; } catch { }
                 dlg.Close();
                 LoadHouseholds();
@@ -397,14 +327,12 @@ namespace HouseholdMS.View.Dashboard
             return dlg;
         }
 
-        // Centralized, safe ShowDialog with re-entrancy guard and input capture release
         private void ShowDialogSafe(Window dlg)
         {
-            if (dlg == null) return;
-            if (_modalOpen) return;
+            if (dlg == null || _modalOpen) return;
 
             _modalOpen = true;
-            HouseholdListView.IsEnabled = false;  // avoid extra interactions while modal is up
+            HouseholdListView.IsEnabled = false;
 
             try
             {
@@ -418,7 +346,6 @@ namespace HouseholdMS.View.Dashboard
             }
         }
 
-        // Disable any status input inside AddHouseholdControl (we manage status via workflows elsewhere)
         private void LockStatusInputsInForm(UserControl form)
         {
             if (form == null) return;
@@ -431,8 +358,7 @@ namespace HouseholdMS.View.Dashboard
                 for (int i = 0; i < count; i++)
                 {
                     var child = VisualTreeHelper.GetChild(node, i);
-                    var fe = child as FrameworkElement;
-                    if (fe != null)
+                    if (child is FrameworkElement fe)
                     {
                         var name = fe.Name ?? string.Empty;
                         var tagStr = (fe.Tag as string) ?? string.Empty;
@@ -455,10 +381,8 @@ namespace HouseholdMS.View.Dashboard
             dfs(form);
         }
 
-        // Make the AddHouseholdControl read-only for non-admin users
         private void SetFormReadOnly(AddHouseholdControl form)
         {
-            // Hide Save/Delete, rename Cancel to Close
             var saveBtn = form.FindName("SaveButton") as Button;
             if (saveBtn != null) saveBtn.Visibility = Visibility.Collapsed;
 
@@ -468,7 +392,6 @@ namespace HouseholdMS.View.Dashboard
             var cancelBtn = form.FindName("CancelButton") as Button;
             if (cancelBtn != null) cancelBtn.Content = "Close";
 
-            // Disable inputs (TextBox read-only; ComboBox/DatePicker disabled)
             Action<DependencyObject> dfs = null;
             dfs = delegate (DependencyObject node)
             {

@@ -186,4 +186,264 @@
 	<data name="Inv_Detail_LastRestockedLabel" xml:space="preserve"><value>Último reabastecimiento:</value></data>
 	<data name="Inv_Detail_NoteLabel" xml:space="preserve"><value>Nota:</value></data>
 
+	<!-- ServiceRecordsView-->
+	<data name="SR_SearchPlaceholder" xml:space="preserve"><value>Buscar por hogar/técnico/problema/acción/estado</value></data>
+	<data name="SR_Column_ID" xml:space="preserve"><value>ID</value></data>
+	<data name="SR_Column_Household" xml:space="preserve"><value>Hogar</value></data>
+	<data name="SR_Column_Technicians" xml:space="preserve"><value>Técnicos</value></data>
+	<data name="SR_Column_Problem" xml:space="preserve"><value>Problema</value></data>
+	<data name="SR_Column_Action" xml:space="preserve"><value>Acción</value></data>
+	<data name="SR_Column_InventoryUsed" xml:space="preserve"><value>Inventario usado</value></data>
+	<data name="SR_Column_Start" xml:space="preserve"><value>Inicio</value></data>
+	<data name="SR_Column_Finish" xml:space="preserve"><value>Fin</value></data>
+	<data name="SR_Column_Status" xml:space="preserve"><value>Estado</value></data>
+	<data name="SR_EmptyState" xml:space="preserve"><value>No se encontraron registros de servicio</value></data>
+
+	<data name="SR_Detail_ServiceID" xml:space="preserve"><value>ID de servicio:</value></data>
+	<data name="SR_Detail_Household" xml:space="preserve"><value>Hogar:</value></data>
+	<data name="SR_Detail_PrimaryTech" xml:space="preserve"><value>Técnico principal:</value></data>
+	<data name="SR_Detail_Team" xml:space="preserve"><value>Equipo:</value></data>
+	<data name="SR_Detail_Problem" xml:space="preserve"><value>Problema:</value></data>
+	<data name="SR_Detail_Action" xml:space="preserve"><value>Acción:</value></data>
+	<data name="SR_Detail_InventoryUsed" xml:space="preserve"><value>Inventario usado:</value></data>
+	<data name="SR_Detail_Started" xml:space="preserve"><value>Inicio:</value></data>
+	<data name="SR_Detail_Finished" xml:space="preserve"><value>Finalizado:</value></data>
+	<data name="SR_Detail_Status" xml:space="preserve"><value>Estado:</value></data>
+
+	<!-- DashboardView-->
+	<data name="Dash_Header" xml:space="preserve"><value>Panel</value></data>
+	<data name="Dash_Section_Household" xml:space="preserve"><value>🏠 Hogar</value></data>
+	<data name="Dash_TotalHouseholds" xml:space="preserve"><value>Total de hogares</value></data>
+	<data name="Dash_Operational" xml:space="preserve"><value>Operativas</value></data>
+	<data name="Dash_OutOfService" xml:space="preserve"><value>Fuera de servicio</value></data>
+
+	<data name="Dash_Section_Inventory" xml:space="preserve"><value>📦 Inventario</value></data>
+	<data name="Dash_OpenList" xml:space="preserve"><value>Abrir lista</value></data>
+
+	<data name="Dash_Remaining" xml:space="preserve"><value>Restante</value></data>
+	<data name="Dash_Threshold_Label" xml:space="preserve"><value>Umbral</value></data>
+	<data name="Dash_Restocked_Label" xml:space="preserve"><value>Reabastecido</value></data>
+
+	<data name="Dash_Status_Out" xml:space="preserve"><value>SIN</value></data>
+	<data name="Dash_Status_Low" xml:space="preserve"><value>BAJO</value></data>
+	<data name="Dash_Status_Ok"  xml:space="preserve"><value>OK</value></data>
+
+	<!--InventoryDetails-->
+	<data name="InvDet_Title" xml:space="preserve"><value>Detalles de inventario</value></data>
+	<data name="InvDet_Status_InStock" xml:space="preserve"><value>En stock</value></data>
+	<data name="InvDet_LowStockMsg" xml:space="preserve"><value>Este artículo tiene poco stock.</value></data>
+
+	<data name="InvDet_ItemType" xml:space="preserve"><value>Tipo de artículo</value></data>
+	<data name="InvDet_Available" xml:space="preserve"><value>Disponible</value></data>
+	<data name="InvDet_Used" xml:space="preserve"><value>Usado</value></data>
+	<data name="InvDet_LastRestocked" xml:space="preserve"><value>Último reabastecimiento</value></data>
+	<data name="InvDet_LastUsed" xml:space="preserve"><value>Último uso</value></data>
+	<data name="InvDet_Note" xml:space="preserve"><value>Nota</value></data>
+
+	<data name="InvDet_UsageHistory" xml:space="preserve"><value>Historial de uso</value></data>
+	<data name="InvDet_Usage_When" xml:space="preserve"><value>Fecha</value></data>
+	<data name="InvDet_Usage_QtyUsed" xml:space="preserve"><value>Cant. usada</value></data>
+	<data name="InvDet_Usage_Service" xml:space="preserve"><value>Servicio</value></data>
+	<data name="InvDet_Usage_Household" xml:space="preserve"><value>Hogar</value></data>
+	<data name="InvDet_Usage_Technicians" xml:space="preserve"><value>Técnico(s)</value></data>
+	<data name="InvDet_Usage_UsedBy" xml:space="preserve"><value>Usado por</value></data>
+
+	<data name="InvDet_RestockHistory" xml:space="preserve"><value>Historial de reabastecimiento</value></data>
+	<data name="InvDet_Restock_When" xml:space="preserve"><value>Fecha</value></data>
+	<data name="InvDet_Restock_Qty" xml:space="preserve"><value>Cant.</value></data>
+	<data name="InvDet_Restock_By" xml:space="preserve"><value>Reabastecido por</value></data>
+	<data name="InvDet_Restock_Note" xml:space="preserve"><value>Nota</value></data>
+
+	<data name="InvDet_Close" xml:space="preserve"><value>✖ Cerrar</value></data>
+
+	<!--AllHouseholdsView-->
+	<data name="AHV_SearchPlaceholder" xml:space="preserve"><value>Buscar por propietario, usuario, área o contacto</value></data>
+	<data name="AHV_AddHousehold" xml:space="preserve"><value>➕ Añadir hogar</value></data>
+
+	<data name="AHV_Column_ID" xml:space="preserve"><value>ID</value></data>
+	<data name="AHV_Column_OwnerName" xml:space="preserve"><value>Nombre del propietario</value></data>
+	<data name="AHV_Column_UserName" xml:space="preserve"><value>Nombre del usuario</value></data>
+	<data name="AHV_Column_Municipality" xml:space="preserve"><value>Municipio</value></data>
+	<data name="AHV_Column_District" xml:space="preserve"><value>Distrito</value></data>
+	<data name="AHV_Column_Contact" xml:space="preserve"><value>Contacto</value></data>
+	<data name="AHV_Column_Installed" xml:space="preserve"><value>Instalado</value></data>
+	<data name="AHV_Column_LastInspect" xml:space="preserve"><value>Última inspección</value></data>
+	<data name="AHV_Column_Status" xml:space="preserve"><value>Estado</value></data>
+	<data name="AHV_Column_Comment" xml:space="preserve"><value>Comentario</value></data>
+
+	<data name="AHV_EmptyState" xml:space="preserve"><value>No se encontraron hogares</value></data>
+	<data name="AHV_Status_Tooltip" xml:space="preserve"><value>El estado es de solo lectura en esta vista. Cámbialo en la vista de Servicio/Estado.</value></data>
+
+	<data name="AHV_RO_OwnerName" xml:space="preserve"><value>Nombre del propietario:</value></data>
+	<data name="AHV_RO_UserName" xml:space="preserve"><value>Nombre del usuario:</value></data>
+	<data name="AHV_RO_Municipality" xml:space="preserve"><value>Municipio:</value></data>
+	<data name="AHV_RO_District" xml:space="preserve"><value>Distrito:</value></data>
+	<data name="AHV_RO_Contact" xml:space="preserve"><value>Contacto:</value></data>
+	<data name="AHV_RO_Installed" xml:space="preserve"><value>Instalado:</value></data>
+	<data name="AHV_RO_LastInspect" xml:space="preserve"><value>Última inspección:</value></data>
+	<data name="AHV_RO_Status" xml:space="preserve"><value>Estado:</value></data>
+	<data name="AHV_RO_Comment" xml:space="preserve"><value>Comentario:</value></data>
+
+	<!--Operational-->
+	<data name="OHV_SearchPlaceholder" xml:space="preserve"><value>Buscar por propietario, usuario, área o contacto</value></data>
+
+	<data name="OHV_Column_ID" xml:space="preserve"><value>ID</value></data>
+	<data name="OHV_Column_OwnerName" xml:space="preserve"><value>Nombre del propietario</value></data>
+	<data name="OHV_Column_UserName" xml:space="preserve"><value>Nombre del usuario</value></data>
+	<data name="OHV_Column_Municipality" xml:space="preserve"><value>Municipio</value></data>
+	<data name="OHV_Column_District" xml:space="preserve"><value>Distrito</value></data>
+	<data name="OHV_Column_Contact" xml:space="preserve"><value>Contacto</value></data>
+	<data name="OHV_Column_Installed" xml:space="preserve"><value>Instalado</value></data>
+	<data name="OHV_Column_LastInspect" xml:space="preserve"><value>Última inspección</value></data>
+	<data name="OHV_Column_Status" xml:space="preserve"><value>Estado</value></data>
+	<data name="OHV_Column_Comment" xml:space="preserve"><value>Comentario</value></data>
+
+	<data name="OHV_EmptyState" xml:space="preserve"><value>No se encontraron hogares operativos</value></data>
+	<data name="OHV_Status_Tooltip" xml:space="preserve"><value>El estado es de solo lectura en esta vista</value></data>
+
+	<!--OutOfServiceHouseholdsView-->
+	<data name="OOSV_SearchPlaceholder" xml:space="preserve"><value>Buscar por propietario, usuario, área o contacto</value></data>
+
+	<data name="OOSV_Column_ID" xml:space="preserve"><value>ID</value></data>
+	<data name="OOSV_Column_OwnerName" xml:space="preserve"><value>Nombre del propietario</value></data>
+	<data name="OOSV_Column_UserName" xml:space="preserve"><value>Nombre del usuario</value></data>
+	<data name="OOSV_Column_Municipality" xml:space="preserve"><value>Municipio</value></data>
+	<data name="OOSV_Column_District" xml:space="preserve"><value>Distrito</value></data>
+	<data name="OOSV_Column_Contact" xml:space="preserve"><value>Contacto</value></data>
+	<data name="OOSV_Column_Installed" xml:space="preserve"><value>Instalado</value></data>
+	<data name="OOSV_Column_LastInspect" xml:space="preserve"><value>Última inspección</value></data>
+	<data name="OOSV_Column_Status" xml:space="preserve"><value>Estado</value></data>
+	<data name="OOSV_Column_Comment" xml:space="preserve"><value>Comentario</value></data>
+
+	<data name="OOSV_EmptyState" xml:space="preserve"><value>No se encontraron hogares fuera de servicio</value></data>
+	<data name="OOSV_Status_Tooltip" xml:space="preserve"><value>Haz clic para cambiar el estado (solo administradores)</value></data>
+
+	<!--SitesView-->
+	<data name="SV_Breadcrumb_Dashboard" xml:space="preserve"><value>Panel de control</value></data>
+	<data name="SV_Breadcrumb_Dashboard_Tooltip" xml:space="preserve"><value>Ir al panel de control</value></data>
+	<data name="SV_Breadcrumb_Sites" xml:space="preserve"><value>Sitios</value></data>
+	<data name="SV_Title" xml:space="preserve"><value>Sitios</value></data>
+	<data name="SV_BackToDashboard" xml:space="preserve"><value>Volver al panel</value></data>
+	<data name="SV_BackToDashboard_Tooltip" xml:space="preserve"><value>Volver al panel (Alt+Izquierda)</value></data>
+
+	<data name="SV_Tile_TotalHouseholds" xml:space="preserve"><value>Hogares totales</value></data>
+	<data name="SV_Tile_Operational" xml:space="preserve"><value>Operativos</value></data>
+	<data name="SV_Tile_OutOfService" xml:space="preserve"><value>Fuera de servicio</value></data>
+
+	<data name="SV_Placeholder" xml:space="preserve"><value>Selecciona una tarjeta para ver los detalles aquí…</value></data>
+
+	<!--AddServiceControl-->
+	<data name="AS_Header" xml:space="preserve"><value>Iniciar llamada de servicio</value></data>
+
+	<data name="AS_Summary_Title" xml:space="preserve"><value>Resumen del hogar</value></data>
+	<data name="AS_Summary_HouseholdID" xml:space="preserve"><value>ID del hogar:</value></data>
+	<data name="AS_Summary_Owner" xml:space="preserve"><value>Propietario:</value></data>
+	<data name="AS_Summary_User" xml:space="preserve"><value>Usuario:</value></data>
+	<data name="AS_Summary_Municipality" xml:space="preserve"><value>Municipio:</value></data>
+	<data name="AS_Summary_District" xml:space="preserve"><value>Distrito:</value></data>
+	<data name="AS_Summary_Contact" xml:space="preserve"><value>Contacto:</value></data>
+	<data name="AS_Summary_Status" xml:space="preserve"><value>Estado:</value></data>
+
+	<data name="AS_Problem_Label" xml:space="preserve"><value>Descripción del problema (opcional)</value></data>
+	<data name="AS_FieldRequired" xml:space="preserve"><value>Este campo es obligatorio.</value></data>
+
+	<data name="AS_Confirm" xml:space="preserve"><value>✔ Confirmar servicio</value></data>
+	<data name="AS_Cancel" xml:space="preserve"><value>✖ Cancelar</value></data>
+
+	<!--AddHouseholdControl-->
+	<data name="AHC_FieldRequired" xml:space="preserve"><value>Este campo es obligatorio.</value></data>
+	<data name="AHC_Info_OutOfService" xml:space="preserve"><value>El estado está establecido como Fuera de servicio. Agrega una breve nota con el motivo y considera abrir una llamada de servicio desde el panel.</value></data>
+
+	<data name="AHC_Label_OwnerName" xml:space="preserve"><value>Nombre del propietario</value></data>
+	<data name="AHC_Label_UserName" xml:space="preserve"><value>Nombre de usuario</value></data>
+	<data name="AHC_Label_Municipality" xml:space="preserve"><value>Municipio</value></data>
+	<data name="AHC_Label_District" xml:space="preserve"><value>Distrito</value></data>
+	<data name="AHC_Label_ContactNumber" xml:space="preserve"><value>Número de contacto</value></data>
+	<data name="AHC_Label_InstallDate" xml:space="preserve"><value>Fecha de instalación</value></data>
+	<data name="AHC_Label_LastInspectDate" xml:space="preserve"><value>Fecha de la última inspección</value></data>
+	<data name="AHC_Label_Status" xml:space="preserve"><value>Estado</value></data>
+	<data name="AHC_Label_NoteOptional" xml:space="preserve"><value>Nota (opcional)</value></data>
+
+	<data name="AHC_ServiceHistory_Title" xml:space="preserve"><value>🛠 Historial de servicios</value></data>
+	<data name="AHC_ServiceHistory_Zero" xml:space="preserve"><value>0 registros</value></data>
+	<data name="AHC_ServiceHistory_Empty" xml:space="preserve"><value>Aún no hay registros de servicio.</value></data>
+
+	<data name="AHC_SH_Col_Id" xml:space="preserve"><value>#</value></data>
+	<data name="AHC_SH_Col_Date" xml:space="preserve"><value>Fecha</value></data>
+	<data name="AHC_SH_Col_Technician" xml:space="preserve"><value>Técnico</value></data>
+	<data name="AHC_SH_Col_Summary" xml:space="preserve"><value>Resumen</value></data>
+	<data name="AHC_SH_Col_Status" xml:space="preserve"><value>Estado</value></data>
+
+	<data name="AHC_Btn_Save" xml:space="preserve"><value>💾 Guardar</value></data>
+	<data name="AHC_Btn_Cancel" xml:space="preserve"><value>✖ Cancelar</value></data>
+	<data name="AHC_Btn_Delete" xml:space="preserve"><value>🗑 Eliminar</value></data>
+
+	<data name="Common_Status_Operational" xml:space="preserve"><value>Operativo</value></data>
+	<data name="Common_Status_OutOfService" xml:space="preserve"><value>Fuera de servicio</value></data>
+
+	<!--AddInventoryControl-->
+	<data name="AIC_Header_Subtitle" xml:space="preserve"><value>Gestionar artículo de inventario</value></data>
+
+	<data name="AIC_Label_ItemType" xml:space="preserve"><value>Tipo de artículo</value></data>
+	<data name="AIC_Label_InitialQty" xml:space="preserve"><value>Cantidad inicial</value></data>
+	<data name="AIC_Label_Threshold" xml:space="preserve"><value>Umbral de stock bajo</value></data>
+	<data name="AIC_Label_NoteOptional" xml:space="preserve"><value>Nota (opcional)</value></data>
+
+	<data name="AIC_Snapshot_Title" xml:space="preserve"><value>Resumen del artículo</value></data>
+	<data name="AIC_Snapshot_Available" xml:space="preserve"><value>Disponible</value></data>
+	<data name="AIC_Snapshot_Used" xml:space="preserve"><value>Usado</value></data>
+	<data name="AIC_Snapshot_LastRestocked" xml:space="preserve"><value>Último reabastecimiento</value></data>
+	<data name="AIC_Snapshot_LastUsed" xml:space="preserve"><value>Último uso</value></data>
+
+	<data name="AIC_UsageHistory_Title" xml:space="preserve"><value>Historial de uso</value></data>
+	<data name="AIC_UH_Col_When" xml:space="preserve"><value>Cuándo</value></data>
+	<data name="AIC_UH_Col_QtyUsed" xml:space="preserve"><value>Cant. usada</value></data>
+	<data name="AIC_UH_Col_Service" xml:space="preserve"><value>Servicio</value></data>
+	<data name="AIC_UH_Col_UsedBy" xml:space="preserve"><value>Usado por</value></data>
+	<data name="AIC_UH_Col_Technicians" xml:space="preserve"><value>Técnico(s)</value></data>
+
+	<data name="AIC_RestockHistory_Title" xml:space="preserve"><value>Historial de reabastecimiento</value></data>
+	<data name="AIC_RH_Col_When" xml:space="preserve"><value>Cuándo</value></data>
+	<data name="AIC_RH_Col_Qty" xml:space="preserve"><value>Cant.</value></data>
+	<data name="AIC_RH_Col_By" xml:space="preserve"><value>Por</value></data>
+	<data name="AIC_RH_Col_Note" xml:space="preserve"><value>Nota</value></data>
+
+	<data name="AIC_Btn_Save" xml:space="preserve"><value>✔ Guardar cambios</value></data>
+	<data name="AIC_Btn_Cancel" xml:space="preserve"><value>✖ Cancelar</value></data>
+	<data name="AIC_Btn_Delete" xml:space="preserve"><value>🗑 Eliminar</value></data>
+
+	<data name="AIC_Info_LowStock" xml:space="preserve"><value>Este artículo tiene poco stock.</value></data>
+	<data name="AIC_Info_OutOfStock" xml:space="preserve"><value>Este artículo está agotado.</value></data>
+	<data name="AIC_Status_InStock" xml:space="preserve"><value>En stock</value></data>
+	<data name="AIC_Status_LowStock" xml:space="preserve"><value>Poco stock</value></data>
+	<data name="AIC_Status_OutOfStock" xml:space="preserve"><value>Agotado</value></data>
+
+	<!--AddServiceRecordControl-->
+	<data name="ASRC_Header_Title" xml:space="preserve"><value>➕ Agregar registro de servicio</value></data>
+	<data name="ASRC_Header_Subtitle" xml:space="preserve"><value>Detalles y actividad del servicio</value></data>
+
+	<data name="ASRC_Det_ServiceId" xml:space="preserve"><value>ID de servicio:</value></data>
+	<data name="ASRC_Det_Household" xml:space="preserve"><value>Hogar:</value></data>
+	<data name="ASRC_Det_Technicians" xml:space="preserve"><value>Técnicos:</value></data>
+	<data name="ASRC_Det_Problem" xml:space="preserve"><value>Problema:</value></data>
+	<data name="ASRC_Det_Action" xml:space="preserve"><value>Acción:</value></data>
+	<data name="ASRC_Det_Inventory" xml:space="preserve"><value>Inventario utilizado:</value></data>
+	<data name="ASRC_Det_Started" xml:space="preserve"><value>Inicio:</value></data>
+	<data name="ASRC_Det_Finished" xml:space="preserve"><value>Finalizado:</value></data>
+
+	<data name="ASRC_Form_HouseholdID" xml:space="preserve"><value>ID del hogar</value></data>
+	<data name="ASRC_Form_TechnicianID" xml:space="preserve"><value>ID del técnico</value></data>
+	<data name="ASRC_Form_LastInspectDate" xml:space="preserve"><value>Fecha de última inspección</value></data>
+	<data name="ASRC_Form_Problem" xml:space="preserve"><value>Problema</value></data>
+	<data name="ASRC_Form_ActionTaken" xml:space="preserve"><value>Acción realizada</value></data>
+	<data name="ASRC_Form_RepairDate" xml:space="preserve"><value>Fecha de reparación</value></data>
+
+	<data name="ASRC_Btn_Delete" xml:space="preserve"><value>🗑 Eliminar</value></data>
+	<data name="ASRC_Btn_Save" xml:space="preserve"><value>✔ Guardar</value></data>
+	<data name="ASRC_Btn_Close" xml:space="preserve"><value>✖ Cerrar</value></data>
+
+	<data name="ASRC_Status_Open" xml:space="preserve"><value>Abierto</value></data>
+	<data name="ASRC_Status_Finished" xml:space="preserve"><value>Finalizado</value></data>
+	<data name="ASRC_Status_Canceled" xml:space="preserve"><value>Cancelado</value></data>
+
 </root>

@@ -1,15 +1,71 @@
-﻿<UserControl x:Class="HouseholdMS.View.Dashboard.DashboardView"  
+﻿<UserControl x:Class="HouseholdMS.View.Dashboard.DashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:uc="clr-namespace:HouseholdMS.View.UserControls"
              xmlns:local="clr-namespace:HouseholdMS.View.Dashboard"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:res="clr-namespace:HouseholdMS.Resources"
              mc:Ignorable="d">
 
+    <!-- ===================== THEME & STYLES ===================== -->
     <UserControl.Resources>
 
-        <!-- Base tile look -->
+        <!-- Palette -->
+        <SolidColorBrush x:Key="Col.PageBg"      Color="#F5F7FB"/>
+        <SolidColorBrush x:Key="Col.CardBg"      Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Col.CardBorder"  Color="#E6E8EF"/>
+        <SolidColorBrush x:Key="Col.MutedText"   Color="#667085"/>
+        <SolidColorBrush x:Key="Col.Heading"     Color="#0F172A"/>
+        <SolidColorBrush x:Key="Col.Primary"     Color="#2563EB"/>
+        <SolidColorBrush x:Key="Col.PrimaryLite" Color="#EEF2FF"/>
+
+        <!-- Section header -->
+        <Style x:Key="SectionHeaderText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.Heading}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Ghost button (for "Open List") -->
+        <Style x:Key="GhostButton" TargetType="Button">
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="8,0,0,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.Primary}"/>
+            <Setter Property="Background" Value="#00000000"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.Primary}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="gb"
+                                CornerRadius="10"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="gb" Property="Background" Value="#0F2563EB"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="gb" Property="Background" Value="#1A2563EB"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Base tile style -->
         <Style x:Key="TileButton" TargetType="Button">
             <Setter Property="Margin" Value="8"/>
             <Setter Property="Padding" Value="16"/>
@@ -18,31 +74,79 @@
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="Background" Value="{StaticResource Col.CardBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Col.CardBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="bd"
-                                Background="{TemplateBinding Background}"
-                                CornerRadius="16"
-                                BorderBrush="#DDDDDD"
-                                BorderThickness="1"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter/>
-                        </Border>
+                        <Grid>
+                            <Border x:Name="bd"
+                                    CornerRadius="18"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    SnapsToDevicePixels="True"
+                                    RenderTransformOrigin="0.5,0.5">
+                                <Border.RenderTransform>
+                                    <ScaleTransform x:Name="scale" ScaleX="1" ScaleY="1"/>
+                                </Border.RenderTransform>
+                                <Grid>
+                                    <Rectangle Height="86" VerticalAlignment="Top" IsHitTestVisible="False">
+                                        <Rectangle.Fill>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                <GradientStop Color="#07FFFFFF" Offset="0"/>
+                                                <GradientStop Color="#00FFFFFF" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                    <ContentPresenter Margin="{TemplateBinding Padding}"/>
+                                </Grid>
+                            </Border>
+
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="MouseOver">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="bd" Storyboard.TargetProperty="Effect">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                                                    <DiscreteObjectKeyFrame.Value>
+                                                        <DropShadowEffect BlurRadius="14" ShadowDepth="2" Opacity="0.22"/>
+                                                    </DiscreteObjectKeyFrame.Value>
+                                                </DiscreteObjectKeyFrame>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="scale" Storyboard.TargetProperty="ScaleX" To="0.98" Duration="0:0:0.05"/>
+                                            <DoubleAnimation Storyboard.TargetName="scale" Storyboard.TargetProperty="ScaleY" To="0.98" Duration="0:0:0.05"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="bd" Storyboard.TargetProperty="Opacity" To="0.6" Duration="0:0:0"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="BorderBrush" Value="#B0B0B0"/>
-                                <Setter TargetName="bd" Property="Effect">
-                                    <Setter.Value>
-                                        <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.25"/>
-                                    </Setter.Value>
-                                </Setter>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#D1D6E5"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="#F5F5F5"/>
+                                <Setter TargetName="bd" Property="Background" Value="#FAFAFA"/>
                             </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="bd" Property="Opacity" Value="0.6"/>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource Col.Primary}"/>
+                                <Setter TargetName="bd" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="False">
+                                <Setter TargetName="bd" Property="Effect" Value="{x:Null}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -50,28 +154,71 @@
             </Setter>
         </Style>
 
-        <!-- Inventory tile = TileButton + stock highlight -->
+        <!-- Inventory tile style -->
         <Style x:Key="InventoryTileButtonStyle" TargetType="Button" BasedOn="{StaticResource TileButton}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsZero}" Value="True">
-                    <Setter Property="Background" Value="#FFEBEE"/>
-                    <Setter Property="BorderBrush" Value="#E57373"/>
-                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="Background" Value="#FFFDF2F2"/>
+                    <Setter Property="BorderBrush" Value="#FCA5A5"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding IsBelowThreshold}" Value="True">
-                    <Setter Property="Background" Value="#FFF8E1"/>
-                    <Setter Property="BorderBrush" Value="#FFB300"/>
-                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="Background" Value="#FFFFFBEB"/>
+                    <Setter Property="BorderBrush" Value="#F59E0B"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding IsOk}" Value="True">
-                    <Setter Property="Background" Value="#E8F5E9"/>
-                    <Setter Property="BorderBrush" Value="#81C784"/>
+                    <Setter Property="Background" Value="#F0FDF4"/>
+                    <Setter Property="BorderBrush" Value="#86EFAC"/>
                     <Setter Property="BorderThickness" Value="1.5"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
 
-        <!-- Keyed template (Button carries ItemID in Tag) -->
+        <!-- Status pill base -->
+        <Style x:Key="StatusPill" TargetType="Border">
+            <Setter Property="CornerRadius" Value="999"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
+        </Style>
+
+        <!-- Concrete pill styles -->
+        <Style x:Key="StatusPillOutStyle" TargetType="Border" BasedOn="{StaticResource StatusPill}">
+            <Setter Property="Background" Value="#FEE2E2"/>
+            <Setter Property="BorderBrush" Value="#FCA5A5"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsZero}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="StatusPillLowStyle" TargetType="Border" BasedOn="{StaticResource StatusPill}">
+            <Setter Property="Background" Value="#FEF3C7"/>
+            <Setter Property="BorderBrush" Value="#F59E0B"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsBelowThreshold}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="StatusPillOkStyle" TargetType="Border" BasedOn="{StaticResource StatusPill}">
+            <Setter Property="Background" Value="#DCFCE7"/>
+            <Setter Property="BorderBrush" Value="#86EFAC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsOk}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Inventory tile data template -->
         <DataTemplate x:Key="InventoryTileTemplate">
             <Button Style="{StaticResource InventoryTileButtonStyle}"
                     Click="InventoryTile_Click"
@@ -83,16 +230,48 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16"/>
+                    <!-- Top row: Name + status chip -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Row="1" Margin="0,6,0,0">
-                        <TextBlock Text="Remaining" Foreground="#666" FontSize="12"/>
-                        <TextBlock Text="{Binding Remaining}" FontSize="30" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Name}"
+                                   Grid.Column="0"
+                                   FontWeight="Bold"
+                                   FontSize="16"
+                                   Foreground="{StaticResource Col.Heading}"/>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" >
+                            <Border Style="{StaticResource StatusPillOutStyle}" Margin="6,0,0,0">
+                                <TextBlock Text="{x:Static res:Strings.Dash_Status_Out}" FontSize="11" FontWeight="SemiBold" Foreground="#B91C1C"/>
+                            </Border>
+                            <Border Style="{StaticResource StatusPillLowStyle}" Margin="6,0,0,0">
+                                <TextBlock Text="{x:Static res:Strings.Dash_Status_Low}" FontSize="11" FontWeight="SemiBold" Foreground="#92400E"/>
+                            </Border>
+                            <Border Style="{StaticResource StatusPillOkStyle}"  Margin="6,0,0,0">
+                                <TextBlock Text="{x:Static res:Strings.Dash_Status_Ok}"  FontSize="11" FontWeight="SemiBold" Foreground="#065F46"/>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Middle: Remaining -->
+                    <StackPanel Grid.Row="1" Margin="0,8,0,0">
+                        <TextBlock Text="{x:Static res:Strings.Dash_Remaining}" Foreground="{StaticResource Col.MutedText}" FontSize="12"/>
+                        <TextBlock Text="{Binding Remaining}" FontSize="34" FontWeight="SemiBold"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0">
-                        <TextBlock Text="{Binding LowStockThreshold, StringFormat=Threshold: {0}}" Margin="0,0,12,0"/>
-                        <TextBlock Text="{Binding LastRestockedDate, StringFormat=Restocked: {0}}"/>
+                    <!-- Bottom: Threshold + Restocked (use Inlines for localization) -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,0">
+                        <Border Background="{StaticResource Col.PrimaryLite}" CornerRadius="999" Padding="8,2" Margin="0,0,8,0">
+                            <TextBlock FontSize="12" Foreground="{StaticResource Col.Primary}">
+                                <Run Text="{x:Static res:Strings.Dash_Threshold_Label}"/><Run Text=": "/><Run Text="{Binding LowStockThreshold}"/>
+                            </TextBlock>
+                        </Border>
+                        <TextBlock FontSize="12" Foreground="{StaticResource Col.MutedText}">
+                            <Run Text="{x:Static res:Strings.Dash_Restocked_Label}"/><Run Text=": "/><Run Text="{Binding LastRestockedDate}"/>
+                        </TextBlock>
                     </StackPanel>
                 </Grid>
             </Button>
@@ -100,7 +279,8 @@
 
     </UserControl.Resources>
 
-    <Grid Background="#F0F2F5">
+    <!-- ===================== LAYOUT ===================== -->
+    <Grid Background="{StaticResource Col.PageBg}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -109,15 +289,17 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <DockPanel Grid.Row="0" Margin="12,8">
-            <TextBlock Text="Dashboard" FontSize="22" FontWeight="Bold" VerticalAlignment="Center"/>
+        <DockPanel Grid.Row="0" Margin="12,12,12,6">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="⟡" Margin="0,0,6,0" Foreground="{StaticResource Col.Primary}" FontSize="22" VerticalAlignment="Center"/>
+                <TextBlock Text="{x:Static res:Strings.Dash_Header}" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Col.Heading}" VerticalAlignment="Center"/>
+            </StackPanel>
         </DockPanel>
 
         <!-- Row 1: Household -->
-        <!-- (UNCHANGED) -->
         <StackPanel Grid.Row="1" Margin="12,0,12,4">
-            <DockPanel LastChildFill="True" Margin="0,0,0,6">
-                <TextBlock Text="🏠 Household" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
+            <DockPanel LastChildFill="True" Margin="0,0,0,8">
+                <TextBlock Text="{x:Static res:Strings.Dash_Section_Household}" Style="{StaticResource SectionHeaderText}"/>
             </DockPanel>
 
             <UniformGrid Columns="3">
@@ -127,10 +309,9 @@
                             <ColumnDefinition/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-
                         <StackPanel>
-                            <TextBlock Text="Total Households" FontWeight="Bold"/>
-                            <TextBlock x:Name="TotalCountText" Text="0" FontSize="34" Margin="0,4,0,0"/>
+                            <TextBlock Text="{x:Static res:Strings.Dash_TotalHouseholds}" FontWeight="Bold" Foreground="{StaticResource Col.Heading}"/>
+                            <TextBlock x:Name="TotalCountText" Text="0" FontSize="34" Margin="0,6,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Button>
@@ -141,12 +322,10 @@
                             <ColumnDefinition/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-
                         <StackPanel>
-                            <TextBlock Text="Operational" FontWeight="Bold"/>
-                            <TextBlock x:Name="OperationalCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
+                            <TextBlock Text="{x:Static res:Strings.Dash_Operational}" FontWeight="Bold" Foreground="{StaticResource Col.Heading}"/>
+                            <TextBlock x:Name="OperationalCountText" Text="0" FontSize="30" Margin="0,6,0,0"/>
                         </StackPanel>
-
                         <uc:CircularProgressBar x:Name="OperationalProgress"
                                                 Width="72" Height="72"
                                                 StrokeThickness="8"
@@ -164,12 +343,10 @@
                             <ColumnDefinition/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-
                         <StackPanel>
-                            <TextBlock Text="Out of Service" FontWeight="Bold"/>
-                            <TextBlock x:Name="OutOfServiceCountText" Text="0" FontSize="30" Margin="0,4,0,0"/>
+                            <TextBlock Text="{x:Static res:Strings.Dash_OutOfService}" FontWeight="Bold" Foreground="{StaticResource Col.Heading}"/>
+                            <TextBlock x:Name="OutOfServiceCountText" Text="0" FontSize="30" Margin="0,6,0,0"/>
                         </StackPanel>
-
                         <uc:CircularProgressBar x:Name="OutOfServiceProgress"
                                                 Width="72" Height="72"
                                                 StrokeThickness="8"
@@ -184,20 +361,20 @@
         </StackPanel>
 
         <!-- Row 2: Inventory -->
-        <!-- (UNCHANGED) -->
         <StackPanel Grid.Row="2" Margin="12,8,12,0">
-            <DockPanel LastChildFill="True" Margin="0,0,0,6">
-                <TextBlock Text="📦 Inventory" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                <Button Content="Open List"
-                        Padding="8,4"
-                        Margin="8,0,0,0"
-                        HorizontalAlignment="Right"
+            <DockPanel LastChildFill="True" Margin="0,0,0,8">
+                <TextBlock Text="{x:Static res:Strings.Dash_Section_Inventory}" Style="{StaticResource SectionHeaderText}"/>
+                <Button Content="{x:Static res:Strings.Dash_OpenList}"
+                        Style="{StaticResource GhostButton}"
                         DockPanel.Dock="Right"
                         Click="OpenInventoryList_Click"/>
             </DockPanel>
 
-            <Border CornerRadius="16" Background="#FFFFFF" BorderBrush="#DDDDDD" BorderThickness="1">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Border CornerRadius="18" Background="{StaticResource Col.CardBg}" BorderBrush="{StaticResource Col.CardBorder}" BorderThickness="1">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.08"/>
+                </Border.Effect>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4">
                     <ItemsControl x:Name="InventoryItemsControl"
                                   ItemsSource="{Binding InventoryTiles}"
                                   ItemTemplate="{StaticResource InventoryTileTemplate}">
@@ -229,8 +406,7 @@
                     Click="OpenIrradiance_Click">
                 <uc:IrradianceTileControl x:Name="IrradianceTile"
                                           Latitude="38.56"
-                                          Longitude="68.79"
-                                          />
+                                          Longitude="68.79"/>
             </Button>
 
             <!-- TILE B: Baseline PV Energy (PVGIS) -->
@@ -244,11 +420,10 @@
                                         PeakKw="5"
                                         Tilt="30"
                                         Azimuth="180"
-                                        LossesPct="14"
-                                        />
+                                        LossesPct="14"/>
             </Button>
 
-            <!-- Weather Forecast tile (existing) -->
+            <!-- TILE C: Weather Forecast -->
             <Button Grid.Column="2"
                     x:Name="WeatherTileButton"
                     Style="{StaticResource TileButton}"
@@ -260,8 +435,6 @@
                                        CompactMode="True"
                                        YrLanguage="en"/>
             </Button>
-
         </Grid>
-
     </Grid>
 </UserControl>
