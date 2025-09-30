@@ -180,6 +180,7 @@
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Runtime.CompilerServices.Unsafe.6.1.2\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Text.Encoding.CodePages, Version=9.0.0.8, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Text.Encoding.CodePages.9.0.8\lib\net462\System.Text.Encoding.CodePages.dll</HintPath>
     </Reference>
@@ -224,6 +225,21 @@
     <Compile Include="Helpers\EpeverRegisters.cs" />
     <Compile Include="Helpers\ModbusRtuRaw.cs" />
     <Compile Include="Models\It8615.Models.cs" />
+    <Compile Include="Resources\Strings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\Strings.es.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Strings.es.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\Strings.ko.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Strings.ko.resx</DependentUpon>
+    </Compile>
     <Compile Include="Services\It8615.Services.cs" />
     <Compile Include="Model\AppTypographySettings.cs" />
     <Compile Include="Model\DatabaseHelper.cs" />
@@ -240,6 +256,7 @@
     <Compile Include="Services\ScpiDevice.cs" />
     <Compile Include="Services\ScpiDeviceVisa.cs" />
     <Compile Include="Services\SerialPortInspector.cs" />
+    <Compile Include="Services\SolarApiClient.cs" />
     <Compile Include="Services\tbs1000c_core.cs" />
     <Compile Include="View\DashboardView.xaml.cs">
       <DependentUpon>DashboardView.xaml</DependentUpon>
@@ -250,11 +267,17 @@
     <Compile Include="View\Dashboard\AllHouseholdsView.xaml.cs">
       <DependentUpon>AllHouseholdsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Dashboard\IrradianceDetailsWindow.xaml.cs">
+      <DependentUpon>IrradianceDetailsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Dashboard\OperationalHouseholdsView.xaml.cs">
       <DependentUpon>OperationalHouseholdsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Dashboard\OutOfServiceHouseholdsView.xaml.cs">
       <DependentUpon>OutOfServiceHouseholdsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Dashboard\PvEnergyDetailsWindow.xaml.cs">
+      <DependentUpon>PvEnergyDetailsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Dashboard\ServiceCallDetailControl.xaml.cs">
       <DependentUpon>ServiceCallDetailControl.xaml</DependentUpon>
@@ -301,6 +324,12 @@
     <Compile Include="View\Measurement\MeasurementValues.cs" />
     <Compile Include="View\Measurement\Tbs1000cView.xaml.cs">
       <DependentUpon>Tbs1000cView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\UserControls\IrradianceTileControl.xaml.cs">
+      <DependentUpon>IrradianceTileControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\UserControls\PvEnergyTileControl.xaml.cs">
+      <DependentUpon>PvEnergyTileControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\UserControls\YrMeteogramControl.xaml.cs">
       <DependentUpon>YrMeteogramControl.xaml</DependentUpon>
@@ -391,11 +420,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\Dashboard\IrradianceDetailsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\Dashboard\OperationalHouseholdsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Dashboard\OutOfServiceHouseholdsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Dashboard\PvEnergyDetailsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -456,6 +493,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Measurement\Tbs1000cView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\UserControls\IrradianceTileControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\UserControls\PvEnergyTileControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -538,6 +583,19 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <EmbeddedResource Include="Resources\Strings.es.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.es.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Strings.ko.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.ko.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Strings.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>HouseholdMS.Resources</CustomToolNamespace>
+    </EmbeddedResource>
     <Resource Include="Assets\Procedures\111.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>

@@ -1,5 +1,4 @@
-﻿// MainWindow.xaml.cs
-using HouseholdMS.Controls;
+﻿using HouseholdMS.Controls;
 using HouseholdMS.View;
 using HouseholdMS.View.Dashboard;
 using HouseholdMS.View.EqTesting;
@@ -43,7 +42,7 @@ namespace HouseholdMS
 
                 if (isAdmin)
                 {
-                    bt_SettingMenu.Visibility = Visibility.Visible;   // now top-nav settings button
+                    bt_SettingMenu.Visibility = Visibility.Visible;   // top-nav settings button
                     NavManageUsersBtn.Visibility = Visibility.Visible;
                 }
                 else
@@ -64,9 +63,38 @@ namespace HouseholdMS
                 NavManageUsersBtn.Visibility = Visibility.Collapsed;
             }
 
+            // Start with Dashboard panel expanded (others collapsed) and show Dashboard view
+            ExpandOnly(Panel_Dashboard);
             MainContent.Content = new DashboardView(_currentUserRole);
         }
 
+        /* --------- Accordion helpers --------- */
+        private void ExpandOnly(UIElement targetPanel)
+        {
+            if (Panel_Dashboard != null) Panel_Dashboard.Visibility = targetPanel == Panel_Dashboard ? Visibility.Visible : Visibility.Collapsed;
+            if (Panel_Monitoring != null) Panel_Monitoring.Visibility = targetPanel == Panel_Monitoring ? Visibility.Visible : Visibility.Collapsed;
+            if (Panel_TestManuals != null) Panel_TestManuals.Visibility = targetPanel == Panel_TestManuals ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        /* --------- Header (section) clicks --------- */
+        // Keep original behavior (navigate to Dashboard) AND expand its submenu
+        private void bt_Dashboard_Click(object sender, RoutedEventArgs e)
+        {
+            ExpandOnly(Panel_Dashboard);
+            MainContent.Content = new DashboardView(_currentUserRole);
+        }
+
+        private void Header_Monitoring_Click(object sender, RoutedEventArgs e)
+        {
+            ExpandOnly(Panel_Monitoring);
+        }
+
+        private void Header_TestManuals_Click(object sender, RoutedEventArgs e)
+        {
+            ExpandOnly(Panel_TestManuals);
+        }
+
+        /* --------- Submenu navigations (unchanged) --------- */
         public void NavigateTo(UserControl view) => MainContent.Content = view;
 
         private void bt_SiteMenu(object sender, RoutedEventArgs e) => MainContent.Content = new SitesView(_currentUserRole);
@@ -95,19 +123,17 @@ namespace HouseholdMS
 
         private void bt_BatteryTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new HouseholdMS.View.UserControls.EpeverMonitorControl();
         private void bt_ControllerTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new ControllerTestMenuView(_currentUserRole);
-        
+
         private void bt_SwitchTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new SwitchTestMenuView(_currentUserRole);
         private void bt_SettingMenu_Click(object sender, RoutedEventArgs e) => MainContent.Content = new SettingMenuView(_currentUserRole);
         private void bt_MeasurementMenu(object sender, RoutedEventArgs e) => MainContent.Content = new MeasurementView();
         private void bt_OscilloscopeMenu(object sender, RoutedEventArgs e) => MainContent.Content = new HouseholdMS.View.Measurement.Tbs1000cView();
 
-       
-
         private void bt_Template_Click(object sender, RoutedEventArgs e) => MainContent.Content = new TemplateView();
-        private void bt_Dashboard_Click(object sender, RoutedEventArgs e) => MainContent.Content = new DashboardView(_currentUserRole);
 
         private void AllTest_CloseRequested(object sender, EventArgs e)
         {
+            // Your original behavior (note: this replaces content twice, last wins)
             MainContent.Content = new TestReportsView(_currentUserRole);
             MainContent.Content = new SitesView(_currentUserRole);
         }

@@ -1,17 +1,20 @@
-﻿<UserControl x:Class="HouseholdMS.View.UserManagementView" 
+﻿<UserControl x:Class="HouseholdMS.View.UserManagementView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:HouseholdMS.View"
+             xmlns:res="clr-namespace:HouseholdMS.Resources"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="1200">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
-        <!-- Converter is in the same namespace and public -->
+        <!-- Converters (defined public in the same namespace in .xaml.cs) -->
         <local:RoleToBrushConverter x:Key="RoleToBrush"/>
+        <local:RoleToDisplayConverter x:Key="RoleDisplayConverter"/>
+        <local:StatusToDisplayConverter x:Key="StatusDisplayConverter"/>
 
         <!-- Palette -->
         <SolidColorBrush x:Key="Col.BgCard" Color="#FFFFFFFF"/>
@@ -117,7 +120,7 @@
             <Setter Property="FontSize" Value="15"/>
         </Style>
 
-        <!-- Lightweight container style (no named parts) -->
+        <!-- Lightweight container style -->
         <Style x:Key="UserRowContainerStyle" TargetType="ListViewItem">
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Height" Value="48"/>
@@ -144,22 +147,22 @@
         <!-- Context menu uses commands on *UserManagementView* -->
         <ContextMenu x:Key="UserRowContextMenu"
                      DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-            <MenuItem Header="Change role">
-                <MenuItem Header="Guest"
+            <MenuItem Header="{x:Static res:Strings.UM_Context_ChangeRole}">
+                <MenuItem Header="{x:Static res:Strings.UM_Context_Guest}"
                           IsEnabled="{Binding CanSetGuest}"
                           Command="{x:Static local:UserManagementView.RoleToGuestCommand}"
                           CommandParameter="{Binding UserID}"/>
-                <MenuItem Header="Technician"
+                <MenuItem Header="{x:Static res:Strings.UM_Context_Technician}"
                           IsEnabled="{Binding CanSetTech}"
                           Command="{x:Static local:UserManagementView.RoleToTechCommand}"
                           CommandParameter="{Binding UserID}"/>
-                <MenuItem Header="Admin"
+                <MenuItem Header="{x:Static res:Strings.UM_Context_Admin}"
                           IsEnabled="{Binding CanSetAdmin}"
                           Command="{x:Static local:UserManagementView.RoleToAdminCommand}"
                           CommandParameter="{Binding UserID}"/>
             </MenuItem>
             <Separator/>
-            <MenuItem Header="Delete user"
+            <MenuItem Header="{x:Static res:Strings.UM_Context_DeleteUser}"
                       IsEnabled="{Binding CanDelete}"
                       Command="{x:Static local:UserManagementView.DeleteUserCommand}"
                       CommandParameter="{Binding UserID}"/>
@@ -169,7 +172,9 @@
         <DataTemplate x:Key="RoleChipTemplate">
             <Border Padding="10,4" CornerRadius="999"
                     Background="{Binding Role, Converter={StaticResource RoleToBrush}}">
-                <TextBlock Text="{Binding Role}" FontWeight="SemiBold" FontSize="14"/>
+                <!-- Localized role text -->
+                <TextBlock Text="{Binding Role, Converter={StaticResource RoleDisplayConverter}}"
+                           FontWeight="SemiBold" FontSize="14"/>
             </Border>
         </DataTemplate>
     </UserControl.Resources>
@@ -183,7 +188,7 @@
 
             <!-- Top bar -->
             <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,10">
-                <TextBlock Text="👥 User Management"
+                <TextBlock Text="{x:Static res:Strings.UM_Title}"
                            VerticalAlignment="Center" Margin="0,0,12,0"
                            FontWeight="Bold" FontSize="20"
                            DockPanel.Dock="Left"/>
@@ -193,14 +198,14 @@
                          VerticalContentAlignment="Center"
                          Foreground="{StaticResource Col.TextMut}"
                          FontStyle="Italic"
-                         Text="Search name/username/role/phone/address/area/note/status"
-                         Tag="Search name/username/role/phone/address/area/note/status"
+                         Text="{x:Static res:Strings.UM_SearchPlaceholder}"
+                         Tag="{x:Static res:Strings.UM_SearchPlaceholder}"
                          GotFocus="SearchBox_GotFocus"
                          LostFocus="SearchBox_LostFocus"
                          KeyUp="SearchBox_KeyUp"
                          DockPanel.Dock="Left"/>
                 <Button x:Name="AddUserButton"
-                        Content="➕ Add User"
+                        Content="{x:Static res:Strings.UM_AddUser}"
                         Style="{StaticResource ActionButtonStyle}"
                         Width="150"
                         DockPanel.Dock="Right"
@@ -224,17 +229,20 @@
                               VirtualizingPanel.IsVirtualizing="True"
                               VirtualizingPanel.VirtualizationMode="Recycling"
                               SelectionMode="Single"
-                              ItemContainerStyle="{StaticResource UserRowContainerStyle}"
                               MouseDoubleClick="UserListView_MouseDoubleClick">
-                        <ListView.Resources>
-                            <Style TargetType="ListViewItem" BasedOn="{StaticResource UserRowContainerStyle}">
-                                <Setter Property="ContextMenu" Value="{StaticResource UserRowContextMenu}"/>
+
+                        <!-- Inline container style so it always resolves -->
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem"
+                                   BasedOn="{StaticResource UserRowContainerStyle}">
+                                <Setter Property="ContextMenu"
+                                        Value="{StaticResource UserRowContextMenu}"/>
                             </Style>
-                        </ListView.Resources>
+                        </ListView.ItemContainerStyle>
 
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="ID" Width="60">
+                                <GridViewColumn Header="{x:Static res:Strings.UM_Column_ID}" Width="60">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding UserID}"
@@ -243,7 +251,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Name" Width="160">
+                                <GridViewColumn Header="{x:Static res:Strings.UM_Column_Name}" Width="160">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding Name}"/>
@@ -251,7 +259,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Username" Width="150">
+                                <GridViewColumn Header="{x:Static res:Strings.UM_Column_Username}" Width="150">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding Username}"/>
@@ -259,10 +267,10 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Role" Width="130"
+                                <GridViewColumn Header="{x:Static res:Strings.UM_Column_Role}" Width="130"
                                                 CellTemplate="{StaticResource RoleChipTemplate}"/>
 
-                                <GridViewColumn Header="Phone" Width="130">
+                                <GridViewColumn Header="{x:Static res:Strings.UM_Column_Phone}" Width="130">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding Phone}"/>
@@ -270,7 +278,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Address" Width="220">
+                                <GridViewColumn Header="{x:Static res:Strings.UM_Column_Address}" Width="220">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
@@ -279,7 +287,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Assigned Area" Width="160">
+                                <GridViewColumn Header="{x:Static res:Strings.UM_Column_AssignedArea}" Width="160">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding AssignedArea}"/>
@@ -287,7 +295,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Note" Width="220">
+                                <GridViewColumn Header="{x:Static res:Strings.UM_Column_Note}" Width="220">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
@@ -296,18 +304,19 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Status" Width="120">
+                                <GridViewColumn Header="{x:Static res:Strings.UM_Column_Status}" Width="120">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
+                                            <!-- Localized status text -->
                                             <TextBlock Style="{StaticResource CellText}"
-                                                       Text="{Binding StatusLabel}"
+                                                       Text="{Binding StatusLabel, Converter={StaticResource StatusDisplayConverter}}"
                                                        FontWeight="SemiBold"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <!-- UPDATED: wider column + 2-col grid + compact buttons -->
-                                <GridViewColumn Header="Approval" Width="240">
+                                <!-- Approval -->
+                                <GridViewColumn Header="{x:Static res:Strings.UM_Column_Approval}" Width="240">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Grid Visibility="{Binding ShowApprovalButtons, Converter={StaticResource BoolToVis}}"
@@ -319,7 +328,7 @@
                                                 </Grid.ColumnDefinitions>
 
                                                 <Button Grid.Column="0"
-                                                        Content="Approve"
+                                                        Content="{x:Static res:Strings.UM_Approve}"
                                                         Style="{StaticResource RowActionButtonStyle}"
                                                         Margin="0,0,4,0"
                                                         Background="#10B981"
@@ -327,7 +336,7 @@
                                                         CommandParameter="{Binding UserID}"/>
 
                                                 <Button Grid.Column="1"
-                                                        Content="Decline"
+                                                        Content="{x:Static res:Strings.UM_Decline}"
                                                         Style="{StaticResource RowActionButtonStyle}"
                                                         Background="#EF4444"
                                                         Command="{x:Static local:UserManagementView.DeclineCommand}"
@@ -341,7 +350,7 @@
                     </ListView>
 
                     <!-- Empty state -->
-                    <TextBlock Text="No users found"
+                    <TextBlock Text="{x:Static res:Strings.UM_EmptyState}"
                                Foreground="{StaticResource Col.TextMut}"
                                FontStyle="Italic"
                                HorizontalAlignment="Center"

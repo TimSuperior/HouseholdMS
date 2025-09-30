@@ -1,0 +1,192 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="App_Title" xml:space="preserve"><value>PV 테스트 작업대</value></data>
+
+  <data name="Nav_Settings" xml:space="preserve"><value>⚙ 설정</value></data>
+  <data name="Nav_Logout" xml:space="preserve"><value>로그아웃</value></data>
+
+  <data name="Sidebar_MainMenu" xml:space="preserve"><value>≡ 메인 메뉴</value></data>
+
+  <data name="Section_Dashboard" xml:space="preserve"><value>📊 대시보드</value></data>
+  <data name="Dashboard_Sections" xml:space="preserve"><value>대시보드 섹션</value></data>
+  <data name="Menu_Sites" xml:space="preserve"><value>🏠 현장</value></data>
+  <data name="Menu_Inventory" xml:space="preserve"><value>📦 재고</value></data>
+  <data name="Menu_ServiceRecords" xml:space="preserve"><value>🛠 서비스 기록</value></data>
+
+  <data name="Section_Monitoring" xml:space="preserve"><value>🛰 모니터링</value></data>
+  <data name="Monitoring_LiveInstruments" xml:space="preserve"><value>실시간 계측기</value></data>
+  <data name="Menu_MpptMonitoring" xml:space="preserve"><value>🔋 MPPT 모니터링</value></data>
+  <data name="Menu_Oscilloscope" xml:space="preserve"><value>📈 오실로스코프</value></data>
+  <data name="Menu_Multimeter" xml:space="preserve"><value>📊 멀티미터</value></data>
+  <data name="Menu_ElectronicLoad" xml:space="preserve"><value>⚡ 전자 부하</value></data>
+
+  <data name="Section_TestManuals" xml:space="preserve"><value>🧪 시험 지침</value></data>
+  <data name="TestManuals_TestModules" xml:space="preserve"><value>시험 모듈</value></data>
+  <data name="Menu_BlueSmartCharger" xml:space="preserve"><value>🔌 블루 스마트 충전기</value></data>
+  <data name="Menu_ControllerTest" xml:space="preserve"><value>🧭 컨트롤러 테스트</value></data>
+  <data name="Menu_TestProcedure" xml:space="preserve"><value>시험 절차</value></data>
+  <data name="Menu_SwitchTest" xml:space="preserve"><value>🔀 스위치 테스트</value></data>
+
+  <data name="TestManuals_Documentation" xml:space="preserve"><value>문서</value></data>
+  <data name="Menu_TestReports" xml:space="preserve"><value>📄 시험 보고서</value></data>
+  <data name="Menu_Templates" xml:space="preserve"><value>📁 템플릿</value></data>
+  <data name="Menu_ManageUsers" xml:space="preserve"><value>👥 사용자 관리</value></data>
+
+	<data name="UM_Title" xml:space="preserve"><value>👥 사용자 관리</value></data>
+	<data name="UM_SearchPlaceholder" xml:space="preserve"><value>이름/사용자명/역할/전화/주소/지역/메모/상태 검색</value></data>
+	<data name="UM_AddUser" xml:space="preserve"><value>➕ 사용자 추가</value></data>
+
+	<data name="UM_Column_ID" xml:space="preserve"><value>ID</value></data>
+	<data name="UM_Column_Name" xml:space="preserve"><value>이름</value></data>
+	<data name="UM_Column_Username" xml:space="preserve"><value>사용자명</value></data>
+	<data name="UM_Column_Role" xml:space="preserve"><value>역할</value></data>
+	<data name="UM_Column_Phone" xml:space="preserve"><value>전화</value></data>
+	<data name="UM_Column_Address" xml:space="preserve"><value>주소</value></data>
+	<data name="UM_Column_AssignedArea" xml:space="preserve"><value>담당 지역</value></data>
+	<data name="UM_Column_Note" xml:space="preserve"><value>메모</value></data>
+	<data name="UM_Column_Status" xml:space="preserve"><value>상태</value></data>
+	<data name="UM_Column_Approval" xml:space="preserve"><value>승인</value></data>
+
+	<data name="UM_Approve" xml:space="preserve"><value>승인</value></data>
+	<data name="UM_Decline" xml:space="preserve"><value>거절</value></data>
+
+	<data name="UM_Context_ChangeRole" xml:space="preserve"><value>역할 변경</value></data>
+	<data name="UM_Context_Guest" xml:space="preserve"><value>게스트</value></data>
+	<data name="UM_Context_Technician" xml:space="preserve"><value>기술자</value></data>
+	<data name="UM_Context_Admin" xml:space="preserve"><value>관리자</value></data>
+	<data name="UM_Context_DeleteUser" xml:space="preserve"><value>사용자 삭제</value></data>
+
+	<data name="UM_EmptyState" xml:space="preserve"><value>사용자를 찾을 수 없습니다</value></data>
+
+	<data name="Role_Admin">
+		<value>관리자</value>
+	</data>
+	<data name="Role_Technician">
+		<value>기술자</value>
+	</data>
+	<data name="Role_Guest">
+		<value>게스트</value>
+	</data>
+
+	<data name="Status_Approved">
+		<value>승인됨</value>
+	</data>
+	<data name="Status_Pending">
+		<value>대기 중</value>
+	</data>
+	<data name="Status_Blocked">
+		<value>차단됨</value>
+	</data>
+	<data name="Status_Active">
+		<value>활성</value>
+	</data>
+	<data name="Status_Inactive">
+		<value>비활성</value>
+	</data>
+	<data name="Status_User">
+		<value>사용자</value>
+	</data>
+
+	<!-- ===== Login ===== -->
+	<data name="Login_Title" xml:space="preserve"><value>로그인</value></data>
+	<data name="Login_Welcome" xml:space="preserve"><value>다시 오신 것을 환영합니다</value></data>
+	<data name="Login_Username" xml:space="preserve"><value>사용자 이름</value></data>
+	<data name="Login_Password" xml:space="preserve"><value>비밀번호</value></data>
+	<data name="Login_Button_Login" xml:space="preserve"><value>로그인</value></data>
+	<data name="Login_Button_RegisterNewUser" xml:space="preserve"><value>신규 사용자 등록</value></data>
+	<data name="Login_Button_Exit" xml:space="preserve"><value>종료</value></data>
+
+	<!-- ===== Register ===== -->
+	<data name="Register_Title" xml:space="preserve"><value>계정 생성</value></data>
+	<data name="Register_Name" xml:space="preserve"><value>이름</value></data>
+	<data name="Register_Username" xml:space="preserve"><value>사용자 이름</value></data>
+	<data name="Register_Password" xml:space="preserve"><value>비밀번호</value></data>
+	<data name="Register_PasswordNote" xml:space="preserve">
+    <value>비밀번호는 6자 이상이며 숫자 또는 기호를 최소 한 개 포함해야 합니다. 이름이나 사용자 이름과 동일할 수 없습니다.</value>
+  </data>
+	<data name="Register_ConfirmPassword" xml:space="preserve"><value>비밀번호 확인</value></data>
+	<data name="Register_TechToggle" xml:space="preserve"><value>저는 기술자입니다(승인 요청)</value></data>
+	<data name="Register_PhoneLabel" xml:space="preserve"><value>전화번호 (숫자만, 8–15자리)</value></data>
+	<data name="Register_AddressLabel" xml:space="preserve"><value>주소 (기술자 필수)</value></data>
+	<data name="Register_AreaLabel" xml:space="preserve"><value>담당 지역 (기술자 필수)</value></data>
+	<data name="Register_NoteLabel" xml:space="preserve"><value>메모 (선택)</value></data>
+	<data name="Register_Button_Register" xml:space="preserve"><value>등록</value></data>
+	<data name="Register_Button_BackToLogin" xml:space="preserve"><value>로그인으로 돌아가기</value></data>
+
+	<!-- ===== User Management (UI) ===== -->
+	<data name="UM_Title" xml:space="preserve"><value>👥 사용자 관리</value></data>
+	<data name="UM_SearchPlaceholder" xml:space="preserve"><value>이름/아이디/역할/전화/주소/지역/메모/상태 검색</value></data>
+	<data name="UM_AddUser" xml:space="preserve"><value>➕ 사용자 추가</value></data>
+
+	<data name="UM_Column_ID" xml:space="preserve"><value>ID</value></data>
+	<data name="UM_Column_Name" xml:space="preserve"><value>이름</value></data>
+	<data name="UM_Column_Username" xml:space="preserve"><value>아이디</value></data>
+	<data name="UM_Column_Role" xml:space="preserve"><value>역할</value></data>
+	<data name="UM_Column_Phone" xml:space="preserve"><value>전화번호</value></data>
+	<data name="UM_Column_Address" xml:space="preserve"><value>주소</value></data>
+	<data name="UM_Column_AssignedArea" xml:space="preserve"><value>담당 지역</value></data>
+	<data name="UM_Column_Note" xml:space="preserve"><value>메모</value></data>
+	<data name="UM_Column_Status" xml:space="preserve"><value>상태</value></data>
+	<data name="UM_Column_Approval" xml:space="preserve"><value>승인</value></data>
+
+	<data name="UM_Approve" xml:space="preserve"><value>승인</value></data>
+	<data name="UM_Decline" xml:space="preserve"><value>거부</value></data>
+
+	<data name="UM_Context_ChangeRole" xml:space="preserve"><value>역할 변경</value></data>
+	<data name="UM_Context_Guest" xml:space="preserve"><value>게스트</value></data>
+	<data name="UM_Context_Technician" xml:space="preserve"><value>기술자</value></data>
+	<data name="UM_Context_Admin" xml:space="preserve"><value>관리자</value></data>
+	<data name="UM_Context_DeleteUser" xml:space="preserve"><value>사용자 삭제</value></data>
+
+	<data name="UM_EmptyState" xml:space="preserve"><value>사용자를 찾을 수 없습니다</value></data>
+
+	<!-- ===== Display labels used by converters ===== -->
+	<data name="Role_Admin" xml:space="preserve"><value>관리자</value></data>
+	<data name="Role_Technician" xml:space="preserve"><value>기술자</value></data>
+	<data name="Role_Guest" xml:space="preserve"><value>게스트</value></data>
+
+	<data name="Status_Admin" xml:space="preserve"><value>관리자</value></data>
+	<data name="Status_Approved" xml:space="preserve"><value>승인됨</value></data>
+	<data name="Status_Declined" xml:space="preserve"><value>거부됨</value></data>
+	<data name="Status_Pending" xml:space="preserve"><value>대기 중</value></data>
+	<data name="Status_User" xml:space="preserve"><value>일반 사용자</value></data>
+
+	<!-- ===== Item Action Dialog =====	-->
+	<data name="ItemDlg_Title" xml:space="preserve"><value>작업</value></data>
+	<data name="ItemDlg_Quantity" xml:space="preserve"><value>수량</value></data>
+	<data name="ItemDlg_Person" xml:space="preserve"><value>담당자</value></data>
+	<data name="ItemDlg_Note" xml:space="preserve"><value>메모</value></data>
+	<data name="ItemDlg_OK" xml:space="preserve"><value>✔ 확인</value></data>
+	<data name="ItemDlg_Cancel" xml:space="preserve"><value>✖ 취소</value></data>
+
+	<!-- ===== InventoryView ===== -->
+	<data name="Inv_SearchPlaceholder" xml:space="preserve"><value>품목 유형으로 검색</value></data>
+	<data name="Inv_NewItem" xml:space="preserve"><value>➕ 새 품목</value></data>
+
+	<data name="Inv_Column_ID" xml:space="preserve"><value>ID</value></data>
+	<data name="Inv_Column_ItemType" xml:space="preserve"><value>품목 유형</value></data>
+	<data name="Inv_Column_AvailableQty" xml:space="preserve"><value>가능 수량</value></data>
+	<data name="Inv_Column_UsedQty" xml:space="preserve"><value>사용 수량</value></data>
+	<data name="Inv_Column_LowThreshold" xml:space="preserve"><value>재고 임계값</value></data>
+	<data name="Inv_Column_LastRestocked" xml:space="preserve"><value>마지막 입고</value></data>
+	<data name="Inv_Column_Note" xml:space="preserve"><value>메모</value></data>
+
+	<data name="Inv_Action_Restock" xml:space="preserve"><value>입고</value></data>
+	<data name="Inv_Action_Use" xml:space="preserve"><value>사용</value></data>
+
+	<data name="Inv_EmptyState" xml:space="preserve"><value>재고 품목이 없습니다</value></data>
+
+	<data name="Inv_Detail_ItemIDLabel" xml:space="preserve"><value>품목 ID:</value></data>
+	<data name="Inv_Detail_ItemTypeLabel" xml:space="preserve"><value>품목 유형:</value></data>
+	<data name="Inv_Detail_AvailableQtyLabel" xml:space="preserve"><value>가능 수량:</value></data>
+	<data name="Inv_Detail_UsedQtyLabel" xml:space="preserve"><value>사용 수량:</value></data>
+	<data name="Inv_Detail_LowThresholdLabel" xml:space="preserve"><value>재고 임계값:</value></data>
+	<data name="Inv_Detail_LastRestockedLabel" xml:space="preserve"><value>마지막 입고:</value></data>
+	<data name="Inv_Detail_NoteLabel" xml:space="preserve"><value>메모:</value></data>
+
+</root>

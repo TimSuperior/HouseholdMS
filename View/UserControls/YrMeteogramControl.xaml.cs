@@ -19,7 +19,7 @@ namespace HouseholdMS.View.UserControls
         private Microsoft.Web.WebView2.Wpf.WebView2 _web;
         private readonly DispatcherTimer _autoTimer = new DispatcherTimer();
         private CancellationTokenSource _cts;
-        private bool _isLoadingSummary; // re-entrancy guard
+        private bool _isLoadingSummary;
 
         public YrMeteogramControl()
         {
@@ -28,16 +28,13 @@ namespace HouseholdMS.View.UserControls
             Unloaded += YrMeteogramControl_Unloaded;
 
             _autoTimer.Interval = TimeSpan.FromMinutes(AutoRefreshMinutes);
-            _autoTimer.Tick += AutoTimer_Tick;
+            _autoTimer.Tick += async (_, __) => await RefreshSummaryAsync();
         }
 
-        private async void AutoTimer_Tick(object sender, EventArgs e) { await RefreshSummaryAsync(); }
-
         // ---------------- Dependency Properties ----------------
-
         public static readonly DependencyProperty LocationIdProperty =
             DependencyProperty.Register(nameof(LocationId), typeof(string), typeof(YrMeteogramControl),
-                new PropertyMetadata("2-3667725", OnParamsChanged)); // Sucre (ADM1)
+                new PropertyMetadata("2-3667725", OnParamsChanged));
 
         public string LocationId { get { return (string)GetValue(LocationIdProperty); } set { SetValue(LocationIdProperty, value); } }
 
@@ -149,7 +146,7 @@ namespace HouseholdMS.View.UserControls
 
         private void Tile_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            // Ignore clicks directly on buttons
+            // Ignore clicks directly on buttons (e.g., Reload)
             var fe = e.OriginalSource as FrameworkElement;
             if (fe is Button || (fe != null && fe.Parent is Button)) return;
 
@@ -244,7 +241,7 @@ namespace HouseholdMS.View.UserControls
         private async Task RefreshSummaryAsync()
         {
             if (!CompactMode) return;
-            if (_isLoadingSummary) return; // prevent overlap
+            if (_isLoadingSummary) return;                 // prevent overlapping calls
             _isLoadingSummary = true;
             if (BtnReload != null) BtnReload.IsEnabled = false;
 
@@ -273,8 +270,10 @@ namespace HouseholdMS.View.UserControls
                 if (ct.IsCancellationRequested || sum == null) return;
 
                 LineNow.Text = string.Format("Now: {0:0.#}°C", sum.TempNow);
-                LineNext.Text = string.Format("24h: H {0:0.#}°  L {1:0.#}°   •   Rain {2:0.#} mm", sum.Max24h, sum.Min24h, sum.Precip24h);
-                LineMeta.Text = string.Format("Wind {0:0.#} m/s   •   Updated {1}", sum.WindNow, sum.Updated.ToLocalTime().ToString("g"));
+                LineNext.Text = string.Format("24h: H {0:0.#}°  L {1:0.#}°   •   Rain {2:0.#} mm",
+                                              sum.Max24h, sum.Min24h, sum.Precip24h);
+                LineMeta.Text = string.Format("Wind {0:0.#} m/s   •   Updated {1}",
+                                              sum.WindNow, sum.Updated.ToLocalTime().ToString("g"));
                 LblStatus.Text = " ";
             }
             catch (Exception ex)
@@ -441,12 +440,6 @@ namespace HouseholdMS.View.UserControls
         {
             if (CompactMode) await RefreshSummaryAsync();
             else NavigateToMeteogram();
-        }
-
-        private void BtnOpen_Click(object sender, RoutedEventArgs e)
-        {
-            try { Process.Start(new ProcessStartInfo(BuildUrl()) { UseShellExecute = true }); }
-            catch (Exception ex) { Fallback(true, "Open browser failed: " + ex.Message); }
         }
 
         private void BtnCopy_Click(object sender, RoutedEventArgs e)

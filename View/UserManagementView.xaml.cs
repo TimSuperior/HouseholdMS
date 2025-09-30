@@ -8,6 +8,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using HouseholdMS.Model;
 using HouseholdMS.View.UserControls;
+using System.Globalization;
+using HouseholdMS.Resources; // Strings.*
 
 namespace HouseholdMS.View
 {
@@ -393,7 +395,9 @@ namespace HouseholdMS.View
         private static void Error(string msg) => MessageBox.Show(msg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
     }
 
-    // === Converter lives in the same namespace and is public ===
+    // === Converters live in the same file & namespace ===
+
+    // Role -> background brush (unchanged)
     public sealed class RoleToBrushConverter : System.Windows.Data.IValueConverter
     {
         private static Brush Make(string hex)
@@ -406,7 +410,7 @@ namespace HouseholdMS.View
         private static readonly Brush Green = Make("#D1FAE5");
         private static readonly Brush Gray = Make("#E5E7EB");
 
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var role = (value as string ?? "").Trim();
             if (string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase)) return Blue;
@@ -414,8 +418,50 @@ namespace HouseholdMS.View
             return Gray;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-            => System.Windows.Data.Binding.DoNothing;   // fully qualified to avoid "Binding does not exist"
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => System.Windows.Data.Binding.DoNothing;
+    }
+
+    // Role -> localized display text (uses Strings.resx)
+    public sealed class RoleToDisplayConverter : System.Windows.Data.IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var s = value == null ? string.Empty : value.ToString().Trim();
+            switch (s.ToLowerInvariant())
+            {
+                case "admin": return Strings.Role_Admin;
+                case "technician": return Strings.Role_Technician;
+                case "guest": return Strings.Role_Guest;
+                default: return s;
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => System.Windows.Data.Binding.DoNothing; // display-only
+    }
+
+    // StatusLabel -> localized display text (uses Strings.resx)
+    public sealed class StatusToDisplayConverter : System.Windows.Data.IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var s = value == null ? string.Empty : value.ToString().Trim();
+            switch (s.ToLowerInvariant())
+            {
+                case "approved": return Strings.Status_Approved;
+                case "pending": return Strings.Status_Pending;
+                case "declined": return Strings.Status_Blocked; // reuse "blocked" as declined/denied label if you like
+                case "active": return Strings.Status_Active;
+                case "inactive": return Strings.Status_Inactive;
+                case "user": return Strings.Status_User;
+                case "admin": return Strings.Role_Admin;      // fallback if StatusLabel ever returns role words
+                default: return s;
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => System.Windows.Data.Binding.DoNothing;
     }
 
     // Model used by form & list

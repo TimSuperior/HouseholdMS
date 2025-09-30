@@ -4,16 +4,27 @@ using System.Data.SQLite;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using HouseholdMS.Model;
-using HouseholdMS.View.Inventory;       // InventoryView, InventoryDetails
-using HouseholdMS.View.Dashboard;       // SitesView & SitesLanding assumed in same namespace
+using HouseholdMS.View.Inventory;
+using HouseholdMS.View.Dashboard;
+using HouseholdMS.View.UserControls;
 
 namespace HouseholdMS.View.Dashboard
 {
     public partial class DashboardView : UserControl
     {
         private const string OPERATIONAL = "Operational";
-        private const string IN_SERVICE = "In Service"; // UI label: "Out of Service"
+        private const string IN_SERVICE = "In Service";
+
+        // Defaults for solar tiles (Sughd/Tajikistan-ish). Adjust later or bind per-site.
+        private const double DefaultLat = 38.56;
+        private const double DefaultLon = 68.79;
+
+        private const double DefaultPeakKw = 5.0;
+        private const int DefaultTilt = 30;
+        private const int DefaultAzimuth = 180;
+        private const double DefaultLossesPct = 14.0;
 
         private readonly string _userRole;
 
@@ -23,8 +34,6 @@ namespace HouseholdMS.View.Dashboard
         {
             InitializeComponent();
             _userRole = string.IsNullOrWhiteSpace(userRole) ? "User" : userRole.Trim();
-
-            // Keep bindings simple for the tiles
             this.DataContext = this;
 
             Loaded += DashboardView_Loaded;
@@ -32,11 +41,27 @@ namespace HouseholdMS.View.Dashboard
 
         private void DashboardView_Loaded(object sender, RoutedEventArgs e)
         {
+            // ensure tiles have default params if not set in XAML
+            if (IrradianceTile != null)
+            {
+                if (double.IsNaN(IrradianceTile.Latitude)) IrradianceTile.Latitude = DefaultLat;
+                if (double.IsNaN(IrradianceTile.Longitude)) IrradianceTile.Longitude = DefaultLon;
+            }
+            if (PvTile != null)
+            {
+                if (double.IsNaN(PvTile.Latitude)) PvTile.Latitude = DefaultLat;
+                if (double.IsNaN(PvTile.Longitude)) PvTile.Longitude = DefaultLon;
+                if (PvTile.PeakKw <= 0) PvTile.PeakKw = DefaultPeakKw;
+                if (PvTile.Tilt <= 0) PvTile.Tilt = DefaultTilt;
+                if (PvTile.Azimuth == 0) PvTile.Azimuth = DefaultAzimuth;
+                if (PvTile.LossesPct <= 0) PvTile.LossesPct = DefaultLossesPct;
+            }
+
             LoadHouseholdCountsFromDb();
             LoadInventoryTilesFromDb();
         }
 
-        #region Household counts (for the three top tiles)
+        #region Household counts (UNCHANGED)
         private enum HCat { Operational, InService }
 
         private static HCat ClassifyStatus(string s)
@@ -90,7 +115,7 @@ namespace HouseholdMS.View.Dashboard
         }
         #endregion
 
-        #region Inventory tiles
+        #region Inventory tiles (UNCHANGED)
         private void LoadInventoryTilesFromDb()
         {
             InventoryTiles.Clear();
@@ -101,7 +126,6 @@ namespace HouseholdMS.View.Dashboard
                 {
                     conn.Open();
 
-                    // Use the view with precomputed OnHand
                     using (var cmd = new SQLiteCommand(
                         @"SELECT ItemID,
                                  ItemType,
@@ -134,10 +158,9 @@ namespace HouseholdMS.View.Dashboard
         }
         #endregion
 
-        #region Tile/Buttons handlers
+        #region Existing Tile/Buttons (UNCHANGED)
         private void OpenAllHouseholds_Click(object sender, RoutedEventArgs e)
         {
-            // Navigate to SitesView landing "All"
             var host = Window.GetWindow(this);
             var mw = host as MainWindow;
             if (mw != null)
@@ -207,17 +230,14 @@ namespace HouseholdMS.View.Dashboard
 
         private void OpenInventoryList_Click(object sender, RoutedEventArgs e)
         {
-            // Navigate to the Inventory list view
             var host = Window.GetWindow(this);
             var mw = host as MainWindow;
             if (mw != null)
             {
-                // If your InventoryView takes parameters (e.g., userRole), pass them here.
                 mw.NavigateTo(new InventoryView());
             }
             else
             {
-                // Fallback: open as a modal window if not hosted in MainWindow
                 var win = new Window
                 {
                     Title = "Inventory",
@@ -234,7 +254,7 @@ namespace HouseholdMS.View.Dashboard
         private void InventoryTile_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as Button;
-            if (btn?.Tag == null) return;
+            if (btn == null || btn.Tag == null) return;
 
             int itemId;
             if (!int.TryParse(btn.Tag.ToString(), out itemId)) return;
@@ -244,20 +264,103 @@ namespace HouseholdMS.View.Dashboard
             win.ShowDialog();
         }
         #endregion
+
+        #region Weather tile (UNCHANGED)
+        private void OpenWeather_Click(object sender, RoutedEventArgs e)
+        {
+            var outer = sender as Button;
+            if (outer != null && IsFromInnerButton(e.OriginalSource as DependencyObject, outer))
+            {
+                e.Handled = true;
+                return;
+            }
+
+            if (YrTile == null) return;
+
+            var owner = Window.GetWindow(this);
+            var win = new YrMeteogramWindow(YrTile.LocationId, YrTile.YrLanguage)
+            {
+                Owner = owner,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            win.Show(); // non-modal
+        }
+        #endregion
+
+        #region NEW: Solar tiles open detail windows
+        private void OpenIrradiance_Click(object sender, RoutedEventArgs e)
+        {
+            var outer = sender as Button;
+            if (outer != null && IsFromInnerButton(e.OriginalSource as DependencyObject, outer))
+            {
+                e.Handled = true;
+                return;
+            }
+
+            double lat = (IrradianceTile != null) ? IrradianceTile.Latitude : DefaultLat;
+            double lon = (IrradianceTile != null) ? IrradianceTile.Longitude : DefaultLon;
+
+            var owner = Window.GetWindow(this);
+            var win = new IrradianceDetailsWindow(lat, lon)
+            {
+                Owner = owner,
+                Width = 900,
+                Height = 600,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            win.Show(); // non-modal like weather
+        }
+
+        private void OpenPvEnergy_Click(object sender, RoutedEventArgs e)
+        {
+            var outer = sender as Button;
+            if (outer != null && IsFromInnerButton(e.OriginalSource as DependencyObject, outer))
+            {
+                e.Handled = true;
+                return;
+            }
+
+            double lat = (PvTile != null) ? PvTile.Latitude : DefaultLat;
+            double lon = (PvTile != null) ? PvTile.Longitude : DefaultLon;
+            double kw = (PvTile != null && PvTile.PeakKw > 0) ? PvTile.PeakKw : DefaultPeakKw;
+            int tilt = (PvTile != null && PvTile.Tilt > 0) ? PvTile.Tilt : DefaultTilt;
+            int az = (PvTile != null && PvTile.Azimuth != 0) ? PvTile.Azimuth : DefaultAzimuth;
+            double losses = (PvTile != null && PvTile.LossesPct > 0) ? PvTile.LossesPct : DefaultLossesPct;
+
+            var owner = Window.GetWindow(this);
+            var win = new PvEnergyDetailsWindow(lat, lon, kw, tilt, az, losses)
+            {
+                Owner = owner,
+                Width = 900,
+                Height = 620,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            win.Show();
+        }
+        #endregion
+
+        private static bool IsFromInnerButton(DependencyObject origin, Button outer)
+        {
+            DependencyObject cur = origin;
+            while (cur != null && cur != outer)
+            {
+                if (cur is Button) return true;
+                cur = VisualTreeHelper.GetParent(cur);
+            }
+            return false;
+        }
     }
 
-    #region ViewModel used for each inventory tile
     public sealed class InventoryTileVm
     {
         public int ItemID { get; set; }
         public string Name { get; set; }
         public int Remaining { get; set; }
         public int LowStockThreshold { get; set; }
-        public string LastRestockedDate { get; set; }  // stored as TEXT in DB
+        public string LastRestockedDate { get; set; }
 
         public bool IsZero { get { return Remaining <= 0; } }
         public bool IsBelowThreshold { get { return Remaining > 0 && Remaining <= LowStockThreshold; } }
         public bool IsOk { get { return Remaining > LowStockThreshold; } }
     }
-    #endregion
 }

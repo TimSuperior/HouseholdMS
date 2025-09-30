@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.IO;              // <-- NEW
 using System.Windows;
 using System.Windows.Controls;
 using HouseholdMS.Model; // <-- use the one-file settings
@@ -13,6 +14,41 @@ namespace HouseholdMS.View
     {
         private readonly string _userRole;
 
+        // ===== Language persistence (simple text file; no extra classes) =====
+        private static readonly string LangFilePath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "HouseholdMS", "ui.language");
+
+        private static string LoadLanguageOrDefault()
+        {
+            try
+            {
+                if (File.Exists(LangFilePath))
+                {
+                    var code = (File.ReadAllText(LangFilePath) ?? "").Trim().ToLowerInvariant();
+                    if (code == "en" || code == "ko" || code == "es") return code;
+                }
+            }
+            catch { /* ignore */ }
+            return "en";
+        }
+
+        private static void SaveLanguage(string code)
+        {
+            try
+            {
+                var langDir = Path.GetDirectoryName(LangFilePath);
+                if (!string.IsNullOrEmpty(langDir))
+                {
+                    Directory.CreateDirectory(langDir);
+                }
+
+                File.WriteAllText(LangFilePath, string.IsNullOrWhiteSpace(code) ? "en" : code.Trim().ToLowerInvariant());
+            }
+            catch { /* ignore */ }
+        }
+        // ====================================================================
+
         public SettingMenuView(string userRole)
         {
             InitializeComponent();
@@ -25,6 +61,8 @@ namespace HouseholdMS.View
             {
                 FontPanel.IsEnabled = false;
                 SaveButton.IsEnabled = false;
+                if (LanguagePanel != null) LanguagePanel.IsEnabled = false; // <-- NEW (lock language too)
+
                 MessageBox.Show(
                     "Only administrators can modify settings. (관리자만 설정을 변경할 수 있습니다.)",
                     "Access Restricted (접근 제한)",
@@ -38,6 +76,18 @@ namespace HouseholdMS.View
             // Initialize current scale into UI
             ScaleSlider.Value = AppTypographySettings.FontScale;
             SelectPresetClosestTo(AppTypographySettings.FontScale);
+
+            // NEW: initialize language dropdown from saved value
+            var current = LoadLanguageOrDefault();
+            for (int i = 0; i < LangCombo.Items.Count; i++)
+            {
+                if (LangCombo.Items[i] is ComboBoxItem it &&
+                    string.Equals(it.Tag?.ToString(), current, StringComparison.OrdinalIgnoreCase))
+                {
+                    LangCombo.SelectedIndex = i;
+                    break;
+                }
+            }
         }
 
         // ======== Handlers ========
@@ -72,9 +122,17 @@ namespace HouseholdMS.View
         {
             try
             {
+                // 1) Save typography (existing)
                 AppTypographySettings.Save();
+
+                // 2) Save language (NEW)
+                var selectedLang = (LangCombo.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "en";
+                SaveLanguage(selectedLang);
+
+                // 3) Notify (slightly expanded text; behavior unchanged)
                 MessageBox.Show(
-                    "Saved. This text size will be used for all users on this machine. (모든 사용자에게 적용됩니다.)",
+                    "Saved. This text size will be used for all users on this machine. (모든 사용자에게 적용됩니다.)\n" +
+                    "Language saved. Please restart the app to apply the new language. (언어 적용을 위해 재시작하세요.)",
                     "Saved",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);

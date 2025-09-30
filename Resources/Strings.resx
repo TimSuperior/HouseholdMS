@@ -1,0 +1,193 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="App_Title" xml:space="preserve"><value>PV Testing Workbench</value></data>
+
+  <data name="Nav_Settings" xml:space="preserve"><value>⚙ Settings</value></data>
+  <data name="Nav_Logout" xml:space="preserve"><value>Logout</value></data>
+
+  <data name="Sidebar_MainMenu" xml:space="preserve"><value>≡ Main Menu</value></data>
+
+  <data name="Section_Dashboard" xml:space="preserve"><value>📊 Dashboard</value></data>
+  <data name="Dashboard_Sections" xml:space="preserve"><value>Dashboard Sections</value></data>
+  <data name="Menu_Sites" xml:space="preserve"><value>🏠 Sites</value></data>
+  <data name="Menu_Inventory" xml:space="preserve"><value>📦 Inventory</value></data>
+  <data name="Menu_ServiceRecords" xml:space="preserve"><value>🛠 Service Records</value></data>
+
+  <data name="Section_Monitoring" xml:space="preserve"><value>🛰 Monitoring</value></data>
+  <data name="Monitoring_LiveInstruments" xml:space="preserve"><value>Live Instruments</value></data>
+  <data name="Menu_MpptMonitoring" xml:space="preserve"><value>🔋 MPPT Monitoring</value></data>
+  <data name="Menu_Oscilloscope" xml:space="preserve"><value>📈 Oscilloscope</value></data>
+  <data name="Menu_Multimeter" xml:space="preserve"><value>📊 Multimeter</value></data>
+  <data name="Menu_ElectronicLoad" xml:space="preserve"><value>⚡Electronic Load</value></data>
+
+  <data name="Section_TestManuals" xml:space="preserve"><value>🧪 Test Manuals</value></data>
+  <data name="TestManuals_TestModules" xml:space="preserve"><value>Test Modules</value></data>
+  <data name="Menu_BlueSmartCharger" xml:space="preserve"><value>🔌 Blue Smart Charger</value></data>
+  <data name="Menu_ControllerTest" xml:space="preserve"><value>🧭 Controller Test</value></data>
+  <data name="Menu_TestProcedure" xml:space="preserve"><value>TestProcedure</value></data>
+  <data name="Menu_SwitchTest" xml:space="preserve"><value>🔀 Switch Test</value></data>
+
+  <data name="TestManuals_Documentation" xml:space="preserve"><value>Documentation</value></data>
+  <data name="Menu_TestReports" xml:space="preserve"><value>📄 Test Reports</value></data>
+  <data name="Menu_Templates" xml:space="preserve"><value>📁 Templates</value></data>
+  <data name="Menu_ManageUsers" xml:space="preserve"><value>👥 Manage Users</value></data>
+
+	<data name="UM_Title" xml:space="preserve"><value>👥 User Management</value></data>
+	<data name="UM_SearchPlaceholder" xml:space="preserve"><value>Search name/username/role/phone/address/area/note/status</value></data>
+	<data name="UM_AddUser" xml:space="preserve"><value>➕ Add User</value></data>
+
+	<data name="UM_Column_ID" xml:space="preserve"><value>ID</value></data>
+	<data name="UM_Column_Name" xml:space="preserve"><value>Name</value></data>
+	<data name="UM_Column_Username" xml:space="preserve"><value>Username</value></data>
+	<data name="UM_Column_Role" xml:space="preserve"><value>Role</value></data>
+	<data name="UM_Column_Phone" xml:space="preserve"><value>Phone</value></data>
+	<data name="UM_Column_Address" xml:space="preserve"><value>Address</value></data>
+	<data name="UM_Column_AssignedArea" xml:space="preserve"><value>Assigned Area</value></data>
+	<data name="UM_Column_Note" xml:space="preserve"><value>Note</value></data>
+	<data name="UM_Column_Status" xml:space="preserve"><value>Status</value></data>
+	<data name="UM_Column_Approval" xml:space="preserve"><value>Approval</value></data>
+
+	<data name="UM_Approve" xml:space="preserve"><value>Approve</value></data>
+	<data name="UM_Decline" xml:space="preserve"><value>Decline</value></data>
+
+	<data name="UM_Context_ChangeRole" xml:space="preserve"><value>Change role</value></data>
+	<data name="UM_Context_Guest" xml:space="preserve"><value>Guest</value></data>
+	<data name="UM_Context_Technician" xml:space="preserve"><value>Technician</value></data>
+	<data name="UM_Context_Admin" xml:space="preserve"><value>Admin</value></data>
+	<data name="UM_Context_DeleteUser" xml:space="preserve"><value>Delete user</value></data>
+
+	<data name="UM_EmptyState" xml:space="preserve"><value>No users found</value></data>
+
+	<data name="Role_Admin">
+		<value>Admin</value>
+	</data>
+	<data name="Role_Technician">
+		<value>Technician</value>
+	</data>
+	<data name="Role_Guest">
+		<value>Guest</value>
+	</data>
+
+	<data name="Status_Approved">
+		<value>approved</value>
+	</data>
+	<data name="Status_Pending">
+		<value>pending</value>
+	</data>
+	<data name="Status_Blocked">
+		<value>blocked</value>
+	</data>
+	<data name="Status_Active">
+		<value>active</value>
+	</data>
+	<data name="Status_Inactive">
+		<value>inactive</value>
+	</data>
+	<data name="Status_User">
+		<value>user</value>
+	</data>
+
+	<!-- ===== Login ===== -->
+	<data name="Login_Title" xml:space="preserve"><value>Login</value></data>
+	<data name="Login_Welcome" xml:space="preserve"><value>Welcome Back</value></data>
+	<data name="Login_Username" xml:space="preserve"><value>Username</value></data>
+	<data name="Login_Password" xml:space="preserve"><value>Password</value></data>
+	<data name="Login_Button_Login" xml:space="preserve"><value>Login</value></data>
+	<data name="Login_Button_RegisterNewUser" xml:space="preserve"><value>Register New User</value></data>
+	<data name="Login_Button_Exit" xml:space="preserve"><value>Exit</value></data>
+
+	<!-- ===== Register ===== -->
+	<data name="Register_Title" xml:space="preserve"><value>Create New Account</value></data>
+	<data name="Register_Name" xml:space="preserve"><value>Name</value></data>
+	<data name="Register_Username" xml:space="preserve"><value>Username</value></data>
+	<data name="Register_Password" xml:space="preserve"><value>Password</value></data>
+	<data name="Register_PasswordNote" xml:space="preserve">
+    <value>Password must be longer than 6 characters and include at least one number or symbol. It cannot be the same as your Name or Username.</value>
+  </data>
+	<data name="Register_ConfirmPassword" xml:space="preserve"><value>Confirm Password</value></data>
+	<data name="Register_TechToggle" xml:space="preserve"><value>I'm a technician (request approval)</value></data>
+	<data name="Register_PhoneLabel" xml:space="preserve"><value>Phone (digits only, 8–15)</value></data>
+	<data name="Register_AddressLabel" xml:space="preserve"><value>Address (required for technician)</value></data>
+	<data name="Register_AreaLabel" xml:space="preserve"><value>Assigned Area (required for technician)</value></data>
+	<data name="Register_NoteLabel" xml:space="preserve"><value>Note (optional)</value></data>
+	<data name="Register_Button_Register" xml:space="preserve"><value>Register</value></data>
+	<data name="Register_Button_BackToLogin" xml:space="preserve"><value>Back to Login</value></data>
+
+	<!-- ===== User Management (UI) ===== -->
+	<data name="UM_Title" xml:space="preserve"><value>👥 User Management</value></data>
+	<data name="UM_SearchPlaceholder" xml:space="preserve"><value>Search name/username/role/phone/address/area/note/status</value></data>
+	<data name="UM_AddUser" xml:space="preserve"><value>➕ Add User</value></data>
+
+	<data name="UM_Column_ID" xml:space="preserve"><value>ID</value></data>
+	<data name="UM_Column_Name" xml:space="preserve"><value>Name</value></data>
+	<data name="UM_Column_Username" xml:space="preserve"><value>Username</value></data>
+	<data name="UM_Column_Role" xml:space="preserve"><value>Role</value></data>
+	<data name="UM_Column_Phone" xml:space="preserve"><value>Phone</value></data>
+	<data name="UM_Column_Address" xml:space="preserve"><value>Address</value></data>
+	<data name="UM_Column_AssignedArea" xml:space="preserve"><value>Assigned Area</value></data>
+	<data name="UM_Column_Note" xml:space="preserve"><value>Note</value></data>
+	<data name="UM_Column_Status" xml:space="preserve"><value>Status</value></data>
+	<data name="UM_Column_Approval" xml:space="preserve"><value>Approval</value></data>
+
+	<data name="UM_Approve" xml:space="preserve"><value>Approve</value></data>
+	<data name="UM_Decline" xml:space="preserve"><value>Decline</value></data>
+
+	<data name="UM_Context_ChangeRole" xml:space="preserve"><value>Change role</value></data>
+	<data name="UM_Context_Guest" xml:space="preserve"><value>Guest</value></data>
+	<data name="UM_Context_Technician" xml:space="preserve"><value>Technician</value></data>
+	<data name="UM_Context_Admin" xml:space="preserve"><value>Admin</value></data>
+	<data name="UM_Context_DeleteUser" xml:space="preserve"><value>Delete user</value></data>
+
+	<data name="UM_EmptyState" xml:space="preserve"><value>No users found</value></data>
+
+	<!-- ===== Display labels used by converters ===== -->
+	<data name="Role_Admin" xml:space="preserve"><value>Admin</value></data>
+	<data name="Role_Technician" xml:space="preserve"><value>Technician</value></data>
+	<data name="Role_Guest" xml:space="preserve"><value>Guest</value></data>
+
+	<data name="Status_Admin" xml:space="preserve"><value>Admin</value></data>
+	<data name="Status_Approved" xml:space="preserve"><value>Approved</value></data>
+	<data name="Status_Declined" xml:space="preserve"><value>Declined</value></data>
+	<data name="Status_Pending" xml:space="preserve"><value>Pending</value></data>
+	<data name="Status_User" xml:space="preserve"><value>User</value></data>
+
+	<!-- ===== Item Action Dialog ===== -->
+	<data name="ItemDlg_Title" xml:space="preserve"><value>Action</value></data>
+	<data name="ItemDlg_Quantity" xml:space="preserve"><value>Quantity</value></data>
+	<data name="ItemDlg_Person" xml:space="preserve"><value>Person</value></data>
+	<data name="ItemDlg_Note" xml:space="preserve"><value>Note</value></data>
+	<data name="ItemDlg_OK" xml:space="preserve"><value>✔ OK</value></data>
+	<data name="ItemDlg_Cancel" xml:space="preserve"><value>✖ Cancel</value></data>
+
+	<!-- ===== InventoryView ===== -->
+	<data name="Inv_SearchPlaceholder" xml:space="preserve"><value>Search by item type</value></data>
+	<data name="Inv_NewItem" xml:space="preserve"><value>➕ New Item</value></data>
+
+	<data name="Inv_Column_ID" xml:space="preserve"><value>ID</value></data>
+	<data name="Inv_Column_ItemType" xml:space="preserve"><value>Item Type</value></data>
+	<data name="Inv_Column_AvailableQty" xml:space="preserve"><value>Available Qty</value></data>
+	<data name="Inv_Column_UsedQty" xml:space="preserve"><value>Used Qty</value></data>
+	<data name="Inv_Column_LowThreshold" xml:space="preserve"><value>Low Threshold</value></data>
+	<data name="Inv_Column_LastRestocked" xml:space="preserve"><value>Last Restocked</value></data>
+	<data name="Inv_Column_Note" xml:space="preserve"><value>Note</value></data>
+
+	<data name="Inv_Action_Restock" xml:space="preserve"><value>Restock</value></data>
+	<data name="Inv_Action_Use" xml:space="preserve"><value>Use</value></data>
+
+	<data name="Inv_EmptyState" xml:space="preserve"><value>No inventory items found</value></data>
+
+	<data name="Inv_Detail_ItemIDLabel" xml:space="preserve"><value>Item ID:</value></data>
+	<data name="Inv_Detail_ItemTypeLabel" xml:space="preserve"><value>Item Type:</value></data>
+	<data name="Inv_Detail_AvailableQtyLabel" xml:space="preserve"><value>Available Quantity:</value></data>
+	<data name="Inv_Detail_UsedQtyLabel" xml:space="preserve"><value>Used Quantity:</value></data>
+	<data name="Inv_Detail_LowThresholdLabel" xml:space="preserve"><value>Low Stock Threshold:</value></data>
+	<data name="Inv_Detail_LastRestockedLabel" xml:space="preserve"><value>Last Restocked:</value></data>
+	<data name="Inv_Detail_NoteLabel" xml:space="preserve"><value>Note:</value></data>
+
+	
+</root>

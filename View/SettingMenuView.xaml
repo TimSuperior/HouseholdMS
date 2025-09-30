@@ -46,7 +46,24 @@
                 </StackPanel>
             </Border>
 
-            
+            <!-- ===== Language Card ===== -->
+            <Border CornerRadius="10" Background="White" Padding="16" Margin="0,0,0,16"
+        BorderBrush="#E0E4EA" BorderThickness="1">
+                <StackPanel x:Name="LanguagePanel">
+                    <TextBlock Text="Language (언어 / Idioma)" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="UI Language:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ComboBox x:Name="LangCombo" Width="220">
+                            <ComboBoxItem Content="English (ENG)" Tag="en"/>
+                            <ComboBoxItem Content="한국어 (KOR)"   Tag="ko"/>
+                            <ComboBoxItem Content="Español (ES)"  Tag="es"/>
+                        </ComboBox>
+                        <TextBlock Text=" (applies after restart)" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="#666"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+
 
             <Button x:Name="SaveButton"
                     Content="💾 Save Changes (변경 사항 저장)"

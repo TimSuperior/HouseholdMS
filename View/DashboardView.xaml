@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.Dashboard.DashboardView"
+﻿<UserControl x:Class="HouseholdMS.View.Dashboard.DashboardView"  
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:uc="clr-namespace:HouseholdMS.View.UserControls"
@@ -113,14 +113,14 @@
             <TextBlock Text="Dashboard" FontSize="22" FontWeight="Bold" VerticalAlignment="Center"/>
         </DockPanel>
 
-        <!-- Row 1: Household (title + 3 tiles) -->
+        <!-- Row 1: Household -->
+        <!-- (UNCHANGED) -->
         <StackPanel Grid.Row="1" Margin="12,0,12,4">
             <DockPanel LastChildFill="True" Margin="0,0,0,6">
                 <TextBlock Text="🏠 Household" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
             </DockPanel>
 
             <UniformGrid Columns="3">
-                <!-- Tile 1: Total households -->
                 <Button Style="{StaticResource TileButton}" Click="OpenAllHouseholds_Click">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -135,7 +135,6 @@
                     </Grid>
                 </Button>
 
-                <!-- Tile 2: Operational with ring -->
                 <Button Style="{StaticResource TileButton}" Click="OpenOperational_Click">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -159,7 +158,6 @@
                     </Grid>
                 </Button>
 
-                <!-- Tile 3: Out of Service (DB: In Service) with ring -->
                 <Button Style="{StaticResource TileButton}" Click="OpenOutOfService_Click">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -186,6 +184,7 @@
         </StackPanel>
 
         <!-- Row 2: Inventory -->
+        <!-- (UNCHANGED) -->
         <StackPanel Grid.Row="2" Margin="12,8,12,0">
             <DockPanel LastChildFill="True" Margin="0,0,0,6">
                 <TextBlock Text="📦 Inventory" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
@@ -215,7 +214,7 @@
             </Border>
         </StackPanel>
 
-        <!-- Row 3: three tiles; the third is the Weather (replaced) -->
+        <!-- Row 3: three tiles -->
         <Grid Grid.Row="3" Margin="12,12,12,12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
@@ -223,31 +222,43 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <!-- Placeholder tile A -->
-            <Button Grid.Column="0" Style="{StaticResource TileButton}">
-                <StackPanel>
-                    <TextBlock Text="Tile A" FontWeight="Bold"/>
-                    <TextBlock Text="(your content here)" Foreground="#777" Margin="0,6,0,0"/>
-                </StackPanel>
+            <!-- TILE A: Irradiance & Forecast -->
+            <Button Grid.Column="0"
+                    x:Name="IrradianceTileButton"
+                    Style="{StaticResource TileButton}"
+                    Click="OpenIrradiance_Click">
+                <uc:IrradianceTileControl x:Name="IrradianceTile"
+                                          Latitude="38.56"
+                                          Longitude="68.79"
+                                          />
             </Button>
 
-            <!-- Placeholder tile B -->
-            <Button Grid.Column="1" Style="{StaticResource TileButton}">
-                <StackPanel>
-                    <TextBlock Text="Tile B" FontWeight="Bold"/>
-                    <TextBlock Text="(your content here)" Foreground="#777" Margin="0,6,0,0"/>
-                </StackPanel>
+            <!-- TILE B: Baseline PV Energy (PVGIS) -->
+            <Button Grid.Column="1"
+                    x:Name="PvEnergyTileButton"
+                    Style="{StaticResource TileButton}"
+                    Click="OpenPvEnergy_Click">
+                <uc:PvEnergyTileControl x:Name="PvTile"
+                                        Latitude="38.56"
+                                        Longitude="68.79"
+                                        PeakKw="5"
+                                        Tilt="30"
+                                        Azimuth="180"
+                                        LossesPct="14"
+                                        />
             </Button>
 
-            <!-- Weather Forecast tile (Yr.no meteogram for Sucre Department) -->
-            <Button Grid.Column="2" Style="{StaticResource TileButton}">
-                <uc:YrMeteogramControl
-    LocationId="2-3667725"
-    Latitude="-19.1"
-    Longitude="-63.4"
-    CompactMode="True"
-    YrLanguage="en"/>
-
+            <!-- Weather Forecast tile (existing) -->
+            <Button Grid.Column="2"
+                    x:Name="WeatherTileButton"
+                    Style="{StaticResource TileButton}"
+                    Click="OpenWeather_Click">
+                <uc:YrMeteogramControl x:Name="YrTile"
+                                       LocationId="2-3667725"
+                                       Latitude="-19.1"
+                                       Longitude="-63.4"
+                                       CompactMode="True"
+                                       YrLanguage="en"/>
             </Button>
 
         </Grid>
