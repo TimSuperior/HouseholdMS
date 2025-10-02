@@ -37,7 +37,9 @@ namespace HouseholdMS.View.Dashboard
             InitializeComponent();
 
             _userRole = string.IsNullOrWhiteSpace(userRole) ? "User" : userRole.Trim();
-            _landing = SitesLanding.None;
+
+            // DEFAULT LANDING → All (so the content control is NOT empty on first load)
+            _landing = SitesLanding.All;
 
             Loaded += SitesView_Loaded;
             Unloaded += SitesView_Unloaded;
@@ -46,6 +48,7 @@ namespace HouseholdMS.View.Dashboard
 
         public SitesView(string userRole, SitesLanding landing) : this(userRole)
         {
+            // If caller specified a landing, respect it
             _landing = landing;
         }
 
@@ -55,7 +58,7 @@ namespace HouseholdMS.View.Dashboard
         {
             RefreshTiles();     // initial snapshot
             StartPulse();       // safety net: auto-refresh when DB changes
-            ShowLandingIfAny(); // open requested child view
+            ShowLandingIfAny(); // open requested (or default) child view
         }
 
         private void SitesView_Unloaded(object sender, RoutedEventArgs e)
@@ -102,8 +105,7 @@ namespace HouseholdMS.View.Dashboard
                 {
                     conn.Open();
 
-                    // Faster aggregate counting with normalization in SQL:
-                    // Normalize by lowercasing and removing '_'/'-' before LIKE checks.
+                    // Fast aggregate counting with normalization in SQL
                     using (var cmd = new SQLiteCommand(@"
                         SELECT
                             SUM(CASE 
@@ -308,7 +310,8 @@ namespace HouseholdMS.View.Dashboard
                     break;
                 case SitesLanding.None:
                 default:
-                    // keep placeholder
+                    // Fallback safety: also open All by default
+                    ShowInDetail(CreateChild(typeof(AllHouseholdsView)));
                     break;
             }
         }

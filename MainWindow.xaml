@@ -345,7 +345,7 @@
                     <!-- Panel: Test Manuals submenu -->
                     <StackPanel x:Name="Panel_TestManuals" Visibility="Collapsed">
                         <TextBlock Text="{x:Static res:Strings.TestManuals_TestModules}" Style="{StaticResource SidebarCaption}"/>
-                        <Button x:Name="bt_AllTest" Content="{x:Static res:Strings.Menu_BlueSmartCharger}" Click="bt_AllTest_Click" Style="{StaticResource SubMenuButtonStyle}"/>
+                        <Button x:Name="bt_AllTest" Content="{x:Static res:Strings.Menu_BlueSmartCharger}" Click="bt_AllTest_Click" Style="{StaticResource SubMenuButtonStyle}" Cursor="Hand"/>
                         <Button x:Name="bt_ControllerTest" Content="{x:Static res:Strings.Menu_ControllerTest}" Click="bt_ControllerTest_Click" Style="{StaticResource SubMenuButtonStyle}"/>
                         <Button x:Name="bt_TestProcedure" Content="{x:Static res:Strings.Menu_TestProcedure}" Click="bt_TestProcedure_Click" Style="{StaticResource SubMenuButtonStyle}"/>
                         <Button x:Name="bt_SwitchTest" Content="{x:Static res:Strings.Menu_SwitchTest}" Click="bt_SwitchTest_Click" Style="{StaticResource SubMenuButtonStyle}"/>

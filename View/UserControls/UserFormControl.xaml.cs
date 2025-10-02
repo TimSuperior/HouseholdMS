@@ -3,29 +3,19 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data; // for IValueConverter
 using HouseholdMS.Model;
 using System.Data.SQLite;
 
 namespace HouseholdMS.View.UserControls
 {
-    // Responsive width converter: returns true if the control is narrower than Threshold
-    public class IsNarrowConverter : IValueConverter
-    {
-        public double Threshold { get; set; } = 1100;
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            if (value is double d) return d < Threshold;
-            return false;
-        }
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-            => throw new NotSupportedException();
-    }
-
     public partial class UserFormControl : UserControl
     {
         private readonly User _user;
-        private bool _canEdit; // non-admin or root → read-only
+        private bool _canEdit;
+
+        // widths for dialog; tweak if you want
+        private const double NarrowDialogWidth = 760;  // single-column
+        private const double WideDialogWidth = 1040; // two-columns
 
         public event EventHandler OnSaveSuccess;
         public event EventHandler OnCancel;
@@ -59,16 +49,18 @@ namespace HouseholdMS.View.UserControls
                 PasswordLabel.Text = "New Password (optional)";
             }
 
-            // Root admin cannot be edited/deleted
-            if (_user.UserID == 1) _canEdit = false;
+            if (_user.UserID == 1) _canEdit = false; // root
 
             ApplyEditability();
+
+            // Ensure correct state on load
+            UpdateTechSectionVisibility();
         }
 
         private void ApplyEditability()
         {
             NameBox.IsEnabled = _canEdit;
-            UsernameBox.IsEnabled = _canEdit && _user.UserID == 0; // editable only on add
+            UsernameBox.IsEnabled = _canEdit && _user.UserID == 0;
             RoleComboBox.IsEnabled = _canEdit;
             PasswordBox.IsEnabled = _canEdit;
             ConfirmPasswordBox.IsEnabled = _canEdit;
@@ -99,21 +91,63 @@ namespace HouseholdMS.View.UserControls
             RoleComboBox.SelectedItem = target ?? RoleComboBox.Items.Cast<ComboBoxItem>().First();
         }
 
-        // ===== Helpers =====
+        private void RoleComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateTechSectionVisibility();
+        }
+
+        private void UpdateTechSectionVisibility()
+        {
+            bool isTech = string.Equals(GetSelectedRole(), "Technician", StringComparison.OrdinalIgnoreCase);
+
+            if (isTech)
+            {
+                // Force a 50/50 split: 1* | 24px | 1*
+                ColLeft.Width = new GridLength(1, GridUnitType.Star);
+                ColRight.Width = new GridLength(1, GridUnitType.Star);
+                ColGap.Width = new GridLength(24);
+                TechSection.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                TechSection.Visibility = Visibility.Collapsed;
+                ColRight.Width = new GridLength(0);
+                ColGap.Width = new GridLength(0);
+                ColLeft.Width = new GridLength(1, GridUnitType.Star);
+            }
+
+            AdjustWindowWidth(isTech);
+        }
+
+        private void AdjustWindowWidth(bool isTech)
+        {
+            var win = Window.GetWindow(this);
+            if (win == null) return;
+
+            double workW = SystemParameters.WorkArea.Width;
+            double margin = 40; // breathing room
+
+            double target = isTech ? WideDialogWidth : NarrowDialogWidth;
+            target = Math.Min(target, workW - margin);
+
+            // Width is controlled by window; height remains SizeToContent (set in opener)
+            if (win.Width < target && isTech) win.Width = target;
+            if (!isTech && win.Width > target) win.Width = target;
+        }
+
+        // ===== Helpers & validation (unchanged) =====
         private static bool HasDigit(string s)
         {
             if (string.IsNullOrEmpty(s)) return false;
             for (int i = 0; i < s.Length; i++) if (char.IsDigit(s[i])) return true;
             return false;
         }
-
         private static bool HasSymbol(string s)
         {
             if (string.IsNullOrEmpty(s)) return false;
             for (int i = 0; i < s.Length; i++) if (!char.IsLetterOrDigit(s[i])) return true;
             return false;
         }
-
         private static string DigitsOnly(string s)
         {
             if (string.IsNullOrEmpty(s)) return string.Empty;
@@ -127,10 +161,6 @@ namespace HouseholdMS.View.UserControls
             PasswordBox.Tag = ConfirmPasswordBox.Tag = null;
         }
 
-        /// <summary>
-        /// Validates inputs. For ADD: password required + confirm; For EDIT: password optional (but if provided, must pass + confirm).
-        /// Technician requires Phone(8–15 digits), Address(>=5), Area(>=2).
-        /// </summary>
         private bool ValidateForm(out string errorMessage, out string sanitizedPhone)
         {
             ResetErrorTags();
@@ -158,92 +188,50 @@ namespace HouseholdMS.View.UserControls
             if (isAdd)
             {
                 if (string.IsNullOrWhiteSpace(username) || username.Length < 4)
-                {
-                    UsernameBox.Tag = "error"; ok = false;
-                    sb.AppendLine("• Username must be at least 4 characters.");
-                }
+                { UsernameBox.Tag = "error"; ok = false; sb.AppendLine("• Username must be at least 4 characters."); }
                 if (!string.IsNullOrEmpty(username) && username.IndexOf(' ') >= 0)
-                {
-                    UsernameBox.Tag = "error"; ok = false;
-                    sb.AppendLine("• Username cannot contain spaces.");
-                }
+                { UsernameBox.Tag = "error"; ok = false; sb.AppendLine("• Username cannot contain spaces."); }
                 if (!string.IsNullOrEmpty(username) &&
                     string.Equals(username, name, StringComparison.OrdinalIgnoreCase))
-                {
-                    UsernameBox.Tag = "error"; ok = false;
-                    sb.AppendLine("• Username must be different from Name.");
-                }
+                { UsernameBox.Tag = "error"; ok = false; sb.AppendLine("• Username must be different from Name."); }
             }
 
             // Password rules
             if (isAdd)
             {
                 if (string.IsNullOrEmpty(pwd) || pwd.Length <= 6)
-                {
-                    PasswordBox.Tag = "error"; ok = false;
-                    sb.AppendLine("• Password must be longer than 6 characters.");
-                }
+                { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• Password must be longer than 6 characters."); }
                 else
                 {
                     if (string.Equals(pwd, name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        PasswordBox.Tag = "error"; ok = false;
-                        sb.AppendLine("• Password must be different from Name.");
-                    }
+                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• Password must be different from Name."); }
                     if (!string.IsNullOrEmpty(username) &&
                         string.Equals(pwd, username, StringComparison.OrdinalIgnoreCase))
-                    {
-                        PasswordBox.Tag = "error"; ok = false;
-                        sb.AppendLine("• Password must be different from Username.");
-                    }
+                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• Password must be different from Username."); }
                     if (!(HasDigit(pwd) || HasSymbol(pwd)))
-                    {
-                        PasswordBox.Tag = "error"; ok = false;
-                        sb.AppendLine("• Password must include at least one number or symbol.");
-                    }
+                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• Password must include at least one number or symbol."); }
                 }
 
                 if (string.IsNullOrEmpty(confirm))
-                {
-                    ConfirmPasswordBox.Tag = "error"; ok = false;
-                    sb.AppendLine("• Please confirm the password.");
-                }
+                { ConfirmPasswordBox.Tag = "error"; ok = false; sb.AppendLine("• Please confirm the password."); }
                 else if (!string.Equals(pwd, confirm))
-                {
-                    ConfirmPasswordBox.Tag = "error"; ok = false;
-                    sb.AppendLine("• Confirm Password must match Password exactly.");
-                }
+                { ConfirmPasswordBox.Tag = "error"; ok = false; sb.AppendLine("• Confirm Password must match Password exactly."); }
             }
             else
             {
                 if (!string.IsNullOrWhiteSpace(pwd))
                 {
                     if (pwd.Length <= 6)
-                    {
-                        PasswordBox.Tag = "error"; ok = false;
-                        sb.AppendLine("• New Password must be longer than 6 characters.");
-                    }
+                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• New Password must be longer than 6 characters."); }
                     if (string.Equals(pwd, name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        PasswordBox.Tag = "error"; ok = false;
-                        sb.AppendLine("• New Password must be different from Name.");
-                    }
+                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• New Password must be different from Name."); }
                     if (!string.IsNullOrEmpty(username) &&
                         string.Equals(pwd, username, StringComparison.OrdinalIgnoreCase))
-                    {
-                        PasswordBox.Tag = "error"; ok = false;
-                        sb.AppendLine("• New Password must be different from Username.");
-                    }
+                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• New Password must be different from Username."); }
                     if (!(HasDigit(pwd) || HasSymbol(pwd)))
-                    {
-                        PasswordBox.Tag = "error"; ok = false;
-                        sb.AppendLine("• New Password must include at least one number or symbol.");
-                    }
+                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• New Password must include at least one number or symbol."); }
                     if (string.IsNullOrEmpty(confirm) || !string.Equals(pwd, confirm))
-                    {
-                        ConfirmPasswordBox.Tag = "error"; ok = false;
-                        sb.AppendLine("• Confirm Password must match the new Password exactly.");
-                    }
+                    { ConfirmPasswordBox.Tag = "error"; ok = false; sb.AppendLine("• Confirm Password must match the new Password exactly."); }
                 }
             }
 
@@ -251,28 +239,16 @@ namespace HouseholdMS.View.UserControls
             if (isTech)
             {
                 if (sanitizedPhone.Length < 8 || sanitizedPhone.Length > 15)
-                {
-                    PhoneBox.Tag = "error"; ok = false;
-                    sb.AppendLine("• Phone must be 8–15 digits (digits only).");
-                }
+                { PhoneBox.Tag = "error"; ok = false; sb.AppendLine("• Phone must be 8–15 digits (digits only)."); }
                 if (string.IsNullOrWhiteSpace(AddressBox.Text) || AddressBox.Text.Trim().Length < 5)
-                {
-                    AddressBox.Tag = "error"; ok = false;
-                    sb.AppendLine("• Address must be at least 5 characters.");
-                }
+                { AddressBox.Tag = "error"; ok = false; sb.AppendLine("• Address must be at least 5 characters."); }
                 if (string.IsNullOrWhiteSpace(AreaBox.Text) || AreaBox.Text.Trim().Length < 2)
-                {
-                    AreaBox.Tag = "error"; ok = false;
-                    sb.AppendLine("• Assigned Area must be at least 2 characters.");
-                }
+                { AreaBox.Tag = "error"; ok = false; sb.AppendLine("• Assigned Area must be at least 2 characters."); }
             }
             else
             {
                 if (sanitizedPhone.Length > 0 && (sanitizedPhone.Length < 8 || sanitizedPhone.Length > 15))
-                {
-                    PhoneBox.Tag = "error"; ok = false;
-                    sb.AppendLine("• Phone (optional) must be 8–15 digits if provided.");
-                }
+                { PhoneBox.Tag = "error"; ok = false; sb.AppendLine("• Phone (optional) must be 8–15 digits if provided."); }
             }
 
             errorMessage = sb.ToString().Trim();
@@ -311,7 +287,7 @@ namespace HouseholdMS.View.UserControls
 
                     if (isAdd)
                     {
-                        using (var check = new System.Data.SQLite.SQLiteCommand(
+                        using (var check = new SQLiteCommand(
                                    "SELECT COUNT(*) FROM Users WHERE LOWER(Username)=LOWER(@u);", conn))
                         {
                             check.Parameters.AddWithValue("@u", usern);
@@ -390,9 +366,7 @@ WHERE UserID=@id;", conn))
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
-        {
-            OnCancel?.Invoke(this, EventArgs.Empty);
-        }
+            => OnCancel?.Invoke(this, EventArgs.Empty);
 
         private void Delete_Click(object sender, RoutedEventArgs e)
         {

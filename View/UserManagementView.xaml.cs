@@ -244,20 +244,43 @@ namespace HouseholdMS.View
                 Window.GetWindow(form)?.Close();
             };
 
+            // Respect the form's min size; cap to screen
+            double workW = SystemParameters.WorkArea.Width;
+            double workH = SystemParameters.WorkArea.Height;
+
+            // a little chrome padding for window borders/title
+            const double chromeW = 32;
+            const double chromeH = 48;
+
+            double minW = Math.Max(form.MinWidth, form.MinWidth) + chromeW; // form.MinWidth is 640
+            double minH = Math.Max(form.MinHeight, form.MinHeight) + chromeH; // form.MinHeight is 520
+
             var win = new Window
             {
                 Title = (user.UserID == 0) ? "Add User" : (canEdit ? "Edit User" : "User Details"),
                 Content = form,
                 Owner = Window.GetWindow(this),
-                Width = 520,
-                Height = 640,
+                SizeToContent = SizeToContent.WidthAndHeight,      // <-- key: window adapts to content
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                ResizeMode = ResizeMode.NoResize,
+                ResizeMode = ResizeMode.CanResize,                 // allows user to resize if needed
+                MinWidth = Math.Min(minW, workW - 40),            // never exceed screen
+                MinHeight = Math.Min(minH, workH - 40),
+                MaxWidth = workW - 40,
+                MaxHeight = workH - 40,
                 ShowInTaskbar = false,
                 Background = Brushes.White
             };
+
+            // Ensure after load we still stay within bounds
+            win.Loaded += (_, __) =>
+            {
+                if (win.ActualWidth > win.MaxWidth) win.Width = win.MaxWidth;
+                if (win.ActualHeight > win.MaxHeight) win.Height = win.MaxHeight;
+            };
+
             win.ShowDialog();
         }
+
 
         // Command handlers
         private void ExecuteApprove(object sender, ExecutedRoutedEventArgs e)

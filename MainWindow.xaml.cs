@@ -116,13 +116,12 @@ namespace HouseholdMS
 
         private void bt_AllTest_Click(object sender, RoutedEventArgs e)
         {
-            var view = new AllTestMenuView(_currentUserRole);
-            view.CloseRequested += AllTest_CloseRequested;
+            var view = new AllTestMenuView();
             MainContent.Content = view;
         }
 
         private void bt_BatteryTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new HouseholdMS.View.UserControls.EpeverMonitorControl();
-        private void bt_ControllerTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new ControllerTestMenuView(_currentUserRole);
+        private void bt_ControllerTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new ControllerTestMenuView();
 
         private void bt_SwitchTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new SwitchTestMenuView(_currentUserRole);
         private void bt_SettingMenu_Click(object sender, RoutedEventArgs e) => MainContent.Content = new SettingMenuView(_currentUserRole);

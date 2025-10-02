@@ -521,68 +521,68 @@ namespace HouseholdMS
         // =====================================================================
 
         // NASA DAILY
-        [DataContract] private class NasaRoot { [DataMember] public NasaProperties properties; }
-        [DataContract] private class NasaProperties { [DataMember] public NasaParameter parameter; }
+        [DataContract] private class NasaRoot { [DataMember] public NasaProperties properties { get; set; } }
+        [DataContract] private class NasaProperties { [DataMember] public NasaParameter parameter { get; set; } }
         [DataContract]
         private class NasaParameter
         {
             [DataMember(Name = "ALLSKY_SFC_SW_DWN")]
-            public Dictionary<string, double> ALLSKY_SFC_SW_DWN;
+            public Dictionary<string, double> ALLSKY_SFC_SW_DWN { get; set; }
         }
 
         // NASA HOURLY
-        [DataContract] private class NasaRootHourly { [DataMember] public NasaPropertiesHourly properties; }
-        [DataContract] private class NasaPropertiesHourly { [DataMember] public NasaParameterHourly parameter; }
+        [DataContract] private class NasaRootHourly { [DataMember] public NasaPropertiesHourly properties { get; set; } }
+        [DataContract] private class NasaPropertiesHourly { [DataMember] public NasaParameterHourly parameter { get; set; } }
         [DataContract]
         private class NasaParameterHourly
         {
             [DataMember(Name = "ALLSKY_SFC_SW_DWN")]
-            public Dictionary<string, double> ALLSKY_SFC_SW_DWN;
+            public Dictionary<string, double> ALLSKY_SFC_SW_DWN { get; set; }
         }
 
         // Open-Meteo
-        [DataContract] private class OpenDailyRoot { [DataMember] public OpenDaily daily; }
+        [DataContract] private class OpenDailyRoot { [DataMember] public OpenDaily daily { get; set; } }
         [DataContract]
         private class OpenDaily
         {
-            [DataMember] public string[] time;
-            [DataMember] public double[] shortwave_radiation_sum; // MJ/m²
+            [DataMember] public string[] time { get; set; }
+            [DataMember] public double[] shortwave_radiation_sum { get; set; } // MJ/m²
         }
-        [DataContract] private class OpenHourlyRoot { [DataMember] public OpenHourly hourly; }
+        [DataContract] private class OpenHourlyRoot { [DataMember] public OpenHourly hourly { get; set; } }
         [DataContract]
         private class OpenHourly
         {
-            [DataMember] public string[] time;
-            [DataMember] public double[] shortwave_radiation; // W/m²
+            [DataMember] public string[] time { get; set; }
+            [DataMember] public double[] shortwave_radiation { get; set; } // W/m²
         }
 
         // PVGIS
-        [DataContract] private class PvRoot { [DataMember] public PvOutputs outputs; }
+        [DataContract] private class PvRoot { [DataMember] public PvOutputs outputs { get; set; } }
         [DataContract]
         private class PvOutputs
         {
-            [DataMember] public PvTotals totals;
-            [DataMember] public PvMonthly monthly;
+            [DataMember] public PvTotals totals { get; set; }
+            [DataMember] public PvMonthly monthly { get; set; }
         }
         [DataContract]
         private class PvTotals
         {
-            [DataMember(Name = "fixed")] public PvTotalsFixed fixedTotals;
-            [DataMember] public double E_y;
+            [DataMember(Name = "fixed")] public PvTotalsFixed fixedTotals { get; set; }
+            [DataMember] public double E_y { get; set; }
         }
-        [DataContract] private class PvTotalsFixed { [DataMember] public double E_y; }
+        [DataContract] private class PvTotalsFixed { [DataMember] public double E_y { get; set; } }
 
         [DataContract]
         private class PvMonthly
         {
-            [DataMember(Name = "fixed")] public PvMonthEntry[] fixedArray; // modern: 12 records
-            [DataMember] public double[] E_m;                               // legacy fallback
+            [DataMember(Name = "fixed")] public PvMonthEntry[] fixedArray { get; set; } // modern: 12 records
+            [DataMember] public double[] E_m { get; set; }                               // legacy fallback
         }
         [DataContract]
         private class PvMonthEntry
         {
-            [DataMember] public int month;   // 1..12
-            [DataMember] public double E_m;  // kWh
+            [DataMember] public int month { get; set; }   // 1..12
+            [DataMember] public double E_m { get; set; }  // kWh
         }
 
         // generic JSON helper

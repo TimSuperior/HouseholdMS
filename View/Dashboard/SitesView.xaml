@@ -7,7 +7,12 @@
              xmlns:res="clr-namespace:HouseholdMS.Resources"
              mc:Ignorable="d"
              d:DesignHeight="520"
-             d:DesignWidth="1200">
+             d:DesignWidth="1200"
+             FontFamily="Segoe UI"
+             SnapsToDevicePixels="True"
+             UseLayoutRounding="True"
+             TextOptions.TextFormattingMode="Display"
+             TextOptions.TextRenderingMode="ClearType">
 
     <!-- ================= Palette & Styles ================= -->
     <UserControl.Resources>
@@ -19,33 +24,39 @@
         <SolidColorBrush x:Key="Col.Muted"    Color="#64748B"/>
         <SolidColorBrush x:Key="Col.Accent"   Color="#6366F1"/>
 
-        <!-- Compact tile -->
+        <!-- Compact, modern tile (each tile is its own card) -->
         <Style x:Key="TileButtonSmall" TargetType="Button">
             <Setter Property="Margin" Value="8"/>
             <Setter Property="Padding" Value="16"/>
-            <Setter Property="MinHeight" Value="100"/>
+            <Setter Property="MinHeight" Value="110"/>
             <Setter Property="MinWidth" Value="240"/>
             <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="Background" Value="#FFFFFFFF"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="bd"
                                 Background="{TemplateBinding Background}"
                                 CornerRadius="14"
-                                BorderBrush="#E6E6E9"
+                                BorderBrush="{StaticResource Col.Border}"
                                 BorderThickness="1"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter/>
+                            <Border.Effect>
+                                <!-- subtle shadow so each tile feels separate -->
+                                <DropShadowEffect Color="#000000" Opacity="0.12" BlurRadius="12" ShadowDepth="1"/>
+                            </Border.Effect>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="BorderBrush" Value="#D0D0D7"/>
-                                <Setter TargetName="bd" Property="Background" Value="#FAFAFC"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#D6D9E0"/>
+                                <Setter TargetName="bd" Property="Background" Value="#FAFAFE"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="#F2F2F7"/>
+                                <Setter TargetName="bd" Property="Background" Value="#F3F4F8"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="bd" Property="Opacity" Value="0.6"/>
@@ -129,7 +140,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- ===== Header Card: Breadcrumb + Title + Back button ===== -->
+        <!-- ===== Header Card ===== -->
         <Border Grid.Row="0"
                 Margin="12,12,12,8"
                 Background="{StaticResource Col.Card}"
@@ -144,24 +155,18 @@
 
                 <!-- Left: breadcrumb + title -->
                 <StackPanel Orientation="Vertical" Grid.Column="0">
-                    <!-- Breadcrumb row (Dashboard › Sites) -->
                     <DockPanel LastChildFill="False" VerticalAlignment="Center">
-                        <!-- Dashboard (muted clickable link) -->
                         <Button Style="{StaticResource LinkButton}"
                                 Content="{x:Static res:Strings.SV_Breadcrumb_Dashboard}"
                                 Click="BreadcrumbDashboard_Click"
                                 ToolTip="{x:Static res:Strings.SV_Breadcrumb_Dashboard_Tooltip}"
                                 DockPanel.Dock="Left"/>
-
-                        <!-- Chevron -->
                         <TextBlock Text="›"
                                    FontSize="18"
                                    Foreground="{StaticResource Col.Muted}"
                                    Margin="10,0,10,0"
                                    VerticalAlignment="Center"
                                    DockPanel.Dock="Left"/>
-
-                        <!-- Active 'Sites' crumb (accent; not a button) -->
                         <Border BorderBrush="{StaticResource Col.Accent}"
                                 BorderThickness="0,0,0,2"
                                 Padding="0,0,0,2"
@@ -174,7 +179,6 @@
                         </Border>
                     </DockPanel>
 
-                    <!-- Page title -->
                     <TextBlock x:Name="PageTitle"
                                Text="{x:Static res:Strings.SV_Title}"
                                FontSize="22"
@@ -183,7 +187,7 @@
                                Foreground="{StaticResource Col.Text}"/>
                 </StackPanel>
 
-                <!-- Right: Back to dashboard ghost button -->
+                <!-- Right: Back to dashboard -->
                 <Button Grid.Column="1"
                         Style="{StaticResource GhostButton}"
                         Click="BreadcrumbDashboard_Click"
@@ -196,74 +200,70 @@
             </Grid>
         </Border>
 
-        <!-- ===== Tiles ===== -->
-        <Border Grid.Row="1"
-                CornerRadius="14"
-                Background="{StaticResource Col.Card}"
-                BorderBrush="{StaticResource Col.Border}"
-                BorderThickness="1"
-                Margin="12,0,12,8">
-            <UniformGrid Columns="3" Margin="8">
-                <Button Style="{StaticResource TileButtonSmall}" Click="OpenAllSites_Click">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel>
-                            <TextBlock Text="{x:Static res:Strings.SV_Tile_TotalHouseholds}" FontWeight="Bold"/>
-                            <TextBlock x:Name="TotalCountText" Text="0" FontSize="32" Margin="0,4,0,0"/>
-                        </StackPanel>
-                    </Grid>
-                </Button>
+        <!-- ===== Tiles (NO container card; standalone tiles on page bg) ===== -->
+        <UniformGrid Grid.Row="1" Columns="3" Margin="12,0,12,8">
+            <!-- Total -->
+            <Button Style="{StaticResource TileButtonSmall}" Click="OpenAllSites_Click">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="{x:Static res:Strings.SV_Tile_TotalHouseholds}" FontWeight="Bold"/>
+                        <TextBlock x:Name="TotalCountText" Text="0" FontSize="32" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Button>
 
-                <Button Style="{StaticResource TileButtonSmall}" Click="OpenOperational_Click">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel>
-                            <TextBlock Text="{x:Static res:Strings.SV_Tile_Operational}" FontWeight="Bold"/>
-                            <TextBlock x:Name="OperationalCountText" Text="0" FontSize="28" Margin="0,4,0,0"/>
-                        </StackPanel>
+            <!-- Operational -->
+            <Button Style="{StaticResource TileButtonSmall}" Click="OpenOperational_Click">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="{x:Static res:Strings.SV_Tile_Operational}" FontWeight="Bold"/>
+                        <TextBlock x:Name="OperationalCountText" Text="0" FontSize="28" Margin="0,4,0,0"/>
+                    </StackPanel>
 
-                        <ctrls:CircularProgressBar x:Name="OperationalProgress"
-                                                   Width="64" Height="64"
-                                                   StrokeThickness="8"
-                                                   ProgressBrush="#4CAF50"
-                                                   TrackBrush="#E6E6E6"
-                                                   Grid.Column="1"
-                                                   HorizontalAlignment="Right"
-                                                   VerticalAlignment="Center"/>
-                    </Grid>
-                </Button>
+                    <ctrls:CircularProgressBar x:Name="OperationalProgress"
+                                               Width="64" Height="64"
+                                               StrokeThickness="8"
+                                               ProgressBrush="#4CAF50"
+                                               TrackBrush="#E6E6E6"
+                                               Grid.Column="1"
+                                               HorizontalAlignment="Right"
+                                               VerticalAlignment="Center"/>
+                </Grid>
+            </Button>
 
-                <Button Style="{StaticResource TileButtonSmall}" Click="OpenOutOfService_Click">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel>
-                            <TextBlock Text="{x:Static res:Strings.SV_Tile_OutOfService}" FontWeight="Bold"/>
-                            <TextBlock x:Name="OutOfServiceCountText" Text="0" FontSize="28" Margin="0,4,0,0"/>
-                        </StackPanel>
+            <!-- Out of Service -->
+            <Button Style="{StaticResource TileButtonSmall}" Click="OpenOutOfService_Click">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="{x:Static res:Strings.SV_Tile_OutOfService}" FontWeight="Bold"/>
+                        <TextBlock x:Name="OutOfServiceCountText" Text="0" FontSize="28" Margin="0,4,0,0"/>
+                    </StackPanel>
 
-                        <ctrls:CircularProgressBar x:Name="OutOfServiceProgress"
-                                                   Width="64" Height="64"
-                                                   StrokeThickness="8"
-                                                   ProgressBrush="#F44336"
-                                                   TrackBrush="#E6E6E6"
-                                                   Grid.Column="1"
-                                                   HorizontalAlignment="Right"
-                                                   VerticalAlignment="Center"/>
-                    </Grid>
-                </Button>
-            </UniformGrid>
-        </Border>
+                    <ctrls:CircularProgressBar x:Name="OutOfServiceProgress"
+                                               Width="64" Height="64"
+                                               StrokeThickness="8"
+                                               ProgressBrush="#F44336"
+                                               TrackBrush="#E6E6E6"
+                                               Grid.Column="1"
+                                               HorizontalAlignment="Right"
+                                               VerticalAlignment="Center"/>
+                </Grid>
+            </Button>
+        </UniformGrid>
 
-        <!-- ===== Embedded content host ===== -->
+        <!-- ===== Embedded content host (kept as a card) ===== -->
         <Border Grid.Row="2"
                 CornerRadius="14"
                 Background="{StaticResource Col.Card}"

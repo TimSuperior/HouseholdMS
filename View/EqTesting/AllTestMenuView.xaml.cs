@@ -1,706 +1,295 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
-using System.Threading.Tasks;
-using System.Timers;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using HouseholdMS.Services;
-using System.Diagnostics;
+using System.Windows.Media.Imaging;
+using System.Windows.Input;
 using System.IO;
-using System.Windows.Navigation;
-
-// Force using the WPF MessageBox (not WinForms or any custom class)
-using WpfMessageBox = System.Windows.MessageBox;
-
-using Timer = System.Timers.Timer;
+using System.Windows.Resources;
 
 namespace HouseholdMS.View.EqTesting
 {
+    /// <summary>
+    /// Image viewer with a single album: "Battery Visual Inspection".
+    /// Arrow keys (Left/Right) and Back/Next buttons navigate images.
+    /// Strong caching + multi-path loading to avoid the "blank image" issue.
+    /// </summary>
     public partial class AllTestMenuView : UserControl
     {
-        public event EventHandler CloseRequested;
+        // --- Keep the same simple data contracts so you can edit image paths easily ---
+        private sealed class Album
+        {
+            public readonly string Title;
+            public readonly string[] Images;
+            public Album(string title, params string[] images)
+            {
+                if (images == null || images.Length == 0)
+                    throw new ArgumentException("Album must contain at least one image.", nameof(images));
+                Title = string.IsNullOrWhiteSpace(title) ? "Album" : title;
+                Images = images;
+            }
+        }
 
-        private enum WizardStep { Precaution = 0, Form = 1, Setup1 = 2, Setup2 = 3, Setup3 = 4, Charging = 5 }
-        private WizardStep _step = WizardStep.Precaution;
+        private sealed class Gallery
+        {
+            public readonly string Name;
+            public readonly string Version;
+            public readonly Album[] Albums;
+            public Gallery(string name, string version, params Album[] albums)
+            {
+                if (albums == null || albums.Length == 0)
+                    throw new ArgumentException("At least one album is required.", nameof(albums));
+                Name = string.IsNullOrWhiteSpace(name) ? "Gallery" : name;
+                Version = string.IsNullOrWhiteSpace(version) ? "" : version;
+                Albums = albums;
+            }
+        }
 
-        // Reusable lookup service (no MVVM, called from code-behind)
-        private readonly LookupSearch _search;
+        public sealed class AlbumSpec
+        {
+            public string Title { get; }
+            public string[] Images { get; }
+            public AlbumSpec(string title, params string[] images)
+            {
+                Title = title;
+                Images = images ?? new string[0];
+            }
+        }
 
-        // Debounce timers (thread-safe, no async void races)
-        private readonly Timer _hhDebounce = new Timer(220) { AutoReset = false };
-        private readonly Timer _techDebounce = new Timer(220) { AutoReset = false };
+        // --- State ---
+        private Gallery _gallery;
+        private Album _album;
+        private int _imageIndex = -1;
 
-        // Popup manual-close flags: avoid auto reopen immediately after user dismissed
-        private bool _hhPopupManualClose;
-        private bool _techPopupManualClose;
+        // Strong image cache
+        private readonly Dictionary<string, BitmapImage> _imageCache =
+            new Dictionary<string, BitmapImage>(StringComparer.OrdinalIgnoreCase);
 
-        // Selections
-        private int? _householdId;
-        private int? _technicianId;
-        private string _householdDisplay;
-        private string _technicianDisplay;
-
-        // Guard to avoid TextChanged firing while we set Text programmatically
-        private bool _suppressSearchEvents;
-
-        // Charging timestamps
-        private DateTime? _chargingStartUtc;
-
-        // FlowDocs for Setup steps (Build Action = Page)
-        private const string Setup1DocPath = "/Assets/Manuals/2_Wiring.xaml";
-        private const string Setup2DocPath = "/Assets/Manuals/3_Charger.xaml";
-        private const string Setup3DocPath = "/Assets/Manuals/4_Victron.xaml";
-
-        public AllTestMenuView(string userRole = "Admin")
+        public AllTestMenuView()
         {
             InitializeComponent();
 
-            this.AddHandler(Hyperlink.RequestNavigateEvent,
-                new RequestNavigateEventHandler(Hyperlink_RequestNavigate));
+            Loaded += (s, e) => this.Focus(); // enable keyboard navigation
 
-            _search = new LookupSearch(Model.DatabaseHelper.GetConnection);
+            // ===== EDIT THE IMAGE PATHS HERE AS YOU LIKE =====
+            // Only the "Battery Visual Inspection" album remains.
+            LoadGalleryAndOpen(
+                name: "Victron",
+                version: "1.1",
+                defaultAlbumTitle: "Battery Visual Inspection",
+                new AlbumSpec("Battery Visual Inspection",
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_07_01.png",
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_07_02.png",
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_07_03.png",
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_07_04.png",
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_07_05.png",
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_07_06.png",
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_07_07.png"
+                )
+            );            // ===== END EDIT AREA =====
+        }
 
-            // Debounce handlers (Household)
-            _hhDebounce.Elapsed += async (_, __) =>
+        private void LoadGalleryAndOpen(string name, string version, string defaultAlbumTitle, params AlbumSpec[] albums)
+        {
+            if (albums == null || albums.Length == 0)
+                throw new ArgumentException("At least one album is required.", nameof(albums));
+
+            var internalAlbums = albums.Select(a =>
             {
-                Dispatcher.Invoke(() => { if (HouseholdSpinner != null) HouseholdSpinner.Visibility = Visibility.Visible; });
-                var query = Dispatcher.Invoke(() => HouseholdSearchBox?.Text?.Trim() ?? "");
-                var results = await SafeSearchHouseholdsAsync(query);
-                Dispatcher.Invoke(() =>
+                if (a.Images == null || a.Images.Length == 0)
+                    throw new ArgumentException("Album '" + a.Title + "' must contain at least one image.");
+                return new Album(a.Title, a.Images);
+            }).ToArray();
+
+            _gallery = new Gallery(name, version, internalAlbums);
+
+            // choose album
+            Album chosen = internalAlbums.FirstOrDefault(a =>
+                string.Equals(a.Title, defaultAlbumTitle, StringComparison.OrdinalIgnoreCase))
+                ?? internalAlbums[0];
+
+            OpenAlbum(chosen);
+        }
+
+        private void OpenAlbum(Album album)
+        {
+            _album = album;
+            _imageIndex = 0;
+            _imageCache.Clear();
+            RenderImage();
+        }
+
+        // Multi-strategy, strong loader to avoid blank images:
+        // 1) Try direct Uri load (pack/file/relative)
+        // 2) If it's an application pack, also try Application.GetResourceStream with the relative part
+        // 3) If it's site-of-origin, try combining with base directory
+        // 4) Try raw file path
+        private ImageSource LoadImageStrong(string uriString)
+        {
+            if (string.IsNullOrWhiteSpace(uriString)) return null;
+
+            BitmapImage cached;
+            if (_imageCache.TryGetValue(uriString, out cached))
+                return cached;
+
+            // Strategy 1: standard Uri load
+            try
+            {
+                var bmp1 = new BitmapImage();
+                bmp1.BeginInit();
+                bmp1.CacheOption = BitmapCacheOption.OnLoad;
+                bmp1.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+                bmp1.UriSource = new Uri(uriString, UriKind.RelativeOrAbsolute);
+                bmp1.EndInit();
+                bmp1.Freeze();
+                _imageCache[uriString] = bmp1;
+                return bmp1;
+            }
+            catch { /* fall through */ }
+
+            // Strategy 2: Application resource stream from pack application
+            try
+            {
+                const string APP = "pack://application:,,,/";
+                string rel = uriString;
+                if (rel.StartsWith(APP, StringComparison.OrdinalIgnoreCase))
+                    rel = rel.Substring(APP.Length);
+
+                Uri relUri;
+                if (Uri.TryCreate(rel, UriKind.Relative, out relUri))
                 {
-                    if (HouseholdSpinner != null) HouseholdSpinner.Visibility = Visibility.Collapsed;
-                    HouseholdPopupList.ItemsSource = results ?? new List<LookupSearch.PickItem>();
-                    HouseholdPopup.IsOpen = (results != null && results.Count > 0 && !_hhPopupManualClose);
-                    _hhPopupManualClose = false;
-                });
-            };
-
-            // Debounce handlers (Technician)
-            _techDebounce.Elapsed += async (_, __) =>
-            {
-                Dispatcher.Invoke(() => { if (TechnicianSpinner != null) TechnicianSpinner.Visibility = Visibility.Visible; });
-                var query = Dispatcher.Invoke(() => TechnicianSearchBox?.Text?.Trim() ?? "");
-                var results = await SafeSearchTechniciansAsync(query);
-                Dispatcher.Invoke(() =>
-                {
-                    if (TechnicianSpinner != null) TechnicianSpinner.Visibility = Visibility.Collapsed;
-                    TechnicianPopupList.ItemsSource = results ?? new List<LookupSearch.PickItem>();
-                    TechnicianPopup.IsOpen = (results != null && results.Count > 0 && !_techPopupManualClose);
-                    _techPopupManualClose = false;
-                });
-            };
-
-            // Hook template clear buttons once (works whether styles exist or not)
-            BatterySerialBox.AddHandler(Button.ClickEvent, new RoutedEventHandler(TemplateClear_Click));
-            HouseholdSearchBox.AddHandler(Button.ClickEvent, new RoutedEventHandler(TemplateClear_Click));
-            TechnicianSearchBox.AddHandler(Button.ClickEvent, new RoutedEventHandler(TemplateClear_Click));
-
-            RenderStep();
-        }
-
-        // ---------- Navigation ----------
-        private void OnStartFromPrecaution(object sender, RoutedEventArgs e)
-        {
-            _step = WizardStep.Form;
-            RenderStep();
-        }
-
-        private void OnPrevStep(object sender, RoutedEventArgs e)
-        {
-            if (_step == WizardStep.Precaution) return;
-            _step = (WizardStep)((int)_step - 1);
-            RenderStep();
-        }
-
-        private async void OnNextStep(object sender, RoutedEventArgs e)
-        {
-            if (_step == WizardStep.Form)
-            {
-                if (!await ValidateFormAsync()) return;
-
-                string summary =
-                    "Battery: " + (BatterySerialBox.Text ?? "") + "\n" +
-                    "Household: " + (_householdDisplay ?? "") + "\n" +
-                    "Technician: " + (_technicianDisplay ?? "") + "\n\nProceed?";
-                if (WpfMessageBox.Show(summary, "Confirm details", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
-                    return;
-            }
-
-            if (_step < WizardStep.Charging)
-                _step = (WizardStep)((int)_step + 1);
-
-            if (_step == WizardStep.Charging && !_chargingStartUtc.HasValue)
-                _chargingStartUtc = DateTime.UtcNow;
-
-            RenderStep();
-        }
-
-        private void RenderStep()
-        {
-            // Panels
-            Show(PrecautionPanel, false);
-            Show(FormPanel, false);
-            Show(SetupPanel, false);
-            Show(ChargingPanel, false);
-
-            // Footer
-            Show(ManualButton, false);
-            Show(StartButton, false);
-            Show(BackButton, false);
-            Show(NextButton, false);
-            Show(FinishButton, false);
-
-            switch (_step)
-            {
-                case WizardStep.Precaution:
-                    StepTitle.Text = "Safety & Precautions";
-                    StepInstruction.Text = "Review safety points or open the manual, then Start.";
-                    Show(PrecautionPanel, true);
-                    LoadPrecautionsDocOnce();
-                    Show(ManualButton, true);
-                    Show(StartButton, true);
-                    break;
-
-                case WizardStep.Form:
-                    StepTitle.Text = "Fill in details";
-                    StepInstruction.Text = "Enter battery serial and pick Household & Technician using search.";
-                    Show(FormPanel, true);
-
-                    // Chips reflect current selection
-                    HouseholdSelectedChip.Visibility = _householdId.HasValue ? Visibility.Visible : Visibility.Collapsed;
-                    TechnicianSelectedChip.Visibility = _technicianId.HasValue ? Visibility.Visible : Visibility.Collapsed;
-                    HouseholdSelectedText.Text = _householdDisplay ?? "";
-                    TechnicianSelectedText.Text = _technicianDisplay ?? "";
-
-                    _suppressSearchEvents = true;
-                    if (!_householdId.HasValue) HouseholdSearchBox.Text = "";
-                    if (!_technicianId.HasValue) TechnicianSearchBox.Text = "";
-                    _suppressSearchEvents = false;
-
-                    Show(BackButton, true);
-                    Show(NextButton, true);
-                    break;
-
-                case WizardStep.Setup1:
-                    StepTitle.Text = "Setup";
-                    StepInstruction.Text = "Follow the wiring instructions carefully.";
-                    ShowSetupDoc(Setup1DocPath);
-                    Show(BackButton, true);
-                    Show(NextButton, true);
-                    break;
-
-                case WizardStep.Setup2:
-                    StepTitle.Text = "Setup";
-                    StepInstruction.Text = "Setup using the charger";
-                    ShowSetupDoc(Setup2DocPath);
-                    Show(BackButton, true);
-                    Show(NextButton, true);
-                    break;
-
-                case WizardStep.Setup3:
-                    StepTitle.Text = "Setup";
-                    StepInstruction.Text = "Setup using VictronConnect";
-                    ShowSetupDoc(Setup3DocPath);
-                    Show(BackButton, true);
-                    Show(NextButton, true);
-                    break;
-
-                case WizardStep.Charging:
-                    StepTitle.Text = "Charging";
-                    StepInstruction.Text = "Charging started. Monitor until complete.";
-                    Show(ChargingPanel, true);
-                    ChargingSub.Text = _chargingStartUtc.HasValue
-                        ? "Started at " + _chargingStartUtc.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") + "."
-                        : "Starting…";
-                    Show(BackButton, true);
-                    Show(FinishButton, true);
-                    break;
-            }
-        }
-
-        private void LoadPrecautionsDocOnce()
-        {
-            if (PrecautionViewer != null && PrecautionViewer.Document == null)
-            {
-                // relative pack URI (same assembly)
-                var uri = new Uri("/Assets/Manuals/1_PrecautionStep0.xaml", UriKind.Relative);
-                PrecautionViewer.Document = (FlowDocument)Application.LoadComponent(uri);
-            }
-        }
-
-        private void ShowSetupDoc(string relativePackUri)
-        {
-            Show(SetupPanel, true);
-
-            // Only reload when different doc (store the path in Tag)
-            var current = SetupViewer.Document?.Tag as string;
-            if (!string.Equals(current, relativePackUri, StringComparison.OrdinalIgnoreCase))
-            {
-                try
-                {
-                    var uri = new Uri(relativePackUri, UriKind.Relative);
-                    var doc = (FlowDocument)Application.LoadComponent(uri);
-                    doc.Tag = relativePackUri;
-                    SetupViewer.Document = doc;
-                }
-                catch (Exception ex)
-                {
-                    SetupViewer.Document = new FlowDocument(
-                        new Paragraph(new Run("Failed to load setup document: " + relativePackUri + " — " + ex.Message)));
-                    SetupViewer.Document.Tag = relativePackUri;
-                }
-            }
-        }
-
-        // ---------- Validation ----------
-        private async Task<bool> ValidateFormAsync()
-        {
-            if (string.IsNullOrWhiteSpace(BatterySerialBox.Text))
-            {
-                WpfMessageBox.Show("Enter battery serial.", "Missing", MessageBoxButton.OK, MessageBoxImage.Warning);
-                BatterySerialBox.Focus();
-                return false;
-            }
-            if (_householdId == null)
-            {
-                WpfMessageBox.Show("Select a household from search results.", "Missing", MessageBoxButton.OK, MessageBoxImage.Warning);
-                HouseholdSearchBox.Focus();
-                return false;
-            }
-            if (_technicianId == null)
-            {
-                WpfMessageBox.Show("Select a technician from search results.", "Missing", MessageBoxButton.OK, MessageBoxImage.Warning);
-                TechnicianSearchBox.Focus();
-                return false;
-            }
-
-            using (var conn = Model.DatabaseHelper.GetConnection())
-            {
-                await conn.OpenAsync();
-
-                // ✅ Household exists (unchanged)
-                using (var c1 = new SQLiteCommand("SELECT EXISTS(SELECT 1 FROM Households WHERE HouseholdID=@id);", conn))
-                {
-                    c1.Parameters.AddWithValue("@id", _householdId);
-                    var ok1 = Convert.ToInt32(await c1.ExecuteScalarAsync()) == 1;
-                    if (!ok1)
+                    StreamResourceInfo sri = Application.GetResourceStream(relUri);
+                    if (sri != null && sri.Stream != null)
                     {
-                        WpfMessageBox.Show("Household not found in DB.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return false;
-                    }
-                }
-
-                // ✅ Technician check updated for new schema:
-                // Prefer the approved technicians view (v_Technicians). Falls back to Users if the view isn’t present.
-                bool techOk;
-                using (var cHasView = new SQLiteCommand("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='view' AND name='v_Technicians');", conn))
-                {
-                    var hasView = Convert.ToInt32(await cHasView.ExecuteScalarAsync()) == 1;
-                    if (hasView)
-                    {
-                        using (var c2 = new SQLiteCommand("SELECT EXISTS(SELECT 1 FROM v_Technicians WHERE TechnicianID=@id);", conn))
+                        using (var s = sri.Stream)
                         {
-                            c2.Parameters.AddWithValue("@id", _technicianId);
-                            techOk = Convert.ToInt32(await c2.ExecuteScalarAsync()) == 1;
-                        }
-                    }
-                    else
-                    {
-                        using (var c2 = new SQLiteCommand(@"
-                            SELECT EXISTS(
-                                SELECT 1
-                                FROM Users
-                                WHERE UserID=@id
-                                  AND Role='Technician'
-                                  AND IsActive=1
-                                  AND TechApproved=1
-                            );", conn))
-                        {
-                            c2.Parameters.AddWithValue("@id", _technicianId);
-                            techOk = Convert.ToInt32(await c2.ExecuteScalarAsync()) == 1;
+                            var bmp2 = new BitmapImage();
+                            bmp2.BeginInit();
+                            bmp2.CacheOption = BitmapCacheOption.OnLoad;
+                            bmp2.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+                            bmp2.StreamSource = s;
+                            bmp2.EndInit();
+                            bmp2.Freeze();
+                            _imageCache[uriString] = bmp2;
+                            return bmp2;
                         }
                     }
                 }
-
-                if (!techOk)
-                {
-                    WpfMessageBox.Show("Selected technician is not an approved, active Technician user.", "Not Allowed",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return false;
-                }
             }
+            catch { /* fall through */ }
 
-            return true;
-        }
-
-        // ---------- Household search (debounced + popup) ----------
-        private void OnHouseholdSearchChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_suppressSearchEvents) return;
-
-            _householdId = null;
-            _householdDisplay = null;
-            HouseholdSelectedChip.Visibility = Visibility.Collapsed;
-
-            if (string.IsNullOrWhiteSpace(HouseholdSearchBox.Text))
-            {
-                _hhDebounce.Stop();
-                CloseHouseholdPopup();
-                HouseholdPopupList.ItemsSource = null;
-                return;
-            }
-
-            _hhDebounce.Stop();
-            _hhDebounce.Start();
-        }
-
-        private void HouseholdSearchBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            _hhPopupManualClose = false;
-            if (HouseholdPopupList.Items.Count > 0)
-                HouseholdPopup.IsOpen = true;
-        }
-
-        private void HouseholdSearchBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
-        {
-            if (!IsFocusWithin(HouseholdPopup)) CloseHouseholdPopup();
-        }
-
-        private void HouseholdSearchBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Down && HouseholdPopupList.Items.Count > 0)
-            {
-                HouseholdPopup.IsOpen = true;
-                HouseholdPopupList.SelectedIndex = Math.Max(0, HouseholdPopupList.SelectedIndex);
-                (HouseholdPopupList.ItemContainerGenerator.ContainerFromIndex(HouseholdPopupList.SelectedIndex) as ListBoxItem)?.Focus();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Escape)
-            {
-                CloseHouseholdPopup(); e.Handled = true;
-            }
-            else if (e.Key == Key.Enter)
-            {
-                if (HouseholdPopup.IsOpen && HouseholdPopupList.SelectedItem != null)
-                {
-                    CommitHouseholdSelection(); e.Handled = true;
-                }
-            }
-        }
-
-        private void HouseholdList_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter) { CommitHouseholdSelection(); e.Handled = true; }
-            else if (e.Key == Key.Escape) { CloseHouseholdPopup(); e.Handled = true; }
-        }
-
-        private void OnHouseholdPick(object sender, MouseButtonEventArgs e) => CommitHouseholdSelection();
-
-        private void CommitHouseholdSelection()
-        {
-            if (HouseholdPopupList.SelectedItem is LookupSearch.PickItem it)
-            {
-                _householdId = it.Id;
-                _householdDisplay = it.Display;
-
-                HouseholdSelectedText.Text = it.Display;
-                HouseholdSelectedChip.Visibility = Visibility.Visible;
-
-                _suppressSearchEvents = true;
-                HouseholdSearchBox.Text = ""; // clear box after commit; chip shows selection
-                _suppressSearchEvents = false;
-
-                CloseHouseholdPopup();
-                if (NextButton.IsVisible) NextButton.Focus();
-            }
-        }
-
-        private void OnHouseholdChangeClick(object sender, RoutedEventArgs e)
-        {
-            _householdId = null;
-            _householdDisplay = null;
-
-            HouseholdSelectedChip.Visibility = Visibility.Collapsed;
-            HouseholdSearchBox.Focus();
-            _hhPopupManualClose = false;
-            if (HouseholdPopupList.Items.Count > 0) HouseholdPopup.IsOpen = true;
-        }
-
-        private void CloseHouseholdPopup()
-        {
-            _hhPopupManualClose = true;
-            HouseholdPopup.IsOpen = false;
-        }
-
-        // ---------- Technician search (debounced + popup) ----------
-        private void OnTechnicianSearchChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_suppressSearchEvents) return;
-
-            _technicianId = null;
-            _technicianDisplay = null;
-            TechnicianSelectedChip.Visibility = Visibility.Collapsed;
-
-            if (string.IsNullOrWhiteSpace(TechnicianSearchBox.Text))
-            {
-                _techDebounce.Stop();
-                CloseTechnicianPopup();
-                TechnicianPopupList.ItemsSource = null;
-                return;
-            }
-
-            _techDebounce.Stop();
-            _techDebounce.Start();
-        }
-
-        private void TechnicianSearchBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            _techPopupManualClose = false;
-            if (TechnicianPopupList.Items.Count > 0)
-                TechnicianPopup.IsOpen = true;
-        }
-
-        private void TechnicianSearchBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
-        {
-            if (!IsFocusWithin(TechnicianPopup)) CloseTechnicianPopup();
-        }
-
-        private void TechnicianSearchBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Down && TechnicianPopupList.Items.Count > 0)
-            {
-                TechnicianPopup.IsOpen = true;
-                TechnicianPopupList.SelectedIndex = Math.Max(0, TechnicianPopupList.SelectedIndex);
-                (TechnicianPopupList.ItemContainerGenerator.ContainerFromIndex(TechnicianPopupList.SelectedIndex) as ListBoxItem)?.Focus();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Escape)
-            {
-                CloseTechnicianPopup(); e.Handled = true;
-            }
-            else if (e.Key == Key.Enter)
-            {
-                if (TechnicianPopup.IsOpen && TechnicianPopupList.SelectedItem != null)
-                {
-                    CommitTechnicianSelection(); e.Handled = true;
-                }
-            }
-        }
-
-        private void TechnicianList_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter) { CommitTechnicianSelection(); e.Handled = true; }
-            else if (e.Key == Key.Escape) { CloseTechnicianPopup(); e.Handled = true; }
-        }
-
-        private void OnTechnicianPick(object sender, MouseButtonEventArgs e) => CommitTechnicianSelection();
-
-        private void CommitTechnicianSelection()
-        {
-            if (TechnicianPopupList.SelectedItem is LookupSearch.PickItem it)
-            {
-                _technicianId = it.Id;
-                _technicianDisplay = it.Display;
-
-                TechnicianSelectedText.Text = it.Display;
-                TechnicianSelectedChip.Visibility = Visibility.Visible;
-
-                _suppressSearchEvents = true;
-                TechnicianSearchBox.Text = "";
-                _suppressSearchEvents = false;
-
-                CloseTechnicianPopup();
-                if (NextButton.IsVisible) NextButton.Focus();
-            }
-        }
-
-        private void OnTechnicianChangeClick(object sender, RoutedEventArgs e)
-        {
-            _technicianId = null;
-            _technicianDisplay = null;
-
-            TechnicianSelectedChip.Visibility = Visibility.Collapsed;
-            TechnicianSearchBox.Focus();
-            _techPopupManualClose = false;
-            if (TechnicianPopupList.Items.Count > 0) TechnicianPopup.IsOpen = true;
-        }
-
-        private void CloseTechnicianPopup()
-        {
-            _techPopupManualClose = true;
-            TechnicianPopup.IsOpen = false;
-        }
-
-        private async void OnFinishCharging(object sender, RoutedEventArgs e)
-        {
-            var confirm = WpfMessageBox.Show(
-                "Finish charging now and save a report?",
-                "Finish Charging",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (confirm != MessageBoxResult.Yes)
-                return;
-
+            // Strategy 3: site-of-origin => file next to exe
             try
             {
-                await SaveReportAsync();
-                WpfMessageBox.Show("Charging session saved to Reports.", "Saved",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-
-                // ✅ Ask parent (MainWindow) to close this content
-                CloseRequested?.Invoke(this, EventArgs.Empty);
+                const string SOO = "pack://siteoforigin:,,,/";
+                if (uriString.StartsWith(SOO, StringComparison.OrdinalIgnoreCase))
+                {
+                    string localPath = uriString.Substring(SOO.Length).TrimStart('/', '\\');
+                    string abs = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, localPath);
+                    if (File.Exists(abs))
+                    {
+                        using (var fs = File.OpenRead(abs))
+                        {
+                            var bmp3 = new BitmapImage();
+                            bmp3.BeginInit();
+                            bmp3.CacheOption = BitmapCacheOption.OnLoad;
+                            bmp3.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+                            bmp3.StreamSource = fs;
+                            bmp3.EndInit();
+                            bmp3.Freeze();
+                            _imageCache[uriString] = bmp3;
+                            return bmp3;
+                        }
+                    }
+                }
             }
-            catch (Exception ex)
+            catch { /* fall through */ }
+
+            // Strategy 4: raw file path
+            try
             {
-                WpfMessageBox.Show("Failed to save: " + ex.Message, "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                if (File.Exists(uriString))
+                {
+                    using (var fs = File.OpenRead(uriString))
+                    {
+                        var bmp4 = new BitmapImage();
+                        bmp4.BeginInit();
+                        bmp4.CacheOption = BitmapCacheOption.OnLoad;
+                        bmp4.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+                        bmp4.StreamSource = fs;
+                        bmp4.EndInit();
+                        bmp4.Freeze();
+                        _imageCache[uriString] = bmp4;
+                        return bmp4;
+                    }
+                }
+            }
+            catch { /* fall through */ }
+
+            return null;
+        }
+
+        private void RenderImage()
+        {
+            if (_gallery == null || _album == null || _imageIndex < 0 || _imageIndex >= _album.Images.Length)
+                return;
+
+            HeaderTitle.Text = _gallery.Name;
+            HeaderVersion.Text = string.IsNullOrWhiteSpace(_gallery.Version) ? "" : "v" + _gallery.Version;
+            HeaderStep.Text = _album.Title + " — " + (_imageIndex + 1) + "/" + _album.Images.Length;
+
+            string uri = _album.Images[_imageIndex];
+            var src = LoadImageStrong(uri);
+            PageImage.Source = src;
+            PageImage.ToolTip = (src == null) ? ("Missing image: " + uri) : null; // non-invasive hint
+
+            PrevBtn.IsEnabled = _imageIndex > 0;
+            NextBtn.IsEnabled = _imageIndex < _album.Images.Length - 1;
+
+            if (ImageViewbox != null)
+            {
+                ImageViewbox.MaxWidth = double.PositiveInfinity;
+                ImageViewbox.MaxHeight = double.PositiveInfinity;
             }
         }
 
-        private async Task SaveReportAsync()
+        // ---- UI events ----
+        private void PrevBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (_householdId == null || _technicianId == null)
-                throw new InvalidOperationException("Household and Technician must be selected before saving.");
-
-            var endUtc = DateTime.UtcNow;
-
-            // Build annotation blob: keeps details that do NOT have dedicated columns
-            var lines = new List<string>
+            if (_album == null) return;
+            if (_imageIndex > 0)
             {
-                "BatterySerial=" + (BatterySerialBox.Text ?? string.Empty).Trim(),
-                "ChargingStartUtc=" + (_chargingStartUtc?.ToString("o") ?? string.Empty),
-                "ChargingEndUtc=" + endUtc.ToString("o")
-            };
-
-            var userNotes = (ChargingNotesBox?.Text ?? string.Empty).Trim();
-            if (!string.IsNullOrEmpty(userNotes))
-                lines.Add("UserNotes=" + userNotes.Replace(Environment.NewLine, " \\n "));
-
-            var annotations = string.Join(Environment.NewLine, lines);
-
-            var deviceStatus = "ChargingCompleted";
-
-            using (var conn = Model.DatabaseHelper.GetConnection())
-            {
-                await conn.OpenAsync();
-
-                using (var cmd = new SQLiteCommand(@"
-                    INSERT INTO TestReports
-                        (HouseholdID, TechnicianID, TestDate, Annotations, DeviceStatus)
-                    VALUES
-                        (@hh, @tech, @testDate, @annotations, @status);
-                ", conn))
-                {
-                    cmd.Parameters.AddWithValue("@hh", _householdId.Value);
-                    cmd.Parameters.AddWithValue("@tech", _technicianId.Value);
-                    cmd.Parameters.AddWithValue("@testDate", endUtc.ToString("o"));
-                    cmd.Parameters.AddWithValue("@annotations", annotations);
-                    cmd.Parameters.AddWithValue("@status", deviceStatus);
-
-                    await cmd.ExecuteNonQueryAsync();
-                }
+                _imageIndex--;
+                RenderImage();
             }
         }
 
-        #region Helpers
-
-        private void TemplateClear_Click(object sender, RoutedEventArgs e)
+        private void NextBtn_Click(object sender, RoutedEventArgs e)
         {
-            // Works with the clear button from the TextBox template (named PART_ClearBtn).
-            if (e.OriginalSource is Button btn && btn.Name == "PART_ClearBtn")
+            if (_album == null) return;
+            if (_imageIndex < _album.Images.Length - 1)
             {
-                if (btn.TemplatedParent is TextBox tb)
-                {
-                    tb.Clear();
+                _imageIndex++;
+                RenderImage();
+            }
+        }
 
-                    // Close popups if clearing a search box
-                    if (tb == HouseholdSearchBox) CloseHouseholdPopup();
-                    else if (tb == TechnicianSearchBox) CloseTechnicianPopup();
-                }
+        private void Root_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (_album == null) return;
+
+            if (e.Key == Key.Left)
+            {
+                PrevBtn_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Right)
+            {
+                NextBtn_Click(this, new RoutedEventArgs());
                 e.Handled = true;
             }
         }
-
-        private async Task<List<LookupSearch.PickItem>> SafeSearchHouseholdsAsync(string q)
-        {
-            if (string.IsNullOrWhiteSpace(q)) return new List<LookupSearch.PickItem>();
-            try { return await _search.SearchHouseholdPicksAsync(q); }
-            catch { return new List<LookupSearch.PickItem>(); }
-        }
-
-        private async Task<List<LookupSearch.PickItem>> SafeSearchTechniciansAsync(string q)
-        {
-            if (string.IsNullOrWhiteSpace(q)) return new List<LookupSearch.PickItem>();
-            try { return await _search.SearchTechnicianPicksAsync(q); } // expected to use v_Technicians internally
-            catch { return new List<LookupSearch.PickItem>(); }
-        }
-
-        /// <summary>Shows or hides a UI element by setting its Visibility.</summary>
-        private void Show(UIElement element, bool show)
-        {
-            if (element != null) element.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        private static bool IsFocusWithin(Popup p)
-            => p.IsOpen && p.Child != null && (p.Child.IsKeyboardFocusWithin || p.Child.IsMouseOver);
-
-        private void OnOpenManual(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("This will open the user manual.",
-                            "Open Manual",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-        }
-
-        // Battery serial constraints + inline validation
-        private void BatterySerialBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            foreach (var ch in e.Text)
-                if (!(char.IsLetterOrDigit(ch) || ch == '-' || ch == '_')) { e.Handled = true; return; }
-        }
-        private void BatterySerialBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            var ok = !string.IsNullOrWhiteSpace(BatterySerialBox.Text) && BatterySerialBox.Text.Length >= 6;
-            BatterySerialError.Text = ok ? "" : "Serial must be ≥ 6 characters.";
-            BatterySerialError.Visibility = ok ? Visibility.Collapsed : Visibility.Visible;
-        }
-
-        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
-        {
-            string target = e.Uri.IsAbsoluteUri
-                ? e.Uri.AbsoluteUri
-                : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, e.Uri.OriginalString);
-
-            try
-            {
-                Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
-            }
-            catch (Exception ex)
-            {
-                WpfMessageBox.Show($"Couldn't open:\n{target}\n\n{ex.Message}",
-                    "Open Link", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            e.Handled = true;
-        }
-
-        private void CloseHostWindow()
-        {
-            var host = Window.GetWindow(this);
-
-            // Close if hosted in a separate tool window. If embedded in the main window,
-            // don't kill the app—hide the control instead.
-            if (host != null && host != Application.Current.MainWindow)
-                host.Close();
-            else
-                this.Visibility = Visibility.Collapsed; // or notify parent via event if you prefer
-        }
-
-        #endregion
     }
 }

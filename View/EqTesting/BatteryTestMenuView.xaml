@@ -1,76 +1,12 @@
 ﻿<UserControl x:Class="HouseholdMS.View.EqTesting.BatteryTestMenuView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800">
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="300"
+             d:DesignWidth="300">
+    <Grid>
 
-    <Grid Background="#F4F6F8">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-        <!-- Header -->
-        <TextBlock Text="🔋 Battery Test Menu (배터리 점검 메뉴)"
-                   FontSize="24" FontWeight="Bold" Foreground="#1E2A38"
-                   Margin="0 0 0 20"/>
-
-        <!-- Step Area -->
-        <Border Grid.Row="1" Background="#FFFFFF" BorderBrush="#CCC" BorderThickness="1" CornerRadius="10" Padding="20">
-            <StackPanel>
-                <TextBlock x:Name="StepTitle" FontSize="18" FontWeight="SemiBold" Foreground="#222"/>
-                <TextBlock x:Name="StepInstruction" FontSize="14" Foreground="#555" TextWrapping="Wrap" Margin="0 10 0 20"/>
-
-                <!-- Step Panels -->
-                <StackPanel x:Name="StepPanel1" Visibility="Collapsed" Margin="0 10 0 10">
-                    <TextBlock Text="Device ID:" FontWeight="Bold" Foreground="#444" Margin="0 5 0 2"/>
-                    <TextBox x:Name="DeviceIdBox" Margin="0 0 0 10" Height="30"/>
-
-                    <TextBlock Text="Location:" FontWeight="Bold" Foreground="#444" Margin="0 5 0 2"/>
-                    <TextBox x:Name="LocationBox" Margin="0 0 0 10" Height="30"/>
-
-                    <TextBlock Text="Technician Name:" FontWeight="Bold" Foreground="#444" Margin="0 5 0 2"/>
-                    <TextBox x:Name="TechnicianBox" Margin="0 0 0 10" Height="30"/>
-
-                    <Image x:Name="InstructionImage"
-                           Source="/Assets/bat_test1.png"
-                           Width="300" Height="200" Stretch="Uniform" Visibility="Collapsed" Margin="0 10"/>
-                </StackPanel>
-
-                <StackPanel x:Name="StepPanel2" Visibility="Collapsed" Margin="0 10 0 10">
-                    <!-- You can add custom UI for Step 2 here -->
-                    <TextBlock Text="Perform Cell Voltage Test" FontSize="16"/>
-                </StackPanel>
-
-                <StackPanel x:Name="StepPanel3" Visibility="Collapsed" Margin="0 10 0 10">
-                    <TextBlock Text="Verify BMS communication and wiring." FontSize="16"/>
-                </StackPanel>
-
-                <StackPanel x:Name="StepPanel4" Visibility="Collapsed" Margin="0 10 0 10">
-                    <TextBlock Text="Balance battery cells." FontSize="16"/>
-                </StackPanel>
-
-                <StackPanel x:Name="StepPanel5" Visibility="Collapsed" Margin="0 10 0 10">
-                    <TextBlock Text="Initiate battery charging." FontSize="16"/>
-                </StackPanel>
-
-                <StackPanel x:Name="StepPanel6" Visibility="Collapsed" Margin="0 10 0 10">
-                    <TextBlock Text="Begin battery discharge." FontSize="16"/>
-                </StackPanel>
-
-                <StackPanel x:Name="StepPanel7" Visibility="Collapsed" Margin="0 10 0 10">
-                    <TextBlock Text="Save results and disconnect device." FontSize="16"/>
-                </StackPanel>
-            </StackPanel>
-        </Border>
-
-        <!-- Navigation -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 20 0 0">
-            <Button x:Name="BtnPrev" Content="⬅ Prev" Width="100" Margin="5" Click="OnPrevStep"/>
-            <Button x:Name="BtnNext" Content="Next ➡" Width="100" Margin="5" Click="OnNextStep"/>
-        </StackPanel>
     </Grid>
 </UserControl>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic; // <-- add this
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,7 +14,6 @@ namespace HouseholdMS.View.EqTesting
     /// </summary>
     public partial class TemplateView : UserControl
     {
-        // ===== Minimal private internals =====
         private sealed class Album
         {
             public readonly string Title;
@@ -42,7 +42,6 @@ namespace HouseholdMS.View.EqTesting
             }
         }
 
-        // Public simple spec so callers don’t touch internals
         public sealed class AlbumSpec
         {
             public string Title { get; }
@@ -51,32 +50,39 @@ namespace HouseholdMS.View.EqTesting
             { Title = title; Images = images ?? Array.Empty<string>(); }
         }
 
-        // ===== State =====
+        // State
         private Gallery _gallery;
         private int _albumIndex = -1; // -1 = Home
         private int _imageIndex = -1;
 
+        // Strong image cache (C# 7.3-compatible construction)
+        private readonly Dictionary<string, BitmapImage> _imageCache =
+            new Dictionary<string, BitmapImage>(StringComparer.OrdinalIgnoreCase);
+
         public TemplateView()
         {
             InitializeComponent();
-
-            // ensure we can capture arrow keys
             Loaded += (s, e) => this.Focus();
 
             // ---------- EDIT ONLY THIS REGION (or call public LoadGallery from outside) ----------
             LoadGallery(
-                "Battery Charging Procedures", "1.1",
+                "Victron", "1.1",
                 new AlbumSpec("Battery Visual Inspection",
-                    "pack://application:,,,/Assets/Template/333.png",
-                    "pack://application:,,,/Assets/Template/444.png"),
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_01.png",
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_02.png",
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_03.png",
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_04.png",
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_05.png",
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_06.png",
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_07.png"),
                 new AlbumSpec("Wiring Check",
-                    "pack://application:,,,/Assets/Template/222.png",
+                    "pack://application:,,,/Assets/Procedures/01. TPEN_Victron-03.png",
                     "pack://application:,,,/Assets/Template/222.png",
                     "pack://application:,,,/Assets/Template/222.png"),
                 new AlbumSpec("Voltage Measurement",
-                    "pack://application:,,,/Assets/Template/111.png"),
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron01.png"),
                 new AlbumSpec("Final Setup",
-                    "pack://application:,,,/Assets/Template/111.png",
+                    "pack://application:,,,/Assets/Procedures/TPEN_Victron01.png",
                     "pack://application:,,,/Assets/Manuals/batchar4.png",
                     "pack://application:,,,/Assets/Manuals/batchar5.png"),
                 new AlbumSpec("Safety Checks",
@@ -86,9 +92,6 @@ namespace HouseholdMS.View.EqTesting
             // ---------- END EDIT REGION ----------
         }
 
-        /// <summary>
-        /// Public API: set gallery with name/version and a list of AlbumSpec(title, images...).
-        /// </summary>
         public void LoadGallery(string name, string version, params AlbumSpec[] albums)
         {
             if (albums == null || albums.Length == 0)
@@ -102,27 +105,51 @@ namespace HouseholdMS.View.EqTesting
             }).ToArray();
 
             _gallery = new Gallery(name, version, internalAlbums);
+            _imageCache.Clear();
             RenderHome();
         }
 
-        // ===== Rendering =====
+        // Strong, frozen, in-memory loader (prevents disappearing images)
+        private ImageSource LoadImageStrong(string uriString)
+        {
+            if (string.IsNullOrWhiteSpace(uriString)) return null;
+
+            BitmapImage cached;
+            if (_imageCache.TryGetValue(uriString, out cached))
+                return cached;
+
+            try
+            {
+                var bmp = new BitmapImage();
+                bmp.BeginInit();
+                bmp.CacheOption = BitmapCacheOption.OnLoad; // fully load now
+                bmp.UriSource = new Uri(uriString, UriKind.RelativeOrAbsolute);
+                bmp.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+                bmp.EndInit();
+                bmp.Freeze();
+                _imageCache[uriString] = bmp;
+                return bmp;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         private void RenderHome()
         {
             _albumIndex = -1;
             _imageIndex = -1;
 
-            // Header
-            HeaderTitle.Text = _gallery?.Name ?? "Gallery"; // e.g., "Battery Charging Procedures"
+            HeaderTitle.Text = _gallery?.Name ?? "Gallery";
             HeaderVersion.Text = string.IsNullOrWhiteSpace(_gallery?.Version) ? "" : "v" + _gallery.Version;
-            HeaderStep.Text = ""; // none on home
+            HeaderStep.Text = "";
 
-            // Show header/footer, show album list, hide image viewer
             HeaderBar.Visibility = Visibility.Visible;
             FooterBar.Visibility = Visibility.Visible;
             HomeScroll.Visibility = Visibility.Visible;
             ImageScroll.Visibility = Visibility.Collapsed;
 
-            // Build album cards (with a thumbnail that fits the card area)
             AlbumList.Children.Clear();
             if (_gallery == null) return;
 
@@ -132,28 +159,24 @@ namespace HouseholdMS.View.EqTesting
 
                 var content = new StackPanel { Orientation = Orientation.Vertical };
 
-                // Thumbnail (use first image of the album). Fit inside the card and never overflow screen.
                 try
                 {
                     var img = new Image
                     {
                         Height = 140,
                         Margin = new Thickness(0, 0, 0, 8),
-                        Stretch = Stretch.Uniform,         // show whole image; avoid cropping/spilling
+                        Stretch = Stretch.Uniform,
                         HorizontalAlignment = HorizontalAlignment.Stretch,
                         VerticalAlignment = VerticalAlignment.Center,
-                        ClipToBounds = true
+                        ClipToBounds = true,
+                        SnapsToDevicePixels = true
                     };
                     RenderOptions.SetBitmapScalingMode(img, BitmapScalingMode.Fant);
-                    img.Source = new BitmapImage(new Uri(album.Images[0], UriKind.RelativeOrAbsolute));
+                    img.Source = LoadImageStrong(album.Images[0]);
                     content.Children.Add(img);
                 }
-                catch
-                {
-                    // no thumbnail if image load fails
-                }
+                catch { }
 
-                // Title + count
                 content.Children.Add(new TextBlock
                 {
                     Text = album.Title,
@@ -177,7 +200,6 @@ namespace HouseholdMS.View.EqTesting
                 AlbumList.Children.Add(btn);
             }
 
-            // Footer state
             PrevBtn.IsEnabled = false;
             NextBtn.IsEnabled = false;
         }
@@ -187,52 +209,37 @@ namespace HouseholdMS.View.EqTesting
             if (_gallery == null || _albumIndex < 0) return;
             var album = _gallery.Albums[_albumIndex];
 
-            // Header: keep visible and populate with gallery name + step info
             HeaderBar.Visibility = Visibility.Visible;
-            HeaderTitle.Text = _gallery.Name; // e.g., "Battery Charging Procedures"
+            HeaderTitle.Text = _gallery.Name;
             HeaderVersion.Text = string.IsNullOrWhiteSpace(_gallery.Version) ? "" : "v" + _gallery.Version;
             HeaderStep.Text = $"{album.Title} — {_imageIndex + 1}/{album.Images.Length}";
 
-            // Load image (fit, not overflow)
-            try
-            {
-                var uri = album.Images[_imageIndex];
-                PageImage.Source = string.IsNullOrWhiteSpace(uri)
-                    ? null
-                    : new BitmapImage(new Uri(uri, UriKind.RelativeOrAbsolute));
-            }
-            catch
-            {
-                PageImage.Source = null;
-            }
+            var uri = album.Images[_imageIndex];
+            PageImage.Source = LoadImageStrong(uri);
 
-            // Toggle views
             HomeScroll.Visibility = Visibility.Collapsed;
             ImageScroll.Visibility = Visibility.Visible;
 
-            // Footer state
             PrevBtn.IsEnabled = _imageIndex > 0;
             NextBtn.IsEnabled = _imageIndex < album.Images.Length - 1;
 
             UpdateImageViewboxMax();
         }
 
-        // ===== Immersive sizing =====
         private void UpdateImageViewboxMax()
         {
             if (ImageViewbox == null) return;
-            // no caps: allow it to grow to fill available space
             ImageViewbox.MaxWidth = double.PositiveInfinity;
             ImageViewbox.MaxHeight = double.PositiveInfinity;
         }
 
-        // ===== Events / Navigation =====
         private void AlbumButton_Click(object sender, RoutedEventArgs e)
         {
             if (_gallery == null) return;
-            if (sender is Button b && b.Tag is int idx && idx >= 0 && idx < _gallery.Albums.Length)
+            var b = sender as Button;
+            if (b != null && b.Tag is int && (int)b.Tag >= 0 && (int)b.Tag < _gallery.Albums.Length)
             {
-                _albumIndex = idx;
+                _albumIndex = (int)b.Tag;
                 _imageIndex = 0;
                 RenderImage();
             }
@@ -261,10 +268,9 @@ namespace HouseholdMS.View.EqTesting
             }
         }
 
-        // Keyboard navigation: Left/Right arrows
         private void Root_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            if (_albumIndex < 0) return; // on home
+            if (_albumIndex < 0) return;
             if (e.Key == System.Windows.Input.Key.Left) PrevBtn_Click(this, new RoutedEventArgs());
             if (e.Key == System.Windows.Input.Key.Right) NextBtn_Click(this, new RoutedEventArgs());
         }
