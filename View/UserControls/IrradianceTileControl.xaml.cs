@@ -25,14 +25,14 @@ namespace HouseholdMS.View.UserControls
 
         public double Latitude
         {
-            get => (double)GetValue(LatitudeProperty);
-            set => SetValue(LatitudeProperty, value);
+            get { return (double)GetValue(LatitudeProperty); }
+            set { SetValue(LatitudeProperty, value); }
         }
 
         public double Longitude
         {
-            get => (double)GetValue(LongitudeProperty);
-            set => SetValue(LongitudeProperty, value);
+            get { return (double)GetValue(LongitudeProperty); }
+            set { SetValue(LongitudeProperty, value); }
         }
 
         // -------- UI text (DependencyProperties) --------
@@ -51,23 +51,23 @@ namespace HouseholdMS.View.UserControls
 
         public string StatusText
         {
-            get => (string)GetValue(StatusTextProperty);
-            set => SetValue(StatusTextProperty, value);
+            get { return (string)GetValue(StatusTextProperty); }
+            set { SetValue(StatusTextProperty, value); }
         }
         public string TodayGhiText
         {
-            get => (string)GetValue(TodayGhiTextProperty);
-            set => SetValue(TodayGhiTextProperty, value);
+            get { return (string)GetValue(TodayGhiTextProperty); }
+            set { SetValue(TodayGhiTextProperty, value); }
         }
         public string TomorrowPeakText
         {
-            get => (string)GetValue(TomorrowPeakTextProperty);
-            set => SetValue(TomorrowPeakTextProperty, value);
+            get { return (string)GetValue(TomorrowPeakTextProperty); }
+            set { SetValue(TomorrowPeakTextProperty, value); }
         }
         public string LastUpdatedText
         {
-            get => (string)GetValue(LastUpdatedTextProperty);
-            set => SetValue(LastUpdatedTextProperty, value);
+            get { return (string)GetValue(LastUpdatedTextProperty); }
+            set { SetValue(LastUpdatedTextProperty, value); }
         }
 
         public IrradianceTileControl()

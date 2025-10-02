@@ -583,27 +583,27 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Resource Include="Assets\Procedures\TPEN_Victron_charger_07_01.png">
+    <Content Include="Assets\Procedures\TPEN_Victron_charger_07_01.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\Procedures\TPEN_Victron_charger_07_02.png">
+    </Content>
+    <Content Include="Assets\Procedures\TPEN_Victron_charger_07_02.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\Procedures\TPEN_Victron_charger_07_03.png">
+    </Content>
+    <Content Include="Assets\Procedures\TPEN_Victron_charger_07_03.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\Procedures\TPEN_Victron_charger_07_04.png">
+    </Content>
+    <Content Include="Assets\Procedures\TPEN_Victron_charger_07_04.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\Procedures\TPEN_Victron_charger_07_05.png">
+    </Content>
+    <Content Include="Assets\Procedures\TPEN_Victron_charger_07_05.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\Procedures\TPEN_Victron_charger_07_06.png">
+    </Content>
+    <Content Include="Assets\Procedures\TPEN_Victron_charger_07_06.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\Procedures\TPEN_Victron_charger_07_07.png">
+    </Content>
+    <Content Include="Assets\Procedures\TPEN_Victron_charger_07_07.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
+    </Content>
     <EmbeddedResource Include="Resources\Strings.es.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.es.Designer.cs</LastGenOutput>

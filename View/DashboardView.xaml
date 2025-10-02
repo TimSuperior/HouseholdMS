@@ -6,7 +6,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:res="clr-namespace:HouseholdMS.Resources"
-             mc:Ignorable="d">
+             mc:Ignorable="d"
+             x:Name="Root">
 
     <!-- ===================== THEME & STYLES ===================== -->
     <UserControl.Resources>
@@ -154,8 +155,15 @@
             </Setter>
         </Style>
 
-        <!-- Inventory tile style -->
+        <!-- Inventory tile style (override base min sizes so we can shrink) -->
         <Style x:Key="InventoryTileButtonStyle" TargetType="Button" BasedOn="{StaticResource TileButton}">
+            <!-- allow WrapPanel.ItemWidth/ItemHeight to drive size -->
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="MinHeight" Value="0"/>
+            <Setter Property="Width" Value="Auto"/>
+            <Setter Property="Height" Value="Auto"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsZero}" Value="True">
                     <Setter Property="Background" Value="#FFFDF2F2"/>
@@ -218,7 +226,7 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Inventory tile data template -->
+        <!-- Inventory tile data template (threshold/restock removed) -->
         <DataTemplate x:Key="InventoryTileTemplate">
             <Button Style="{StaticResource InventoryTileButtonStyle}"
                     Click="InventoryTile_Click"
@@ -226,8 +234,7 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
                     <!-- Top row: Name + status chip -->
@@ -239,39 +246,29 @@
 
                         <TextBlock Text="{Binding Name}"
                                    Grid.Column="0"
+                                   FontFamily="Segoe UI"
                                    FontWeight="Bold"
                                    FontSize="16"
-                                   Foreground="{StaticResource Col.Heading}"/>
+                                   Foreground="{StaticResource Col.Heading}"
+                                   TextTrimming="CharacterEllipsis"/>
 
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" >
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <Border Style="{StaticResource StatusPillOutStyle}" Margin="6,0,0,0">
-                                <TextBlock Text="{x:Static res:Strings.Dash_Status_Out}" FontSize="11" FontWeight="SemiBold" Foreground="#B91C1C"/>
+                                <TextBlock Text="{x:Static res:Strings.Dash_Status_Out}" FontSize="11" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#B91C1C"/>
                             </Border>
                             <Border Style="{StaticResource StatusPillLowStyle}" Margin="6,0,0,0">
-                                <TextBlock Text="{x:Static res:Strings.Dash_Status_Low}" FontSize="11" FontWeight="SemiBold" Foreground="#92400E"/>
+                                <TextBlock Text="{x:Static res:Strings.Dash_Status_Low}" FontSize="11" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#92400E"/>
                             </Border>
                             <Border Style="{StaticResource StatusPillOkStyle}"  Margin="6,0,0,0">
-                                <TextBlock Text="{x:Static res:Strings.Dash_Status_Ok}"  FontSize="11" FontWeight="SemiBold" Foreground="#065F46"/>
+                                <TextBlock Text="{x:Static res:Strings.Dash_Status_Ok}"  FontSize="11" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#065F46"/>
                             </Border>
                         </StackPanel>
                     </Grid>
 
                     <!-- Middle: Remaining -->
                     <StackPanel Grid.Row="1" Margin="0,8,0,0">
-                        <TextBlock Text="{x:Static res:Strings.Dash_Remaining}" Foreground="{StaticResource Col.MutedText}" FontSize="12"/>
-                        <TextBlock Text="{Binding Remaining}" FontSize="34" FontWeight="SemiBold"/>
-                    </StackPanel>
-
-                    <!-- Bottom: Threshold + Restocked (use Inlines for localization) -->
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,0">
-                        <Border Background="{StaticResource Col.PrimaryLite}" CornerRadius="999" Padding="8,2" Margin="0,0,8,0">
-                            <TextBlock FontSize="12" Foreground="{StaticResource Col.Primary}">
-                                <Run Text="{x:Static res:Strings.Dash_Threshold_Label}"/><Run Text=": "/><Run Text="{Binding LowStockThreshold}"/>
-                            </TextBlock>
-                        </Border>
-                        <TextBlock FontSize="12" Foreground="{StaticResource Col.MutedText}">
-                            <Run Text="{x:Static res:Strings.Dash_Restocked_Label}"/><Run Text=": "/><Run Text="{Binding LastRestockedDate}"/>
-                        </TextBlock>
+                        <TextBlock Text="{x:Static res:Strings.Dash_Remaining}" Foreground="{StaticResource Col.MutedText}" FontFamily="Segoe UI" FontSize="12"/>
+                        <TextBlock Text="{Binding Remaining}" FontFamily="Segoe UI" Foreground="{StaticResource Col.Heading}" FontSize="34" FontWeight="SemiBold"/>
                     </StackPanel>
                 </Grid>
             </Button>
@@ -360,7 +357,7 @@
             </UniformGrid>
         </StackPanel>
 
-        <!-- Row 2: Inventory -->
+        <!-- Row 2: Inventory (FIXED HEIGHT, AUTO-SHRINK TO 2 ROWS) -->
         <StackPanel Grid.Row="2" Margin="12,8,12,0">
             <DockPanel LastChildFill="True" Margin="0,0,0,8">
                 <TextBlock Text="{x:Static res:Strings.Dash_Section_Inventory}" Style="{StaticResource SectionHeaderText}"/>
@@ -370,17 +367,30 @@
                         Click="OpenInventoryList_Click"/>
             </DockPanel>
 
-            <Border CornerRadius="18" Background="{StaticResource Col.CardBg}" BorderBrush="{StaticResource Col.CardBorder}" BorderThickness="1">
+            <!-- The container height is computed to exactly hold two rows of tiles (a bit taller now) -->
+            <Border x:Name="InventoryContainer"
+                    CornerRadius="18"
+                    Background="{StaticResource Col.CardBg}"
+                    BorderBrush="{StaticResource Col.CardBorder}"
+                    BorderThickness="1"
+                    Height="{Binding ElementName=Root, Path=InventoryPanelHeight}"
+                    SizeChanged="InventoryContainer_SizeChanged">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.08"/>
                 </Border.Effect>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4">
+
+                <!-- No vertical scroll; we shrink tiles instead -->
+                <ScrollViewer VerticalScrollBarVisibility="Disabled"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Padding="4">
                     <ItemsControl x:Name="InventoryItemsControl"
                                   ItemsSource="{Binding InventoryTiles}"
                                   ItemTemplate="{StaticResource InventoryTileTemplate}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel/>
+                                <WrapPanel x:Name="InventoryWrap"
+                                           ItemWidth="{Binding ElementName=Root, Path=InventoryItemWidth}"
+                                           ItemHeight="{Binding ElementName=Root, Path=InventoryItemHeight}"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.Margin>

@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Data.SQLite;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 using HouseholdMS.Model;
 using HouseholdMS.View.Inventory;
 using HouseholdMS.View.Dashboard;
@@ -30,13 +33,54 @@ namespace HouseholdMS.View.Dashboard
 
         public ObservableCollection<InventoryTileVm> InventoryTiles { get; } = new ObservableCollection<InventoryTileVm>();
 
+        // ===== Inventory layout math (two rows, auto-shrink) =====
+        private const double InvBaseWidth = 240.0;
+        private const double InvBaseHeight = 130.0;
+        private const double InvAspect = InvBaseHeight / InvBaseWidth;
+        private const double ItemMarginX = 16.0;
+        private const double ItemMarginY = 16.0;
+        private const double MinItemWidth = 160.0;
+
+        // Dependency properties so XAML can bind WrapPanel.ItemWidth/ItemHeight and container Height
+        public static readonly DependencyProperty InventoryItemWidthProperty =
+            DependencyProperty.Register(nameof(InventoryItemWidth), typeof(double), typeof(DashboardView),
+                new PropertyMetadata(InvBaseWidth));
+
+        public static readonly DependencyProperty InventoryItemHeightProperty =
+            DependencyProperty.Register(nameof(InventoryItemHeight), typeof(double), typeof(DashboardView),
+                new PropertyMetadata(InvBaseHeight));
+
+        // Taller than before (extra space so weather row can be smaller)
+        public static readonly DependencyProperty InventoryPanelHeightProperty =
+            DependencyProperty.Register(nameof(InventoryPanelHeight), typeof(double), typeof(DashboardView),
+                new PropertyMetadata(InvBaseHeight * 2 + ItemMarginY + 56)); // was +24
+
+        public double InventoryItemWidth
+        {
+            get => (double)GetValue(InventoryItemWidthProperty);
+            set => SetValue(InventoryItemWidthProperty, value);
+        }
+        public double InventoryItemHeight
+        {
+            get => (double)GetValue(InventoryItemHeightProperty);
+            set => SetValue(InventoryItemHeightProperty, value);
+        }
+        public double InventoryPanelHeight
+        {
+            get => (double)GetValue(InventoryPanelHeightProperty);
+            set => SetValue(InventoryPanelHeightProperty, value);
+        }
+
         public DashboardView(string userRole = "User")
         {
             InitializeComponent();
             _userRole = string.IsNullOrWhiteSpace(userRole) ? "User" : userRole.Trim();
-            this.DataContext = this;
+            DataContext = this;
 
             Loaded += DashboardView_Loaded;
+
+            // When collection changes (add/remove items), reflow
+            InventoryTiles.CollectionChanged += InventoryTiles_CollectionChanged;
         }
 
         private void DashboardView_Loaded(object sender, RoutedEventArgs e)
@@ -57,8 +101,70 @@ namespace HouseholdMS.View.Dashboard
                 if (PvTile.LossesPct <= 0) PvTile.LossesPct = DefaultLossesPct;
             }
 
+            if (InventoryContainer != null)
+            {
+                Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(RecalculateInventoryLayout));
+            }
+
             LoadHouseholdCountsFromDb();
             LoadInventoryTilesFromDb();
+        }
+
+        private void InventoryTiles_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            RecalculateInventoryLayout();
+        }
+
+        private void InventoryContainer_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            RecalculateInventoryLayout();
+        }
+
+        /// <summary>
+        /// Compute a uniform ItemWidth/ItemHeight so that all inventory tiles
+        /// fit into at most two rows within the fixed-height container.
+        /// </summary>
+        private void RecalculateInventoryLayout()
+        {
+            if (InventoryContainer == null) return;
+
+            double available = Math.Max(0, InventoryContainer.ActualWidth - 16);
+            if (available <= 0)
+            {
+                Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(RecalculateInventoryLayout));
+                return;
+            }
+
+            int count = InventoryTiles?.Count ?? 0;
+            if (count <= 0)
+            {
+                InventoryItemWidth = InvBaseWidth;
+                InventoryItemHeight = InvBaseHeight;
+                InventoryPanelHeight = InvBaseHeight * 2 + ItemMarginY + 56; // taller than before
+                return;
+            }
+
+            int columnsAtBase = Math.Max(1, (int)Math.Floor((available + ItemMarginX) / (InvBaseWidth + ItemMarginX)));
+            int columnsRequired = Math.Max(1, (int)Math.Ceiling(count / 2.0));
+
+            double newWidth;
+            if (columnsRequired <= columnsAtBase)
+            {
+                newWidth = InvBaseWidth; // base size fits in two rows
+            }
+            else
+            {
+                newWidth = Math.Floor((available - (columnsRequired * ItemMarginX)) / columnsRequired);
+                newWidth = Math.Max(MinItemWidth, Math.Min(InvBaseWidth, newWidth));
+            }
+
+            double newHeight = Math.Round(newWidth * InvAspect);
+
+            InventoryItemWidth = newWidth;
+            InventoryItemHeight = newHeight;
+
+            // keep the section a bit taller
+            InventoryPanelHeight = (newHeight * 2) + ItemMarginY + 56;
         }
 
         #region Household counts (UNCHANGED)
@@ -115,7 +221,7 @@ namespace HouseholdMS.View.Dashboard
         }
         #endregion
 
-        #region Inventory tiles (UNCHANGED)
+        #region Inventory tiles (UNCHANGED except call to Recalculate)
         private void LoadInventoryTilesFromDb()
         {
             InventoryTiles.Clear();
@@ -155,6 +261,9 @@ namespace HouseholdMS.View.Dashboard
             {
                 System.Diagnostics.Debug.WriteLine("DashboardView.LoadInventoryTilesFromDb error: " + ex);
             }
+
+            // Lay out after data load
+            RecalculateInventoryLayout();
         }
         #endregion
 
@@ -287,7 +396,7 @@ namespace HouseholdMS.View.Dashboard
         }
         #endregion
 
-        #region NEW: Solar tiles open detail windows
+        #region NEW: Solar tiles open detail windows (UNCHANGED)
         private void OpenIrradiance_Click(object sender, RoutedEventArgs e)
         {
             var outer = sender as Button;

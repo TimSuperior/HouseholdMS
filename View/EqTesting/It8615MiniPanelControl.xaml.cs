@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,14 +12,6 @@ namespace HouseholdMS.View.EqTesting
 {
     public partial class It8615MiniPanelControl : UserControl
     {
-        // Mini trend series
-        public ObservableCollection<SamplePoint> VrmsHistory { get; } = new ObservableCollection<SamplePoint>();
-        public ObservableCollection<SamplePoint> IrmsHistory { get; } = new ObservableCollection<SamplePoint>();
-        public ObservableCollection<SamplePoint> PowerHistory { get; } = new ObservableCollection<SamplePoint>();
-
-        private int _idxV, _idxI, _idxP;
-        private const int MAX_POINTS = 200;
-
         private readonly VisaSession _visa = new VisaSession();
         private readonly CommandLogger _logger = new CommandLogger(); // optional
         private ItechIt8615 _it;
@@ -37,12 +28,6 @@ namespace HouseholdMS.View.EqTesting
         public It8615MiniPanelControl()
         {
             InitializeComponent();
-            DataContext = this;
-
-            // seed for charts
-            VrmsHistory.Add(new SamplePoint { Index = 0, Value = 0 });
-            IrmsHistory.Add(new SamplePoint { Index = 0, Value = 0 });
-            PowerHistory.Add(new SamplePoint { Index = 0, Value = 0 });
 
             _initialKickTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(80) };
             _initialKickTimer.Tick += (s, e) =>
@@ -187,7 +172,7 @@ namespace HouseholdMS.View.EqTesting
                 await Task.Delay(120).ConfigureAwait(true);
                 if (_it != null)
                 {
-                    // Removed: EnableInputAsync(true/false) logic
+                    // (no input toggling here)
                     try { await _it.ToLocalAsync().ConfigureAwait(true); } catch { }
                 }
             }
@@ -269,7 +254,7 @@ namespace HouseholdMS.View.EqTesting
             return null;
         }
 
-        // ====== UI update helpers ======
+        // ====== UI update helpers (only measured outputs) ======
         private void UpdateReadings(InstrumentReading r)
         {
             TxtVrms.Text = r.Vrms.ToString("F3") + " V";
@@ -278,16 +263,6 @@ namespace HouseholdMS.View.EqTesting
             TxtPf.Text = r.Pf.ToString("F3");
             TxtFreq.Text = r.Freq.ToString("F2") + " Hz";
             TxtCf.Text = r.CrestFactor.ToString("F2");
-
-            AddMini(VrmsHistory, ref _idxV, r.Vrms);
-            AddMini(IrmsHistory, ref _idxI, r.Irms);
-            AddMini(PowerHistory, ref _idxP, r.Power);
-        }
-
-        private static void AddMini(ObservableCollection<SamplePoint> series, ref int idx, double value)
-        {
-            series.Add(new SamplePoint { Index = idx++, Value = value });
-            if (series.Count > MAX_POINTS) series.RemoveAt(0);
         }
 
         private void SetStatus(string s) => TxtStatus.Text = s;

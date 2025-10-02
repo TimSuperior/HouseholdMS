@@ -123,7 +123,7 @@ namespace HouseholdMS
         private void bt_BatteryTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new HouseholdMS.View.UserControls.EpeverMonitorControl();
         private void bt_ControllerTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new ControllerTestMenuView();
 
-        private void bt_SwitchTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new SwitchTestMenuView(_currentUserRole);
+        private void bt_SwitchTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new SwitchTestMenuView();
         private void bt_SettingMenu_Click(object sender, RoutedEventArgs e) => MainContent.Content = new SettingMenuView(_currentUserRole);
         private void bt_MeasurementMenu(object sender, RoutedEventArgs e) => MainContent.Content = new MeasurementView();
         private void bt_OscilloscopeMenu(object sender, RoutedEventArgs e) => MainContent.Content = new HouseholdMS.View.Measurement.Tbs1000cView();

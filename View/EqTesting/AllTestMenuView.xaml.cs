@@ -12,13 +12,12 @@ using System.Windows.Resources;
 namespace HouseholdMS.View.EqTesting
 {
     /// <summary>
-    /// Image viewer with a single album: "Battery Visual Inspection".
-    /// Arrow keys (Left/Right) and Back/Next buttons navigate images.
-    /// Strong caching + multi-path loading to avoid the "blank image" issue.
+    /// Single-album image viewer: "Battery Visual Inspection".
+    /// Back/Next buttons + Left/Right arrow keys.
+    /// Up/Down keys suppressed to avoid dotted focus cues.
     /// </summary>
     public partial class AllTestMenuView : UserControl
     {
-        // --- Keep the same simple data contracts so you can edit image paths easily ---
         private sealed class Album
         {
             public readonly string Title;
@@ -58,23 +57,19 @@ namespace HouseholdMS.View.EqTesting
             }
         }
 
-        // --- State ---
         private Gallery _gallery;
         private Album _album;
         private int _imageIndex = -1;
 
-        // Strong image cache
         private readonly Dictionary<string, BitmapImage> _imageCache =
             new Dictionary<string, BitmapImage>(StringComparer.OrdinalIgnoreCase);
 
         public AllTestMenuView()
         {
             InitializeComponent();
+            Loaded += (s, e) => this.Focus(); // keep focus on the control for keyboard handling
 
-            Loaded += (s, e) => this.Focus(); // enable keyboard navigation
-
-            // ===== EDIT THE IMAGE PATHS HERE AS YOU LIKE =====
-            // Only the "Battery Visual Inspection" album remains.
+            // ---- ONLY THIS ALBUM REMAINS (paths unchanged) ----
             LoadGalleryAndOpen(
                 name: "Victron",
                 version: "1.1",
@@ -88,7 +83,7 @@ namespace HouseholdMS.View.EqTesting
                     "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_07_06.png",
                     "pack://application:,,,/Assets/Procedures/TPEN_Victron_charger_07_07.png"
                 )
-            );            // ===== END EDIT AREA =====
+            );
         }
 
         private void LoadGalleryAndOpen(string name, string version, string defaultAlbumTitle, params AlbumSpec[] albums)
@@ -105,8 +100,7 @@ namespace HouseholdMS.View.EqTesting
 
             _gallery = new Gallery(name, version, internalAlbums);
 
-            // choose album
-            Album chosen = internalAlbums.FirstOrDefault(a =>
+            var chosen = internalAlbums.FirstOrDefault(a =>
                 string.Equals(a.Title, defaultAlbumTitle, StringComparison.OrdinalIgnoreCase))
                 ?? internalAlbums[0];
 
@@ -121,11 +115,7 @@ namespace HouseholdMS.View.EqTesting
             RenderImage();
         }
 
-        // Multi-strategy, strong loader to avoid blank images:
-        // 1) Try direct Uri load (pack/file/relative)
-        // 2) If it's an application pack, also try Application.GetResourceStream with the relative part
-        // 3) If it's site-of-origin, try combining with base directory
-        // 4) Try raw file path
+        // Robust loader: pack URI -> resource stream -> site-of-origin -> raw file
         private ImageSource LoadImageStrong(string uriString)
         {
             if (string.IsNullOrWhiteSpace(uriString)) return null;
@@ -134,7 +124,7 @@ namespace HouseholdMS.View.EqTesting
             if (_imageCache.TryGetValue(uriString, out cached))
                 return cached;
 
-            // Strategy 1: standard Uri load
+            // 1) Direct Uri load (pack/file/absolute/relative)
             try
             {
                 var bmp1 = new BitmapImage();
@@ -147,9 +137,9 @@ namespace HouseholdMS.View.EqTesting
                 _imageCache[uriString] = bmp1;
                 return bmp1;
             }
-            catch { /* fall through */ }
+            catch { }
 
-            // Strategy 2: Application resource stream from pack application
+            // 2) Application resource stream (for pack application resources)
             try
             {
                 const string APP = "pack://application:,,,/";
@@ -178,16 +168,16 @@ namespace HouseholdMS.View.EqTesting
                     }
                 }
             }
-            catch { /* fall through */ }
+            catch { }
 
-            // Strategy 3: site-of-origin => file next to exe
+            // 3) Site-of-origin mapping (file next to exe)
             try
             {
                 const string SOO = "pack://siteoforigin:,,,/";
                 if (uriString.StartsWith(SOO, StringComparison.OrdinalIgnoreCase))
                 {
                     string localPath = uriString.Substring(SOO.Length).TrimStart('/', '\\');
-                    string abs = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, localPath);
+                    string abs = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, localPath);
                     if (File.Exists(abs))
                     {
                         using (var fs = File.OpenRead(abs))
@@ -205,9 +195,9 @@ namespace HouseholdMS.View.EqTesting
                     }
                 }
             }
-            catch { /* fall through */ }
+            catch { }
 
-            // Strategy 4: raw file path
+            // 4) Raw file path
             try
             {
                 if (File.Exists(uriString))
@@ -226,7 +216,7 @@ namespace HouseholdMS.View.EqTesting
                     }
                 }
             }
-            catch { /* fall through */ }
+            catch { }
 
             return null;
         }
@@ -243,7 +233,7 @@ namespace HouseholdMS.View.EqTesting
             string uri = _album.Images[_imageIndex];
             var src = LoadImageStrong(uri);
             PageImage.Source = src;
-            PageImage.ToolTip = (src == null) ? ("Missing image: " + uri) : null; // non-invasive hint
+            PageImage.ToolTip = (src == null) ? ("Missing image: " + uri) : null;
 
             PrevBtn.IsEnabled = _imageIndex > 0;
             NextBtn.IsEnabled = _imageIndex < _album.Images.Length - 1;
@@ -255,7 +245,6 @@ namespace HouseholdMS.View.EqTesting
             }
         }
 
-        // ---- UI events ----
         private void PrevBtn_Click(object sender, RoutedEventArgs e)
         {
             if (_album == null) return;
@@ -276,6 +265,16 @@ namespace HouseholdMS.View.EqTesting
             }
         }
 
+        private void Root_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // Swallow Up/Down so WPF doesn't shift focus and draw dotted focus cues
+            if (e.Key == Key.Up || e.Key == Key.Down)
+            {
+                e.Handled = true;
+                return;
+            }
+        }
+
         private void Root_KeyDown(object sender, KeyEventArgs e)
         {
             if (_album == null) return;
@@ -288,6 +287,11 @@ namespace HouseholdMS.View.EqTesting
             else if (e.Key == Key.Right)
             {
                 NextBtn_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Up || e.Key == Key.Down)
+            {
+                // belt & suspenders: also handle here in case focus moved
                 e.Handled = true;
             }
         }

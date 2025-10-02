@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -14,7 +13,7 @@ using Microsoft.Web.WebView2.Core;
 
 namespace HouseholdMS.View.UserControls
 {
-    // ---------- Embedded lightweight HTTP helper (no separate file) ----------
+    // ---------- Lightweight HTTP helper ----------
     internal static class HttpHelper
     {
         public static readonly HttpClient Http = new HttpClient(
@@ -29,10 +28,13 @@ namespace HouseholdMS.View.UserControls
         static HttpHelper()
         {
             Http.DefaultRequestHeaders.UserAgent.ParseAdd("HouseholdMS/1.0 (+yr-meteogram)");
+            Http.DefaultRequestHeaders.Accept.ParseAdd("*/*");
+            Http.DefaultRequestHeaders.ExpectContinue = false;
         }
 
         public static async Task<string> GetStringWithTimeoutAsync(
-            string url, TimeSpan timeout, CancellationToken ct, string userAgentOverride = null)
+            string url, TimeSpan timeout, CancellationToken ct,
+            string userAgentOverride = null, string acceptLang = "en;q=0.9,*;q=0.8")
         {
             using (var linked = CancellationTokenSource.CreateLinkedTokenSource(ct))
             {
@@ -44,9 +46,11 @@ namespace HouseholdMS.View.UserControls
                         req.Headers.UserAgent.Clear();
                         req.Headers.TryAddWithoutValidation("User-Agent", userAgentOverride);
                     }
+                    if (!string.IsNullOrEmpty(acceptLang))
+                        req.Headers.TryAddWithoutValidation("Accept-Language", acceptLang);
 
                     using (var resp = await Http.SendAsync(
-                        req, HttpCompletionOption.ResponseHeadersRead, linked.Token).ConfigureAwait(false))
+                               req, HttpCompletionOption.ResponseHeadersRead, linked.Token).ConfigureAwait(false))
                     {
                         resp.EnsureSuccessStatusCode();
                         return await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -60,20 +64,21 @@ namespace HouseholdMS.View.UserControls
             int retries, TimeSpan initialDelay, CancellationToken ct)
         {
             var delay = initialDelay;
-            for (int attempt = 0; ; attempt++)
+            Exception last = null;
+
+            for (int attempt = 0; attempt <= retries; attempt++)
             {
+                ct.ThrowIfCancellationRequested();
                 try { return await op(ct).ConfigureAwait(false); }
-                catch (TaskCanceledException) when (!ct.IsCancellationRequested && attempt < retries)
-                {
-                    await Task.Delay(delay, ct).ConfigureAwait(false);
-                    delay = TimeSpan.FromMilliseconds(Math.Min(delay.TotalMilliseconds * 2, 4000));
-                }
-                catch (HttpRequestException) when (attempt < retries)
-                {
-                    await Task.Delay(delay, ct).ConfigureAwait(false);
-                    delay = TimeSpan.FromMilliseconds(Math.Min(delay.TotalMilliseconds * 2, 4000));
-                }
+                catch (TaskCanceledException ex) when (!ct.IsCancellationRequested) { last = ex; }
+                catch (HttpRequestException ex) { last = ex; }
+
+                if (attempt == retries) break;
+                await Task.Delay(delay, ct).ConfigureAwait(false);
+                delay = TimeSpan.FromMilliseconds(Math.Min(delay.TotalMilliseconds * 2, 5000));
             }
+
+            throw last ?? new Exception("Operation failed after retries.");
         }
     }
 
@@ -89,13 +94,12 @@ namespace HouseholdMS.View.UserControls
         private CancellationTokenSource _loadCts;
         private bool _retryAfterReset = false;
 
-        // make SVG fill window better
         private const double DefaultZoom = 1.35;
 
         public YrMeteogramWindow(string locationId, string lang)
         {
             InitializeComponent();
-            _locationId = locationId;
+            _locationId = locationId ?? "";
             _lang = string.IsNullOrWhiteSpace(lang) ? "en" : lang.Trim().ToLowerInvariant();
             Loaded += YrMeteogramWindow_Loaded;
             SizeChanged += (_, __) => ApplyZoom();
@@ -117,7 +121,7 @@ namespace HouseholdMS.View.UserControls
                 _web.CoreWebView2InitializationCompleted += Web_CoreWebView2InitializationCompleted;
                 _web.NavigationCompleted += Web_NavigationCompleted;
 
-                WebHost.Children.Clear();   // <-- FIXED: method call, not a property
+                WebHost.Children.Clear();
                 WebHost.Children.Add(_web);
 
                 await InitializeWebView2Async();
@@ -134,11 +138,7 @@ namespace HouseholdMS.View.UserControls
 
         private void ApplyZoom()
         {
-            try
-            {
-                if (_web != null) _web.ZoomFactor = DefaultZoom;
-            }
-            catch { }
+            try { if (_web != null) _web.ZoomFactor = DefaultZoom; } catch { }
         }
 
         private async void InjectScaleScriptFallback()
@@ -200,7 +200,45 @@ namespace HouseholdMS.View.UserControls
             }
         }
 
-        private string BuildUrl() => $"https://www.yr.no/{_lang}/content/{_locationId}/meteogram.svg";
+        // ---------- Language-specific path handling ----------
+        private static string ContentSegmentFor(string lang)
+        {
+            switch ((lang ?? "en").ToLowerInvariant())
+            {
+                case "nb": return "innhold";    // Bokmål
+                case "nn": return "innhald";    // Nynorsk
+                case "sme": return "sisdoallu"; // Northern Sami
+                default: return "content";      // English + default
+            }
+        }
+
+        private static string ExtractPlaceId(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return null;
+            var m = Regex.Match(s, @"\b([12]-\d{3,})\b");
+            return m.Success ? m.Groups[1].Value : null;
+        }
+
+        // Build SVG URL for the WebView tab
+        private string BuildUrl()
+        {
+            if (_locationId.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    var uri = new Uri(_locationId);
+                    string path = uri.AbsolutePath.EndsWith("/meteogram.svg", StringComparison.OrdinalIgnoreCase)
+                        ? uri.AbsolutePath
+                        : uri.AbsolutePath.TrimEnd('/') + "/meteogram.svg";
+                    return new UriBuilder(uri) { Path = path }.Uri.ToString();
+                }
+                catch { return _locationId; }
+            }
+
+            string id = ExtractPlaceId(_locationId) ?? _locationId.Trim('/');
+            var seg = ContentSegmentFor(_lang);
+            return $"https://www.yr.no/{_lang}/{seg}/{id}/meteogram.svg";
+        }
 
         private void Navigate()
         {
@@ -249,7 +287,7 @@ namespace HouseholdMS.View.UserControls
         private sealed class HourlyPoint
         {
             public DateTime TimeUtc { get; set; }
-            public DateTime TimeLocal => TimeUtc.ToLocalTime();
+            public DateTime TimeLocal { get { return TimeUtc.ToLocalTime(); } }
             public string Symbol { get; set; }
             public double Temp { get; set; }
             public double Wind { get; set; }
@@ -271,8 +309,11 @@ namespace HouseholdMS.View.UserControls
             public double MaxGust { get; set; }
         }
 
-        private static DateTime ParseIsoUtc(string s) =>
-            DateTime.Parse(s, null, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal).ToUniversalTime();
+        private static DateTime ParseIsoUtc(string s)
+        {
+            return DateTime.Parse(s, null,
+                DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal).ToUniversalTime();
+        }
 
         private async Task LoadForecastTablesAsync(bool userInitiated = false)
         {
@@ -284,14 +325,17 @@ namespace HouseholdMS.View.UserControls
             {
                 LblStatus.Text = userInitiated ? "Refreshing forecast…" : "Loading detailed forecast…";
 
-                // Resolve lat/lon with retries
                 var latlon = await HttpHelper.RetryAsync(
-                    c => TryResolveLatLonAsync(_locationId, c),
-                    retries: 2, initialDelay: TimeSpan.FromMilliseconds(500), ct);
+                    c => TryResolveLatLonAsync(_locationId, _lang, c),
+                    retries: 3, initialDelay: TimeSpan.FromMilliseconds(600), ct);
 
                 if (latlon == null)
                 {
                     LblStatus.Text = "Could not resolve coordinates for detailed data.";
+                    HourlyGrid.ItemsSource = null;
+                    DailyGrid.ItemsSource = null;
+                    HourlyEmpty.Visibility = Visibility.Visible;
+                    DailyEmpty.Visibility = Visibility.Visible;
                     return;
                 }
 
@@ -302,7 +346,7 @@ namespace HouseholdMS.View.UserControls
                 {
                     await FetchLocationForecastAsync(latlon.Item1, latlon.Item2, hourly, daily, c);
                     return null;
-                }, retries: 2, initialDelay: TimeSpan.FromMilliseconds(500), ct);
+                }, retries: 2, initialDelay: TimeSpan.FromMilliseconds(600), ct);
 
                 _hourly = hourly;
                 _daily = daily;
@@ -329,54 +373,147 @@ namespace HouseholdMS.View.UserControls
             }
         }
 
-        // Resolve lat/lon robustly (per-request UA; extra SVG regex fallback)
-        private static async Task<Tuple<double, double>> TryResolveLatLonAsync(string locationId, CancellationToken ct)
+        // ---------- Robust coordinate resolution ----------
+
+        private static Tuple<double, double> TryParseLatLonFromString(string s)
         {
-            // 1) Official yr.no location endpoint
-            try
+            if (string.IsNullOrWhiteSpace(s)) return null;
+            s = WebUtility.UrlDecode(s);
+
+            // lat=..&lon=..
+            var m1 = Regex.Match(s, @"lat(?:itude)?\s*[=:]\s*(?<lat>-?\d{1,3}(?:\.\d+)?)[^-\d]{0,20}lon(?:gitude)?\s*[=:]\s*(?<lon>-?\d{1,3}(?:\.\d+)?)",
+                                 RegexOptions.IgnoreCase);
+            if (m1.Success)
             {
-                string url = "https://www.yr.no/api/v0/locations/" + locationId;
-                string json = await HttpHelper.GetStringWithTimeoutAsync(
-                    url, TimeSpan.FromSeconds(25), ct, "HouseholdMS/1.0 (+yr-meteogram)");
-                using (var doc = JsonDocument.Parse(json))
+                double la1, lo1;
+                if (double.TryParse(m1.Groups["lat"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out la1) &&
+                    double.TryParse(m1.Groups["lon"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out lo1))
+                    return Tuple.Create(la1, lo1);
+            }
+
+            // @lat,lon
+            var m2 = Regex.Match(s, @"@(?<lat>-?\d{1,3}(?:\.\d+)?)[,\s]+(?<lon>-?\d{1,3}(?:\.\d+)?)");
+            if (m2.Success)
+            {
+                double la2, lo2;
+                if (double.TryParse(m2.Groups["lat"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out la2) &&
+                    double.TryParse(m2.Groups["lon"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out lo2))
+                    return Tuple.Create(la2, lo2);
+            }
+
+            // plain pair
+            var m3 = Regex.Match(s, @"(?<!\d)(?<lat>-?\d{1,3}(?:\.\d+)?)[,\s;_]+(?<lon>-?\d{1,3}(?:\.\d+)?)(?!\d)");
+            if (m3.Success)
+            {
+                double la3, lo3;
+                if (double.TryParse(m3.Groups["lat"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out la3) &&
+                    double.TryParse(m3.Groups["lon"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out lo3))
+                    return Tuple.Create(la3, lo3);
+            }
+
+            return null;
+        }
+
+        private static IEnumerable<string> GenerateNameCandidates(string locationId)
+        {
+            var outs = new List<string>();
+            if (string.IsNullOrWhiteSpace(locationId)) return outs;
+
+            string s = WebUtility.UrlDecode(locationId.Trim('/'));
+
+            // If full URL, take path after the language-specific content segment
+            if (s.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                try
                 {
-                    if (doc.RootElement.TryGetProperty("geometry", out var geom))
+                    var uri = new Uri(s);
+                    var partsUrl = uri.AbsolutePath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                    int idx = Array.FindIndex(partsUrl, p =>
+                        string.Equals(p, "content", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(p, "innhold", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(p, "innhald", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(p, "sisdoallu", StringComparison.OrdinalIgnoreCase));
+                    if (idx >= 0 && idx + 1 < partsUrl.Length)
+                        s = string.Join("/", partsUrl, idx + 1, partsUrl.Length - (idx + 1));
+                    else
+                        s = partsUrl.Length > 0 ? partsUrl[partsUrl.Length - 1] : s;
+                }
+                catch { /* use original s */ }
+            }
+
+            // remove language-specific segment
+            s = Regex.Replace(s, @"(?i)(?:^|/)(content|innhold|innhald|sisdoallu)/", "");
+
+            var parts = s.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            Func<string, string> Clean = x =>
+            {
+                x = x.Replace('-', ' ');
+                x = Regex.Replace(x, @"\b([12]-\d{3,})\b", ""); // numeric id
+                x = Regex.Replace(x, @"\b(\d+-\d+|\d{5,})\b", "", RegexOptions.IgnoreCase);
+                x = Regex.Replace(x, @"\s+", " ").Trim();
+                return x;
+            };
+
+            if (parts.Length > 0) outs.Add(Clean(parts[parts.Length - 1]));
+            if (parts.Length > 1) outs.Add(Clean(parts[parts.Length - 2] + ", " + parts[parts.Length - 1]));
+            if (parts.Length > 2) outs.Add(Clean(parts[parts.Length - 3] + ", " + parts[parts.Length - 2] + ", " + parts[parts.Length - 1]));
+
+            // de-duplicate
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var final = new List<string>();
+            foreach (var cand in outs)
+                if (!string.IsNullOrWhiteSpace(cand) && seen.Add(cand)) final.Add(cand);
+
+            return final;
+        }
+
+        private static async Task<Tuple<double, double>> TryResolveLatLonAsync(string locationId, string lang, CancellationToken ct)
+        {
+            var direct = TryParseLatLonFromString(locationId);
+            if (direct != null) return direct;
+
+            string id = ExtractPlaceId(locationId);
+
+            // 1) yr.no API v0 for canonical id (fastest)
+            if (!string.IsNullOrEmpty(id))
+            {
+                try
+                {
+                    string url = "https://www.yr.no/api/v0/locations/" + id;
+                    string json = await HttpHelper.GetStringWithTimeoutAsync(
+                        url, TimeSpan.FromSeconds(35), ct, "HouseholdMS/1.0 (+yr-meteogram)");
+                    using (var doc = JsonDocument.Parse(json))
                     {
-                        if (geom.TryGetProperty("coordinates", out var coords) &&
-                            coords.ValueKind == JsonValueKind.Array && coords.GetArrayLength() >= 2)
+                        JsonElement geom;
+                        if (doc.RootElement.TryGetProperty("geometry", out geom))
                         {
-                            double lon = coords[0].GetDouble();
-                            double lat = coords[1].GetDouble();
-                            return Tuple.Create(lat, lon);
-                        }
-                        if (geom.TryGetProperty("lat", out var latEl) &&
-                            geom.TryGetProperty("lon", out var lonEl))
-                        {
-                            return Tuple.Create(latEl.GetDouble(), lonEl.GetDouble());
+                            JsonElement coords;
+                            if (geom.TryGetProperty("coordinates", out coords) &&
+                                coords.ValueKind == JsonValueKind.Array && coords.GetArrayLength() >= 2)
+                                return Tuple.Create(coords[1].GetDouble(), coords[0].GetDouble());
+
+                            JsonElement latEl, lonEl;
+                            if (geom.TryGetProperty("lat", out latEl) && geom.TryGetProperty("lon", out lonEl))
+                                return Tuple.Create(latEl.GetDouble(), lonEl.GetDouble());
                         }
                     }
                 }
+                catch { }
             }
-            catch { }
 
-            // 2) HTML content page (JSON-LD)
+            // prepare base according to language
+            string seg = ContentSegmentFor(lang ?? "en");
+            Func<string, string> baseUrl = suffix =>
+                $"https://www.yr.no/{(lang ?? "en")}/{seg}/{(id ?? locationId.Trim('/'))}/{suffix}";
+
+            // 2) table.html — often has data-lat/lon
             try
             {
-                string htmlUrl = "https://www.yr.no/en/content/" + locationId + "/";
                 string html = await HttpHelper.GetStringWithTimeoutAsync(
-                    htmlUrl, TimeSpan.FromSeconds(25), ct,
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36");
-
-                var m = Regex.Match(html,
-                    @"(?:""latitude""\s*:\s*(?<lat>-?\d+(?:\.\d+)?).*?""longitude""\s*:\s*(?<lon>-?\d+(?:\.\d+)?))|(?:""lat""\s*:\s*(?<lat>-?\d+(?:\.\d+)?).*?""lon""\s*:\s*(?<lon>-?\d+(?:\.\d+)?))",
-                    RegexOptions.IgnoreCase | RegexOptions.Singleline);
-
-                if (m.Success)
-                {
-                    double lat = double.Parse(m.Groups["lat"].Value, CultureInfo.InvariantCulture);
-                    double lon = double.Parse(m.Groups["lon"].Value, CultureInfo.InvariantCulture);
-                    return Tuple.Create(lat, lon);
-                }
+                    baseUrl("table.html"), TimeSpan.FromSeconds(35), ct,
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36",
+                    acceptLang: (lang ?? "en") + ";q=0.9,en;q=0.8,*;q=0.7");
 
                 var m2 = Regex.Match(html,
                     @"data-lat\s*=\s*""(?<lat>-?\d+(?:\.\d+)?)"".*?data-lon\s*=\s*""(?<lon>-?\d+(?:\.\d+)?)""",
@@ -390,15 +527,14 @@ namespace HouseholdMS.View.UserControls
             }
             catch { }
 
-            // 3) SVG -> name -> Open-Meteo geocoder
+            // 3) meteogram.svg — sometimes includes coords or human name
             try
             {
                 string svg = await HttpHelper.GetStringWithTimeoutAsync(
-                    "https://www.yr.no/en/content/" + locationId + "/meteogram.svg",
-                    TimeSpan.FromSeconds(25), ct,
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36");
+                    baseUrl("meteogram.svg"), TimeSpan.FromSeconds(35), ct,
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36",
+                    acceptLang: (lang ?? "en") + ";q=0.9,en;q=0.8,*;q=0.7");
 
-                // direct lat/lon in SVG (extra fallback)
                 var mSvg = Regex.Match(svg,
                     @"(?:latitude|lat)""?\s*[:=]\s*""?(?<lat>-?\d+(?:\.\d+)?).*?(?:longitude|lon)""?\s*[:=]\s*""?(?<lon>-?\d+(?:\.\d+)?)",
                     RegexOptions.IgnoreCase | RegexOptions.Singleline);
@@ -409,59 +545,69 @@ namespace HouseholdMS.View.UserControls
                     return Tuple.Create(lat, lon);
                 }
 
-                string name = null;
                 var mm = Regex.Match(svg, @"Weather\s+forecast\s+for\s*(?<name>[^<\r\n]+)", RegexOptions.IgnoreCase);
-                if (mm.Success) name = mm.Groups["name"].Value.Trim();
-
-                if (!string.IsNullOrWhiteSpace(name))
+                if (mm.Success)
                 {
-                    string cleaned = Regex.Replace(name,
-                        @"\b(Department|Province|Region|County|State|Oblast|District|Prefecture)\b",
-                        "", RegexOptions.IgnoreCase).Trim();
-
-                    foreach (var q in new[] { cleaned, cleaned.Split(',')[0], cleaned.Split(' ')[0] })
-                    {
-                        if (string.IsNullOrWhiteSpace(q)) continue;
-
-                        string url = "https://geocoding-api.open-meteo.com/v1/search?count=1&language=en&format=json&name=" +
-                                     Uri.EscapeDataString(q);
-                        string json = await HttpHelper.GetStringWithTimeoutAsync(
-                            url, TimeSpan.FromSeconds(20), ct,
-                            "HouseholdMS/1.0 (+yr-meteogram)");
-
-                        using (var doc = JsonDocument.Parse(json))
-                        {
-                            if (doc.RootElement.TryGetProperty("results", out var results) &&
-                                results.ValueKind == JsonValueKind.Array && results.GetArrayLength() > 0)
-                            {
-                                var first = results[0];
-                                double lat = first.GetProperty("latitude").GetDouble();
-                                double lon = first.GetProperty("longitude").GetDouble();
-                                return Tuple.Create(lat, lon);
-                            }
-                        }
-                    }
+                    var loc = await GeocodeByOpenMeteoAsync(new[] { mm.Groups["name"].Value.Trim() }, ct);
+                    if (loc != null) return loc;
                 }
             }
             catch { }
 
+            // 4) Fall back to names derived from slug/URL segments
+            var candidates = GenerateNameCandidates(locationId);
+            var loc2 = await GeocodeByOpenMeteoAsync(candidates, ct);
+            if (loc2 != null) return loc2;
+
+            return null;
+        }
+
+        private static async Task<Tuple<double, double>> GeocodeByOpenMeteoAsync(IEnumerable<string> names, CancellationToken ct)
+        {
+            foreach (var q in names)
+            {
+                if (string.IsNullOrWhiteSpace(q)) continue;
+                try
+                {
+                    string url = "https://geocoding-api.open-meteo.com/v1/search?count=1&language=en&format=json&name=" +
+                                 Uri.EscapeDataString(q);
+                    string json = await HttpHelper.GetStringWithTimeoutAsync(
+                        url, TimeSpan.FromSeconds(20), ct, "HouseholdMS/1.0 (+yr-meteogram)");
+
+                    using (var doc = JsonDocument.Parse(json))
+                    {
+                        JsonElement results;
+                        if (doc.RootElement.TryGetProperty("results", out results) &&
+                            results.ValueKind == JsonValueKind.Array && results.GetArrayLength() > 0)
+                        {
+                            var first = results[0];
+                            double lat = first.GetProperty("latitude").GetDouble();
+                            double lon = first.GetProperty("longitude").GetDouble();
+                            return Tuple.Create(lat, lon);
+                        }
+                    }
+                }
+                catch { }
+            }
             return null;
         }
 
         private static async Task FetchLocationForecastAsync(
             double lat, double lon, List<HourlyPoint> hourly, List<DailySummary> daily, CancellationToken ct)
         {
+            // Locationforecast 2.0 (compact)
             string url = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=" +
                          lat.ToString(CultureInfo.InvariantCulture) + "&lon=" +
                          lon.ToString(CultureInfo.InvariantCulture);
 
             string json = await HttpHelper.GetStringWithTimeoutAsync(
-                url, TimeSpan.FromSeconds(25), ct, "HouseholdMS Meteogram/1.0 (contact: app@example.local)");
+                url, TimeSpan.FromSeconds(35), ct, "HouseholdMS Meteogram/1.0 (contact: app@example.local)");
 
             using (var doc = JsonDocument.Parse(json))
             {
-                var props = doc.RootElement.GetProperty("properties");
-                var ts = props.GetProperty("timeseries");
+                JsonElement props, ts;
+                if (!doc.RootElement.TryGetProperty("properties", out props)) return;
+                if (!props.TryGetProperty("timeseries", out ts)) return;
                 if (ts.ValueKind != JsonValueKind.Array || ts.GetArrayLength() == 0) return;
 
                 int count = Math.Min(72, ts.GetArrayLength());
@@ -483,18 +629,21 @@ namespace HouseholdMS.View.UserControls
                     double precip = 0;
                     string symbol = null;
 
-                    if (data.TryGetProperty("next_1_hours", out var n1h))
+                    JsonElement n1h, n6h;
+                    if (data.TryGetProperty("next_1_hours", out n1h))
                     {
-                        if (n1h.TryGetProperty("details", out var det) && det.TryGetProperty("precipitation_amount", out var p1))
+                        JsonElement det, sum, p1, sc;
+                        if (n1h.TryGetProperty("details", out det) && det.TryGetProperty("precipitation_amount", out p1))
                             precip = TryGetDouble(p1);
-                        if (n1h.TryGetProperty("summary", out var sum) && sum.TryGetProperty("symbol_code", out var sc))
+                        if (n1h.TryGetProperty("summary", out sum) && sum.TryGetProperty("symbol_code", out sc))
                             symbol = sc.GetString();
                     }
-                    else if (data.TryGetProperty("next_6_hours", out var n6h))
+                    else if (data.TryGetProperty("next_6_hours", out n6h))
                     {
-                        if (n6h.TryGetProperty("details", out var det6) && det6.TryGetProperty("precipitation_amount", out var p6))
+                        JsonElement det6, sum6, p6, sc6;
+                        if (n6h.TryGetProperty("details", out det6) && det6.TryGetProperty("precipitation_amount", out p6))
                             precip = TryGetDouble(p6);
-                        if (n6h.TryGetProperty("summary", out var sum6) && sum6.TryGetProperty("symbol_code", out var sc6))
+                        if (n6h.TryGetProperty("summary", out sum6) && sum6.TryGetProperty("symbol_code", out sc6))
                             symbol = sc6.GetString();
                     }
 
@@ -517,7 +666,8 @@ namespace HouseholdMS.View.UserControls
                 foreach (var h in hourly)
                 {
                     DateTime day = h.TimeLocal.Date;
-                    if (!map.TryGetValue(day, out var ds))
+                    DailySummary ds;
+                    if (!map.TryGetValue(day, out ds))
                     {
                         ds = new DailySummary
                         {
@@ -542,8 +692,11 @@ namespace HouseholdMS.View.UserControls
             }
         }
 
-        private static double GetDouble(JsonElement obj, string property) =>
-            obj.TryGetProperty(property, out var v) ? TryGetDouble(v) : 0.0;
+        private static double GetDouble(JsonElement obj, string property)
+        {
+            JsonElement v;
+            return obj.TryGetProperty(property, out v) ? TryGetDouble(v) : 0.0;
+        }
 
         private static double TryGetDouble(JsonElement v)
         {

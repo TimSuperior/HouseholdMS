@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.IO.Ports;
 using System.Linq;
 using System.Threading;
@@ -30,22 +29,6 @@ namespace HouseholdMS.View.EqTesting
         private string _port;
         private int _baud;
         private byte _unit;
-
-        // ---------- time series ----------
-        public sealed class TimePoint { public DateTime Time { get; set; } public double Value { get; set; } }
-        private const int MaxPts = 360; // ~6 min @ 1 Hz
-
-        public ObservableCollection<TimePoint> PvVolt { get; } = new ObservableCollection<TimePoint>();
-        public ObservableCollection<TimePoint> PvCurr { get; } = new ObservableCollection<TimePoint>();
-        public ObservableCollection<TimePoint> PvPower { get; } = new ObservableCollection<TimePoint>();
-
-        public ObservableCollection<TimePoint> BatVolt { get; } = new ObservableCollection<TimePoint>();
-        public ObservableCollection<TimePoint> BatCurr { get; } = new ObservableCollection<TimePoint>();
-        public ObservableCollection<TimePoint> BatPower { get; } = new ObservableCollection<TimePoint>();
-
-        public ObservableCollection<TimePoint> LoadVolt { get; } = new ObservableCollection<TimePoint>();
-        public ObservableCollection<TimePoint> LoadCurr { get; } = new ObservableCollection<TimePoint>();
-        public ObservableCollection<TimePoint> LoadPower { get; } = new ObservableCollection<TimePoint>();
 
         public MpptMiniPanelControl()
         {
@@ -189,13 +172,13 @@ namespace HouseholdMS.View.EqTesting
 
             Dispatcher.Invoke(() =>
             {
-                ClearAllSeries();
+                ClearAllSeries(); // no-op now
                 UpdateRaw(reason + " → " + _port + " @" + _baud + " (ID=" + _unit + ")");
                 StartPolling();
             });
         }
 
-        // Probe using a very-safe rated register (0x3000). Many firmwares support this even if 0x3100 slices differ.
+        // Probe using a very-safe rated register (0x3000).
         private bool TryProbeRated(string port, int baud, byte unit, int timeoutMs)
         {
             try
@@ -318,7 +301,7 @@ namespace HouseholdMS.View.EqTesting
             }
             else
             {
-                // piecewise fallback (robust across firmware maps)
+                // piecewise fallback
                 TryReadPiecewise(port, baud, unit,
                     ref pvV, ref pvA, ref pvW,
                     ref batV, ref batA, ref batW,
@@ -350,19 +333,6 @@ namespace HouseholdMS.View.EqTesting
                 TxtStage.Text = "Stage: " + (stage ?? "—");
                 TxtUpdated.Text = "Last update: " + DateTime.Now.ToString("HH:mm:ss");
 
-                DateTime now = DateTime.Now;
-                if (pvV.HasValue) Append(PvVolt, now, pvV.Value);
-                if (pvA.HasValue) Append(PvCurr, now, pvA.Value);
-                if (pvW.HasValue) Append(PvPower, now, pvW.Value);
-
-                if (batV.HasValue) Append(BatVolt, now, batV.Value);
-                if (batA.HasValue) Append(BatCurr, now, batA.Value);
-                if (batW.HasValue) Append(BatPower, now, batW.Value);
-
-                if (loadV.HasValue) Append(LoadVolt, now, loadV.Value);
-                if (loadA.HasValue) Append(LoadCurr, now, loadA.Value);
-                if (loadW.HasValue) Append(LoadPower, now, loadW.Value);
-
                 string[] errs = new string[]
                 {
                     (blkErr != null ? "BLK:" + blkErr : null),
@@ -374,7 +344,7 @@ namespace HouseholdMS.View.EqTesting
             });
         }
 
-        // Piecewise reads matching your older working control (simplified: temps omitted for compactness)
+        // Piecewise reads (robust across firmware maps)
         private static void TryReadPiecewise(string port, int baud, byte unit,
             ref double? pvV, ref double? pvA, ref double? pvW,
             ref double? batV, ref double? batA, ref double? batW,
@@ -408,12 +378,6 @@ namespace HouseholdMS.View.EqTesting
             try { var s = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.SOC_ADDR, EpeverRegisters.SOC_COUNT, 700); soc = s[0]; } catch { }
         }
 
-        private static void Append(ObservableCollection<TimePoint> col, DateTime t, double v)
-        {
-            col.Add(new TimePoint { Time = t, Value = v });
-            if (col.Count > MaxPts) col.RemoveAt(0);
-        }
-
         // ---------- teardown ----------
         private void StopTimersOnly()
         {
@@ -434,15 +398,14 @@ namespace HouseholdMS.View.EqTesting
 
             _port = null; _baud = 0; _unit = 0;
 
-            ClearAllSeries();
-            UpdateRaw("Disconnected (" + why + ").");
+            ClearAllSeries(); // no-op now
+            UpdateRaw($"Disconnected ({why}).");
         }
 
+        // Kept as a no-op to avoid changing call sites; plotting removed.
         private void ClearAllSeries()
         {
-            PvVolt.Clear(); PvCurr.Clear(); PvPower.Clear();
-            BatVolt.Clear(); BatCurr.Clear(); BatPower.Clear();
-            LoadVolt.Clear(); LoadCurr.Clear(); LoadPower.Clear();
+            // intentionally empty
         }
 
         private void UpdateRaw(string msg)

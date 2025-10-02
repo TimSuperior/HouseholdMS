@@ -7,6 +7,7 @@
              d:DesignHeight="520" d:DesignWidth="900"
              MinWidth="720" MinHeight="480"
              Focusable="True"
+             PreviewKeyDown="Root_PreviewKeyDown"
              KeyDown="Root_KeyDown">
 
     <UserControl.Resources>
@@ -15,6 +16,8 @@
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="MinWidth" Value="96"/>
             <Setter Property="Margin" Value="0,0,8,0"/>
+            <!-- remove dotted focus cue -->
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -45,7 +48,10 @@
     </UserControl.Resources>
 
     <!-- All white background -->
-    <Grid Background="#FFFFFFFF">
+    <Grid Background="#FFFFFFFF"
+          KeyboardNavigation.TabNavigation="None"
+          KeyboardNavigation.ControlTabNavigation="None"
+          KeyboardNavigation.DirectionalNavigation="None">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <!-- Header -->
@@ -77,7 +83,8 @@
                       Padding="0"
                       VerticalScrollBarVisibility="Disabled"
                       HorizontalScrollBarVisibility="Disabled"
-                      Background="#FFFFFFFF">
+                      Background="#FFFFFFFF"
+                      Focusable="False">
             <Grid Background="#FFFFFFFF">
                 <Viewbox x:Name="ImageViewbox"
                          Stretch="Uniform"
@@ -102,8 +109,10 @@
                 Background="#F7F9FC" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0" Padding="10">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                    <Button x:Name="PrevBtn" Content="◀ Back" Style="{StaticResource NavButtonStyle}" Click="PrevBtn_Click"/>
-                    <Button x:Name="NextBtn" Content="Next ▶" Style="{StaticResource NavButtonStyle}" Margin="0" Click="NextBtn_Click"/>
+                    <Button x:Name="PrevBtn" Content="◀ Back" Style="{StaticResource NavButtonStyle}"
+                            Click="PrevBtn_Click" Focusable="False"/>
+                    <Button x:Name="NextBtn" Content="Next ▶" Style="{StaticResource NavButtonStyle}"
+                            Margin="0" Click="NextBtn_Click" Focusable="False"/>
                 </StackPanel>
             </DockPanel>
         </Border>

@@ -1,0 +1,60 @@
+# ==== CONFIG ====
+$Lang = "es-ES"   # Change to "es-MX" for Mexican Spanish if you want
+
+# ==== 0) Quick edition check (Single-Language editions can't add UI languages) ====
+$edition = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").EditionID
+if ($edition -match "SingleLanguage") {
+  Write-Warning "Your Windows edition is '$edition'. Single Language editions cannot add display languages."
+  return
+}
+
+# ==== 1) Install Spanish language pack + optional features ====
+$features = @(
+  "Language.Basic~~~$Lang~0.0.1.0",       # REQUIRED: UI strings
+  "Language.OCR~~~$Lang~0.0.1.0",         # Optional: OCR
+  "Language.Speech~~~$Lang~0.0.1.0",      # Optional: speech recognition
+  "Language.TextToSpeech~~~$Lang~0.0.1.0",# Optional: TTS (voice)
+  "Language.Handwriting~~~$Lang~0.0.1.0"  # Optional: handwriting
+)
+
+foreach ($f in $features) {
+  try {
+    $cap = Get-WindowsCapability -Online -Name $f -ErrorAction Stop
+    if ($cap.State -ne "Installed") {
+      Write-Host "Installing $f ..."
+      Add-WindowsCapability -Online -Name $f -ErrorAction Stop | Out-Null
+    }
+  } catch {
+    Write-Warning "Could not install $f automatically. If you're offline, mount the Language/FoD ISO and re-run with -Source."
+  }
+}
+
+# ==== 2) Set user/app/system language to Spanish ====
+# Build a clean language list with Spanish first. (Add English keyboard if you want as a fallback.)
+$ul = New-WinUserLanguageList -Language $Lang
+# Example to also keep English keyboard (login fallback). Uncomment if desired:
+# $ul.Add("en-US")
+Set-WinUserLanguageList -LanguageList $ul -Force
+
+# UI language + formats + non-Unicode app locale
+Set-WinUILanguageOverride -Language $Lang
+Set-Culture $Lang
+Set-WinSystemLocale $Lang
+
+# ==== 3) Apply to Welcome screen + new users ====
+Copy-UserInternationalSettingsToSystem -WelcomeScreen $true -NewUser $true
+
+# ==== 4) (Optional but strong) Force all intl settings at OS level ====
+dism /online /Set-AllIntl:$Lang | Out-Null
+
+# ==== 5) Show status, then reboot ====
+Write-Host "`n==== Current Language Status ===="
+Get-WinUserLanguageList | Format-Table
+Write-Host "`nUI Override: $(Get-WinUILanguageOverride)"
+Write-Host "Culture:     $((Get-Culture).Name)"
+Write-Host "Sys Locale:  $((Get-WinSystemLocale).Name)"
+Write-Host "Full Intl:"
+dism /online /Get-Intl
+
+Write-Host "`nRebooting to apply language everywhere ..."
+shutdown /r /t 5
