@@ -366,6 +366,25 @@ namespace HouseholdMS.View
             foreach (var child in FindPopupCheckBoxes()) child.IsChecked = false;
         }
 
+        private void OkColumns_Click(object sender, RoutedEventArgs e)
+        {
+            // reflect current selection count on the chip
+            UpdateColumnFilterButtonContent();
+
+            // if search box has user text (not placeholder), apply the filter now
+            var tagText = SearchBox?.Tag as string ?? string.Empty;
+            var text = SearchBox?.Text ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(text) && !string.Equals(text, tagText, StringComparison.Ordinal))
+            {
+                ApplySearchFilter(text); // apply current search with the selected columns
+            }
+
+
+            // close the popup
+            ColumnPopup.IsOpen = false;
+        }
+
+
         private IEnumerable<CheckBox> FindPopupCheckBoxes()
         {
             var border = ColumnPopup.Child as Border;

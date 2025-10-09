@@ -296,6 +296,7 @@
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                 <Button Content="Select all" Margin="4" Click="SelectAllColumns_Click"/>
                                 <Button Content="Clear" Margin="4" Click="ClearAllColumns_Click"/>
+                                <Button Content="OK" Margin="4" Click="OkColumns_Click"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>

@@ -571,6 +571,29 @@ namespace HouseholdMS.View
             foreach (var child in FindPopupCheckBoxes()) child.IsChecked = false;
         }
 
+        private void OkColumns_Click(object sender, RoutedEventArgs e)
+        {
+            // Update the chip text ("All ▾" or "N selected ▾")
+            UpdateColumnFilterButtonContent();
+
+            // If there's user text (not the placeholder), reapply search using the
+            // currently selected columns; otherwise this clears any filter.
+            var tagText = SearchBox?.Tag as string ?? string.Empty;
+            var text = SearchBox?.Text ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(text) && !string.Equals(text, tagText, StringComparison.Ordinal))
+            {
+                ApplySearchFilter();   // <- no argument
+            }
+            else
+            {
+                ApplySearchFilter();   // clears filter because text is empty/placeholder
+            }
+
+            // Close the popup
+            ColumnPopup.IsOpen = false;
+        }
+
+
         private IEnumerable<CheckBox> FindPopupCheckBoxes()
         {
             var border = ColumnPopup.Child as Border;
