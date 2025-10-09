@@ -38,7 +38,10 @@ namespace HouseholdMS
                 bt_ControllerTest.Visibility = Visibility.Visible;
                 bt_TestProcedure.Visibility = Visibility.Visible;
                 bt_SwitchTest.Visibility = Visibility.Visible;
-                bt_TestReports.Visibility = Visibility.Visible;
+                bt_TestReports.Visibility = Visibility.Collapsed;
+
+                // NEW: show K4 Battery Balancing for admin/tech
+                bt_K4BatteryBalancing.Visibility = Visibility.Visible;
 
                 if (isAdmin)
                 {
@@ -61,6 +64,9 @@ namespace HouseholdMS
                 bt_SettingMenu.Visibility = Visibility.Collapsed; // top-nav
                 bt_TestReports.Visibility = Visibility.Collapsed;
                 NavManageUsersBtn.Visibility = Visibility.Collapsed;
+
+                // NEW: hide K4 Battery Balancing for non-privileged users
+                bt_K4BatteryBalancing.Visibility = Visibility.Collapsed;
             }
 
             // Start with Dashboard panel expanded (others collapsed) and show Dashboard view
@@ -71,13 +77,12 @@ namespace HouseholdMS
         /* --------- Accordion helpers --------- */
         private void ExpandOnly(UIElement targetPanel)
         {
-            if (Panel_Dashboard != null) Panel_Dashboard.Visibility = targetPanel == Panel_Dashboard ? Visibility.Visible : Visibility.Collapsed;
-            if (Panel_Monitoring != null) Panel_Monitoring.Visibility = targetPanel == Panel_Monitoring ? Visibility.Visible : Visibility.Collapsed;
-            if (Panel_TestManuals != null) Panel_TestManuals.Visibility = targetPanel == Panel_TestManuals ? Visibility.Visible : Visibility.Collapsed;
+            if (Panel_Dashboard != null) Panel_Dashboard.Visibility = (targetPanel == Panel_Dashboard) ? Visibility.Visible : Visibility.Collapsed;
+            if (Panel_Monitoring != null) Panel_Monitoring.Visibility = (targetPanel == Panel_Monitoring) ? Visibility.Visible : Visibility.Collapsed;
+            if (Panel_TestManuals != null) Panel_TestManuals.Visibility = (targetPanel == Panel_TestManuals) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         /* --------- Header (section) clicks --------- */
-        // Keep original behavior (navigate to Dashboard) AND expand its submenu
         private void bt_Dashboard_Click(object sender, RoutedEventArgs e)
         {
             ExpandOnly(Panel_Dashboard);
@@ -104,6 +109,8 @@ namespace HouseholdMS
 
         private void bt_ManageUsers(object sender, RoutedEventArgs e)
         {
+            // Collapse all accordion sections since Manage Users has no submenu
+            ExpandOnly(null);  // <-- key fix: ensures previous dropdowns are closed
             MainContent.Content = new HouseholdMS.View.UserManagementView(_currentUserRole, _currentUsername);
         }
 
@@ -122,17 +129,14 @@ namespace HouseholdMS
 
         private void bt_BatteryTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new HouseholdMS.View.UserControls.EpeverMonitorControl();
         private void bt_ControllerTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new ControllerTestMenuView();
-
         private void bt_SwitchTest_Click(object sender, RoutedEventArgs e) => MainContent.Content = new SwitchTestMenuView();
         private void bt_SettingMenu_Click(object sender, RoutedEventArgs e) => MainContent.Content = new SettingMenuView(_currentUserRole);
         private void bt_MeasurementMenu(object sender, RoutedEventArgs e) => MainContent.Content = new MeasurementView();
         private void bt_OscilloscopeMenu(object sender, RoutedEventArgs e) => MainContent.Content = new HouseholdMS.View.Measurement.Tbs1000cView();
-
         private void bt_Template_Click(object sender, RoutedEventArgs e) => MainContent.Content = new TemplateView();
 
         private void AllTest_CloseRequested(object sender, EventArgs e)
         {
-            // Your original behavior (note: this replaces content twice, last wins)
             MainContent.Content = new TestReportsView(_currentUserRole);
             MainContent.Content = new SitesView(_currentUserRole);
         }
@@ -145,6 +149,12 @@ namespace HouseholdMS
         private void bt_TestProcedure_Click(object sender, RoutedEventArgs e)
         {
             MainContent.Content = new TestProcedure();
+        }
+
+        // NEW: K4 Battery Balancing -> BatteryTestMenuView
+        private void bt_K4BatteryBalancing_Click(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new BatteryTestMenuView();
         }
     }
 }

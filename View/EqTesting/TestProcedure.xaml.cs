@@ -1,263 +1,428 @@
-﻿using System;
+﻿// View/EqTesting/TestProcedure.xaml.cs
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Input;
+using System.IO;
+using System.Windows.Resources;
 
 namespace HouseholdMS.View.EqTesting
 {
+    /// <summary>
+    /// Single-album image viewer (same behavior as ControllerTestMenuView).
+    /// Back/Next buttons + Left/Right arrow keys.
+    /// Up/Down keys suppressed to avoid dotted focus cues.
+    /// </summary>
     public partial class TestProcedure : UserControl
     {
-        // ---------- Part model ----------
-        public abstract class PartSpec { public abstract UIElement Build(); }
-
-        public sealed class ImagePart : PartSpec
+        // -------------------- SIMPLE LANGUAGE SWITCH (images) --------------------
+        // Edit only these arrays when you add/remove frames.
+        // EN = "TPEN_*", ES = "TPES_*". (Add KO later if you want.)
+        private static readonly string[] EN_IMAGES = new[]
         {
-            public string UriStr { get; }
-            public ImagePart(string uri) { UriStr = uri; }
-            public override UIElement Build()
+            "pack://application:,,,/Assets/Procedures/TPEN_PV_Panel_01.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_PV_Panel_02.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_PV_Panel_03.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_PV_Panel_04.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_PV_Panel_05.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_PV_Panel_06.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_PV_Panel_07.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_PV_Panel_08.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_PV_Panel_09.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_PV_Panel_10.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_PV_Panel_11.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_PV_Panel_12.png",
+        };
+
+        private static readonly string[] ES_IMAGES = new[]
+        {
+            "pack://application:,,,/Assets/Procedures/TPES_PV_Panel_01.png",
+            "pack://application:,,,/Assets/Procedures/TPES_PV_Panel_02.png",
+            "pack://application:,,,/Assets/Procedures/TPES_PV_Panel_03.png",
+            "pack://application:,,,/Assets/Procedures/TPES_PV_Panel_04.png",
+            "pack://application:,,,/Assets/Procedures/TPES_PV_Panel_05.png",
+            "pack://application:,,,/Assets/Procedures/TPES_PV_Panel_06.png",
+            "pack://application:,,,/Assets/Procedures/TPES_PV_Panel_07.png",
+            "pack://application:,,,/Assets/Procedures/TPES_PV_Panel_08.png",
+            "pack://application:,,,/Assets/Procedures/TPES_PV_Panel_09.png",
+            "pack://application:,,,/Assets/Procedures/TPES_PV_Panel_10.png",
+            "pack://application:,,,/Assets/Procedures/TPES_PV_Panel_11.png",
+            "pack://application:,,,/Assets/Procedures/TPES_PV_Panel_12.png",
+        };
+
+        // If you add Korean later, just define:
+        // private static readonly string[] KO_IMAGES = new[] { "pack://.../TPKO_PV_Panel_01.png", ... };
+
+        private static string GetSavedLanguage()
+        {
+            try
             {
-                var img = new Image
+                var path = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "HouseholdMS", "ui.language");
+                if (File.Exists(path))
                 {
-                    Stretch = Stretch.Uniform,
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    VerticalAlignment = VerticalAlignment.Stretch
-                };
-                try
-                {
-                    if (!string.IsNullOrWhiteSpace(UriStr))
-                        img.Source = new BitmapImage(new Uri(UriStr, UriKind.RelativeOrAbsolute));
+                    var code = (File.ReadAllText(path) ?? "").Trim().ToLowerInvariant();
+                    if (code == "en" || code == "es" || code == "ko")
+                        return code;
                 }
-                catch { /* ignore */ }
-                RenderOptions.SetBitmapScalingMode(img, BitmapScalingMode.Fant);
-                return new Viewbox { Stretch = Stretch.Uniform, StretchDirection = StretchDirection.Both, Child = img };
+            }
+            catch { /* ignore and fall back */ }
+            return "en";
+        }
+
+        private static string[] GetImagesForLang(string lang)
+        {
+            if (lang == "es") return ES_IMAGES;
+            // if (lang == "ko") return KO_IMAGES; // when you add them
+            return EN_IMAGES; // default
+        }
+        // ----------------------------------------------------------------
+
+        // -------------------- MINI L10N BLOCK (texts) --------------------
+        private static readonly Dictionary<string, Dictionary<string, string>> L10N =
+            new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["en"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["gallery_name"] = "Test Procedure",
+                    ["album_bvi"] = "Battery Visual Inspection",
+                    ["missing_image"] = "Missing image: {0}",
+                    ["err_one_album_required"] = "At least one album is required.",
+                    ["err_album_empty"] = "Album '{0}' must contain at least one image.",
+                    ["prev"] = "Back",
+                    ["next"] = "Next",
+                    ["version_prefix"] = "v",
+                    ["step_sep"] = " — "
+                },
+                ["es"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["gallery_name"] = "Procedimiento de Prueba",
+                    ["album_bvi"] = "Inspección visual de la batería",
+                    ["missing_image"] = "Imagen ausente: {0}",
+                    ["err_one_album_required"] = "Se requiere al menos un álbum.",
+                    ["err_album_empty"] = "El álbum '{0}' debe contener al menos una imagen.",
+                    ["prev"] = "Atrás",
+                    ["next"] = "Siguiente",
+                    ["version_prefix"] = "v",
+                    ["step_sep"] = " — "
+                },
+                ["ko"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["gallery_name"] = "시험 절차",
+                    ["album_bvi"] = "배터리 육안 점검",
+                    ["missing_image"] = "이미지를 찾을 수 없음: {0}",
+                    ["err_one_album_required"] = "앨범이 하나 이상 필요합니다.",
+                    ["err_album_empty"] = "앨범 '{0}'에는 하나 이상의 이미지가 있어야 합니다.",
+                    ["prev"] = "이전",
+                    ["next"] = "다음",
+                    ["version_prefix"] = "v",
+                    ["step_sep"] = " — "
+                }
+            };
+
+        private Dictionary<string, string> _ST; // active string table
+
+        private static Dictionary<string, string> GetStrings(string lang)
+        {
+            Dictionary<string, string> st;
+            if (!L10N.TryGetValue(lang ?? "en", out st)) st = L10N["en"];
+            return st;
+        }
+
+        private string T(string key)
+        {
+            if (_ST == null) return key;
+            string v; return _ST.TryGetValue(key, out v) ? v : key;
+        }
+        // ----------------------------------------------------------------
+
+        private sealed class Album
+        {
+            public readonly string Title;
+            public readonly string[] Images;
+            public Album(string title, params string[] images)
+            {
+                if (images == null || images.Length == 0)
+                    throw new ArgumentException("Album must contain at least one image.", nameof(images));
+                Title = string.IsNullOrWhiteSpace(title) ? "Album" : title;
+                Images = images;
             }
         }
 
-        public sealed class ControlFactoryPart : PartSpec
+        private sealed class Gallery
         {
-            public Func<UIElement> Factory { get; }
-            public ControlFactoryPart(Func<UIElement> factory) { Factory = factory; }
-            public override UIElement Build() => Factory != null ? Factory() : Placeholder("Factory returned null");
-        }
-
-        public sealed class ControlTypePart : PartSpec
-        {
-            public string TypeName { get; }
-            public ControlTypePart(string typeName) { TypeName = typeName; }
-            public override UIElement Build()
+            public readonly string Name;
+            public readonly string Version;
+            public readonly Album[] Albums;
+            public Gallery(string name, string version, params Album[] albums)
             {
-                if (string.IsNullOrWhiteSpace(TypeName)) return Placeholder("TypeName not provided");
-                try
-                {
-                    var t = Type.GetType(TypeName, false);
-                    if (t == null) return Placeholder("Type not found:\n" + TypeName);
-                    var inst = Activator.CreateInstance(t) as UIElement;
-                    return inst ?? Placeholder("Type is not a UIElement:\n" + TypeName);
-                }
-                catch (Exception ex) { return Placeholder("Error creating " + TypeName + "\n" + ex.Message); }
+                if (albums == null || albums.Length == 0)
+                    throw new ArgumentException("At least one album is required.", nameof(albums));
+                Name = string.IsNullOrWhiteSpace(name) ? "Gallery" : name;
+                Version = string.IsNullOrWhiteSpace(version) ? "" : version;
+                Albums = albums;
             }
         }
 
-        // ---------- Page model ----------
-        public sealed class PageSpec
+        public sealed class AlbumSpec
         {
             public string Title { get; }
-            public PartSpec Part1 { get; }
-            public PartSpec Part2 { get; }
-            public PartSpec Part3 { get; }
-            public PageSpec(string title, PartSpec p1 = null, PartSpec p2 = null, PartSpec p3 = null)
-            { Title = string.IsNullOrWhiteSpace(title) ? "Step" : title; Part1 = p1; Part2 = p2; Part3 = p3; }
-        }
-
-        private sealed class Procedure
-        {
-            public string Name { get; }
-            public string Version { get; }
-            public PageSpec[] Pages { get; }
-            public Procedure(string name, string version, params PageSpec[] pages)
+            public string[] Images { get; }
+            public AlbumSpec(string title, params string[] images)
             {
-                if (pages == null || pages.Length == 0) throw new ArgumentException("At least one page is required.", "pages");
-                Name = string.IsNullOrWhiteSpace(name) ? "Procedure" : name;
-                Version = string.IsNullOrWhiteSpace(version) ? "" : version;
-                Pages = pages;
+                Title = title;
+                Images = images ?? new string[0];
             }
         }
 
-        // ---------- Helpers ----------
-        public static PageSpec Page(string title, PartSpec p1 = null, PartSpec p2 = null, PartSpec p3 = null)
-            => new PageSpec(title, p1, p2, p3);
-        public static PartSpec Img(string packUri) => new ImagePart(packUri);
-        public static PartSpec Ctrl(Func<UIElement> factory) => new ControlFactoryPart(factory);
-        public static PartSpec Ctrl(string typeName) => new ControlTypePart(typeName);
+        private Gallery _gallery;
+        private Album _album;
+        private int _imageIndex = -1;
 
-        // ---------- State ----------
-        private Procedure _proc;
-        private int _pageIndex = -1;
+        // Strong cache prevents disappearing images
+        private readonly Dictionary<string, BitmapImage> _imageCache =
+            new Dictionary<string, BitmapImage>(StringComparer.OrdinalIgnoreCase);
 
         public TestProcedure()
         {
             InitializeComponent();
-            Loaded += (s, e) => Focus();
+            Loaded += (s, e) => this.Focus(); // keep focus on the control for keyboard handling
 
-            // SAMPLE wiring:
-            // Left: MPPT mini (if you have it), Center: image, Right: IT8615 mini (loader)
-            LoadProcedure(
-                "Battery Charging Procedure", "1.0",
-                Page("Step A",
-                    // If you already have MpptMiniPanelControl:
-                    Ctrl("HouseholdMS.View.EqTesting.MpptMiniPanelControl, HouseholdMS"),
-                    Img("pack://application:,,,/Assets/Procedures/111.png"),
-                    Ctrl(() => new It8615MiniPanelControl())
-                ),
-                Page("Step B",
-                    null,
-                    Img("pack://application:,,,/Assets/Procedures/111.png"),
-                    Ctrl("HouseholdMS.View.EqTesting.It8615MiniPanelControl, HouseholdMS")
-                ),
-                Page("Diagram Only",
-                    null,
-                    Img("pack://application:,,,/Assets/Procedures/diagram.png"),
-                    null)
+            // ---- Choose the set once based on saved language ----
+            var lang = GetSavedLanguage();
+            _ST = GetStrings(lang);
+            var imgs = GetImagesForLang(lang);
+
+            // Immediately open the album. Paths support pack://application, pack://siteoforigin, or raw file paths.
+            var albumTitle = T("album_bvi");
+            LoadGalleryAndOpen(
+                name: T("gallery_name"),
+                version: "1.0",
+                defaultAlbumTitle: albumTitle,
+                new AlbumSpec(albumTitle, imgs)
             );
+
+            // Optional: localize button captions (if buttons exist in XAML)
+            if (PrevBtn != null) PrevBtn.Content = T("prev");
+            if (NextBtn != null) NextBtn.Content = T("next");
         }
 
-        public void LoadProcedure(string name, string version, params PageSpec[] pages)
+        private void LoadGalleryAndOpen(string name, string version, string defaultAlbumTitle, params AlbumSpec[] albums)
         {
-            _proc = new Procedure(name, version, pages);
-            RenderHome();
-        }
+            if (albums == null || albums.Length == 0)
+                throw new ArgumentException(T("err_one_album_required"), nameof(albums));
 
-        private void RenderHome()
-        {
-            _pageIndex = -1;
-
-            HeaderTitle.Text = _proc != null ? _proc.Name : "Procedure";
-            HeaderVersion.Text = _proc != null && !string.IsNullOrWhiteSpace(_proc.Version) ? "v" + _proc.Version : "";
-            HeaderStep.Text = "";
-
-            HomeScroll.Visibility = Visibility.Visible;
-            ProcedureRoot.Visibility = Visibility.Collapsed;
-
-            PageList.Children.Clear();
-            if (_proc == null) return;
-
-            for (int i = 0; i < _proc.Pages.Length; i++)
+            Album[] internalAlbums = albums.Select(a =>
             {
-                var page = _proc.Pages[i];
-                var content = new StackPanel { Orientation = Orientation.Vertical };
+                if (a.Images == null || a.Images.Length == 0)
+                    throw new ArgumentException(string.Format(T("err_album_empty"), a.Title));
+                return new Album(a.Title, a.Images);
+            }).ToArray();
 
-                var thumbUri = (page.Part2 is ImagePart) ? ((ImagePart)page.Part2).UriStr : null;
-                if (!string.IsNullOrWhiteSpace(thumbUri))
-                {
-                    try
-                    {
-                        var thumb = new Image
-                        {
-                            Height = 140,
-                            Stretch = Stretch.Uniform,
-                            HorizontalAlignment = HorizontalAlignment.Stretch,
-                            VerticalAlignment = VerticalAlignment.Center,
-                            ClipToBounds = true,
-                            Margin = new Thickness(0, 0, 0, 8)
-                        };
-                        RenderOptions.SetBitmapScalingMode(thumb, BitmapScalingMode.Fant);
-                        thumb.Source = new BitmapImage(new Uri(thumbUri, UriKind.RelativeOrAbsolute));
-                        content.Children.Add(thumb);
-                    }
-                    catch { }
-                }
+            _gallery = new Gallery(name, version, internalAlbums);
 
-                content.Children.Add(new TextBlock { Text = page.Title, FontSize = 16, FontWeight = FontWeights.SemiBold });
+            Album chosen = internalAlbums.FirstOrDefault(a =>
+                string.Equals(a.Title, defaultAlbumTitle, StringComparison.OrdinalIgnoreCase))
+                ?? internalAlbums[0];
 
-                var btn = new Button { Content = content, Style = (Style)FindResource("AlbumButtonStyle"), Tag = i };
-                btn.Click += PageButton_Click;
-                PageList.Children.Add(btn);
+            OpenAlbum(chosen);
+        }
+
+        private void OpenAlbum(Album album)
+        {
+            _album = album;
+            _imageIndex = 0;
+            _imageCache.Clear();
+            RenderImage();
+        }
+
+        // Robust loader: tries direct URI, pack resource stream, site-of-origin, then raw file path.
+        private ImageSource LoadImageStrong(string uriString)
+        {
+            if (string.IsNullOrWhiteSpace(uriString)) return null;
+
+            BitmapImage cached;
+            if (_imageCache.TryGetValue(uriString, out cached))
+                return cached;
+
+            // 1) Direct Uri load (pack/file/absolute/relative)
+            try
+            {
+                var bmp1 = new BitmapImage();
+                bmp1.BeginInit();
+                bmp1.CacheOption = BitmapCacheOption.OnLoad;
+                bmp1.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+                bmp1.UriSource = new Uri(uriString, UriKind.RelativeOrAbsolute);
+                bmp1.EndInit();
+                bmp1.Freeze();
+                _imageCache[uriString] = bmp1;
+                return bmp1;
             }
+            catch { }
 
-            PrevBtn.IsEnabled = false;
-            NextBtn.IsEnabled = false;
-        }
-
-        private void RenderPage()
-        {
-            if (_proc == null || _pageIndex < 0) return;
-
-            var page = _proc.Pages[_pageIndex];
-
-            HeaderTitle.Text = _proc.Name;
-            HeaderVersion.Text = !string.IsNullOrWhiteSpace(_proc.Version) ? "v" + _proc.Version : "";
-            HeaderStep.Text = page.Title + " — " + (_pageIndex + 1).ToString() + "/" + _proc.Pages.Length.ToString();
-
-            HomeScroll.Visibility = Visibility.Collapsed;
-            ProcedureRoot.Visibility = Visibility.Visible;
-
-            BuildPartToHost(page.Part1, Part1Host, Col1);
-            BuildPartToHost(page.Part2, Part2Host, Col2);
-            BuildPartToHost(page.Part3, Part3Host, Col3);
-
-            PrevBtn.IsEnabled = _pageIndex > 0;
-            NextBtn.IsEnabled = _pageIndex < _proc.Pages.Length - 1;
-        }
-
-        private static void BuildPartToHost(PartSpec part, ContentPresenter host, ColumnDefinition col)
-        {
-            if (part == null)
+            // 2) Application resource stream (for pack application resources)
+            try
             {
-                host.Content = null;
-                host.Visibility = Visibility.Collapsed;
-                col.Width = new GridLength(0);
+                const string APP = "pack://application:,,,/";
+                string rel = uriString;
+                if (rel.StartsWith(APP, StringComparison.OrdinalIgnoreCase))
+                    rel = rel.Substring(APP.Length);
+
+                Uri relUri;
+                if (Uri.TryCreate(rel, UriKind.Relative, out relUri))
+                {
+                    StreamResourceInfo sri = Application.GetResourceStream(relUri);
+                    if (sri != null && sri.Stream != null)
+                    {
+                        using (var s = sri.Stream)
+                        {
+                            var bmp2 = new BitmapImage();
+                            bmp2.BeginInit();
+                            bmp2.CacheOption = BitmapCacheOption.OnLoad;
+                            bmp2.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+                            bmp2.StreamSource = s;
+                            bmp2.EndInit();
+                            bmp2.Freeze();
+                            _imageCache[uriString] = bmp2;
+                            return bmp2;
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            // 3) Site-of-origin mapping (file next to exe)
+            try
+            {
+                const string SOO = "pack://siteoforigin:,,,/";
+                if (uriString.StartsWith(SOO, StringComparison.OrdinalIgnoreCase))
+                {
+                    string localPath = uriString.Substring(SOO.Length).TrimStart('/', '\\');
+                    string abs = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, localPath);
+                    if (File.Exists(abs))
+                    {
+                        using (var fs = File.OpenRead(abs))
+                        {
+                            var bmp3 = new BitmapImage();
+                            bmp3.BeginInit();
+                            bmp3.CacheOption = BitmapCacheOption.OnLoad;
+                            bmp3.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+                            bmp3.StreamSource = fs;
+                            bmp3.EndInit();
+                            bmp3.Freeze();
+                            _imageCache[uriString] = bmp3;
+                            return bmp3;
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            // 4) Raw file path
+            try
+            {
+                if (File.Exists(uriString))
+                {
+                    using (var fs = File.OpenRead(uriString))
+                    {
+                        var bmp4 = new BitmapImage();
+                        bmp4.BeginInit();
+                        bmp4.CacheOption = BitmapCacheOption.OnLoad;
+                        bmp4.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+                        bmp4.StreamSource = fs;
+                        bmp4.EndInit();
+                        bmp4.Freeze();
+                        _imageCache[uriString] = bmp4;
+                        return bmp4;
+                    }
+                }
+            }
+            catch { }
+
+            return null;
+        }
+
+        private void RenderImage()
+        {
+            if (_gallery == null || _album == null || _imageIndex < 0 || _imageIndex >= _album.Images.Length)
+                return;
+
+            HeaderTitle.Text = _gallery.Name;
+
+            var ver = string.IsNullOrWhiteSpace(_gallery.Version) ? "" : T("version_prefix") + _gallery.Version;
+            HeaderVersion.Text = ver;
+
+            HeaderStep.Text = _album.Title + T("step_sep") + (_imageIndex + 1) + "/" + _album.Images.Length;
+
+            string uri = _album.Images[_imageIndex];
+            ImageSource src = LoadImageStrong(uri);
+            PageImage.Source = src;
+            PageImage.ToolTip = (src == null) ? string.Format(T("missing_image"), uri) : null;
+
+            PrevBtn.IsEnabled = _imageIndex > 0;
+            NextBtn.IsEnabled = _imageIndex < _album.Images.Length - 1;
+
+            if (ImageViewbox != null)
+            {
+                ImageViewbox.MaxWidth = double.PositiveInfinity;
+                ImageViewbox.MaxHeight = double.PositiveInfinity;
+            }
+        }
+
+        private void PrevBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (_album == null) return;
+            if (_imageIndex > 0)
+            {
+                _imageIndex--;
+                RenderImage();
+            }
+        }
+
+        private void NextBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (_album == null) return;
+            if (_imageIndex < _album.Images.Length - 1)
+            {
+                _imageIndex++;
+                RenderImage();
+            }
+        }
+
+        private void Root_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // Swallow Up/Down so WPF doesn't shift focus and draw dotted focus cues
+            if (e.Key == Key.Up || e.Key == Key.Down)
+            {
+                e.Handled = true;
                 return;
             }
-
-            UIElement content = null;
-            try { content = part.Build(); }
-            catch (Exception ex) { content = Placeholder("Part error:\n" + ex.Message); }
-
-            host.Content = content;
-            host.Visibility = Visibility.Visible;
-            col.Width = new GridLength(1, GridUnitType.Star);
         }
 
-        // Events
-        private void PageButton_Click(object sender, RoutedEventArgs e)
+        private void Root_KeyDown(object sender, KeyEventArgs e)
         {
-            if (_proc == null) return;
-            var btn = sender as Button;
-            if (btn != null && btn.Tag is int)
+            if (_album == null) return;
+
+            if (e.Key == Key.Left)
             {
-                int idx = (int)btn.Tag;
-                if (idx >= 0 && idx < _proc.Pages.Length) { _pageIndex = idx; RenderPage(); }
+                PrevBtn_Click(this, new RoutedEventArgs());
+                e.Handled = true;
             }
-        }
-        private void HomeBtn_Click(object sender, RoutedEventArgs e) { RenderHome(); }
-        private void PrevBtn_Click(object sender, RoutedEventArgs e) { if (_proc == null || _pageIndex <= 0) return; _pageIndex--; RenderPage(); }
-        private void NextBtn_Click(object sender, RoutedEventArgs e) { if (_proc == null || _pageIndex >= _proc.Pages.Length - 1) return; _pageIndex++; RenderPage(); }
-
-        private void Root_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (_pageIndex < 0) return;
-            if (e.Key == System.Windows.Input.Key.Left) PrevBtn_Click(this, new RoutedEventArgs());
-            if (e.Key == System.Windows.Input.Key.Right) NextBtn_Click(this, new RoutedEventArgs());
-        }
-
-        // Placeholder
-        private static Border Placeholder(string text)
-        {
-            return new Border
+            else if (e.Key == Key.Right)
             {
-                Background = Brushes.White,
-                BorderBrush = new SolidColorBrush(Color.FromRgb(229, 231, 235)),
-                BorderThickness = new Thickness(1),
-                Child = new TextBlock
-                {
-                    Text = text,
-                    TextAlignment = TextAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(12),
-                    Foreground = Brushes.Gray
-                }
-            };
+                NextBtn_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Up || e.Key == Key.Down)
+            {
+                // belt & suspenders
+                e.Handled = true;
+            }
         }
     }
 }

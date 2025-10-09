@@ -32,23 +32,19 @@ namespace HouseholdMS.Model
                 }
                 catch
                 {
-                    // invalid config → fallback
                     dbFilePath = GetDefaultDbPath();
                     connectionString = $"Data Source={dbFilePath};Version=3;Foreign Keys=True;";
                 }
             }
             else
             {
-                // no config → fallback
                 dbFilePath = GetDefaultDbPath();
                 connectionString = $"Data Source={dbFilePath};Version=3;Foreign Keys=True;";
             }
 
-            // Ensure DB file exists
             if (!File.Exists(dbFilePath))
                 SQLiteConnection.CreateFile(dbFilePath);
 
-            // Ensure schema exists / migrate if needed
             EnsureSchema();
         }
 
@@ -62,7 +58,6 @@ namespace HouseholdMS.Model
         }
 
         public static SQLiteConnection GetConnection() => new SQLiteConnection(connectionString);
-
         public static string GetConnectionString() => connectionString;
 
         public static bool TestConnection()
@@ -75,10 +70,7 @@ namespace HouseholdMS.Model
                     return true;
                 }
             }
-            catch
-            {
-                return false;
-            }
+            catch { return false; }
         }
 
         private static bool TableHasColumn(SQLiteConnection conn, string table, string column)
@@ -102,7 +94,7 @@ PRAGMA foreign_keys = ON;
 PRAGMA journal_mode = WAL;
 PRAGMA synchronous = NORMAL;
 
-/* USERS (unchanged) */
+/* USERS */
 CREATE TABLE IF NOT EXISTS Users (
     UserID       INTEGER PRIMARY KEY AUTOINCREMENT,
     Name         TEXT    NOT NULL,
@@ -138,7 +130,7 @@ SELECT UserID, Name, Username, Phone, Address, AssignedArea, Note, CreatedAt
 FROM Users
 WHERE Role='Technician' AND IsActive=1 AND TechApproved=0;
 
-/* HOUSEHOLDS (unchanged) */
+/* HOUSEHOLDS */
 CREATE TABLE IF NOT EXISTS Households (
     HouseholdID   INTEGER PRIMARY KEY AUTOINCREMENT,
     OwnerName     TEXT NOT NULL,
@@ -154,7 +146,7 @@ CREATE TABLE IF NOT EXISTS Households (
 );
 CREATE INDEX IF NOT EXISTS IX_Households_Statuss ON Households(Statuss);
 
-/* INVENTORY */
+/* INVENTORY CORE (now includes DisplayOrder) */
 CREATE TABLE IF NOT EXISTS StockInventory (
     ItemID            INTEGER PRIMARY KEY AUTOINCREMENT,
     ItemType          TEXT    NOT NULL,
@@ -162,10 +154,26 @@ CREATE TABLE IF NOT EXISTS StockInventory (
     UsedQuantity      INTEGER NOT NULL DEFAULT 0 CHECK (UsedQuantity >= 0),
     LastRestockedDate TEXT    NOT NULL,
     LowStockThreshold INTEGER NOT NULL DEFAULT 5 CHECK (LowStockThreshold >= 0),
-    Note              TEXT
+    Note              TEXT,
+    DisplayOrder      INTEGER
 );
 
-/* Per-restock history (already had person+note) */
+/* Keep a stable default order for new rows (append at the end) */
+DROP TRIGGER IF EXISTS trg_stockinventory_default_displayorder;
+CREATE TRIGGER IF NOT EXISTS trg_stockinventory_default_displayorder
+AFTER INSERT ON StockInventory
+WHEN NEW.DisplayOrder IS NULL
+BEGIN
+    UPDATE StockInventory
+    SET DisplayOrder = COALESCE(
+        (SELECT MAX(DisplayOrder) + 1 FROM StockInventory WHERE ItemID <> NEW.ItemID),
+        NEW.ItemID
+    )
+    WHERE ItemID = NEW.ItemID;
+END;
+
+CREATE INDEX IF NOT EXISTS IX_StockInventory_DisplayOrder ON StockInventory(DisplayOrder ASC, ItemID ASC);
+
 CREATE TABLE IF NOT EXISTS ItemRestock (
     RestockID      INTEGER PRIMARY KEY AUTOINCREMENT,
     ItemID         INTEGER NOT NULL,
@@ -177,7 +185,6 @@ CREATE TABLE IF NOT EXISTS ItemRestock (
 );
 CREATE INDEX IF NOT EXISTS IX_ItemRestock_Item_At ON ItemRestock(ItemID, RestockedAt DESC);
 
-/* NEW: manual (non-service) usage history with person+reason */
 CREATE TABLE IF NOT EXISTS ItemUsage (
     UseID       INTEGER PRIMARY KEY AUTOINCREMENT,
     ItemID      INTEGER NOT NULL,
@@ -189,7 +196,7 @@ CREATE TABLE IF NOT EXISTS ItemUsage (
 );
 CREATE INDEX IF NOT EXISTS IX_ItemUsage_Item_At ON ItemUsage(ItemID, UsedAt DESC);
 
-/* SERVICE (unchanged from your last version) */
+/* SERVICE */
 CREATE TABLE IF NOT EXISTS Service (
     ServiceID     INTEGER PRIMARY KEY AUTOINCREMENT,
     HouseholdID   INTEGER NOT NULL,
@@ -227,7 +234,6 @@ CREATE INDEX IF NOT EXISTS IX_Service_Status      ON Service(Status);
 CREATE INDEX IF NOT EXISTS IX_ServiceTechnicians_Tech ON ServiceTechnicians(TechnicianID);
 CREATE INDEX IF NOT EXISTS IX_ServiceInventory_Item   ON ServiceInventory(ItemID);
 
-/* Only ONE open service per household */
 CREATE UNIQUE INDEX IF NOT EXISTS UX_Service_OpenPerHousehold
 ON Service(HouseholdID) WHERE FinishDate IS NULL;
 
@@ -248,7 +254,7 @@ END;
 
 UPDATE Households SET Statuss = 'In Service' WHERE Statuss = 'Not Operational';
 
-/* REPORTS (unchanged) */
+/* REPORTS */
 CREATE TABLE IF NOT EXISTS InspectionReport (
     ReportID     INTEGER PRIMARY KEY AUTOINCREMENT,
     HouseholdID  INTEGER NOT NULL,
@@ -261,6 +267,7 @@ CREATE TABLE IF NOT EXISTS InspectionReport (
     FOREIGN KEY (TechnicianID) REFERENCES Users(UserID)           ON DELETE SET NULL
 );
 
+/* ******* FIXED HERE: reference Households(HouseholdID) ******* */
 CREATE TABLE IF NOT EXISTS TestReports (
     ReportID             INTEGER PRIMARY KEY AUTOINCREMENT,
     HouseholdID          INTEGER NOT NULL,
@@ -271,11 +278,11 @@ CREATE TABLE IF NOT EXISTS TestReports (
     SettingsVerification TEXT,
     ImagePaths           TEXT,
     DeviceStatus         TEXT,
-    FOREIGN KEY (HouseholdID)  REFERENCES Households(HouseholdsID) ON DELETE CASCADE,
+    FOREIGN KEY (HouseholdID)  REFERENCES Households(HouseholdID) ON DELETE CASCADE,
     FOREIGN KEY (TechnicianID) REFERENCES Users(UserID)             ON DELETE CASCADE
 );
 
-/* Role/approval checks (unchanged) */
+/* Role/approval checks */
 DROP TRIGGER IF EXISTS trg_check_Service_leadTech_role;
 CREATE TRIGGER trg_check_Service_leadTech_role
 BEFORE INSERT ON Service
@@ -347,16 +354,16 @@ DROP VIEW IF EXISTS v_ItemOnHand;
 CREATE VIEW v_ItemOnHand AS
 SELECT
     ItemID,
-    TotalQuantity AS OnHand,      -- <- single source of truth
+    TotalQuantity AS OnHand,
     TotalQuantity,
     UsedQuantity,
     LastRestockedDate,
     LowStockThreshold,
     ItemType,
-    Note
+    Note,
+    DisplayOrder
 FROM StockInventory;
 
-/* REPLACED: include manual uses too */
 DROP VIEW IF EXISTS v_ItemUsageHistory;
 CREATE VIEW v_ItemUsageHistory AS
 SELECT
@@ -378,7 +385,6 @@ SELECT
     NULL                    AS TechnicianID
 FROM ItemUsage u;
 
-/* Activity view (optional union) */
 DROP VIEW IF EXISTS v_ItemActivity;
 CREATE VIEW v_ItemActivity AS
 SELECT
@@ -416,10 +422,13 @@ FROM ItemUsage u;
             using (var conn = GetConnection())
             {
                 conn.Open();
+
+                // Base schema (with DisplayOrder + trigger + index)
                 using (var cmd = new SQLiteCommand(schema, conn))
                     cmd.ExecuteNonQuery();
 
-                // Lightweight migrations still kept
+                // Lightweight migrations
+
                 if (!TableHasColumn(conn, "Users", "TechApproved"))
                 {
                     using (var alter = new SQLiteCommand(
@@ -443,18 +452,150 @@ FROM ItemUsage u;
                     using (var idx = new SQLiteCommand("CREATE INDEX IF NOT EXISTS IX_Service_Status ON Service(Status);", conn))
                         idx.ExecuteNonQuery();
                 }
+
+                // ---- NEW: migration for DisplayOrder in StockInventory ----
+                if (!TableHasColumn(conn, "StockInventory", "DisplayOrder"))
+                {
+                    using (var alter = new SQLiteCommand("ALTER TABLE StockInventory ADD COLUMN DisplayOrder INTEGER;", conn))
+                        alter.ExecuteNonQuery();
+
+                    // Initialize order consistently (use ItemID to start)
+                    using (var seed = new SQLiteCommand("UPDATE StockInventory SET DisplayOrder = ItemID WHERE DisplayOrder IS NULL;", conn))
+                        seed.ExecuteNonQuery();
+
+                    using (var idx = new SQLiteCommand("CREATE INDEX IF NOT EXISTS IX_StockInventory_DisplayOrder ON StockInventory(DisplayOrder ASC, ItemID ASC);", conn))
+                        idx.ExecuteNonQuery();
+
+                    using (var trgDrop = new SQLiteCommand("DROP TRIGGER IF EXISTS trg_stockinventory_default_displayorder;", conn))
+                        trgDrop.ExecuteNonQuery();
+                    using (var trgCreate = new SQLiteCommand(@"
+CREATE TRIGGER IF NOT EXISTS trg_stockinventory_default_displayorder
+AFTER INSERT ON StockInventory
+WHEN NEW.DisplayOrder IS NULL
+BEGIN
+    UPDATE StockInventory
+    SET DisplayOrder = COALESCE(
+        (SELECT MAX(DisplayOrder) + 1 FROM StockInventory WHERE ItemID <> NEW.ItemID),
+        NEW.ItemID
+    )
+    WHERE ItemID = NEW.ItemID;
+END;", conn))
+                        trgCreate.ExecuteNonQuery();
+                }
+
+                // *** MIGRATION: fix old TestReports FK if it points to Households(HouseholdsID) ***
+                if (NeedsFix_TestReportsFk(conn))
+                {
+                    Fix_TestReportsFk(conn);
+
+                    // Re-create the TestReports role-check trigger (drop/create)
+                    using (var tcmd = new SQLiteCommand(@"
+DROP TRIGGER IF EXISTS trg_check_TestReports_role;
+CREATE TRIGGER trg_check_TestReports_role
+BEFORE INSERT ON TestReports
+BEGIN
+    SELECT CASE
+        WHEN NOT EXISTS (
+            SELECT 1 FROM Users u
+            WHERE u.UserID = NEW.TechnicianID
+              AND u.Role = 'Technician'
+              AND u.IsActive = 1
+              AND u.TechApproved = 1
+        )
+        THEN RAISE(ABORT, 'TestReports.TechnicianID must be an approved, active Technician user')
+    END;
+END;", conn))
+                    {
+                        tcmd.ExecuteNonQuery();
+                    }
+                }
+            }
+        }
+
+        private static bool NeedsFix_TestReportsFk(SQLiteConnection conn)
+        {
+            try
+            {
+                using (var cmd = new SQLiteCommand("PRAGMA foreign_key_list('TestReports');", conn))
+                using (var r = cmd.ExecuteReader())
+                {
+                    bool hasHouseholdFk = false;
+                    bool correct = false;
+
+                    while (r.Read())
+                    {
+                        string parent = Convert.ToString(r["table"]);
+                        string to = Convert.ToString(r["to"]);
+                        if (string.Equals(parent, "Households", StringComparison.OrdinalIgnoreCase))
+                        {
+                            hasHouseholdFk = true;
+                            if (string.Equals(to, "HouseholdID", StringComparison.OrdinalIgnoreCase))
+                                correct = true;
+                            else
+                                return true; // wrong column (e.g., 'HouseholdsID')
+                        }
+                    }
+
+                    return !hasHouseholdFk || !correct;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static void Fix_TestReportsFk(SQLiteConnection conn)
+        {
+            using (var tx = conn.BeginTransaction())
+            {
+                using (var chk = new SQLiteCommand(
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name='TestReports';", conn, tx))
+                {
+                    var exists = chk.ExecuteScalar() as string;
+                    if (string.IsNullOrEmpty(exists))
+                    {
+                        tx.Commit();
+                        return;
+                    }
+                }
+
+                using (var cmd = new SQLiteCommand("ALTER TABLE TestReports RENAME TO _TestReports_bad;", conn, tx))
+                    cmd.ExecuteNonQuery();
+
+                using (var cmd = new SQLiteCommand(@"
+CREATE TABLE TestReports (
+    ReportID             INTEGER PRIMARY KEY AUTOINCREMENT,
+    HouseholdID          INTEGER NOT NULL,
+    TechnicianID         INTEGER NOT NULL,
+    TestDate             TEXT    NOT NULL DEFAULT (datetime('now')),
+    InspectionItems      TEXT,
+    Annotations          TEXT,
+    SettingsVerification TEXT,
+    ImagePaths           TEXT,
+    DeviceStatus         TEXT,
+    FOREIGN KEY (HouseholdID)  REFERENCES Households(HouseholdID) ON DELETE CASCADE,
+    FOREIGN KEY (TechnicianID) REFERENCES Users(UserID)             ON DELETE CASCADE
+);", conn, tx))
+                    cmd.ExecuteNonQuery();
+
+                using (var copy = new SQLiteCommand(@"
+INSERT INTO TestReports (ReportID, HouseholdID, TechnicianID, TestDate, InspectionItems, Annotations, SettingsVerification, ImagePaths, DeviceStatus)
+SELECT ReportID, HouseholdID, TechnicianID, TestDate, InspectionItems, Annotations, SettingsVerification, ImagePaths, DeviceStatus
+FROM _TestReports_bad;", conn, tx))
+                    copy.ExecuteNonQuery();
+
+                using (var drop = new SQLiteCommand("DROP TABLE _TestReports_bad;", conn, tx))
+                    drop.ExecuteNonQuery();
+
+                tx.Commit();
             }
         }
 
         // -----------------------------
-        // Convenience helpers (optional)
+        // Convenience helpers (unchanged)
         // -----------------------------
 
-        /// <summary>
-        /// Atomically consumes stock from an item (TotalQuantity -= qty, UsedQuantity += qty),
-        /// and logs into ItemUsage in a single transaction.
-        /// Returns false if there is not enough stock.
-        /// </summary>
         public static bool TryConsumeStock(int itemId, int qty, string usedByName = null, string reason = null)
         {
             if (itemId <= 0) throw new ArgumentOutOfRangeException(nameof(itemId));
@@ -465,7 +606,6 @@ FROM ItemUsage u;
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
                 {
-                    // Atomic subtract with guard
                     using (var cmd = new SQLiteCommand(@"
                         UPDATE StockInventory
                         SET TotalQuantity = TotalQuantity - @qty,
@@ -482,7 +622,6 @@ FROM ItemUsage u;
                         }
                     }
 
-                    // Log manual usage (optional; keeps your existing table)
                     using (var cmd2 = new SQLiteCommand(@"
                         INSERT INTO ItemUsage (ItemID, Quantity, UsedAt, UsedByName, Reason)
                         VALUES (@id, @qty, datetime('now'), @by, @reason);", conn, tx))
@@ -500,9 +639,6 @@ FROM ItemUsage u;
             }
         }
 
-        /// <summary>
-        /// Atomically restocks an item and writes to ItemRestock.
-        /// </summary>
         public static void RestockItem(int itemId, int qty, string createdByName = null, string note = null)
         {
             if (itemId <= 0) throw new ArgumentOutOfRangeException(nameof(itemId));

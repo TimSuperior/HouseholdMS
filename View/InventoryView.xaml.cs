@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data.SQLite;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -24,13 +25,31 @@ namespace HouseholdMS.View
         private readonly Dictionary<string, string> _headerToProperty = new Dictionary<string, string>
         {
             { "ID", "ItemID" },
+            { "Display #", "DisplayOrder" },
             { "Item Type", "ItemType" },
-            { "Available Qty", "TotalQuantity" },   // renamed column header, same backing property
+            { "Available Qty", "TotalQuantity" },
             { "Used Qty", "UsedQuantity" },
             { "Low Threshold", "LowStockThreshold" },
             { "Last Restocked", "LastRestockedDate" },
+            { "Order", "DisplayOrder" },
             { "Note", "Note" }
         };
+
+        // Column selection for search
+        private static readonly string[] AllColumnKeys = new[]
+        {
+            nameof(InventoryItem.ItemID),
+            nameof(InventoryItem.DisplayOrder),
+            nameof(InventoryItem.ItemType),
+            nameof(InventoryItem.TotalQuantity),
+            nameof(InventoryItem.UsedQuantity),
+            nameof(InventoryItem.LowStockThreshold),
+            nameof(InventoryItem.LastRestockedDate),
+            nameof(InventoryItem.Note)
+        };
+
+        // empty set = treat as "all columns"
+        private readonly HashSet<string> _selectedColumnKeys = new HashSet<string>(StringComparer.Ordinal);
 
         public InventoryItem SelectedInventoryItem { get; set; }
 
@@ -54,6 +73,7 @@ namespace HouseholdMS.View
             }
 
             UpdateSearchPlaceholder();
+            UpdateColumnFilterButtonContent(); // reflect "All"
         }
 
         private bool IsAdmin() => string.Equals(_currentUserRole, "Admin", StringComparison.OrdinalIgnoreCase);
@@ -65,7 +85,7 @@ namespace HouseholdMS.View
             using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
-                using (var cmd = new SQLiteCommand("SELECT * FROM StockInventory", conn))
+                using (var cmd = new SQLiteCommand("SELECT ItemID, ItemType, TotalQuantity, UsedQuantity, LastRestockedDate, LowStockThreshold, Note, DisplayOrder FROM StockInventory ORDER BY DisplayOrder ASC, ItemID ASC;", conn))
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
@@ -78,13 +98,19 @@ namespace HouseholdMS.View
                             UsedQuantity = Convert.ToInt32(reader["UsedQuantity"]),
                             LastRestockedDate = reader["LastRestockedDate"]?.ToString(),
                             LowStockThreshold = Convert.ToInt32(reader["LowStockThreshold"]),
-                            Note = reader["Note"] == DBNull.Value ? string.Empty : reader["Note"].ToString()
+                            Note = reader["Note"] == DBNull.Value ? string.Empty : reader["Note"].ToString(),
+                            DisplayOrder = reader["DisplayOrder"] == DBNull.Value ? Convert.ToInt32(reader["ItemID"]) : Convert.ToInt32(reader["DisplayOrder"])
                         });
                     }
                 }
             }
 
             view = CollectionViewSource.GetDefaultView(allInventory);
+
+            // Default sort by DisplayOrder
+            view.SortDescriptions.Clear();
+            view.SortDescriptions.Add(new SortDescription(nameof(InventoryItem.DisplayOrder), ListSortDirection.Ascending));
+
             InventoryListView.ItemsSource = view;
         }
 
@@ -93,11 +119,12 @@ namespace HouseholdMS.View
         {
             if (SearchBox == null) return;
 
-            string ph = "Search by item type";
+            string ph = "Search…";
             SearchBox.Tag = ph;
 
             if (string.IsNullOrWhiteSpace(SearchBox.Text) ||
-                SearchBox.Text == "Search by item type")
+                SearchBox.Text == "Search by item type" ||
+                SearchBox.Text == ph)
             {
                 SearchBox.Text = ph;
                 SearchBox.Foreground = Brushes.Gray;
@@ -107,10 +134,17 @@ namespace HouseholdMS.View
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            ApplySearchFilter();
+        }
+
+        private void ApplySearchFilter()
+        {
             if (view == null) return;
 
             string text = SearchBox.Text ?? string.Empty;
-            if (text == (SearchBox.Tag as string))
+            string placeholder = SearchBox.Tag as string ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(text) || text == placeholder)
             {
                 view.Filter = null;
                 view.Refresh();
@@ -118,13 +152,38 @@ namespace HouseholdMS.View
             }
 
             string search = text.Trim().ToLowerInvariant();
+            var keys = _selectedColumnKeys.Count == 0 ? AllColumnKeys : _selectedColumnKeys.ToArray();
+
             view.Filter = obj =>
             {
-                if (obj is InventoryItem it)
-                    return (it.ItemType ?? string.Empty).ToLowerInvariant().Contains(search);
+                var it = obj as InventoryItem;
+                if (it == null) return false;
+
+                foreach (var k in keys)
+                {
+                    string cell = GetCellString(it, k);
+                    if (!string.IsNullOrEmpty(cell) && cell.ToLowerInvariant().Contains(search))
+                        return true;
+                }
                 return false;
             };
             view.Refresh();
+        }
+
+        private static string GetCellString(InventoryItem it, string key)
+        {
+            switch (key)
+            {
+                case nameof(InventoryItem.ItemID): return it.ItemID.ToString();
+                case nameof(InventoryItem.DisplayOrder): return it.DisplayOrder.ToString();
+                case nameof(InventoryItem.ItemType): return it.ItemType ?? string.Empty;
+                case nameof(InventoryItem.TotalQuantity): return it.TotalQuantity.ToString();
+                case nameof(InventoryItem.UsedQuantity): return it.UsedQuantity.ToString();
+                case nameof(InventoryItem.LowStockThreshold): return it.LowStockThreshold.ToString();
+                case nameof(InventoryItem.LastRestockedDate): return it.LastRestockedDate ?? string.Empty;
+                case nameof(InventoryItem.Note): return it.Note ?? string.Empty;
+                default: return string.Empty;
+            }
         }
 
         private void ClearText(object sender, RoutedEventArgs e)
@@ -283,7 +342,7 @@ namespace HouseholdMS.View
             return dlg;
         }
 
-        // ===== Row actions =====
+        // ===== Row actions (restock/use) =====
         private void Restock_Click(object sender, RoutedEventArgs e)
         {
             if (!IsAdmin())
@@ -312,7 +371,6 @@ namespace HouseholdMS.View
                 {
                     conn.Open();
 
-                    // 1) StockInventory totals (+) and last restocked date
                     using (var cmd = new SQLiteCommand(@"
                         UPDATE StockInventory 
                         SET TotalQuantity = TotalQuantity + @qty,
@@ -325,7 +383,6 @@ namespace HouseholdMS.View
                         cmd.ExecuteNonQuery();
                     }
 
-                    // 2) Append restock history with person + note
                     using (var cmd2 = new SQLiteCommand(@"
                         INSERT INTO ItemRestock (ItemID, Quantity, RestockedAt, CreatedByName, Note)
                         VALUES (@id, @qty, datetime('now'), @by, @note);", conn))
@@ -376,7 +433,6 @@ namespace HouseholdMS.View
                 {
                     conn.Open();
 
-                    // 1) Keep your existing behavior: total(-), used(+)
                     using (var cmd = new SQLiteCommand(@"
                         UPDATE StockInventory 
                         SET TotalQuantity = TotalQuantity - @qty,
@@ -388,7 +444,6 @@ namespace HouseholdMS.View
                         cmd.ExecuteNonQuery();
                     }
 
-                    // 2) Log manual usage with person + reason
                     using (var cmd2 = new SQLiteCommand(@"
                         INSERT INTO ItemUsage (ItemID, Quantity, UsedAt, UsedByName, Reason)
                         VALUES (@id, @qty, datetime('now'), @by, @reason);", conn))
@@ -404,20 +459,164 @@ namespace HouseholdMS.View
                 LoadInventory();
             }
         }
+
+        // ===== Reorder logic =====
+        private void MoveUp_Click(object sender, RoutedEventArgs e)
+        {
+            if (!IsAdmin()) { Beep(); return; }
+
+            var item = (sender as FrameworkElement)?.GetValue(Button.CommandParameterProperty) as InventoryItem;
+            if (item == null) return;
+
+            var ordered = allInventory.OrderBy(i => i.DisplayOrder).ThenBy(i => i.ItemID).ToList();
+            int idx = ordered.FindIndex(i => i.ItemID == item.ItemID);
+            if (idx <= 0) { Beep(); return; }
+
+            var neighbor = ordered[idx - 1];
+            SwapDisplayOrders(item, neighbor);
+        }
+
+        private void MoveDown_Click(object sender, RoutedEventArgs e)
+        {
+            if (!IsAdmin()) { Beep(); return; }
+
+            var item = (sender as FrameworkElement)?.GetValue(Button.CommandParameterProperty) as InventoryItem;
+            if (item == null) return;
+
+            var ordered = allInventory.OrderBy(i => i.DisplayOrder).ThenBy(i => i.ItemID).ToList();
+            int idx = ordered.FindIndex(i => i.ItemID == item.ItemID);
+            if (idx < 0 || idx >= ordered.Count - 1) { Beep(); return; }
+
+            var neighbor = ordered[idx + 1];
+            SwapDisplayOrders(item, neighbor);
+        }
+
+        private void SwapDisplayOrders(InventoryItem a, InventoryItem b)
+        {
+            if (a == null || b == null) return;
+
+            int aOrder = a.DisplayOrder;
+            int bOrder = b.DisplayOrder;
+
+            using (var conn = DatabaseHelper.GetConnection())
+            {
+                conn.Open();
+                using (var tx = conn.BeginTransaction())
+                {
+                    using (var cmd1 = new SQLiteCommand("UPDATE StockInventory SET DisplayOrder = @newOrder WHERE ItemID = @id;", conn, tx))
+                    {
+                        cmd1.Parameters.AddWithValue("@newOrder", bOrder);
+                        cmd1.Parameters.AddWithValue("@id", a.ItemID);
+                        cmd1.ExecuteNonQuery();
+                    }
+                    using (var cmd2 = new SQLiteCommand("UPDATE StockInventory SET DisplayOrder = @newOrder WHERE ItemID = @id;", conn, tx))
+                    {
+                        cmd2.Parameters.AddWithValue("@newOrder", aOrder);
+                        cmd2.Parameters.AddWithValue("@id", b.ItemID);
+                        cmd2.ExecuteNonQuery();
+                    }
+                    tx.Commit();
+                }
+            }
+
+            a.DisplayOrder = bOrder;
+            b.DisplayOrder = aOrder;
+
+            view.SortDescriptions.Clear();
+            view.SortDescriptions.Add(new SortDescription(nameof(InventoryItem.DisplayOrder), ListSortDirection.Ascending));
+            view.Refresh();
+        }
+
+        private void Beep()
+        {
+            try { System.Media.SystemSounds.Beep.Play(); } catch { }
+        }
+
+        // ===== Column chooser UI handlers =====
+        private void ColumnFilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            ColumnPopup.IsOpen = true;
+        }
+
+        private void ColumnPopup_Closed(object sender, EventArgs e)
+        {
+            UpdateColumnFilterButtonContent();
+
+            var text = (SearchBox.Text ?? string.Empty);
+            var placeholder = SearchBox.Tag as string ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(text) && text != placeholder)
+                ApplySearchFilter();
+        }
+
+        private void ColumnCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            var cb = sender as CheckBox;
+            var key = cb != null ? cb.Tag as string : null;
+            if (string.IsNullOrWhiteSpace(key)) return;
+
+            if (cb.IsChecked == true) _selectedColumnKeys.Add(key);
+            else _selectedColumnKeys.Remove(key);
+        }
+
+        private void SelectAllColumns_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedColumnKeys.Clear();
+            foreach (var child in FindPopupCheckBoxes()) child.IsChecked = true;
+            foreach (var k in AllColumnKeys) _selectedColumnKeys.Add(k);
+        }
+
+        private void ClearAllColumns_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedColumnKeys.Clear(); // empty = "All"
+            foreach (var child in FindPopupCheckBoxes()) child.IsChecked = false;
+        }
+
+        private IEnumerable<CheckBox> FindPopupCheckBoxes()
+        {
+            var border = ColumnPopup.Child as Border;
+            if (border == null) yield break;
+
+            var sp = border.Child as StackPanel;
+            if (sp == null) yield break;
+
+            var sv = sp.Children.OfType<ScrollViewer>().FirstOrDefault();
+            if (sv == null) yield break;
+
+            var inner = sv.Content as StackPanel;
+            if (inner == null) yield break;
+
+            foreach (var child in inner.Children)
+            {
+                var cb = child as CheckBox;
+                if (cb != null) yield return cb;
+            }
+        }
+
+        private void UpdateColumnFilterButtonContent()
+        {
+            if (_selectedColumnKeys.Count == 0)
+            {
+                ColumnFilterButton.Content = "All ▾";
+            }
+            else
+            {
+                ColumnFilterButton.Content = string.Format("{0} selected ▾", _selectedColumnKeys.Count);
+            }
+        }
     }
 
-    // ===== Model (kept, with state flags for row colors) =====
+    // ===== Model =====
     public class InventoryItem
     {
         public int ItemID { get; set; }
         public string ItemType { get; set; }
-        public int TotalQuantity { get; set; }           // acts as Available Qty
+        public int TotalQuantity { get; set; }
         public int UsedQuantity { get; set; }
         public string LastRestockedDate { get; set; }
         public int LowStockThreshold { get; set; }
         public string Note { get; set; }
+        public int DisplayOrder { get; set; }
 
-        // NEW: explicit flags for row styles
         public bool IsOutOfStock => TotalQuantity <= 0;
         public bool IsLowStock => TotalQuantity > 0 && TotalQuantity <= LowStockThreshold;
     }

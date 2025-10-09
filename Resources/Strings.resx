@@ -25,14 +25,19 @@
   <data name="Menu_Multimeter" xml:space="preserve"><value>📊 Multimeter</value></data>
   <data name="Menu_ElectronicLoad" xml:space="preserve"><value>⚡Electronic Load</value></data>
 
-  <data name="Section_TestManuals" xml:space="preserve"><value>🧪 Test Manuals</value></data>
-  <data name="TestManuals_TestModules" xml:space="preserve"><value>Test Modules</value></data>
-  <data name="Menu_BlueSmartCharger" xml:space="preserve"><value>🔌 Blue Smart Charger</value></data>
-  <data name="Menu_ControllerTest" xml:space="preserve"><value>🧭 Controller Test</value></data>
-  <data name="Menu_TestProcedure" xml:space="preserve"><value>TestProcedure</value></data>
-  <data name="Menu_SwitchTest" xml:space="preserve"><value>🔀 Switch Test</value></data>
+	<!-- Test Manuals -->
+	<data name="Section_TestManuals" xml:space="preserve"><value>🧪 Test Manuals</value></data>
+	<data name="TestManuals_TestModules" xml:space="preserve"><value>Test Modules</value></data>
 
-  <data name="TestManuals_Documentation" xml:space="preserve"><value>Documentation</value></data>
+	<!-- Test Modules buttons -->
+	<data name="Menu_TestProcedure" xml:space="preserve"><value>PV Panel</value></data>
+	<data name="Menu_ControllerTest" xml:space="preserve"><value>🧭 MPPT Charge Controller</value></data>
+	<data name="Menu_SwitchTest" xml:space="preserve"><value>🔀 Inverter</value></data>
+	<data name="Menu_BlueSmartCharger" xml:space="preserve"><value>🔌 Blue Smart Charger</value></data>
+	<data name="Menu_K4BatteryBalancing" xml:space="preserve"><value>🔋 K4 Battery Balancing</value></data>
+
+
+	<data name="TestManuals_Documentation" xml:space="preserve"><value>Documentation</value></data>
   <data name="Menu_TestReports" xml:space="preserve"><value>📄 Test Reports</value></data>
   <data name="Menu_Templates" xml:space="preserve"><value>📁 Templates</value></data>
   <data name="Menu_ManageUsers" xml:space="preserve"><value>👥 Manage Users</value></data>
@@ -244,7 +249,7 @@
 	<data name="InvDet_Note" xml:space="preserve"><value>Note</value></data>
 
 	<data name="InvDet_UsageHistory" xml:space="preserve"><value>Usage History</value></data>
-	<data name="InvDet_Usage_When" xml:space="preserve"><value>When</value></data>
+	<data name="InvDet_Usage_When" xml:space="preserve"><value>Date</value></data>
 	<data name="InvDet_Usage_QtyUsed" xml:space="preserve"><value>Qty Used</value></data>
 	<data name="InvDet_Usage_Service" xml:space="preserve"><value>Service</value></data>
 	<data name="InvDet_Usage_Household" xml:space="preserve"><value>Household</value></data>
@@ -252,7 +257,7 @@
 	<data name="InvDet_Usage_UsedBy" xml:space="preserve"><value>Used By</value></data>
 
 	<data name="InvDet_RestockHistory" xml:space="preserve"><value>Restock History</value></data>
-	<data name="InvDet_Restock_When" xml:space="preserve"><value>When</value></data>
+	<data name="InvDet_Restock_When" xml:space="preserve"><value>Date</value></data>
 	<data name="InvDet_Restock_Qty" xml:space="preserve"><value>Qty</value></data>
 	<data name="InvDet_Restock_By" xml:space="preserve"><value>Restocked By</value></data>
 	<data name="InvDet_Restock_Note" xml:space="preserve"><value>Note</value></data>
@@ -400,14 +405,14 @@
 	<data name="AIC_Snapshot_LastUsed" xml:space="preserve"><value>Last Used</value></data>
 
 	<data name="AIC_UsageHistory_Title" xml:space="preserve"><value>Usage History</value></data>
-	<data name="AIC_UH_Col_When" xml:space="preserve"><value>When</value></data>
+	<data name="AIC_UH_Col_When" xml:space="preserve"><value>Date</value></data>
 	<data name="AIC_UH_Col_QtyUsed" xml:space="preserve"><value>Qty Used</value></data>
 	<data name="AIC_UH_Col_Service" xml:space="preserve"><value>Service</value></data>
 	<data name="AIC_UH_Col_UsedBy" xml:space="preserve"><value>Used By</value></data>
 	<data name="AIC_UH_Col_Technicians" xml:space="preserve"><value>Technician(s)</value></data>
 
 	<data name="AIC_RestockHistory_Title" xml:space="preserve"><value>Restock History</value></data>
-	<data name="AIC_RH_Col_When" xml:space="preserve"><value>When</value></data>
+	<data name="AIC_RH_Col_When" xml:space="preserve"><value>Date</value></data>
 	<data name="AIC_RH_Col_Qty" xml:space="preserve"><value>Qty</value></data>
 	<data name="AIC_RH_Col_By" xml:space="preserve"><value>By</value></data>
 	<data name="AIC_RH_Col_Note" xml:space="preserve"><value>Note</value></data>

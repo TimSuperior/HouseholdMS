@@ -12,15 +12,17 @@ namespace HouseholdMS.View.UserControls
     public partial class AddServiceRecordControl : UserControl
     {
         private readonly bool _detailsOnly;
-        private readonly object _rowOrNull; // left as-is for compatibility with your existing ServiceRow use
+        private readonly object _rowOrNull; // kept for compatibility with your ServiceRow use
 
         public event EventHandler OnSavedSuccessfully;
         public event EventHandler OnCancelRequested;
 
-        // ===== Form mode (kept for compatibility) =====
+        // ===== Form mode (default) =====
         public AddServiceRecordControl()
         {
             InitializeComponent();
+
+            // header text (no resx dependency here to avoid namespace issues)
             FormHeader.Text = "➕ Add Service Record";
 
             // Form mode visible by default
@@ -29,7 +31,7 @@ namespace HouseholdMS.View.UserControls
 
             SaveButton.Visibility = Visibility.Visible;
             DeleteButton.Visibility = Visibility.Collapsed;
-            CancelButton.Content = "✖ Cancel";
+            CancelButton.Content = "Close";
         }
 
         // ===== Details mode from an existing ServiceRow (kept) =====
@@ -47,12 +49,11 @@ namespace HouseholdMS.View.UserControls
             // Buttons setup
             SaveButton.Visibility = Visibility.Collapsed;
             DeleteButton.Visibility = Visibility.Collapsed;
-            CancelButton.Content = "✖ Close";
+            CancelButton.Content = "Close";
 
             // Populate details
             ServiceIdValue.Text = row.ServiceID.ToString();
             HouseholdValue.Text = row.HouseholdText;
-            // unified technicians label
             var techs = string.IsNullOrWhiteSpace(row.AllTechnicians) ? row.PrimaryTechName : row.AllTechnicians;
             TechniciansValue.Text = string.IsNullOrWhiteSpace(techs) ? "—" : techs;
 
@@ -65,7 +66,7 @@ namespace HouseholdMS.View.UserControls
             ApplyStatusPill(row.StatusText);
         }
 
-        // ===== NEW: Details mode by ServiceID (so you can open from any grid with just the id) =====
+        // ===== Details mode by ServiceID =====
         public AddServiceRecordControl(int serviceId) : this()
         {
             _detailsOnly = true;
@@ -78,7 +79,7 @@ namespace HouseholdMS.View.UserControls
             // Buttons setup
             SaveButton.Visibility = Visibility.Collapsed;
             DeleteButton.Visibility = Visibility.Collapsed;
-            CancelButton.Content = "✖ Close";
+            CancelButton.Content = "Close";
 
             // Load from DB
             LoadAndPopulate(serviceId);
@@ -190,7 +191,9 @@ namespace HouseholdMS.View.UserControls
             if (!string.IsNullOrWhiteSpace(contact))
                 sb.Append(" (").Append(contact).Append(')');
             if (!string.IsNullOrWhiteSpace(muni) || !string.IsNullOrWhiteSpace(dist))
-                sb.Append(" — ").Append(muni).Append(string.IsNullOrWhiteSpace(muni) || string.IsNullOrWhiteSpace(dist) ? "" : ", ").Append(dist);
+                sb.Append(" — ").Append(muni)
+                  .Append(string.IsNullOrWhiteSpace(muni) || string.IsNullOrWhiteSpace(dist) ? "" : ", ")
+                  .Append(dist);
             return sb.ToString();
         }
 
@@ -218,7 +221,6 @@ namespace HouseholdMS.View.UserControls
 
         private void ApplyStatusPill(string status)
         {
-            // Normalize
             var s = (status ?? "").Trim().ToLowerInvariant();
 
             Brush bg = (Brush)FindResource("Pill.DefaultBg");

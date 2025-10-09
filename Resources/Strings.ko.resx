@@ -25,14 +25,19 @@
   <data name="Menu_Multimeter" xml:space="preserve"><value>📊 멀티미터</value></data>
   <data name="Menu_ElectronicLoad" xml:space="preserve"><value>⚡ 전자 부하</value></data>
 
-  <data name="Section_TestManuals" xml:space="preserve"><value>🧪 시험 지침</value></data>
-  <data name="TestManuals_TestModules" xml:space="preserve"><value>시험 모듈</value></data>
-  <data name="Menu_BlueSmartCharger" xml:space="preserve"><value>🔌 블루 스마트 충전기</value></data>
-  <data name="Menu_ControllerTest" xml:space="preserve"><value>🧭 컨트롤러 테스트</value></data>
-  <data name="Menu_TestProcedure" xml:space="preserve"><value>시험 절차</value></data>
-  <data name="Menu_SwitchTest" xml:space="preserve"><value>🔀 스위치 테스트</value></data>
+	<!-- 시험 지침 -->
+	<data name="Section_TestManuals" xml:space="preserve"><value>🧪 시험 지침</value></data>
+	<data name="TestManuals_TestModules" xml:space="preserve"><value>시험 모듈</value></data>
 
-  <data name="TestManuals_Documentation" xml:space="preserve"><value>문서</value></data>
+	<!-- 시험 모듈 버튼 -->
+	<data name="Menu_TestProcedure" xml:space="preserve"><value>태양광 모듈</value></data>
+	<data name="Menu_ControllerTest" xml:space="preserve"><value>🧭 MPPT 충전 컨트롤러</value></data>
+	<data name="Menu_SwitchTest" xml:space="preserve"><value>🔀 인버터</value></data>
+	<data name="Menu_BlueSmartCharger" xml:space="preserve"><value>🔌 블루 스마트 충전기</value></data>
+	<data name="Menu_K4BatteryBalancing" xml:space="preserve"><value>🔋 K4 배터리 밸런싱</value></data>
+
+
+	<data name="TestManuals_Documentation" xml:space="preserve"><value>문서</value></data>
   <data name="Menu_TestReports" xml:space="preserve"><value>📄 시험 보고서</value></data>
   <data name="Menu_Templates" xml:space="preserve"><value>📁 템플릿</value></data>
   <data name="Menu_ManageUsers" xml:space="preserve"><value>👥 사용자 관리</value></data>

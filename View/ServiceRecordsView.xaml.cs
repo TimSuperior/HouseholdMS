@@ -1,11 +1,12 @@
 ﻿using HouseholdMS.Model;
-using HouseholdMS.View.UserControls;   // <-- add this
+using HouseholdMS.View.UserControls;   // AddServiceRecordControl
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data.SQLite;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -35,6 +36,24 @@ namespace HouseholdMS.View
             { "Status", "StatusRank"}
         };
 
+        // ===== Column-based search support (empty set = search all) =====
+        private static readonly string[] AllColumnKeys = new[]
+        {
+            nameof(ServiceRow.ServiceID),
+            nameof(ServiceRow.HouseholdID),
+            nameof(ServiceRow.HouseholdText),
+            nameof(ServiceRow.AllTechnicians),
+            nameof(ServiceRow.PrimaryTechName),
+            nameof(ServiceRow.Problem),
+            nameof(ServiceRow.Action),
+            nameof(ServiceRow.InventorySummary),
+            nameof(ServiceRow.StartDateText),
+            nameof(ServiceRow.FinishDateText),
+            nameof(ServiceRow.StatusText)
+        };
+
+        private readonly HashSet<string> _selectedColumnKeys = new HashSet<string>(StringComparer.Ordinal);
+
         public ServiceRecordsView(string userRole = "User")
         {
             _currentUserRole = string.IsNullOrWhiteSpace(userRole) ? "User" : userRole.Trim();
@@ -48,6 +67,7 @@ namespace HouseholdMS.View
             LoadServiceRecords();
             ServiceListView.AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(GridViewColumnHeader_Click));
             UpdateSearchPlaceholder();
+            UpdateColumnFilterButtonContent();
         }
 
         public void LoadServiceRecords()
@@ -106,7 +126,8 @@ ORDER BY datetime(COALESCE(s.FinishDate, s.StartDate)) DESC, s.ServiceID DESC;";
 
                         if (finishObj != DBNull.Value)
                         {
-                            if (DateTime.TryParse(Convert.ToString(finishObj), CultureInfo.InvariantCulture, DateTimeStyles.None, out var tmp))
+                            DateTime tmp;
+                            if (DateTime.TryParse(Convert.ToString(finishObj), CultureInfo.InvariantCulture, DateTimeStyles.None, out tmp))
                                 finishDt = tmp;
                         }
 
@@ -139,7 +160,7 @@ ORDER BY datetime(COALESCE(s.FinishDate, s.StartDate)) DESC, s.ServiceID DESC;";
             ServiceListView.ItemsSource = _view;
         }
 
-        // ===== Search with placeholder =====
+        // ===== Search with placeholder (respects selected columns) =====
         private void UpdateSearchPlaceholder()
         {
             if (SearchBox == null) return;
@@ -173,42 +194,60 @@ ORDER BY datetime(COALESCE(s.FinishDate, s.StartDate)) DESC, s.ServiceID DESC;";
                 var s = obj as ServiceRow;
                 if (s == null) return false;
 
-                if ((s.HouseholdText ?? "").ToLowerInvariant().Contains(search)) return true;
-                if ((s.AllTechnicians ?? "").ToLowerInvariant().Contains(search)) return true;
-                if ((s.Problem ?? "").ToLowerInvariant().Contains(search)) return true;
-                if ((s.Action ?? "").ToLowerInvariant().Contains(search)) return true;
-                if ((s.InventorySummary ?? "").ToLowerInvariant().Contains(search)) return true;
-                if ((s.StatusText ?? "").ToLowerInvariant().Contains(search)) return true;
-                if (s.ServiceID.ToString().Contains(search)) return true;
-                if (s.HouseholdID.ToString().Contains(search)) return true;
-
+                var keys = _selectedColumnKeys.Count == 0 ? AllColumnKeys : _selectedColumnKeys.ToArray();
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    string cell = GetCellString(s, keys[i]);
+                    if (!string.IsNullOrEmpty(cell) && cell.ToLowerInvariant().Contains(search))
+                        return true;
+                }
                 return false;
             };
             _view.Refresh();
         }
 
+        private static string GetCellString(ServiceRow s, string key)
+        {
+            switch (key)
+            {
+                case nameof(ServiceRow.ServiceID): return s.ServiceID.ToString();
+                case nameof(ServiceRow.HouseholdID): return s.HouseholdID.ToString();
+                case nameof(ServiceRow.HouseholdText): return s.HouseholdText ?? string.Empty;
+                case nameof(ServiceRow.AllTechnicians): return s.AllTechnicians ?? string.Empty;
+                case nameof(ServiceRow.PrimaryTechName): return s.PrimaryTechName ?? string.Empty;
+                case nameof(ServiceRow.Problem): return s.Problem ?? string.Empty;
+                case nameof(ServiceRow.Action): return s.Action ?? string.Empty;
+                case nameof(ServiceRow.InventorySummary): return s.InventorySummary ?? string.Empty;
+                case nameof(ServiceRow.StartDateText): return s.StartDateText ?? string.Empty;
+                case nameof(ServiceRow.FinishDateText): return s.FinishDateText ?? string.Empty;
+                case nameof(ServiceRow.StatusText): return s.StatusText ?? string.Empty;
+                default: return string.Empty;
+            }
+        }
+
         private void ClearText(object sender, RoutedEventArgs e)
         {
-            if (sender is TextBox box)
-            {
-                if (box.Text == box.Tag as string)
-                {
-                    box.Text = string.Empty;
-                }
-                box.Foreground = Brushes.Black;
-                box.FontStyle = FontStyles.Normal;
+            var box = sender as TextBox;
+            if (box == null) return;
 
-                if (_view != null)
-                {
-                    _view.Filter = null;
-                    _view.Refresh();
-                }
+            if (box.Text == box.Tag as string)
+            {
+                box.Text = string.Empty;
+            }
+            box.Foreground = Brushes.Black;
+            box.FontStyle = FontStyles.Normal;
+
+            if (_view != null)
+            {
+                _view.Filter = null;
+                _view.Refresh();
             }
         }
 
         private void ResetText(object sender, RoutedEventArgs e)
         {
-            if (sender is TextBox box && string.IsNullOrWhiteSpace(box.Text))
+            var box = sender as TextBox;
+            if (box != null && string.IsNullOrWhiteSpace(box.Text))
             {
                 box.Text = box.Tag as string;
                 box.Foreground = Brushes.Gray;
@@ -260,8 +299,8 @@ ORDER BY datetime(COALESCE(s.FinishDate, s.StartDate)) DESC, s.ServiceID DESC;";
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto
             };
 
-            var dialog = CreateDialog(scroller, $"Service #{selected.ServiceID} — Details", 860, 620);
-            control.OnCancelRequested += (_, __) => dialog.Close();
+            var dialog = CreateDialog(scroller, "Service #" + selected.ServiceID + " — Details", 860, 620);
+            control.OnCancelRequested += delegate { dialog.Close(); };
             dialog.ShowDialog();
         }
 
@@ -290,6 +329,75 @@ ORDER BY datetime(COALESCE(s.FinishDate, s.StartDate)) DESC, s.ServiceID DESC;";
             try { if (owner != null) dlg.Icon = owner.Icon; } catch { }
             return dlg;
         }
+
+        // ===== Column chooser UI handlers =====
+        private void ColumnFilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            ColumnPopup.IsOpen = true;
+        }
+
+        private void ColumnPopup_Closed(object sender, EventArgs e)
+        {
+            UpdateColumnFilterButtonContent();
+
+            string placeholder = SearchBox != null ? (SearchBox.Tag as string ?? string.Empty) : string.Empty;
+            string text = SearchBox != null ? (SearchBox.Text ?? string.Empty) : string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(text) && text != placeholder)
+                SearchBox_TextChanged(SearchBox, null);
+        }
+
+        private void ColumnCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            var cb = sender as CheckBox;
+            var key = cb != null ? cb.Tag as string : null;
+            if (string.IsNullOrWhiteSpace(key)) return;
+
+            if (cb.IsChecked == true) _selectedColumnKeys.Add(key);
+            else _selectedColumnKeys.Remove(key);
+        }
+
+        private void SelectAllColumns_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedColumnKeys.Clear();
+            foreach (var child in FindPopupCheckBoxes()) child.IsChecked = true;
+            for (int i = 0; i < AllColumnKeys.Length; i++) _selectedColumnKeys.Add(AllColumnKeys[i]);
+        }
+
+        private void ClearAllColumns_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedColumnKeys.Clear(); // empty => "All columns"
+            foreach (var child in FindPopupCheckBoxes()) child.IsChecked = false;
+        }
+
+        private IEnumerable<CheckBox> FindPopupCheckBoxes()
+        {
+            var border = ColumnPopup.Child as Border;
+            if (border == null) yield break;
+
+            var sp = border.Child as StackPanel;
+            if (sp == null) yield break;
+
+            var sv = sp.Children.OfType<ScrollViewer>().FirstOrDefault();
+            if (sv == null) yield break;
+
+            var inner = sv.Content as StackPanel;
+            if (inner == null) yield break;
+
+            foreach (var child in inner.Children)
+            {
+                var cb = child as CheckBox;
+                if (cb != null) yield return cb;
+            }
+        }
+
+        private void UpdateColumnFilterButtonContent()
+        {
+            if (_selectedColumnKeys.Count == 0)
+                ColumnFilterButton.Content = "All ▾";
+            else
+                ColumnFilterButton.Content = _selectedColumnKeys.Count + " selected ▾";
+        }
     }
 
     // ===== Row model =====
@@ -314,9 +422,9 @@ ORDER BY datetime(COALESCE(s.FinishDate, s.StartDate)) DESC, s.ServiceID DESC;";
 
         public string Status { get; set; }
 
-        public string HouseholdText => $"#{HouseholdID} — {OwnerName} ({UserName})";
-        public string StartDateText => StartDate == DateTime.MinValue ? "" : StartDate.ToString("yyyy-MM-dd HH:mm");
-        public string FinishDateText => FinishDate.HasValue ? FinishDate.Value.ToString("yyyy-MM-dd HH:mm") : "";
+        public string HouseholdText { get { return "#" + HouseholdID + " — " + (OwnerName ?? "") + " (" + (UserName ?? "") + ")"; } }
+        public string StartDateText { get { return StartDate == DateTime.MinValue ? "" : StartDate.ToString("yyyy-MM-dd HH:mm"); } }
+        public string FinishDateText { get { return FinishDate.HasValue ? FinishDate.Value.ToString("yyyy-MM-dd HH:mm") : ""; } }
 
         public string StatusText
         {
@@ -329,7 +437,7 @@ ORDER BY datetime(COALESCE(s.FinishDate, s.StartDate)) DESC, s.ServiceID DESC;";
             }
         }
 
-        public bool IsOpen => string.Equals(StatusText, "Open", StringComparison.OrdinalIgnoreCase);
+        public bool IsOpen { get { return string.Equals(StatusText, "Open", StringComparison.OrdinalIgnoreCase); } }
 
         public int StatusRank
         {

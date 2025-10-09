@@ -19,6 +19,120 @@ namespace HouseholdMS.View.EqTesting
     /// </summary>
     public partial class ControllerTestMenuView : UserControl
     {
+        // -------------------- SIMPLE LANGUAGE SWITCH (images) --------------------
+        // Edit only these arrays when you add/remove frames.
+        // EN = "TPEN_*", ES = "TPES_*". (Add KO later if you want.)
+        private static readonly string[] EN_IMAGES = new[]
+        {
+            "pack://application:,,,/Assets/Procedures/TPEN_epever_MPPT_01.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_epever_MPPT_02.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_epever_MPPT_03.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_epever_MPPT_04.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_epever_MPPT_05.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_epever_MPPT_06.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_epever_MPPT_07.png",
+            "pack://application:,,,/Assets/Procedures/TPEN_epever_MPPT_08.png",
+        };
+
+        private static readonly string[] ES_IMAGES = new[]
+        {
+            "pack://application:,,,/Assets/Procedures/TPES_epever_MPPT_01.png",
+            "pack://application:,,,/Assets/Procedures/TPES_epever_MPPT_02.png",
+            "pack://application:,,,/Assets/Procedures/TPES_epever_MPPT_03.png",
+            "pack://application:,,,/Assets/Procedures/TPES_epever_MPPT_04.png",
+            "pack://application:,,,/Assets/Procedures/TPES_epever_MPPT_05.png",
+            "pack://application:,,,/Assets/Procedures/TPES_epever_MPPT_06.png",
+            "pack://application:,,,/Assets/Procedures/TPES_epever_MPPT_07.png",
+            "pack://application:,,,/Assets/Procedures/TPES_epever_MPPT_08.png",
+        };
+
+        // If you add Korean later, just define:
+        // private static readonly string[] KO_IMAGES = new[] { "pack://.../TPKO_epever_MPPT_01.png", ... };
+
+        private static string GetSavedLanguage()
+        {
+            try
+            {
+                var path = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "HouseholdMS", "ui.language");
+                if (File.Exists(path))
+                {
+                    var code = (File.ReadAllText(path) ?? "").Trim().ToLowerInvariant();
+                    if (code == "en" || code == "es" || code == "ko")
+                        return code;
+                }
+            }
+            catch { /* ignore and fall back */ }
+            return "en";
+        }
+
+        private static string[] GetImagesForLang(string lang)
+        {
+            if (lang == "es") return ES_IMAGES;
+            // if (lang == "ko") return KO_IMAGES; // when you add them
+            return EN_IMAGES; // default
+        }
+        // ----------------------------------------------------------------
+
+        // -------------------- MINI L10N BLOCK (texts) --------------------
+        private static readonly Dictionary<string, Dictionary<string, string>> L10N =
+            new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["en"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["gallery_name"] = "Victron Controller",
+                    ["album_controller"] = "Controller Visual Inspection",
+                    ["missing_image"] = "Missing image: {0}",
+                    ["err_one_album_required"] = "At least one album is required.",
+                    ["err_album_empty"] = "Album '{0}' must contain at least one image.",
+                    ["prev"] = "Back",
+                    ["next"] = "Next",
+                    ["version_prefix"] = "v",
+                    ["step_sep"] = " — "
+                },
+                ["es"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["gallery_name"] = "Controlador Victron",
+                    ["album_controller"] = "Inspección visual del controlador",
+                    ["missing_image"] = "Imagen ausente: {0}",
+                    ["err_one_album_required"] = "Se requiere al menos un álbum.",
+                    ["err_album_empty"] = "El álbum '{0}' debe contener al menos una imagen.",
+                    ["prev"] = "Atrás",
+                    ["next"] = "Siguiente",
+                    ["version_prefix"] = "v",
+                    ["step_sep"] = " — "
+                },
+                ["ko"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["gallery_name"] = "빅트론 컨트롤러",
+                    ["album_controller"] = "컨트롤러 육안 점검",
+                    ["missing_image"] = "이미지를 찾을 수 없음: {0}",
+                    ["err_one_album_required"] = "앨범이 하나 이상 필요합니다.",
+                    ["err_album_empty"] = "앨범 '{0}'에는 하나 이상의 이미지가 있어야 합니다.",
+                    ["prev"] = "이전",
+                    ["next"] = "다음",
+                    ["version_prefix"] = "v",
+                    ["step_sep"] = " — "
+                }
+            };
+
+        private Dictionary<string, string> _ST; // active string table
+
+        private static Dictionary<string, string> GetStrings(string lang)
+        {
+            Dictionary<string, string> st;
+            if (!L10N.TryGetValue(lang ?? "en", out st)) st = L10N["en"];
+            return st;
+        }
+
+        private string T(string key)
+        {
+            if (_ST == null) return key;
+            string v; return _ST.TryGetValue(key, out v) ? v : key;
+        }
+        // ----------------------------------------------------------------
+
         private sealed class Album
         {
             public readonly string Title;
@@ -71,33 +185,35 @@ namespace HouseholdMS.View.EqTesting
             InitializeComponent();
             Loaded += (s, e) => this.Focus(); // keep focus on the control for keyboard handling
 
+            // ---- Choose the set once based on saved language ----
+            var lang = GetSavedLanguage();
+            _ST = GetStrings(lang);
+            var imgs = GetImagesForLang(lang);
+
             // Immediately open the Controller album.
-            // EDIT THESE PATHS as needed. Supports pack://application, pack://siteoforigin, or raw file paths.
+            // Supports pack://application, pack://siteoforigin, or raw file paths.
+            var albumTitle = T("album_controller");
             LoadGalleryAndOpen(
-                name: "Victron Controller",
+                name: T("gallery_name"),
                 version: "1.1",
-                defaultAlbumTitle: "Controller Visual Inspection",
-                new AlbumSpec("Controller Visual Inspection",
-                    "pack://application:,,,/Assets/Procedures/Controller/TPEN_Controller_01.png",
-                    "pack://application:,,,/Assets/Procedures/Controller/TPEN_Controller_02.png",
-                    "pack://application:,,,/Assets/Procedures/Controller/TPEN_Controller_03.png",
-                    "pack://application:,,,/Assets/Procedures/Controller/TPEN_Controller_04.png",
-                    "pack://application:,,,/Assets/Procedures/Controller/TPEN_Controller_05.png",
-                    "pack://application:,,,/Assets/Procedures/Controller/TPEN_Controller_06.png",
-                    "pack://application:,,,/Assets/Procedures/Controller/TPEN_Controller_07.png"
-                )
+                defaultAlbumTitle: albumTitle,
+                new AlbumSpec(albumTitle, imgs)
             );
+
+            // Optional: localize button captions if you want (overrides XAML text):
+            if (PrevBtn != null) PrevBtn.Content = T("prev");
+            if (NextBtn != null) NextBtn.Content = T("next");
         }
 
         private void LoadGalleryAndOpen(string name, string version, string defaultAlbumTitle, params AlbumSpec[] albums)
         {
             if (albums == null || albums.Length == 0)
-                throw new ArgumentException("At least one album is required.", nameof(albums));
+                throw new ArgumentException(T("err_one_album_required"), nameof(albums));
 
             var internalAlbums = albums.Select(a =>
             {
                 if (a.Images == null || a.Images.Length == 0)
-                    throw new ArgumentException("Album '" + a.Title + "' must contain at least one image.");
+                    throw new ArgumentException(string.Format(T("err_album_empty"), a.Title));
                 return new Album(a.Title, a.Images);
             }).ToArray();
 
@@ -230,13 +346,16 @@ namespace HouseholdMS.View.EqTesting
                 return;
 
             HeaderTitle.Text = _gallery.Name;
-            HeaderVersion.Text = string.IsNullOrWhiteSpace(_gallery.Version) ? "" : "v" + _gallery.Version;
-            HeaderStep.Text = _album.Title + " — " + (_imageIndex + 1) + "/" + _album.Images.Length;
+
+            var ver = string.IsNullOrWhiteSpace(_gallery.Version) ? "" : T("version_prefix") + _gallery.Version;
+            HeaderVersion.Text = ver;
+
+            HeaderStep.Text = _album.Title + T("step_sep") + (_imageIndex + 1) + "/" + _album.Images.Length;
 
             string uri = _album.Images[_imageIndex];
             var src = LoadImageStrong(uri);
             PageImage.Source = src;
-            PageImage.ToolTip = (src == null) ? ("Missing image: " + uri) : null;
+            PageImage.ToolTip = (src == null) ? string.Format(T("missing_image"), uri) : null;
 
             PrevBtn.IsEnabled = _imageIndex > 0;
             NextBtn.IsEnabled = _imageIndex < _album.Images.Length - 1;

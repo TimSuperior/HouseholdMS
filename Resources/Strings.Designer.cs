@@ -592,7 +592,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to When.
+        ///   Looks up a localized string similar to Date.
         /// </summary>
         public static string AIC_RH_Col_When {
             get {
@@ -709,7 +709,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to When.
+        ///   Looks up a localized string similar to Date.
         /// </summary>
         public static string AIC_UH_Col_When {
             get {
@@ -1456,7 +1456,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to When.
+        ///   Looks up a localized string similar to Date.
         /// </summary>
         public static string InvDet_Restock_When {
             get {
@@ -1537,7 +1537,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to When.
+        ///   Looks up a localized string similar to Date.
         /// </summary>
         public static string InvDet_Usage_When {
             get {
@@ -1690,7 +1690,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 🧭 Controller Test.
+        ///   Looks up a localized string similar to 🧭 MPPT Charge Controller.
         /// </summary>
         public static string Menu_ControllerTest {
             get {
@@ -1713,6 +1713,15 @@ namespace HouseholdMS.Resources {
         public static string Menu_Inventory {
             get {
                 return ResourceManager.GetString("Menu_Inventory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🔋 K4 Battery Balancing.
+        /// </summary>
+        public static string Menu_K4BatteryBalancing {
+            get {
+                return ResourceManager.GetString("Menu_K4BatteryBalancing", resourceCulture);
             }
         }
         
@@ -1771,7 +1780,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 🔀 Switch Test.
+        ///   Looks up a localized string similar to 🔀 Inverter.
         /// </summary>
         public static string Menu_SwitchTest {
             get {
@@ -1789,7 +1798,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to TestProcedure.
+        ///   Looks up a localized string similar to PV Panel.
         /// </summary>
         public static string Menu_TestProcedure {
             get {

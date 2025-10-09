@@ -35,7 +35,7 @@ namespace HouseholdMS.View.UserControls
             FormHeader.Text = "➕ Add Inventory Item";
             SaveButton.Content = "➕ Add";
 
-            // Create mode: show Initial Quantity, hide snapshot
+            // Create mode: show Initial Quantity, hide snapshot (snapshot is now placed BEFORE the form in XAML)
             InitialQtyPanel.Visibility = Visibility.Visible;
             SnapshotCard.Visibility = Visibility.Collapsed;
             StatusPill.Visibility = Visibility.Collapsed;
@@ -498,6 +498,7 @@ ORDER BY RestockedAt DESC;", conn))
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         private void UsageGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {

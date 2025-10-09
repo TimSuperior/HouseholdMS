@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.Dashboard.DashboardView"
+﻿<UserControl x:Class="HouseholdMS.View.Dashboard.DashboardView"   
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:uc="clr-namespace:HouseholdMS.View.UserControls"
@@ -29,7 +29,7 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
-        <!-- Ghost button (for "Open List") -->
+        <!-- Ghost button (baseline) -->
         <Style x:Key="GhostButton" TargetType="Button">
             <Setter Property="Padding" Value="10,6"/>
             <Setter Property="Margin" Value="8,0,0,0"/>
@@ -155,9 +155,8 @@
             </Setter>
         </Style>
 
-        <!-- Inventory tile style (override base min sizes so we can shrink) -->
+        <!-- Inventory tile style -->
         <Style x:Key="InventoryTileButtonStyle" TargetType="Button" BasedOn="{StaticResource TileButton}">
-            <!-- allow WrapPanel.ItemWidth/ItemHeight to drive size -->
             <Setter Property="MinWidth" Value="0"/>
             <Setter Property="MinHeight" Value="0"/>
             <Setter Property="Width" Value="Auto"/>
@@ -192,7 +191,6 @@
             <Setter Property="Visibility" Value="Collapsed"/>
         </Style>
 
-        <!-- Concrete pill styles -->
         <Style x:Key="StatusPillOutStyle" TargetType="Border" BasedOn="{StaticResource StatusPill}">
             <Setter Property="Background" Value="#FEE2E2"/>
             <Setter Property="BorderBrush" Value="#FCA5A5"/>
@@ -226,7 +224,7 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Inventory tile data template (threshold/restock removed) -->
+        <!-- Inventory tile: COMPACT remaining (label + number stay together) -->
         <DataTemplate x:Key="InventoryTileTemplate">
             <Button Style="{StaticResource InventoryTileButtonStyle}"
                     Click="InventoryTile_Click"
@@ -237,15 +235,15 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Top row: Name + status chip -->
+                    <!-- header -->
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="{Binding Name}"
-                                   Grid.Column="0"
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding Name}"
                                    FontFamily="Segoe UI"
                                    FontWeight="Bold"
                                    FontSize="16"
@@ -259,17 +257,41 @@
                             <Border Style="{StaticResource StatusPillLowStyle}" Margin="6,0,0,0">
                                 <TextBlock Text="{x:Static res:Strings.Dash_Status_Low}" FontSize="11" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#92400E"/>
                             </Border>
-                            <Border Style="{StaticResource StatusPillOkStyle}"  Margin="6,0,0,0">
-                                <TextBlock Text="{x:Static res:Strings.Dash_Status_Ok}"  FontSize="11" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#065F46"/>
+                            <Border Style="{StaticResource StatusPillOkStyle}" Margin="6,0,0,0">
+                                <TextBlock Text="{x:Static res:Strings.Dash_Status_Ok}" FontSize="11" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#065F46"/>
                             </Border>
                         </StackPanel>
                     </Grid>
 
-                    <!-- Middle: Remaining -->
-                    <StackPanel Grid.Row="1" Margin="0,8,0,0">
-                        <TextBlock Text="{x:Static res:Strings.Dash_Remaining}" Foreground="{StaticResource Col.MutedText}" FontFamily="Segoe UI" FontSize="12"/>
-                        <TextBlock Text="{Binding Remaining}" FontFamily="Segoe UI" Foreground="{StaticResource Col.Heading}" FontSize="34" FontWeight="SemiBold"/>
-                    </StackPanel>
+                    <!-- Remaining: a DockPanel that never stretches children.
+                         Keeps label and number glued together on the left.
+                         Number still scales down via Viewbox on small tiles. -->
+                    <Grid Grid.Row="1" Margin="0,8,0,0">
+                        <DockPanel LastChildFill="False"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">
+                            <TextBlock Text="{x:Static res:Strings.Dash_Remaining}"
+                                       Foreground="{StaticResource Col.MutedText}"
+                                       FontFamily="Segoe UI"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,6,0"
+                                       DockPanel.Dock="Left"/>
+                            <Viewbox Stretch="Uniform"
+                                     StretchDirection="DownOnly"
+                                     MaxHeight="44"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Center"
+                                     DockPanel.Dock="Left">
+                                <TextBlock Text="{Binding Remaining}"
+                                           FontFamily="Segoe UI"
+                                           Foreground="{StaticResource Col.Heading}"
+                                           FontSize="42"
+                                           FontWeight="SemiBold"
+                                           TextAlignment="Left"/>
+                            </Viewbox>
+                        </DockPanel>
+                    </Grid>
                 </Grid>
             </Button>
         </DataTemplate>
@@ -280,9 +302,13 @@
     <Grid Background="{StaticResource Col.PageBg}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <!-- Header -->
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <!-- Row 1: Household -->
+            <RowDefinition Height="2*"/>
+            <!-- Row 2: Inventory -->
             <RowDefinition Height="*"/>
+            <!-- Row 3 -->
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -296,7 +322,7 @@
         <!-- Row 1: Household -->
         <StackPanel Grid.Row="1" Margin="12,0,12,4">
             <DockPanel LastChildFill="True" Margin="0,0,0,8">
-                <TextBlock Text="{x:Static res:Strings.Dash_Section_Household}" Style="{StaticResource SectionHeaderText}"/>
+                <TextBlock Style="{StaticResource SectionHeaderText}"><Run Text="🏠 Sites"/><LineBreak/><Run/></TextBlock>
             </DockPanel>
 
             <UniformGrid Columns="3">
@@ -357,49 +383,64 @@
             </UniformGrid>
         </StackPanel>
 
-        <!-- Row 2: Inventory (FIXED HEIGHT, AUTO-SHRINK TO 2 ROWS) -->
-        <StackPanel Grid.Row="2" Margin="12,8,12,0">
-            <DockPanel LastChildFill="True" Margin="0,0,0,8">
+        <!-- Row 2: Inventory (header + stretchable content) -->
+        <Grid Grid.Row="2" Margin="12,8,12,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <DockPanel Grid.Row="0" LastChildFill="True" Margin="0,0,0,8">
                 <TextBlock Text="{x:Static res:Strings.Dash_Section_Inventory}" Style="{StaticResource SectionHeaderText}"/>
-                <Button Content="{x:Static res:Strings.Dash_OpenList}"
-                        Style="{StaticResource GhostButton}"
-                        DockPanel.Dock="Right"
-                        Click="OpenInventoryList_Click"/>
             </DockPanel>
 
-            <!-- The container height is computed to exactly hold two rows of tiles (a bit taller now) -->
-            <Border x:Name="InventoryContainer"
+            <Border Grid.Row="1"
+                    x:Name="InventoryContainer"
                     CornerRadius="18"
                     Background="{StaticResource Col.CardBg}"
                     BorderBrush="{StaticResource Col.CardBorder}"
                     BorderThickness="1"
-                    Height="{Binding ElementName=Root, Path=InventoryPanelHeight}"
+                    VerticalAlignment="Stretch"
                     SizeChanged="InventoryContainer_SizeChanged">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.08"/>
                 </Border.Effect>
 
-                <!-- No vertical scroll; we shrink tiles instead -->
+                <!-- Clip + auto-shrink -->
                 <ScrollViewer VerticalScrollBarVisibility="Disabled"
                               HorizontalScrollBarVisibility="Disabled"
                               Padding="4">
-                    <ItemsControl x:Name="InventoryItemsControl"
-                                  ItemsSource="{Binding InventoryTiles}"
-                                  ItemTemplate="{StaticResource InventoryTileTemplate}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel x:Name="InventoryWrap"
-                                           ItemWidth="{Binding ElementName=Root, Path=InventoryItemWidth}"
-                                           ItemHeight="{Binding ElementName=Root, Path=InventoryItemHeight}"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.Margin>
-                            <Thickness>4</Thickness>
-                        </ItemsControl.Margin>
-                    </ItemsControl>
+                    <Grid>
+                        <!-- Tiles -->
+                        <ItemsControl x:Name="InventoryItemsControl"
+                                      ItemsSource="{Binding InventoryTiles}"
+                                      ItemTemplate="{StaticResource InventoryTileTemplate}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel x:Name="InventoryWrap"
+                                               ItemWidth="{Binding ElementName=Root, Path=InventoryItemWidth}"
+                                               ItemHeight="{Binding ElementName=Root, Path=InventoryItemHeight}"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.Margin>
+                                <Thickness>4</Thickness>
+                            </ItemsControl.Margin>
+                        </ItemsControl>
+
+                        <!-- Mini Open List button -->
+                        <Button Content="{x:Static res:Strings.Dash_OpenList}"
+                                Style="{StaticResource GhostButton}"
+                                Padding="8,4"
+                                FontSize="12"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Bottom"
+                                Margin="8"
+                                Panel.ZIndex="10"
+                                Click="OpenInventoryList_Click"/>
+                    </Grid>
                 </ScrollViewer>
             </Border>
-        </StackPanel>
+        </Grid>
 
         <!-- Row 3: three tiles -->
         <Grid Grid.Row="3" Margin="12,12,12,12">
@@ -409,35 +450,17 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <!-- TILE A: Irradiance & Forecast -->
-            <Button Grid.Column="0"
-                    x:Name="IrradianceTileButton"
-                    Style="{StaticResource TileButton}"
-                    Click="OpenIrradiance_Click">
-                <uc:IrradianceTileControl x:Name="IrradianceTile"
-                                          Latitude="38.56"
-                                          Longitude="68.79"/>
+            <Button Grid.Column="0" x:Name="IrradianceTileButton" Style="{StaticResource TileButton}" Click="OpenIrradiance_Click">
+                <uc:IrradianceTileControl x:Name="IrradianceTile" Latitude="38.56" Longitude="68.79"/>
             </Button>
 
-            <!-- TILE B: Baseline PV Energy (PVGIS) -->
-            <Button Grid.Column="1"
-                    x:Name="PvEnergyTileButton"
-                    Style="{StaticResource TileButton}"
-                    Click="OpenPvEnergy_Click">
+            <Button Grid.Column="1" x:Name="PvEnergyTileButton" Style="{StaticResource TileButton}" Click="OpenPvEnergy_Click">
                 <uc:PvEnergyTileControl x:Name="PvTile"
-                                        Latitude="38.56"
-                                        Longitude="68.79"
-                                        PeakKw="5"
-                                        Tilt="30"
-                                        Azimuth="180"
-                                        LossesPct="14"/>
+                                        Latitude="38.56" Longitude="68.79"
+                                        PeakKw="5" Tilt="30" Azimuth="180" LossesPct="14"/>
             </Button>
 
-            <!-- TILE C: Weather Forecast -->
-            <Button Grid.Column="2"
-                    x:Name="WeatherTileButton"
-                    Style="{StaticResource TileButton}"
-                    Click="OpenWeather_Click">
+            <Button Grid.Column="2" x:Name="WeatherTileButton" Style="{StaticResource TileButton}" Click="OpenWeather_Click">
                 <uc:YrMeteogramControl x:Name="YrTile"
                                        LocationId="2-3667725"
                                        Latitude="-19.1"

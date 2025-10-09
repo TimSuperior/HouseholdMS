@@ -1,4 +1,5 @@
-﻿<Window x:Class="HouseholdMS.MainWindow"       
+﻿<!-- MainWindow.xaml -->
+<Window x:Class="HouseholdMS.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -30,7 +31,7 @@
             <GradientStop Color="#0B2B5A" Offset="1"/>
         </LinearGradientBrush>
 
-        <!-- Navbar: very light blue tint -->
+        <!-- Navbar -->
         <LinearGradientBrush x:Key="NavBarBg" StartPoint="0,0" EndPoint="0,1">
             <GradientStop Color="#F5F9FF" Offset="0"/>
             <GradientStop Color="#EEF4FF" Offset="0.55"/>
@@ -80,7 +81,7 @@
             </Setter>
         </Style>
 
-        <!-- Sidebar buttons (calm blue hovers) -->
+        <!-- Sidebar buttons -->
         <Style x:Key="MenuButtonStyle" TargetType="Button">
             <Setter Property="Height" Value="42"/>
             <Setter Property="Margin" Value="10,4"/>
@@ -303,13 +304,12 @@
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
 
-                    <!-- Header: Dashboard -->
+                    <!-- Dashboard -->
                     <Button x:Name="bt_Dashboard"
                             Content="{x:Static res:Strings.Section_Dashboard}"
                             Click="bt_Dashboard_Click"
                             Style="{StaticResource SectionHeaderButtonStyle}"/>
 
-                    <!-- Panel: Dashboard submenu -->
                     <StackPanel x:Name="Panel_Dashboard" Visibility="Visible">
                         <TextBlock Text="{x:Static res:Strings.Dashboard_Sections}" Style="{StaticResource SidebarCaption}"/>
                         <Button Content="{x:Static res:Strings.Menu_Sites}" Click="bt_SiteMenu" Style="{StaticResource SubMenuButtonStyle}"/>
@@ -319,39 +319,35 @@
 
                     <Border Height="8"/>
 
-                    <!-- ********** Test Procedures ********** -->
+                    <!-- Test Procedures -->
                     <Button x:Name="Header_TestManuals"
                             Content="Test Procedures"
                             Click="Header_TestManuals_Click"
                             Style="{StaticResource SectionHeaderButtonStyle}"/>
 
-                    <!-- Panel: Test Manuals submenu -->
                     <StackPanel x:Name="Panel_TestManuals" Visibility="Collapsed">
-                        <!-- Test Modules -->
                         <TextBlock Text="{x:Static res:Strings.TestManuals_TestModules}" Style="{StaticResource SidebarCaption}"/>
-                        <Button x:Name="bt_AllTest" Content="{x:Static res:Strings.Menu_BlueSmartCharger}" Click="bt_AllTest_Click" Style="{StaticResource SubMenuButtonStyle}" Cursor="Hand"/>
-                        <Button x:Name="bt_ControllerTest" Content="{x:Static res:Strings.Menu_ControllerTest}" Click="bt_ControllerTest_Click" Style="{StaticResource SubMenuButtonStyle}"/>
                         <Button x:Name="bt_TestProcedure" Content="{x:Static res:Strings.Menu_TestProcedure}" Click="bt_TestProcedure_Click" Style="{StaticResource SubMenuButtonStyle}"/>
+                        <Button x:Name="bt_ControllerTest" Content="{x:Static res:Strings.Menu_ControllerTest}" Click="bt_ControllerTest_Click" Style="{StaticResource SubMenuButtonStyle}"/>
                         <Button x:Name="bt_SwitchTest" Content="{x:Static res:Strings.Menu_SwitchTest}" Click="bt_SwitchTest_Click" Style="{StaticResource SubMenuButtonStyle}"/>
-                        <!-- MOVED HERE -->
-                        <Button x:Name="bt_Template" Content="{x:Static res:Strings.Menu_Templates}" Click="bt_Template_Click" Style="{StaticResource SubMenuButtonStyle}"/>
-
-                        <!-- Documentation -->
-                        <TextBlock Text="{x:Static res:Strings.TestManuals_Documentation}" Style="{StaticResource SidebarCaption}"/>
-                        <Button x:Name="bt_TestReports" Content="{x:Static res:Strings.Menu_TestReports}" Click="bt_TestReports_Click" Style="{StaticResource SubMenuButtonStyle}"/>
-
-                        <Button x:Name="NavManageUsersBtn" Content="{x:Static res:Strings.Menu_ManageUsers}" Click="bt_ManageUsers" Style="{StaticResource SubMenuButtonStyle}" Visibility="Collapsed"/>
+                        <Button x:Name="bt_AllTest" Content="{x:Static res:Strings.Menu_BlueSmartCharger}" Click="bt_AllTest_Click" Style="{StaticResource SubMenuButtonStyle}" Cursor="Hand"/>
+                        <Button x:Name="bt_K4BatteryBalancing"
+                                Content="{x:Static res:Strings.Menu_K4BatteryBalancing}"
+                                Click="bt_K4BatteryBalancing_Click"
+                                Style="{StaticResource SubMenuButtonStyle}"
+                                Cursor="Hand"/>
+                        <Button x:Name="bt_TestReports" Content="{x:Static res:Strings.Menu_TestReports}" Click="bt_TestReports_Click" Style="{StaticResource SubMenuButtonStyle}" Visibility="Collapsed"/>
                     </StackPanel>
 
                     <Border Height="8"/>
 
-                    <!-- Header: Monitoring -->
+                    <!-- Monitoring (HEADER) -->
                     <Button x:Name="Header_Monitoring"
                             Content="{x:Static res:Strings.Section_Monitoring}"
                             Click="Header_Monitoring_Click"
                             Style="{StaticResource SectionHeaderButtonStyle}"/>
 
-                    <!-- Panel: Monitoring submenu -->
+                    <!-- Monitoring SUBMENU (now immediately under header) -->
                     <StackPanel x:Name="Panel_Monitoring" Visibility="Collapsed">
                         <TextBlock Text="{x:Static res:Strings.Monitoring_LiveInstruments}" Style="{StaticResource SidebarCaption}"/>
                         <Button x:Name="bt_BatteryTest" Content="{x:Static res:Strings.Menu_MpptMonitoring}" Click="bt_BatteryTest_Click" Style="{StaticResource SubMenuButtonStyle}"/>
@@ -359,6 +355,14 @@
                         <Button Content="{x:Static res:Strings.Menu_Multimeter}" Click="bt_MeasurementMenu" Style="{StaticResource SubMenuButtonStyle}"/>
                         <Button Content="{x:Static res:Strings.Menu_ElectronicLoad}" Click="Button_Click_ElectronicLoad" Style="{StaticResource SubMenuButtonStyle}"/>
                     </StackPanel>
+
+                    <!-- Manage Users (kept as standalone header AFTER Monitoring panel) -->
+                    <Border Height="8"/>
+                    <Button x:Name="NavManageUsersBtn"
+                            Content="{x:Static res:Strings.Menu_ManageUsers}"
+                            Click="bt_ManageUsers"
+                            Style="{StaticResource SectionHeaderButtonStyle}"
+                            Visibility="Collapsed"/>
 
                 </StackPanel>
             </ScrollViewer>

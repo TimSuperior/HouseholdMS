@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.SQLite;
 using System.Linq;
@@ -68,6 +69,22 @@ namespace HouseholdMS.View
 
         private readonly ObservableCollection<UserRow> _all = new ObservableCollection<UserRow>();
 
+        // ===== Column-based search support (empty set = search all) =====
+        private static readonly string[] AllColumnKeys = new[]
+        {
+            nameof(UserRow.UserID),
+            nameof(UserRow.Name),
+            nameof(UserRow.Username),
+            nameof(UserRow.Role),
+            nameof(UserRow.Phone),
+            nameof(UserRow.Address),
+            nameof(UserRow.AssignedArea),
+            nameof(UserRow.Note),
+            nameof(UserRow.StatusLabel)
+        };
+
+        private readonly HashSet<string> _selectedColumnKeys = new HashSet<string>(StringComparer.Ordinal);
+
         public UserManagementView(string actorRole = "User", string actorUsername = "")
         {
             InitializeComponent();
@@ -87,6 +104,8 @@ namespace HouseholdMS.View
 
             LoadUsers();
             UserListView.ItemsSource = _all;
+
+            UpdateColumnFilterButtonContent();
         }
 
         private void LoadUsers()
@@ -131,7 +150,7 @@ namespace HouseholdMS.View
                 }
             }
 
-            ApplySearchFilter(SearchBox?.Text);
+            ApplySearchFilter(SearchBox != null ? SearchBox.Text : null);
         }
 
         private void ComputePermissions(UserRow row)
@@ -143,39 +162,60 @@ namespace HouseholdMS.View
             row.CanDelete = _actorIsRoot || (_actorIsAdmin && !targetIsAdmin && !row.IsRootUser);
         }
 
-        // Search
+        // ===== Search (respects selected columns) =====
         private void ApplySearchFilter(string raw)
         {
             if (UserListView == null) return;
 
+            string placeholder = SearchBox != null ? (SearchBox.Tag as string ?? string.Empty) : string.Empty;
             string term = (raw ?? "").Trim().ToLowerInvariant();
-            if (string.IsNullOrWhiteSpace(term) ||
-                term == "search name/username/role/phone/address/area/note/status")
+
+            if (string.IsNullOrWhiteSpace(term) || term == placeholder)
             {
                 UserListView.ItemsSource = _all;
                 return;
             }
 
+            var keys = _selectedColumnKeys.Count == 0 ? AllColumnKeys : _selectedColumnKeys.ToArray();
+
             var filtered = _all.Where(u =>
-                    (u.Name ?? "").ToLower().Contains(term) ||
-                    (u.Username ?? "").ToLower().Contains(term) ||
-                    (u.Role ?? "").ToLower().Contains(term) ||
-                    (u.Phone ?? "").ToLower().Contains(term) ||
-                    (u.Address ?? "").ToLower().Contains(term) ||
-                    (u.AssignedArea ?? "").ToLower().Contains(term) ||
-                    (u.Note ?? "").ToLower().Contains(term) ||
-                    (u.StatusLabel ?? "").ToLower().Contains(term))
-                .ToList();
+            {
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    string cell = GetCellString(u, keys[i]);
+                    if (!string.IsNullOrEmpty(cell) && cell.ToLowerInvariant().Contains(term))
+                        return true;
+                }
+                return false;
+            }).ToList();
 
             UserListView.ItemsSource = filtered;
         }
 
+        private static string GetCellString(UserRow u, string key)
+        {
+            switch (key)
+            {
+                case nameof(UserRow.UserID): return u.UserID.ToString();
+                case nameof(UserRow.Name): return u.Name ?? string.Empty;
+                case nameof(UserRow.Username): return u.Username ?? string.Empty;
+                case nameof(UserRow.Role): return u.Role ?? string.Empty;
+                case nameof(UserRow.Phone): return u.Phone ?? string.Empty;
+                case nameof(UserRow.Address): return u.Address ?? string.Empty;
+                case nameof(UserRow.AssignedArea): return u.AssignedArea ?? string.Empty;
+                case nameof(UserRow.Note): return u.Note ?? string.Empty;
+                case nameof(UserRow.StatusLabel): return u.StatusLabel ?? string.Empty;
+                default: return string.Empty;
+            }
+        }
+
         // Events
-        private void SearchBox_KeyUp(object sender, System.Windows.Input.KeyEventArgs e) => ApplySearchFilter(SearchBox.Text);
+        private void SearchBox_KeyUp(object sender, KeyEventArgs e) => ApplySearchFilter(SearchBox.Text);
 
         private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (SearchBox.Text == "Search name/username/role/phone/address/area/note/status")
+            string placeholder = SearchBox.Tag as string ?? "Search name/username/role/phone/address/area/note/status";
+            if (SearchBox.Text == placeholder)
             {
                 SearchBox.Text = "";
                 SearchBox.Foreground = new SolidColorBrush(Colors.Black);
@@ -185,16 +225,17 @@ namespace HouseholdMS.View
 
         private void SearchBox_LostFocus(object sender, RoutedEventArgs e)
         {
+            string placeholder = SearchBox.Tag as string ?? "Search name/username/role/phone/address/area/note/status";
             if (string.IsNullOrWhiteSpace(SearchBox.Text))
             {
-                SearchBox.Text = "Search name/username/role/phone/address/area/note/status";
+                SearchBox.Text = placeholder;
                 SearchBox.Foreground = new SolidColorBrush(Colors.Gray);
                 SearchBox.FontStyle = FontStyles.Italic;
                 ApplySearchFilter(SearchBox.Text);
             }
         }
 
-        private void UserListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void UserListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var row = UserListView.SelectedItem as UserRow;
             if (row == null) return;
@@ -203,6 +244,12 @@ namespace HouseholdMS.View
             bool canEdit = _actorIsRoot || (_actorIsAdmin && !targetIsAdmin);
 
             OpenUserWindow(ToModel(row), canEdit);
+        }
+
+        // Hook kept for parity with XAML; no functional change besides optional recompute
+        private void UserListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (UserListView != null && UserListView.SelectedItem is UserRow row) ComputePermissions(row);
         }
 
         private static User ToModel(UserRow r) => new User
@@ -248,7 +295,6 @@ namespace HouseholdMS.View
             double workW = SystemParameters.WorkArea.Width;
             double workH = SystemParameters.WorkArea.Height;
 
-            // a little chrome padding for window borders/title
             const double chromeW = 32;
             const double chromeH = 48;
 
@@ -260,10 +306,10 @@ namespace HouseholdMS.View
                 Title = (user.UserID == 0) ? "Add User" : (canEdit ? "Edit User" : "User Details"),
                 Content = form,
                 Owner = Window.GetWindow(this),
-                SizeToContent = SizeToContent.WidthAndHeight,      // <-- key: window adapts to content
+                SizeToContent = SizeToContent.WidthAndHeight,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                ResizeMode = ResizeMode.CanResize,                 // allows user to resize if needed
-                MinWidth = Math.Min(minW, workW - 40),            // never exceed screen
+                ResizeMode = ResizeMode.CanResize,
+                MinWidth = Math.Min(minW, workW - 40),
                 MinHeight = Math.Min(minH, workH - 40),
                 MaxWidth = workW - 40,
                 MaxHeight = workH - 40,
@@ -271,7 +317,6 @@ namespace HouseholdMS.View
                 Background = Brushes.White
             };
 
-            // Ensure after load we still stay within bounds
             win.Loaded += (_, __) =>
             {
                 if (win.ActualWidth > win.MaxWidth) win.Width = win.MaxWidth;
@@ -281,6 +326,74 @@ namespace HouseholdMS.View
             win.ShowDialog();
         }
 
+        // ===== Column chooser UI handlers =====
+        private void ColumnFilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            ColumnPopup.IsOpen = true;
+        }
+
+        private void ColumnPopup_Closed(object sender, EventArgs e)
+        {
+            UpdateColumnFilterButtonContent();
+
+            string placeholder = SearchBox != null ? (SearchBox.Tag as string ?? string.Empty) : string.Empty;
+            string text = SearchBox != null ? (SearchBox.Text ?? string.Empty) : string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(text) && text != placeholder)
+                ApplySearchFilter(text);
+        }
+
+        private void ColumnCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            var cb = sender as CheckBox;
+            var key = cb != null ? cb.Tag as string : null;
+            if (string.IsNullOrWhiteSpace(key)) return;
+
+            if (cb.IsChecked == true) _selectedColumnKeys.Add(key);
+            else _selectedColumnKeys.Remove(key);
+        }
+
+        private void SelectAllColumns_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedColumnKeys.Clear();
+            foreach (var child in FindPopupCheckBoxes()) child.IsChecked = true;
+            for (int i = 0; i < AllColumnKeys.Length; i++) _selectedColumnKeys.Add(AllColumnKeys[i]);
+        }
+
+        private void ClearAllColumns_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedColumnKeys.Clear(); // empty => "All columns"
+            foreach (var child in FindPopupCheckBoxes()) child.IsChecked = false;
+        }
+
+        private IEnumerable<CheckBox> FindPopupCheckBoxes()
+        {
+            var border = ColumnPopup.Child as Border;
+            if (border == null) yield break;
+
+            var sp = border.Child as StackPanel;
+            if (sp == null) yield break;
+
+            var sv = sp.Children.OfType<ScrollViewer>().FirstOrDefault();
+            if (sv == null) yield break;
+
+            var inner = sv.Content as StackPanel;
+            if (inner == null) yield break;
+
+            foreach (var child in inner.Children)
+            {
+                var cb = child as CheckBox;
+                if (cb != null) yield return cb;
+            }
+        }
+
+        private void UpdateColumnFilterButtonContent()
+        {
+            if (_selectedColumnKeys.Count == 0)
+                ColumnFilterButton.Content = "All ▾";
+            else
+                ColumnFilterButton.Content = string.Format("{0} selected ▾", _selectedColumnKeys.Count);
+        }
 
         // Command handlers
         private void ExecuteApprove(object sender, ExecutedRoutedEventArgs e)
@@ -351,7 +464,7 @@ namespace HouseholdMS.View
             }
 
             var confirm = MessageBox.Show(
-                $"Delete user '{row.Username}'? This will deactivate the account.",
+                string.Format("Delete user '{0}'? This will deactivate the account.", row.Username),
                 "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (confirm != MessageBoxResult.Yes) return;
 
@@ -403,7 +516,7 @@ namespace HouseholdMS.View
                     }
                 }
 
-                Info($"Role updated to {newRole}.");
+                Info(string.Format("Role updated to {0}.", newRole));
                 LoadUsers();
             }
             catch (Exception ex) { Error($"Error changing role:\n{ex.Message}"); }
@@ -411,7 +524,7 @@ namespace HouseholdMS.View
 
         // Helpers
         private static bool TryGetUserId(object parameter, out int userId)
-            => int.TryParse(parameter?.ToString(), out userId);
+            => int.TryParse(parameter != null ? parameter.ToString() : null, out userId);
 
         private static void Info(string msg) => MessageBox.Show(msg, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         private static void Warn(string msg) => MessageBox.Show(msg, "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -474,11 +587,11 @@ namespace HouseholdMS.View
             {
                 case "approved": return Strings.Status_Approved;
                 case "pending": return Strings.Status_Pending;
-                case "declined": return Strings.Status_Blocked; // reuse "blocked" as declined/denied label if you like
+                case "declined": return Strings.Status_Blocked; // reuse "blocked" text if you like
                 case "active": return Strings.Status_Active;
                 case "inactive": return Strings.Status_Inactive;
                 case "user": return Strings.Status_User;
-                case "admin": return Strings.Role_Admin;      // fallback if StatusLabel ever returns role words
+                case "admin": return Strings.Role_Admin;
                 default: return s;
             }
         }

@@ -1,5 +1,4 @@
-﻿// FILE: View/Dashboard/AllHouseholdsView.xaml.cs
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Input;
+using System.Linq; // for Linq helpers
 using HouseholdMS.Model;
 using HouseholdMS.View.UserControls;     // AddHouseholdControl
 using HouseholdMS.Resources;             // Strings.*
@@ -17,8 +17,7 @@ namespace HouseholdMS.View.Dashboard
     public partial class AllHouseholdsView : UserControl
     {
         private const string OPERATIONAL = "Operational";
-        private const string IN_SERVICE = "In Service";
-        private const string NOT_OPERATIONAL = "Not Operational";
+        private const string OUT_OF_SERVICE = "Out of Service";
 
         private readonly ObservableCollection<Household> allHouseholds = new ObservableCollection<Household>();
         private ICollectionView view;
@@ -37,6 +36,34 @@ namespace HouseholdMS.View.Dashboard
         private string _normalizedStatusFilter = string.Empty;
         private bool _categoryFilterActive = false;
         private string _searchText = string.Empty;
+
+        // ===== Column chooser state (empty = default behavior) =====
+        private static readonly string[] AllColumnKeys = new[]
+        {
+            nameof(Household.HouseholdID),
+            nameof(Household.OwnerName),
+            nameof(Household.UserName),
+            nameof(Household.Municipality),
+            nameof(Household.District),
+            nameof(Household.ContactNum),
+            "InstallDateText",
+            "LastInspectText",
+            nameof(Household.Statuss),
+            nameof(Household.UserComm)
+        };
+
+        // Default set = preserves old behavior when none selected
+        private static readonly string[] DefaultColumnKeys = new[]
+        {
+            nameof(Household.OwnerName),
+            nameof(Household.UserName),
+            nameof(Household.Municipality),
+            nameof(Household.District),
+            nameof(Household.ContactNum)
+            // (ID exact match handled separately to preserve prior behavior)
+        };
+
+        private readonly HashSet<string> _selectedColumnKeys = new HashSet<string>(StringComparer.Ordinal);
 
         // Optional parent refresh hook
         private Action _notifyParent;
@@ -71,6 +98,7 @@ namespace HouseholdMS.View.Dashboard
 
             ApplyAccessRestrictions();
             UpdateSearchPlaceholder();   // sets Tag only (watermark handles visuals)
+            UpdateColumnFilterButtonContent();
             ApplyFilter();
         }
 
@@ -117,6 +145,9 @@ namespace HouseholdMS.View.Dashboard
                         var installDate = DateTime.TryParse(installRaw, out var dt1) ? dt1 : DateTime.MinValue;
                         var lastInspect = DateTime.TryParse(lastRaw, out var dt2) ? dt2 : DateTime.MinValue;
 
+                        var statusRaw = reader["Statuss"] == DBNull.Value ? string.Empty : Convert.ToString(reader["Statuss"]);
+                        var normalizedStatus = NormalizeStatus(statusRaw);
+
                         var h = new Household
                         {
                             HouseholdID = Convert.ToInt32(reader["HouseholdID"]),
@@ -128,7 +159,7 @@ namespace HouseholdMS.View.Dashboard
                             InstallDate = installDate,
                             LastInspect = lastInspect,
                             UserComm = reader["UserComm"] == DBNull.Value ? string.Empty : Convert.ToString(reader["UserComm"]),
-                            Statuss = reader["Statuss"] == DBNull.Value ? string.Empty : Convert.ToString(reader["Statuss"])
+                            Statuss = normalizedStatus
                         };
 
                         allHouseholds.Add(h);
@@ -140,7 +171,7 @@ namespace HouseholdMS.View.Dashboard
             HouseholdListView.ItemsSource = view;
         }
 
-        // === Status helpers (kept for future use) ===
+        // === Status helpers ===
         private static string NormalizeStatus(string s)
         {
             if (string.IsNullOrWhiteSpace(s)) return string.Empty;
@@ -150,17 +181,18 @@ namespace HouseholdMS.View.Dashboard
             while (t.Contains("  ")) t = t.Replace("  ", " ");
 
             if (t.StartsWith("operational")) return OPERATIONAL;
-            if (t.StartsWith("in service") || t.StartsWith("service")) return IN_SERVICE;
-            if (t.StartsWith("not operational") || t.StartsWith("notoperational")) return NOT_OPERATIONAL;
 
-            return s.Trim();
+            if (t.StartsWith("in service") || t.StartsWith("service")) return OUT_OF_SERVICE;
+            if (t.StartsWith("not operational") || t.StartsWith("notoperational")) return OUT_OF_SERVICE;
+            if (t.StartsWith("out of service") || t.StartsWith("outofservice")) return OUT_OF_SERVICE;
+
+            return OUT_OF_SERVICE;
         }
 
         // === Search & filter ===
         private void UpdateSearchPlaceholder()
         {
             if (SearchBox == null) return;
-            // Tag is the localized watermark text; template shows it when Text is empty.
             SearchBox.Tag = Strings.AHV_SearchPlaceholder;
         }
 
@@ -170,6 +202,9 @@ namespace HouseholdMS.View.Dashboard
 
             string search = string.IsNullOrWhiteSpace(_searchText) ? string.Empty : _searchText.Trim().ToLowerInvariant();
             bool useCategory = _categoryFilterActive && !string.IsNullOrWhiteSpace(_normalizedStatusFilter);
+
+            // Decide which columns to use
+            var keys = _selectedColumnKeys.Count == 0 ? DefaultColumnKeys : _selectedColumnKeys.ToArray();
 
             view.Filter = delegate (object obj)
             {
@@ -184,18 +219,40 @@ namespace HouseholdMS.View.Dashboard
 
                 if (string.IsNullOrEmpty(search)) return true;
 
-                if (!string.IsNullOrEmpty(h.OwnerName) && h.OwnerName.ToLowerInvariant().Contains(search)) return true;
-                if (!string.IsNullOrEmpty(h.UserName) && h.UserName.ToLowerInvariant().Contains(search)) return true;
-                if (!string.IsNullOrEmpty(h.Municipality) && h.Municipality.ToLowerInvariant().Contains(search)) return true;
-                if (!string.IsNullOrEmpty(h.District) && h.District.ToLowerInvariant().Contains(search)) return true;
-                if (!string.IsNullOrEmpty(h.ContactNum) && h.ContactNum.ToLowerInvariant().Contains(search)) return true;
+                // Preserve previous exact ID behavior (in addition to column matching)
+                int idValue;
+                if (int.TryParse(search, out idValue) && h.HouseholdID == idValue) return true;
 
-                if (int.TryParse(search, out int id) && h.HouseholdID == id) return true;
+                // Column-based matching
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    string cell = GetCellString(h, keys[i]);
+                    if (!string.IsNullOrEmpty(cell) && cell.ToLowerInvariant().Contains(search))
+                        return true;
+                }
 
                 return false;
             };
 
             view.Refresh();
+        }
+
+        private static string GetCellString(Household h, string key)
+        {
+            switch (key)
+            {
+                case nameof(Household.HouseholdID): return h.HouseholdID.ToString();
+                case nameof(Household.OwnerName): return h.OwnerName ?? string.Empty;
+                case nameof(Household.UserName): return h.UserName ?? string.Empty;
+                case nameof(Household.Municipality): return h.Municipality ?? string.Empty;
+                case nameof(Household.District): return h.District ?? string.Empty;
+                case nameof(Household.ContactNum): return h.ContactNum ?? string.Empty;
+                case "InstallDateText": return h.InstallDate == DateTime.MinValue ? string.Empty : h.InstallDate.ToString("yyyy-MM-dd");
+                case "LastInspectText": return h.LastInspect == DateTime.MinValue ? string.Empty : h.LastInspect.ToString("yyyy-MM-dd");
+                case nameof(Household.Statuss): return h.Statuss ?? string.Empty;
+                case nameof(Household.UserComm): return h.UserComm ?? string.Empty;
+                default: return string.Empty;
+            }
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -204,7 +261,6 @@ namespace HouseholdMS.View.Dashboard
             ApplyFilter();
         }
 
-        // (Handlers retained for compatibility; watermark makes them no-ops)
         private void ResetText(object sender, RoutedEventArgs e) { /* not used by watermark style */ }
         private void ClearText(object sender, RoutedEventArgs e) { /* not used by watermark style */ }
 
@@ -249,7 +305,8 @@ namespace HouseholdMS.View.Dashboard
 
             var dialog = CreateWideDialog(form, "Add Household");
 
-            form.OnSavedSuccessfully += delegate
+            // Use proper EventHandler signature
+            form.OnSavedSuccessfully += (object s, EventArgs args) =>
             {
                 try { dialog.DialogResult = true; } catch { }
                 dialog.Close();
@@ -257,7 +314,7 @@ namespace HouseholdMS.View.Dashboard
                 ApplyFilter();
                 RaiseParentRefresh();
             };
-            form.OnCancelRequested += delegate
+            form.OnCancelRequested += (object s, EventArgs args) =>
             {
                 try { dialog.DialogResult = false; } catch { }
                 dialog.Close();
@@ -283,7 +340,9 @@ namespace HouseholdMS.View.Dashboard
             };
 
             var dlg = CreateWideDialog(form, "Edit Household #" + selected.HouseholdID);
-            form.OnSavedSuccessfully += delegate
+
+            // Use proper EventHandler signature
+            form.OnSavedSuccessfully += (object s, EventArgs args) =>
             {
                 try { dlg.DialogResult = true; } catch { }
                 dlg.Close();
@@ -291,7 +350,7 @@ namespace HouseholdMS.View.Dashboard
                 ApplyFilter();
                 RaiseParentRefresh();
             };
-            form.OnCancelRequested += delegate
+            form.OnCancelRequested += (object s, EventArgs args) =>
             {
                 try { dlg.DialogResult = false; } catch { }
                 dlg.Close();
@@ -332,7 +391,7 @@ namespace HouseholdMS.View.Dashboard
             if (dlg == null || _modalOpen) return;
 
             _modalOpen = true;
-            HouseholdListView.IsEnabled = false;
+            if (HouseholdListView != null) HouseholdListView.IsEnabled = false;
 
             try
             {
@@ -341,7 +400,7 @@ namespace HouseholdMS.View.Dashboard
             }
             finally
             {
-                HouseholdListView.IsEnabled = true;
+                if (HouseholdListView != null) HouseholdListView.IsEnabled = true;
                 _modalOpen = false;
             }
         }
@@ -424,6 +483,74 @@ namespace HouseholdMS.View.Dashboard
                 }
             };
             dfs(form);
+        }
+
+        // ===== Column chooser UI handlers =====
+        private void ColumnFilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            ColumnPopup.IsOpen = true;
+        }
+
+        private void ColumnPopup_Closed(object sender, EventArgs e)
+        {
+            UpdateColumnFilterButtonContent();
+
+            // Re-apply filter if there's text
+            string text = SearchBox != null ? (SearchBox.Text ?? string.Empty) : string.Empty;
+            if (!string.IsNullOrWhiteSpace(text))
+                ApplyFilter();
+        }
+
+        private void ColumnCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            var cb = sender as CheckBox;
+            var key = cb != null ? cb.Tag as string : null;
+            if (string.IsNullOrWhiteSpace(key)) return;
+
+            if (cb.IsChecked == true) _selectedColumnKeys.Add(key);
+            else _selectedColumnKeys.Remove(key);
+        }
+
+        private void SelectAllColumns_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedColumnKeys.Clear();
+            foreach (var child in FindPopupCheckBoxes()) child.IsChecked = true;
+            for (int i = 0; i < AllColumnKeys.Length; i++) _selectedColumnKeys.Add(AllColumnKeys[i]);
+        }
+
+        private void ClearAllColumns_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedColumnKeys.Clear(); // empty => default behavior
+            foreach (var child in FindPopupCheckBoxes()) child.IsChecked = false;
+        }
+
+        private IEnumerable<CheckBox> FindPopupCheckBoxes()
+        {
+            var border = ColumnPopup.Child as Border;
+            if (border == null) yield break;
+
+            var sp = border.Child as StackPanel;
+            if (sp == null) yield break;
+
+            var sv = sp.Children.OfType<ScrollViewer>().FirstOrDefault();
+            if (sv == null) yield break;
+
+            var inner = sv.Content as StackPanel;
+            if (inner == null) yield break;
+
+            foreach (var child in inner.Children)
+            {
+                var cb = child as CheckBox;
+                if (cb != null) yield return cb;
+            }
+        }
+
+        private void UpdateColumnFilterButtonContent()
+        {
+            if (_selectedColumnKeys.Count == 0)
+                ColumnFilterButton.Content = "All ▾";
+            else
+                ColumnFilterButton.Content = _selectedColumnKeys.Count + " selected ▾";
         }
     }
 }

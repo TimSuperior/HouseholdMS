@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Data.SQLite;
 using System.Globalization;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -12,6 +11,7 @@ using HouseholdMS.Model;
 using HouseholdMS.View.Inventory;
 using HouseholdMS.View.Dashboard;
 using HouseholdMS.View.UserControls;
+using HouseholdMS.Resources;
 
 namespace HouseholdMS.View.Dashboard
 {
@@ -20,10 +20,9 @@ namespace HouseholdMS.View.Dashboard
         private const string OPERATIONAL = "Operational";
         private const string IN_SERVICE = "In Service";
 
-        // Defaults for solar tiles (Sughd/Tajikistan-ish). Adjust later or bind per-site.
+        // Defaults for solar tiles
         private const double DefaultLat = 38.56;
         private const double DefaultLon = 68.79;
-
         private const double DefaultPeakKw = 5.0;
         private const int DefaultTilt = 30;
         private const int DefaultAzimuth = 180;
@@ -33,15 +32,18 @@ namespace HouseholdMS.View.Dashboard
 
         public ObservableCollection<InventoryTileVm> InventoryTiles { get; } = new ObservableCollection<InventoryTileVm>();
 
-        // ===== Inventory layout math (two rows, auto-shrink) =====
+        // ===== Inventory layout math (auto-fit to container; shrink if needed) =====
         private const double InvBaseWidth = 240.0;
-        private const double InvBaseHeight = 130.0;
+        private const double InvBaseHeight = 170.0; // base
         private const double InvAspect = InvBaseHeight / InvBaseWidth;
-        private const double ItemMarginX = 16.0;
-        private const double ItemMarginY = 16.0;
-        private const double MinItemWidth = 160.0;
 
-        // Dependency properties so XAML can bind WrapPanel.ItemWidth/ItemHeight and container Height
+        private const double TileMarginX = 16.0; // Button margin Left+Right = 8+8
+        private const double TileMarginY = 16.0; // Button margin Top+Bottom = 8+8
+        private const double ContainerPadding = 16.0; // approx ScrollViewer/ItemsControl padding/margins
+
+        private const double AbsoluteMinWidth = 120.0; // allow smaller than before to guarantee fit
+        private const double HardMinWidth = 90.0;  // emergency floor if panel is very short
+
         public static readonly DependencyProperty InventoryItemWidthProperty =
             DependencyProperty.Register(nameof(InventoryItemWidth), typeof(double), typeof(DashboardView),
                 new PropertyMetadata(InvBaseWidth));
@@ -50,10 +52,10 @@ namespace HouseholdMS.View.Dashboard
             DependencyProperty.Register(nameof(InventoryItemHeight), typeof(double), typeof(DashboardView),
                 new PropertyMetadata(InvBaseHeight));
 
-        // Taller than before (extra space so weather row can be smaller)
+        // Compatibility (not used by layout directly)
         public static readonly DependencyProperty InventoryPanelHeightProperty =
             DependencyProperty.Register(nameof(InventoryPanelHeight), typeof(double), typeof(DashboardView),
-                new PropertyMetadata(InvBaseHeight * 2 + ItemMarginY + 56)); // was +24
+                new PropertyMetadata(InvBaseHeight * 2 + TileMarginY + 140));
 
         public double InventoryItemWidth
         {
@@ -78,14 +80,11 @@ namespace HouseholdMS.View.Dashboard
             DataContext = this;
 
             Loaded += DashboardView_Loaded;
-
-            // When collection changes (add/remove items), reflow
             InventoryTiles.CollectionChanged += InventoryTiles_CollectionChanged;
         }
 
         private void DashboardView_Loaded(object sender, RoutedEventArgs e)
         {
-            // ensure tiles have default params if not set in XAML
             if (IrradianceTile != null)
             {
                 if (double.IsNaN(IrradianceTile.Latitude)) IrradianceTile.Latitude = DefaultLat;
@@ -102,9 +101,7 @@ namespace HouseholdMS.View.Dashboard
             }
 
             if (InventoryContainer != null)
-            {
                 Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(RecalculateInventoryLayout));
-            }
 
             LoadHouseholdCountsFromDb();
             LoadInventoryTilesFromDb();
@@ -121,16 +118,21 @@ namespace HouseholdMS.View.Dashboard
         }
 
         /// <summary>
-        /// Compute a uniform ItemWidth/ItemHeight so that all inventory tiles
-        /// fit into at most two rows within the fixed-height container.
+        /// Choose ItemWidth/ItemHeight so that ALL inventory tiles fit inside the available
+        /// inventory area without scrollbars. We try to keep them as large as possible,
+        /// shrinking only when necessary. Works for 2, 3 or more rows.
         /// </summary>
         private void RecalculateInventoryLayout()
         {
             if (InventoryContainer == null) return;
 
-            double available = Math.Max(0, InventoryContainer.ActualWidth - 16);
-            if (available <= 0)
+            // Available space inside the panel
+            double availW = Math.Max(0, InventoryContainer.ActualWidth - ContainerPadding);
+            double availH = Math.Max(0, InventoryContainer.ActualHeight - ContainerPadding);
+
+            if (availW <= 0 || availH <= 0)
             {
+                // try again when layout settles
                 Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(RecalculateInventoryLayout));
                 return;
             }
@@ -140,31 +142,64 @@ namespace HouseholdMS.View.Dashboard
             {
                 InventoryItemWidth = InvBaseWidth;
                 InventoryItemHeight = InvBaseHeight;
-                InventoryPanelHeight = InvBaseHeight * 2 + ItemMarginY + 56; // taller than before
+                InventoryPanelHeight = availH;
                 return;
             }
 
-            int columnsAtBase = Math.Max(1, (int)Math.Floor((available + ItemMarginX) / (InvBaseWidth + ItemMarginX)));
-            int columnsRequired = Math.Max(1, (int)Math.Ceiling(count / 2.0));
+            // Try all reasonable column counts and pick the largest tile size that fits.
+            double bestW = -1, bestH = -1;
+            int maxColsByWidth = Math.Max(1, (int)Math.Floor((availW + TileMarginX) / (AbsoluteMinWidth + TileMarginX)));
+            int maxCols = Math.Max(1, Math.Min(count, maxColsByWidth));
 
-            double newWidth;
-            if (columnsRequired <= columnsAtBase)
+            for (int cols = 1; cols <= maxCols; cols++)
             {
-                newWidth = InvBaseWidth; // base size fits in two rows
+                // width that fits horizontally for 'cols' columns (including margins)
+                double w = Math.Floor((availW - (cols * TileMarginX)) / cols);
+                if (w <= 0) continue;
+                if (w < AbsoluteMinWidth) continue;
+
+                double h = w * InvAspect;
+                int rows = (int)Math.Ceiling(count / (double)cols);
+                double totalHeight = rows * h + (rows - 1) * TileMarginY;
+
+                if (totalHeight <= availH)
+                {
+                    if (w > bestW)
+                    {
+                        bestW = w;
+                        bestH = h;
+                    }
+                }
             }
-            else
+
+            if (bestW < 0)
             {
-                newWidth = Math.Floor((available - (columnsRequired * ItemMarginX)) / columnsRequired);
-                newWidth = Math.Max(MinItemWidth, Math.Min(InvBaseWidth, newWidth));
+                // No solution >= AbsoluteMinWidth fits. Allow smaller tiles to guarantee fit.
+                // Start from the max columns that base width allows, then shrink by height constraint.
+                int cols = Math.Max(1, maxCols);
+                double wHoriz = Math.Floor((availW - (cols * TileMarginX)) / cols);
+                if (wHoriz <= 0) wHoriz = AbsoluteMinWidth;
+
+                int rows = (int)Math.Ceiling(count / (double)cols);
+                double maxHPerItem = (availH - (rows - 1) * TileMarginY) / rows;
+                double wFromH = Math.Floor(maxHPerItem / InvAspect);
+
+                double w = Math.Max(HardMinWidth, Math.Min(wHoriz, wFromH));
+                double h = Math.Max(40.0, w * InvAspect);
+
+                bestW = w;
+                bestH = h;
             }
 
-            double newHeight = Math.Round(newWidth * InvAspect);
+            // Clamp to base (don't grow above base visuals)
+            bestW = Math.Min(bestW, InvBaseWidth);
+            bestH = Math.Min(bestH, InvBaseHeight);
 
-            InventoryItemWidth = newWidth;
-            InventoryItemHeight = newHeight;
+            InventoryItemWidth = bestW;
+            InventoryItemHeight = bestH;
 
-            // keep the section a bit taller
-            InventoryPanelHeight = (newHeight * 2) + ItemMarginY + 56;
+            // keep compatibility property updated
+            InventoryPanelHeight = availH;
         }
 
         #region Household counts (UNCHANGED)
@@ -221,7 +256,7 @@ namespace HouseholdMS.View.Dashboard
         }
         #endregion
 
-        #region Inventory tiles (UNCHANGED except call to Recalculate)
+        #region Inventory tiles (UNCHANGED data load)
         private void LoadInventoryTilesFromDb()
         {
             InventoryTiles.Clear();
@@ -262,7 +297,6 @@ namespace HouseholdMS.View.Dashboard
                 System.Diagnostics.Debug.WriteLine("DashboardView.LoadInventoryTilesFromDb error: " + ex);
             }
 
-            // Lay out after data load
             RecalculateInventoryLayout();
         }
         #endregion
@@ -343,14 +377,14 @@ namespace HouseholdMS.View.Dashboard
             var mw = host as MainWindow;
             if (mw != null)
             {
-                mw.NavigateTo(new InventoryView());
+                mw.NavigateTo(new InventoryView(_userRole));
             }
             else
             {
                 var win = new Window
                 {
                     Title = "Inventory",
-                    Content = new InventoryView(),
+                    Content = new InventoryView(_userRole),
                     Owner = host,
                     Width = 1200,
                     Height = 750,
@@ -365,8 +399,7 @@ namespace HouseholdMS.View.Dashboard
             var btn = sender as Button;
             if (btn == null || btn.Tag == null) return;
 
-            int itemId;
-            if (!int.TryParse(btn.Tag.ToString(), out itemId)) return;
+            if (!int.TryParse(btn.Tag.ToString(), out int itemId)) return;
 
             var owner = Window.GetWindow(this);
             var win = new InventoryDetails(itemId) { Owner = owner };
@@ -374,7 +407,7 @@ namespace HouseholdMS.View.Dashboard
         }
         #endregion
 
-        #region Weather tile (UNCHANGED)
+        #region Weather & Solar tiles (UNCHANGED)
         private void OpenWeather_Click(object sender, RoutedEventArgs e)
         {
             var outer = sender as Button;
@@ -392,11 +425,9 @@ namespace HouseholdMS.View.Dashboard
                 Owner = owner,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
-            win.Show(); // non-modal
+            win.Show();
         }
-        #endregion
 
-        #region NEW: Solar tiles open detail windows (UNCHANGED)
         private void OpenIrradiance_Click(object sender, RoutedEventArgs e)
         {
             var outer = sender as Button;
@@ -417,7 +448,7 @@ namespace HouseholdMS.View.Dashboard
                 Height = 600,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
-            win.Show(); // non-modal like weather
+            win.Show();
         }
 
         private void OpenPvEnergy_Click(object sender, RoutedEventArgs e)
@@ -468,8 +499,8 @@ namespace HouseholdMS.View.Dashboard
         public int LowStockThreshold { get; set; }
         public string LastRestockedDate { get; set; }
 
-        public bool IsZero { get { return Remaining <= 0; } }
-        public bool IsBelowThreshold { get { return Remaining > 0 && Remaining <= LowStockThreshold; } }
-        public bool IsOk { get { return Remaining > LowStockThreshold; } }
+        public bool IsZero => Remaining <= 0;
+        public bool IsBelowThreshold => Remaining > 0 && Remaining <= LowStockThreshold;
+        public bool IsOk => Remaining > LowStockThreshold;
     }
 }

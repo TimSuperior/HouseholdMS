@@ -25,14 +25,19 @@
   <data name="Menu_Multimeter" xml:space="preserve"><value>📊 Multímetro</value></data>
   <data name="Menu_ElectronicLoad" xml:space="preserve"><value>⚡ Carga electrónica</value></data>
 
-  <data name="Section_TestManuals" xml:space="preserve"><value>🧪 Manuales de prueba</value></data>
-  <data name="TestManuals_TestModules" xml:space="preserve"><value>Módulos de prueba</value></data>
-  <data name="Menu_BlueSmartCharger" xml:space="preserve"><value>🔌 Cargador Blue Smart</value></data>
-  <data name="Menu_ControllerTest" xml:space="preserve"><value>🧭 Prueba del controlador</value></data>
-  <data name="Menu_TestProcedure" xml:space="preserve"><value>Procedimiento de prueba</value></data>
-  <data name="Menu_SwitchTest" xml:space="preserve"><value>🔀 Prueba de interruptor</value></data>
+	<!-- Manuales de prueba -->
+	<data name="Section_TestManuals" xml:space="preserve"><value>🧪 Manuales de prueba</value></data>
+	<data name="TestManuals_TestModules" xml:space="preserve"><value>Módulos de prueba</value></data>
 
-  <data name="TestManuals_Documentation" xml:space="preserve"><value>Documentación</value></data>
+	<!-- Botones de Módulos de prueba -->
+	<data name="Menu_TestProcedure" xml:space="preserve"><value>Módulo fotovoltaico</value></data>
+	<data name="Menu_ControllerTest" xml:space="preserve"><value>🧭 Controlador de carga MPPT</value></data>
+	<data name="Menu_SwitchTest" xml:space="preserve"><value>🔀 Inversor</value></data>
+	<data name="Menu_BlueSmartCharger" xml:space="preserve"><value>🔌 Cargador Blue Smart</value></data>
+	<data name="Menu_K4BatteryBalancing" xml:space="preserve"><value>🔋 Balanceo de baterías K4</value></data>
+
+
+	<data name="TestManuals_Documentation" xml:space="preserve"><value>Documentación</value></data>
   <data name="Menu_TestReports" xml:space="preserve"><value>📄 Informes de prueba</value></data>
   <data name="Menu_Templates" xml:space="preserve"><value>📁 Plantillas</value></data>
   <data name="Menu_ManageUsers" xml:space="preserve"><value>👥 Gestionar usuarios</value></data>
@@ -396,14 +401,14 @@
 	<data name="AIC_Snapshot_LastUsed" xml:space="preserve"><value>Último uso</value></data>
 
 	<data name="AIC_UsageHistory_Title" xml:space="preserve"><value>Historial de uso</value></data>
-	<data name="AIC_UH_Col_When" xml:space="preserve"><value>Cuándo</value></data>
+	<data name="AIC_UH_Col_When" xml:space="preserve"><value>Fecha</value></data>
 	<data name="AIC_UH_Col_QtyUsed" xml:space="preserve"><value>Cant. usada</value></data>
 	<data name="AIC_UH_Col_Service" xml:space="preserve"><value>Servicio</value></data>
 	<data name="AIC_UH_Col_UsedBy" xml:space="preserve"><value>Usado por</value></data>
 	<data name="AIC_UH_Col_Technicians" xml:space="preserve"><value>Técnico(s)</value></data>
 
 	<data name="AIC_RestockHistory_Title" xml:space="preserve"><value>Historial de reabastecimiento</value></data>
-	<data name="AIC_RH_Col_When" xml:space="preserve"><value>Cuándo</value></data>
+	<data name="AIC_RH_Col_When" xml:space="preserve"><value>Fecha</value></data>
 	<data name="AIC_RH_Col_Qty" xml:space="preserve"><value>Cant.</value></data>
 	<data name="AIC_RH_Col_By" xml:space="preserve"><value>Por</value></data>
 	<data name="AIC_RH_Col_Note" xml:space="preserve"><value>Nota</value></data>

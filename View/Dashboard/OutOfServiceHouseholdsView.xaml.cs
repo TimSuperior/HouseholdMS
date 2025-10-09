@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -10,6 +11,7 @@ using HouseholdMS.Model;
 using System.Data.SQLite;
 using System.Windows.Media;
 using HouseholdMS.Resources; // <-- for Strings (localized resources)
+using System.Windows.Input;
 
 namespace HouseholdMS.View.Dashboard
 {
@@ -33,6 +35,34 @@ namespace HouseholdMS.View.Dashboard
         private string _normalizedStatusFilter = IN_SERVICE;
         private bool _categoryFilterActive = true;
         private string _searchText = string.Empty;
+
+        // ===== Column chooser state (empty => preserve old behavior) =====
+        private static readonly string[] AllColumnKeys = new[]
+        {
+            nameof(Household.HouseholdID),
+            nameof(Household.OwnerName),
+            nameof(Household.UserName),
+            nameof(Household.Municipality),
+            nameof(Household.District),
+            nameof(Household.ContactNum),
+            "InstallDateText",
+            "LastInspectText",
+            nameof(Household.Statuss),
+            nameof(Household.UserComm)
+        };
+
+        // ORIGINAL default search columns for this view (preserved when none selected)
+        private static readonly string[] DefaultColumnKeys = new[]
+        {
+            nameof(Household.OwnerName),
+            nameof(Household.UserName),
+            nameof(Household.Municipality),
+            nameof(Household.District),
+            nameof(Household.ContactNum)
+            // (ID matching remains supported separately as before)
+        };
+
+        private readonly HashSet<string> _selectedColumnKeys = new HashSet<string>(StringComparer.Ordinal);
 
         // ===== Optional parent refresh hook (no extra files) =====
         private Action _notifyParent;
@@ -76,6 +106,7 @@ namespace HouseholdMS.View.Dashboard
             // Double-click = open appropriate modal (ServiceCall for In Service; Edit otherwise)
             HouseholdListView.MouseDoubleClick += HouseholdListView_MouseDoubleClick;
 
+            UpdateColumnFilterButtonContent();
             ApplyFilter();
         }
 
@@ -187,13 +218,16 @@ namespace HouseholdMS.View.Dashboard
         private static bool IsPlaceholder(string text, string tagValue)
             => string.Equals(text ?? string.Empty, tagValue ?? string.Empty, StringComparison.Ordinal);
 
-        // ===== Filtering =====
+        // ===== Filtering (enhanced with column chooser; preserves old behavior when none selected) =====
         private void ApplyFilter()
         {
             if (view == null) return;
 
             string search = _searchText == null ? string.Empty : _searchText.Trim().ToLowerInvariant();
             bool useCategory = _categoryFilterActive && !string.IsNullOrWhiteSpace(_normalizedStatusFilter);
+
+            // Decide which columns to use (empty => preserve old behavior)
+            var keys = _selectedColumnKeys.Count == 0 ? DefaultColumnKeys : _selectedColumnKeys.ToArray();
 
             view.Filter = delegate (object obj)
             {
@@ -210,19 +244,50 @@ namespace HouseholdMS.View.Dashboard
 
                 if (string.IsNullOrEmpty(search)) return true;
 
-                if (!string.IsNullOrEmpty(h.OwnerName) && h.OwnerName.ToLowerInvariant().Contains(search)) return true;
-                if (!string.IsNullOrEmpty(h.UserName) && h.UserName.ToLowerInvariant().Contains(search)) return true;
-                if (!string.IsNullOrEmpty(h.Municipality) && h.Municipality.ToLowerInvariant().Contains(search)) return true;
-                if (!string.IsNullOrEmpty(h.District) && h.District.ToLowerInvariant().Contains(search)) return true;
-                if (!string.IsNullOrEmpty(h.ContactNum) && h.ContactNum.ToLowerInvariant().Contains(search)) return true;
+                if (_selectedColumnKeys.Count == 0)
+                {
+                    // ORIGINAL behavior
+                    if (!string.IsNullOrEmpty(h.OwnerName) && h.OwnerName.ToLowerInvariant().Contains(search)) return true;
+                    if (!string.IsNullOrEmpty(h.UserName) && h.UserName.ToLowerInvariant().Contains(search)) return true;
+                    if (!string.IsNullOrEmpty(h.Municipality) && h.Municipality.ToLowerInvariant().Contains(search)) return true;
+                    if (!string.IsNullOrEmpty(h.District) && h.District.ToLowerInvariant().Contains(search)) return true;
+                    if (!string.IsNullOrEmpty(h.ContactNum) && h.ContactNum.ToLowerInvariant().Contains(search)) return true;
 
-                int id;
-                if (int.TryParse(search, out id) && h.HouseholdID == id) return true;
+                    int id;
+                    if (int.TryParse(search, out id) && h.HouseholdID == id) return true;
 
+                    return false;
+                }
+
+                // Column-based search when user selected columns
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    string cell = GetCellString(h, keys[i]);
+                    if (!string.IsNullOrEmpty(cell) && cell.ToLowerInvariant().Contains(search))
+                        return true;
+                }
                 return false;
             };
 
             view.Refresh();
+        }
+
+        private static string GetCellString(Household h, string key)
+        {
+            switch (key)
+            {
+                case nameof(Household.HouseholdID): return h.HouseholdID.ToString();
+                case nameof(Household.OwnerName): return h.OwnerName ?? string.Empty;
+                case nameof(Household.UserName): return h.UserName ?? string.Empty;
+                case nameof(Household.Municipality): return h.Municipality ?? string.Empty;
+                case nameof(Household.District): return h.District ?? string.Empty;
+                case nameof(Household.ContactNum): return h.ContactNum ?? string.Empty;
+                case "InstallDateText": return h.InstallDate == DateTime.MinValue ? string.Empty : h.InstallDate.ToString("yyyy-MM-dd");
+                case "LastInspectText": return h.LastInspect == DateTime.MinValue ? string.Empty : h.LastInspect.ToString("yyyy-MM-dd");
+                case nameof(Household.Statuss): return h.Statuss ?? string.Empty;
+                case nameof(Household.UserComm): return h.UserComm ?? string.Empty;
+                default: return string.Empty;
+            }
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -430,6 +495,74 @@ namespace HouseholdMS.View.Dashboard
             LoadHouseholds();
             ApplyFilter();
             RaiseParentRefresh();
+        }
+
+        // ===== Column chooser UI handlers =====
+        private void ColumnFilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            ColumnPopup.IsOpen = true;
+        }
+
+        private void ColumnPopup_Closed(object sender, EventArgs e)
+        {
+            UpdateColumnFilterButtonContent();
+
+            // Re-apply filter if there's text
+            string text = SearchBox != null ? (SearchBox.Text ?? string.Empty) : string.Empty;
+            if (!string.IsNullOrWhiteSpace(text) && !IsPlaceholder(text, SearchBox.Tag as string ?? string.Empty))
+                ApplyFilter();
+        }
+
+        private void ColumnCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            var cb = sender as CheckBox;
+            var key = cb != null ? cb.Tag as string : null;
+            if (string.IsNullOrWhiteSpace(key)) return;
+
+            if (cb.IsChecked == true) _selectedColumnKeys.Add(key);
+            else _selectedColumnKeys.Remove(key);
+        }
+
+        private void SelectAllColumns_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedColumnKeys.Clear();
+            foreach (var child in FindPopupCheckBoxes()) child.IsChecked = true;
+            for (int i = 0; i < AllColumnKeys.Length; i++) _selectedColumnKeys.Add(AllColumnKeys[i]);
+        }
+
+        private void ClearAllColumns_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedColumnKeys.Clear(); // empty => default behavior
+            foreach (var child in FindPopupCheckBoxes()) child.IsChecked = false;
+        }
+
+        private IEnumerable<CheckBox> FindPopupCheckBoxes()
+        {
+            var border = ColumnPopup.Child as Border;
+            if (border == null) yield break;
+
+            var sp = border.Child as StackPanel;
+            if (sp == null) yield break;
+
+            var sv = sp.Children.OfType<ScrollViewer>().FirstOrDefault();
+            if (sv == null) yield break;
+
+            var inner = sv.Content as StackPanel;
+            if (inner == null) yield break;
+
+            foreach (var child in inner.Children)
+            {
+                var cb = child as CheckBox;
+                if (cb != null) yield return cb;
+            }
+        }
+
+        private void UpdateColumnFilterButtonContent()
+        {
+            if (_selectedColumnKeys.Count == 0)
+                ColumnFilterButton.Content = "All ▾";
+            else
+                ColumnFilterButton.Content = _selectedColumnKeys.Count + " selected ▾";
         }
     }
 }

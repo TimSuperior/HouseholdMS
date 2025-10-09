@@ -4,28 +4,30 @@
              xmlns:System="clr-namespace:System;assembly=mscorlib"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:res="clr-namespace:HouseholdMS.Resources"
              mc:Ignorable="d"
              Background="#F6F7FB"
-             UseLayoutRounding="True"
-             SnapsToDevicePixels="True"
-             TextOptions.TextFormattingMode="Display"
+             FontFamily="Segoe UI"
+             FontSize="15"
+             TextOptions.TextFormattingMode="Ideal"
              TextOptions.TextRenderingMode="ClearType"
+             SnapsToDevicePixels="True"
+             UseLayoutRounding="True"
              d:DesignHeight="600"
              d:DesignWidth="520">
 
-    <!-- ========== THEME ========== -->
+    <!-- ========== PALETTE & STYLES (aligned to AddServiceControl) ========== -->
     <UserControl.Resources>
-        <!-- Palette -->
-        <SolidColorBrush x:Key="Col.Page"   Color="#F6F7FB"/>
-        <SolidColorBrush x:Key="Col.Card"   Color="#FFFFFFFF"/>
-        <SolidColorBrush x:Key="Col.Border" Color="#E5E7EB"/>
-        <SolidColorBrush x:Key="Col.Text"   Color="#111827"/>
-        <SolidColorBrush x:Key="Col.Muted"  Color="#6B7280"/>
-        <SolidColorBrush x:Key="Col.Accent" Color="#3B82F6"/>
-        <SolidColorBrush x:Key="Col.Danger" Color="#EF4444"/>
+        <SolidColorBrush x:Key="AccentBrush"         Color="#2563EB"/>
+        <SolidColorBrush x:Key="SuccessBrush"        Color="#16A34A"/>
+        <SolidColorBrush x:Key="DangerBrush"         Color="#DC2626"/>
+        <SolidColorBrush x:Key="MutedBrush"          Color="#64748B"/>
+        <SolidColorBrush x:Key="InputBorderBrush"    Color="#CBD5E1"/>
+        <SolidColorBrush x:Key="CardBgBrush"         Color="#FAFBFF"/>
+        <SolidColorBrush x:Key="DividerBrush"        Color="#E5E7EB"/>
+        <SolidColorBrush x:Key="LabelBrush"          Color="#334155"/>
+        <SolidColorBrush x:Key="ValueBrush"          Color="#0F172A"/>
 
-        <!-- Status pills -->
+        <!-- Status pill colors (used by code-behind ApplyStatusPill) -->
         <SolidColorBrush x:Key="Pill.DefaultBg" Color="#F3F4F6"/>
         <SolidColorBrush x:Key="Pill.DefaultFg" Color="#111827"/>
         <SolidColorBrush x:Key="Pill.OpenBg"    Color="#DBEAFE"/>
@@ -35,125 +37,154 @@
         <SolidColorBrush x:Key="Pill.CancelBg"  Color="#FEE2E2"/>
         <SolidColorBrush x:Key="Pill.CancelFg"  Color="#991B1B"/>
 
-        <!-- Card (no bitmap effects to keep text sharp) -->
-        <Style x:Key="Card" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource Col.Card}"/>
-            <Setter Property="CornerRadius" Value="16"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Col.Border}"/>
+        <Style x:Key="HeaderTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#0F172A"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="HeaderInfo" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,6,0,0"/>
+        </Style>
+
+        <Style x:Key="FormLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,10,0,6"/>
+            <Setter Property="Foreground" Value="{StaticResource LabelBrush}"/>
+        </Style>
+
+        <!-- Multiline input with error-ready styling -->
+        <Style x:Key="ErrorBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="160"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource InputBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="20"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+            <Style.Triggers>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                </Trigger>
+                <!-- Optional: set Tag="error" in code-behind to highlight -->
+                <Trigger Property="Tag" Value="error">
+                    <Setter Property="BorderBrush" Value="Red"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="InputTextBox" TargetType="TextBox" BasedOn="{StaticResource ErrorBoxStyle}"/>
+
+        <!-- Summary grid label/value -->
+        <Style x:Key="SummaryLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Foreground" Value="{StaticResource LabelBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,8,12,8"/>
+            <Setter Property="TextWrapping" Value="NoWrap"/>
+        </Style>
+        <Style x:Key="SummaryValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Foreground" Value="{StaticResource ValueBrush}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,8,0,8"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        </Style>
+
+        <!-- Card wrapper -->
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Background" Value="{StaticResource CardBgBrush}"/>
+            <Setter Property="Padding" Value="16"/>
             <Setter Property="SnapsToDevicePixels" Value="True"/>
         </Style>
 
-        <!-- Labels / Values -->
-        <Style x:Key="LabelText" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource Col.Muted}"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,0,8,6"/>
-        </Style>
-        <Style x:Key="ValueText" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource Col.Text}"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="Margin" Value="0,0,0,6"/>
-        </Style>
-
         <!-- Buttons -->
-        <Style x:Key="BaseButton" TargetType="Button">
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="MinWidth" Value="110"/>
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
             <Setter Property="Padding" Value="14,8"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Background" Value="#EEF2FF"/>
-            <Setter Property="Foreground" Value="{StaticResource Col.Accent}"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="btn" CornerRadius="12" Background="{TemplateBinding Background}">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="10">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="btn" Property="Opacity" Value="0.92"/>
+                                <Setter Property="Opacity" Value="0.92"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="btn" Property="Opacity" Value="0.85"/>
+                                <Setter Property="Opacity" Value="0.75"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="btn" Property="Opacity" Value="0.6"/>
+                                <Setter Property="Opacity" Value="0.55"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="PrimaryButton" BasedOn="{StaticResource BaseButton}" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource Col.Accent}"/>
-            <Setter Property="Foreground" Value="White"/>
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource SuccessBrush}"/>
         </Style>
-        <Style x:Key="DangerButton" BasedOn="{StaticResource BaseButton}" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource Col.Danger}"/>
-            <Setter Property="Foreground" Value="White"/>
-        </Style>
-
-        <!-- Divider -->
-        <Style x:Key="Divider" TargetType="Separator">
-            <Setter Property="Margin" Value="0,10,0,10"/>
-            <Setter Property="Background" Value="{StaticResource Col.Border}"/>
-            <Setter Property="Height" Value="1"/>
-            <Setter Property="SnapsToDevicePixels" Value="True"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Separator">
-                        <Border Background="{TemplateBinding Background}" Height="{TemplateBinding Height}" />
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Info bubble -->
-        <Style x:Key="InfoBubble" TargetType="Border">
-            <Setter Property="Background" Value="#FAFAFB"/>
-            <Setter Property="BorderBrush" Value="#E5E7EB"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Padding" Value="10"/>
-            <Setter Property="MinHeight" Value="32"/>
+        <Style x:Key="CancelButton" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource DangerBrush}"/>
         </Style>
     </UserControl.Resources>
 
-    <!-- ========== LAYOUT ========== -->
-    <Grid Background="{StaticResource Col.Page}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <!-- ========== OUTER CARD (same shell as AddServiceControl) ========== -->
+    <Border Padding="28"
+            CornerRadius="16"
+            BorderBrush="#E5E7EB"
+            BorderThickness="1"
+            Background="White"
+            SnapsToDevicePixels="True">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="18" ShadowDepth="2" Opacity="0.16" />
+        </Border.Effect>
 
-        <!-- Header -->
-        <Grid Grid.Row="0" Margin="16,16,16,8">
-            <Border Background="#12000000" CornerRadius="18" Margin="0,2,0,0"/>
-            <Border Style="{StaticResource Card}" Padding="16">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- ===== Header ===== -->
+            <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0,0,0,14">
                 <DockPanel LastChildFill="False">
-                    <StackPanel Orientation="Vertical" DockPanel.Dock="Left">
+                    <TextBlock Text="🧾" FontSize="26" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Vertical">
+                        <!-- Name kept for code-behind -->
                         <TextBlock x:Name="FormHeader"
-                                   FontSize="20"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource Col.Text}"
-                                   Text="{x:Static res:Strings.ASRC_Header_Title}"/>
-                        <TextBlock Text="{x:Static res:Strings.ASRC_Header_Subtitle}"
-                                   Foreground="{StaticResource Col.Muted}"
-                                   Margin="0,4,0,0"/>
+                                   Text="Add Service Record"
+                                   Style="{StaticResource HeaderTitle}"/>
+                        <TextBlock Text="View details or add a new service record"
+                                   Style="{StaticResource HeaderInfo}"/>
                     </StackPanel>
 
-                    <!-- Status pill (auto-visible in details mode) -->
+                    <!-- Status pill shows in details mode -->
                     <Border x:Name="StatusPill"
                             DockPanel.Dock="Right"
                             Padding="10,4"
                             CornerRadius="999"
                             Background="{StaticResource Pill.DefaultBg}"
-                            VerticalAlignment="Center">
+                            VerticalAlignment="Center"
+                            Margin="10,0,0,0">
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -169,144 +200,184 @@
                                    Foreground="{StaticResource Pill.DefaultFg}"/>
                     </Border>
                 </DockPanel>
-            </Border>
-        </Grid>
+            </StackPanel>
 
-        <!-- CONTENT -->
-        <Grid Grid.Row="1" Margin="16,8,16,8">
-            <Border Background="#12000000" CornerRadius="18" Margin="0,2,0,0"/>
-            <Border Style="{StaticResource Card}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+            <!-- ===== Body ===== -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" CanContentScroll="True">
+                <StackPanel>
 
-                        <!-- ===== Details mode ===== -->
-                        <Grid x:Name="DetailsPanel"
-                              Grid.Row="0"
-                              Visibility="Collapsed">
+                    <!-- Details (view mode) -->
+                    <Border Style="{StaticResource CardStyle}" Margin="0,0,0,12">
+                        <!-- Name kept for code-behind toggling -->
+                        <Grid x:Name="DetailsPanel" Visibility="Collapsed" Margin="0,0,0,0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="220"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
+                            <!-- rows 0..14 + separators -->
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
+                                <!-- 0 -->
+                                <RowDefinition Height="1"/>
+                                <!-- 1 -->
                                 <RowDefinition Height="Auto"/>
+                                <!-- 2 -->
+                                <RowDefinition Height="1"/>
+                                <!-- 3 -->
                                 <RowDefinition Height="Auto"/>
+                                <!-- 4 -->
+                                <RowDefinition Height="1"/>
+                                <!-- 5 -->
                                 <RowDefinition Height="Auto"/>
+                                <!-- 6 -->
+                                <RowDefinition Height="1"/>
+                                <!-- 7 -->
                                 <RowDefinition Height="Auto"/>
+                                <!-- 8 -->
+                                <RowDefinition Height="1"/>
+                                <!-- 9 -->
                                 <RowDefinition Height="Auto"/>
+                                <!-- 10 -->
+                                <RowDefinition Height="1"/>
+                                <!-- 11 -->
                                 <RowDefinition Height="Auto"/>
+                                <!-- 12 -->
+                                <RowDefinition Height="1"/>
+                                <!-- 13 -->
                                 <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
+                                <!-- 14 -->
                             </Grid.RowDefinitions>
 
-                            <!-- Meta -->
-                            <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource LabelText}" Text="{x:Static res:Strings.ASRC_Det_ServiceId}"/>
-                            <TextBlock x:Name="ServiceIdValue" Grid.Row="0" Grid.Column="1" Style="{StaticResource ValueText}"/>
+                            <!-- Section header -->
+                            <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Details"
+                                       FontSize="16" FontWeight="SemiBold"
+                                       Foreground="{StaticResource LabelBrush}" Margin="0,0,0,6"/>
 
-                            <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource LabelText}" Text="{x:Static res:Strings.ASRC_Det_Household}"/>
-                            <TextBlock x:Name="HouseholdValue" Grid.Row="1" Grid.Column="1" Style="{StaticResource ValueText}"/>
+                            <!-- Service ID -->
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Service ID" Style="{StaticResource SummaryLabelStyle}"/>
+                            <TextBlock x:Name="ServiceIdValue" Grid.Row="2" Grid.Column="1" Style="{StaticResource SummaryValueStyle}"/>
+                            <Border Grid.Row="3" Grid.ColumnSpan="2" Background="{StaticResource DividerBrush}"/>
 
-                            <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource LabelText}" Text="{x:Static res:Strings.ASRC_Det_Technicians}"/>
-                            <TextBlock x:Name="TechniciansValue" Grid.Row="2" Grid.Column="1" Style="{StaticResource ValueText}"/>
+                            <!-- Household -->
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Household" Style="{StaticResource SummaryLabelStyle}"/>
+                            <TextBlock x:Name="HouseholdValue" Grid.Row="4" Grid.Column="1" Style="{StaticResource SummaryValueStyle}"/>
+                            <Border Grid.Row="5" Grid.ColumnSpan="2" Background="{StaticResource DividerBrush}"/>
 
-                            <Separator Grid.Row="3" Grid.ColumnSpan="2" Style="{StaticResource Divider}"/>
+                            <!-- Technicians -->
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Technicians" Style="{StaticResource SummaryLabelStyle}"/>
+                            <TextBlock x:Name="TechniciansValue" Grid.Row="6" Grid.Column="1" Style="{StaticResource SummaryValueStyle}"/>
+                            <Border Grid.Row="7" Grid.ColumnSpan="2" Background="{StaticResource DividerBrush}"/>
 
                             <!-- Problem -->
-                            <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource LabelText}" Text="{x:Static res:Strings.ASRC_Det_Problem}"/>
-                            <Border Grid.Row="4" Grid.Column="1" Style="{StaticResource InfoBubble}">
-                                <TextBlock x:Name="ProblemValue" Style="{StaticResource ValueText}" Margin="0"/>
-                            </Border>
+                            <TextBlock Grid.Row="8" Grid.Column="0" Text="Problem" Style="{StaticResource SummaryLabelStyle}"/>
+                            <TextBlock x:Name="ProblemValue" Grid.Row="8" Grid.Column="1" Style="{StaticResource SummaryValueStyle}"/>
+                            <Border Grid.Row="9" Grid.ColumnSpan="2" Background="{StaticResource DividerBrush}"/>
 
                             <!-- Action -->
-                            <TextBlock Grid.Row="5" Grid.Column="0" Style="{StaticResource LabelText}" Text="{x:Static res:Strings.ASRC_Det_Action}"/>
-                            <Border Grid.Row="5" Grid.Column="1" Style="{StaticResource InfoBubble}">
-                                <TextBlock x:Name="ActionValue" Style="{StaticResource ValueText}" Margin="0"/>
-                            </Border>
+                            <TextBlock Grid.Row="10" Grid.Column="0" Text="Action Taken" Style="{StaticResource SummaryLabelStyle}"/>
+                            <TextBlock x:Name="ActionValue" Grid.Row="10" Grid.Column="1" Style="{StaticResource SummaryValueStyle}"/>
+                            <Border Grid.Row="11" Grid.ColumnSpan="2" Background="{StaticResource DividerBrush}"/>
 
                             <!-- Inventory -->
-                            <TextBlock Grid.Row="6" Grid.Column="0" Style="{StaticResource LabelText}" Text="{x:Static res:Strings.ASRC_Det_Inventory}"/>
-                            <Border Grid.Row="6" Grid.Column="1" Style="{StaticResource InfoBubble}">
-                                <TextBlock x:Name="InventoryValue" Style="{StaticResource ValueText}" Margin="0"/>
-                            </Border>
-
-                            <Separator Grid.Row="7" Grid.ColumnSpan="2" Style="{StaticResource Divider}"/>
+                            <TextBlock Grid.Row="12" Grid.Column="0" Text="Inventory Used" Style="{StaticResource SummaryLabelStyle}"/>
+                            <TextBlock x:Name="InventoryValue" Grid.Row="12" Grid.Column="1" Style="{StaticResource SummaryValueStyle}"/>
+                            <Border Grid.Row="13" Grid.ColumnSpan="2" Background="{StaticResource DividerBrush}"/>
 
                             <!-- Dates -->
-                            <TextBlock Grid.Row="8" Grid.Column="0" Style="{StaticResource LabelText}" Text="{x:Static res:Strings.ASRC_Det_Started}"/>
-                            <TextBlock x:Name="StartedValue" Grid.Row="8" Grid.Column="1" Style="{StaticResource ValueText}"/>
-
-                            <TextBlock Grid.Row="9" Grid.Column="0" Style="{StaticResource LabelText}" Text="{x:Static res:Strings.ASRC_Det_Finished}"/>
-                            <TextBlock x:Name="FinishedValue" Grid.Row="9" Grid.Column="1" Style="{StaticResource ValueText}"/>
+                            <StackPanel Grid.Row="14" Grid.Column="0" Orientation="Vertical" Margin="0,0,12,0">
+                                <TextBlock Text="Started" Style="{StaticResource SummaryLabelStyle}" Margin="0,0,0,0"/>
+                                <TextBlock x:Name="StartedValue" Style="{StaticResource SummaryValueStyle}" Margin="0,-2,0,0"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="14" Grid.Column="1" Orientation="Vertical">
+                                <TextBlock Text="Finished" Style="{StaticResource SummaryLabelStyle}" Margin="0,0,0,0"/>
+                                <TextBlock x:Name="FinishedValue" Style="{StaticResource SummaryValueStyle}" Margin="0,-2,0,0"/>
+                            </StackPanel>
                         </Grid>
+                    </Border>
 
-                        <!-- ===== Original form mode (kept) ===== -->
-                        <StackPanel x:Name="FormPanel" Grid.Row="1" Margin="0,4,0,0">
-                            <Grid Margin="0,4,0,0">
+                    <!-- Form (edit/add) -->
+                    <Border Style="{StaticResource CardStyle}">
+                        <StackPanel x:Name="FormPanel">
+                            <!-- Section header -->
+                            <TextBlock Text="Service Record"
+                                       Style="{StaticResource FormLabel}"
+                                       Margin="0,0,0,10"/>
+
+                            <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="220"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-                                <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource LabelText}" Text="{x:Static res:Strings.ASRC_Form_HouseholdID}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource SummaryLabelStyle}" Text="Household ID"/>
                                 <TextBox x:Name="HouseholdIDBox" Grid.Row="0" Grid.Column="1" Height="36" Margin="0,0,0,10"/>
 
-                                <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource LabelText}" Text="{x:Static res:Strings.ASRC_Form_TechnicianID}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource SummaryLabelStyle}" Text="Technician ID"/>
                                 <TextBox x:Name="TechnicianIDBox" Grid.Row="1" Grid.Column="1" Height="36" Margin="0,0,0,10"/>
 
-                                <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource LabelText}" Text="{x:Static res:Strings.ASRC_Form_LastInspectDate}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource SummaryLabelStyle}" Text="Last Inspection Date"/>
                                 <DatePicker x:Name="LastInspectPicker"
                                             Grid.Row="2" Grid.Column="1"
                                             Height="36" Margin="0,0,0,10"
                                             DisplayDateEnd="{x:Static System:DateTime.Today}"
                                             SelectedDate="{x:Static System:DateTime.Today}"/>
 
-                                <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource LabelText}" Text="{x:Static res:Strings.ASRC_Form_Problem}"/>
-                                <TextBox x:Name="ProblemBox" Grid.Row="3" Grid.Column="1"
-                                         Height="88" Margin="0,0,0,10" AcceptsReturn="True"
-                                         TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource SummaryLabelStyle}" Text="Problem"/>
+                                <TextBox x:Name="ProblemBox"
+                                         Grid.Row="3" Grid.Column="1"
+                                         Style="{StaticResource InputTextBox}"
+                                         AcceptsReturn="True"
+                                         TextWrapping="Wrap"/>
 
-                                <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource LabelText}" Text="{x:Static res:Strings.ASRC_Form_ActionTaken}"/>
-                                <TextBox x:Name="ActionBox" Grid.Row="4" Grid.Column="1"
-                                         Height="88" Margin="0,0,0,10" AcceptsReturn="True"
-                                         TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+                                <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource SummaryLabelStyle}" Text="Action Taken"/>
+                                <TextBox x:Name="ActionBox"
+                                         Grid.Row="4" Grid.Column="1"
+                                         Style="{StaticResource InputTextBox}"
+                                         AcceptsReturn="True"
+                                         TextWrapping="Wrap"/>
 
-                                <TextBlock Grid.Row="5" Grid.Column="0" Style="{StaticResource LabelText}" Text="{x:Static res:Strings.ASRC_Form_RepairDate}"/>
+                                <TextBlock Grid.Row="5" Grid.Column="0" Style="{StaticResource SummaryLabelStyle}" Text="Repair Date"/>
                                 <DatePicker x:Name="RepairDatePicker"
                                             Grid.Row="5" Grid.Column="1"
-                                            Height="36" Margin="0,0,0,10"
+                                            Height="36"
                                             DisplayDateEnd="{x:Static System:DateTime.Today}"/>
                             </Grid>
                         </StackPanel>
-                    </Grid>
-                </ScrollViewer>
-            </Border>
-        </Grid>
+                    </Border>
 
-        <!-- FOOTER BUTTONS -->
-        <Border Grid.Row="2" Background="Transparent" Margin="16,8,16,16">
-            <DockPanel LastChildFill="False">
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ===== Footer ===== -->
+            <Grid Grid.Row="2" Margin="0,18,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button x:Name="DeleteButton"
-                            Content="{x:Static res:Strings.ASRC_Btn_Delete}"
-                            Style="{StaticResource DangerButton}"
+                            Content="Delete"
+                            Style="{StaticResource CancelButton}"
                             Visibility="Collapsed"
-                            Margin="0,0,8,0"
                             Click="Delete_Click"/>
                     <Button x:Name="SaveButton"
-                            Content="{x:Static res:Strings.ASRC_Btn_Save}"
+                            Content="Save"
                             Style="{StaticResource PrimaryButton}"
-                            Margin="0,0,8,0"
                             Click="Save_Click"/>
                     <Button x:Name="CancelButton"
-                            Content="{x:Static res:Strings.ASRC_Btn_Close}"
-                            Style="{StaticResource BaseButton}"
+                            Content="Close"
+                            Style="{StaticResource CancelButton}"
                             Click="Cancel_Click"/>
                 </StackPanel>
-            </DockPanel>
-        </Border>
-    </Grid>
+            </Grid>
+        </Grid>
+    </Border>
 </UserControl>

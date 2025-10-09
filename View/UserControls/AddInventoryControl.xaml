@@ -227,39 +227,7 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel>
 
-                <!-- Form card -->
-                <Border Style="{StaticResource Card}">
-                    <StackPanel>
-                        <TextBlock Text="{x:Static res:Strings.AIC_Label_ItemType}" Style="{StaticResource LabelText}"/>
-                        <TextBox x:Name="ItemTypeBox" Style="{StaticResource InputBox}" Margin="0,0,0,8"/>
-
-                        <!-- Initial Quantity (create mode only) -->
-                        <StackPanel x:Name="InitialQtyPanel" Margin="0,0,0,0">
-                            <TextBlock Text="{x:Static res:Strings.AIC_Label_InitialQty}" Style="{StaticResource LabelText}"/>
-                            <TextBox x:Name="InitialQtyBox"
-                                     Style="{StaticResource InputBox}"
-                                     Margin="0,0,0,8"
-                                     PreviewTextInput="InitialQtyBox_PreviewTextInput"
-                                     PreviewKeyDown="InitialQtyBox_PreviewKeyDown"
-                                     DataObject.Pasting="InitialQtyBox_Pasting"/>
-                        </StackPanel>
-
-                        <TextBlock Text="{x:Static res:Strings.AIC_Label_Threshold}" Style="{StaticResource LabelText}"/>
-                        <TextBox x:Name="ThresholdBox"
-                                 Style="{StaticResource InputBox}"
-                                 Margin="0,0,0,8"
-                                 PreviewTextInput="ThresholdBox_PreviewTextInput"
-                                 PreviewKeyDown="ThresholdBox_PreviewKeyDown"
-                                 DataObject.Pasting="ThresholdBox_Pasting"/>
-
-                        <TextBlock Text="{x:Static res:Strings.AIC_Label_NoteOptional}" Style="{StaticResource LabelText}"/>
-                        <TextBox x:Name="NoteBox" Style="{StaticResource InputBox}"
-                                 Height="96" AcceptsReturn="True" TextWrapping="Wrap"
-                                 VerticalScrollBarVisibility="Auto"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Snapshot + Histories (edit mode only) -->
+                <!-- ================== Snapshot + Histories (edit/read only) FIRST ================== -->
                 <Border x:Name="SnapshotCard" Style="{StaticResource Card}" Visibility="Collapsed">
                     <StackPanel>
                         <DockPanel LastChildFill="False" Margin="0,0,0,10">
@@ -308,7 +276,7 @@
                                 BorderBrush="#FED7AA"
                                 BorderThickness="1"
                                 Visibility="Collapsed">
-                            <!-- Text set in code-behind; keys provided in Strings if you want to use them -->
+                            <!-- Text set in code-behind -->
                             <TextBlock x:Name="StatusInfoText" Foreground="#9A3412" FontSize="14"/>
                         </Border>
 
@@ -349,6 +317,39 @@
                         </DataGrid>
                     </StackPanel>
                 </Border>
+
+                <!-- ================== Item Info / Form (always after snapshot) ================== -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="{x:Static res:Strings.AIC_Label_ItemType}" Style="{StaticResource LabelText}"/>
+                        <TextBox x:Name="ItemTypeBox" Style="{StaticResource InputBox}" Margin="0,0,0,8"/>
+
+                        <!-- Initial Quantity (create mode only) -->
+                        <StackPanel x:Name="InitialQtyPanel" Margin="0,0,0,0">
+                            <TextBlock Text="{x:Static res:Strings.AIC_Label_InitialQty}" Style="{StaticResource LabelText}"/>
+                            <TextBox x:Name="InitialQtyBox"
+                                     Style="{StaticResource InputBox}"
+                                     Margin="0,0,0,8"
+                                     PreviewTextInput="InitialQtyBox_PreviewTextInput"
+                                     PreviewKeyDown="InitialQtyBox_PreviewKeyDown"
+                                     DataObject.Pasting="InitialQtyBox_Pasting"/>
+                        </StackPanel>
+
+                        <TextBlock Text="{x:Static res:Strings.AIC_Label_Threshold}" Style="{StaticResource LabelText}"/>
+                        <TextBox x:Name="ThresholdBox"
+                                 Style="{StaticResource InputBox}"
+                                 Margin="0,0,0,8"
+                                 PreviewTextInput="ThresholdBox_PreviewTextInput"
+                                 PreviewKeyDown="ThresholdBox_PreviewKeyDown"
+                                 DataObject.Pasting="ThresholdBox_Pasting"/>
+
+                        <TextBlock Text="{x:Static res:Strings.AIC_Label_NoteOptional}" Style="{StaticResource LabelText}"/>
+                        <TextBox x:Name="NoteBox" Style="{StaticResource InputBox}"
+                                 Height="96" AcceptsReturn="True" TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto"/>
+                    </StackPanel>
+                </Border>
+
             </StackPanel>
         </ScrollViewer>
 
