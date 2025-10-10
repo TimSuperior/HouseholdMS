@@ -362,3 +362,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /Output/Workbench_Installer_v65.exe
+/Output/Workbench_Installer_v66.exe
+/Output/Workbench_Installer_v67.exe
