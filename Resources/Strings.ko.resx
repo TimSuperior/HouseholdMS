@@ -20,18 +20,18 @@
 
   <data name="Section_Monitoring" xml:space="preserve"><value>🛰 모니터링</value></data>
   <data name="Monitoring_LiveInstruments" xml:space="preserve"><value>실시간 계측기</value></data>
-  <data name="Menu_MpptMonitoring" xml:space="preserve"><value>🔋 MPPT 모니터링</value></data>
+  <data name="Menu_MpptMonitoring" xml:space="preserve"><value>📡 MPPT 모니터링</value></data>
   <data name="Menu_Oscilloscope" xml:space="preserve"><value>📈 오실로스코프</value></data>
-  <data name="Menu_Multimeter" xml:space="preserve"><value>📊 멀티미터</value></data>
+  <data name="Menu_Multimeter" xml:space="preserve"><value>📶 멀티미터</value></data>
   <data name="Menu_ElectronicLoad" xml:space="preserve"><value>⚡ 전자 부하</value></data>
 
 	<!-- 시험 지침 -->
 	<data name="Section_TestManuals" xml:space="preserve"><value>🧪 시험 지침</value></data>
-	<data name="TestManuals_TestModules" xml:space="preserve"><value>시험 모듈</value></data>
+	<data name="TestManuals_TestModules" xml:space="preserve"><value>🧪 시험 모듈</value></data>
 
 	<!-- 시험 모듈 버튼 -->
-	<data name="Menu_TestProcedure" xml:space="preserve"><value>태양광 모듈</value></data>
-	<data name="Menu_ControllerTest" xml:space="preserve"><value>🧭 MPPT 충전 컨트롤러</value></data>
+	<data name="Menu_TestProcedure" xml:space="preserve"><value>🎛️ 태양광 모듈</value></data>
+	<data name="Menu_ControllerTest" xml:space="preserve"><value>🔄 MPPT 충전 컨트롤러</value></data>
 	<data name="Menu_SwitchTest" xml:space="preserve"><value>🔀 인버터</value></data>
 	<data name="Menu_BlueSmartCharger" xml:space="preserve"><value>🔌 블루 스마트 충전기</value></data>
 	<data name="Menu_K4BatteryBalancing" xml:space="preserve"><value>🔋 K4 배터리 밸런싱</value></data>

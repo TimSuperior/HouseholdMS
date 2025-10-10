@@ -1690,7 +1690,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 🧭 MPPT Charge Controller.
+        ///   Looks up a localized string similar to 🔄 MPPT Charge Controller.
         /// </summary>
         public static string Menu_ControllerTest {
             get {
@@ -1735,7 +1735,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 🔋 MPPT Monitoring.
+        ///   Looks up a localized string similar to 📡 MPPT Monitoring.
         /// </summary>
         public static string Menu_MpptMonitoring {
             get {
@@ -1744,7 +1744,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 📊 Multimeter.
+        ///   Looks up a localized string similar to 📶 Multimeter.
         /// </summary>
         public static string Menu_Multimeter {
             get {
@@ -1798,7 +1798,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PV Panel.
+        ///   Looks up a localized string similar to 🎛️ PV Panel.
         /// </summary>
         public static string Menu_TestProcedure {
             get {
@@ -2617,7 +2617,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Test Modules.
+        ///   Looks up a localized string similar to 🧪 Test Modules.
         /// </summary>
         public static string TestManuals_TestModules {
             get {

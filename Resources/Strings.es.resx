@@ -20,18 +20,18 @@
 
   <data name="Section_Monitoring" xml:space="preserve"><value>🛰 Monitoreo</value></data>
   <data name="Monitoring_LiveInstruments" xml:space="preserve"><value>Instrumentos en vivo</value></data>
-  <data name="Menu_MpptMonitoring" xml:space="preserve"><value>🔋 Monitoreo MPPT</value></data>
+  <data name="Menu_MpptMonitoring" xml:space="preserve"><value>📡 Monitoreo MPPT</value></data>
   <data name="Menu_Oscilloscope" xml:space="preserve"><value>📈 Osciloscopio</value></data>
-  <data name="Menu_Multimeter" xml:space="preserve"><value>📊 Multímetro</value></data>
+  <data name="Menu_Multimeter" xml:space="preserve"><value>📶 Multímetro</value></data>
   <data name="Menu_ElectronicLoad" xml:space="preserve"><value>⚡ Carga electrónica</value></data>
 
 	<!-- Manuales de prueba -->
 	<data name="Section_TestManuals" xml:space="preserve"><value>🧪 Manuales de prueba</value></data>
-	<data name="TestManuals_TestModules" xml:space="preserve"><value>Módulos de prueba</value></data>
+	<data name="TestManuals_TestModules" xml:space="preserve"><value>🧪 Módulos de prueba</value></data>
 
 	<!-- Botones de Módulos de prueba -->
-	<data name="Menu_TestProcedure" xml:space="preserve"><value>Módulo fotovoltaico</value></data>
-	<data name="Menu_ControllerTest" xml:space="preserve"><value>🧭 Controlador de carga MPPT</value></data>
+	<data name="Menu_TestProcedure" xml:space="preserve"><value>🎛️ Módulo fotovoltaico</value></data>
+	<data name="Menu_ControllerTest" xml:space="preserve"><value>🔄 Controlador de carga MPPT</value></data>
 	<data name="Menu_SwitchTest" xml:space="preserve"><value>🔀 Inversor</value></data>
 	<data name="Menu_BlueSmartCharger" xml:space="preserve"><value>🔌 Cargador Blue Smart</value></data>
 	<data name="Menu_K4BatteryBalancing" xml:space="preserve"><value>🔋 Balanceo de baterías K4</value></data>

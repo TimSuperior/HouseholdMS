@@ -6,59 +6,101 @@
              mc:Ignorable="d"
              d:DesignHeight="160" d:DesignWidth="420"
              x:Name="Root">
-    <Border CornerRadius="12" BorderBrush="#E0E0E0" BorderThickness="1" Padding="10"
-            Background="White" Cursor="Hand"
-            MouseLeftButtonUp="Tile_MouseLeftButtonUp">
-        <Grid Background="Transparent">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="Col.Heading" Color="#0F172A"/>
+        <SolidColorBrush x:Key="Col.Muted"   Color="#667085"/>
+        <SolidColorBrush x:Key="Col.Primary" Color="#2563EB"/>
 
-            <!-- Header -->
-            <DockPanel Grid.Row="0" LastChildFill="False">
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                    <TextBlock Text="🌤" FontSize="14" Margin="0,0,6,0"/>
-                    <TextBlock Text="Sucre Department — Meteogram (yr.no)"
-                               FontWeight="SemiBold" FontSize="13"/>
-                </StackPanel>
+        <!-- Tiny icon button -->
+        <Style x:Key="IconButton" TargetType="Button">
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="#00000000"/>
+            <Setter Property="BorderBrush" Value="#D1D6E5"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" CornerRadius="999"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#0F2563EB"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1A2563EB"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
 
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                    <Button x:Name="BtnReload" Content="Reload" Padding="10,4" Margin="0,0,0,0"
-                            Click="BtnReload_Click"/>
-                </StackPanel>
-            </DockPanel>
+    <!-- Borderless content for unified look with other tiles -->
+    <Grid Background="Transparent" MouseLeftButtonUp="Tile_MouseLeftButtonUp">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-            <!-- Compact summary -->
-            <Border Grid.Row="1" x:Name="SummaryPanel"
-                    Background="#FAFAFA" BorderBrush="#E6E6E6" BorderThickness="1"
-                    CornerRadius="8" Padding="10">
-                <StackPanel>
-                    <TextBlock x:Name="LineNow"  FontSize="16" FontWeight="Bold" Text="—"/>
-                    <TextBlock x:Name="LineNext" Margin="0,2,0,0"                Text="—"/>
-                    <TextBlock x:Name="LineMeta" Margin="0,6,0,0" Foreground="#666" FontSize="12"
-                               Text="Loading forecast…"/>
-                </StackPanel>
-            </Border>
+        <!-- Header -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-            <!-- WebView host for full mode (hidden in compact) -->
-            <Grid Grid.Row="1" x:Name="WebHost" Visibility="Collapsed"/>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="🌤" FontSize="18" Foreground="{StaticResource Col.Primary}" VerticalAlignment="Center"/>
+                <TextBlock Text="Sucre Department — Meteogram (yr.no)"
+                           FontWeight="Bold" FontSize="16" Foreground="{StaticResource Col.Heading}" Margin="8,0,0,0"/>
+            </StackPanel>
 
-            <!-- Fallback (no 'Open in Browser') -->
-            <Border x:Name="FallbackPanel" Grid.Row="1" Visibility="Collapsed"
-                    Background="#FFF9F9F9" BorderBrush="#DDD" BorderThickness="1"
-                    CornerRadius="8" Padding="14">
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="520">
-                    <TextBlock Text="Can’t display the meteogram here." FontWeight="Bold" FontSize="14" TextAlignment="Center"/>
-                    <TextBlock Text="Install the WebView2 runtime or try copying the link."
-                               Foreground="#666" TextAlignment="Center" Margin="0,4,0,0"/>
-                    <Button Content="Copy Link" Padding="10,4" Margin="0,8,0,0" Click="BtnCopy_Click"/>
-                    <TextBlock x:Name="TxtError" Foreground="#A33" TextWrapping="Wrap" TextAlignment="Center" Margin="0,6,0,0"/>
-                </StackPanel>
-            </Border>
-
-            <TextBlock Grid.Row="2" x:Name="LblStatus" Foreground="#666" FontSize="12"/>
+            <Button x:Name="BtnReload" Grid.Column="1" Style="{StaticResource IconButton}"
+                    Click="BtnReload_Click" ToolTip="Reload">
+                <TextBlock Text="↻" FontSize="14" Foreground="{StaticResource Col.Primary}"/>
+            </Button>
         </Grid>
-    </Border>
+
+        <!-- Compact summary -->
+        <Border Grid.Row="1" x:Name="SummaryPanel"
+                Background="#FAFAFA" BorderBrush="#E6E6E6" BorderThickness="1"
+                CornerRadius="8" Padding="10">
+            <StackPanel>
+                <TextBlock x:Name="LineNow"  FontSize="16" FontWeight="Bold" Text="—"/>
+                <TextBlock x:Name="LineNext" Margin="0,2,0,0" Text="—"/>
+                <TextBlock x:Name="LineMeta" Margin="0,6,0,0" Foreground="#666" FontSize="12"
+                           Text="Loading forecast…"/>
+            </StackPanel>
+        </Border>
+
+        <!-- WebView host for full mode (hidden in compact) -->
+        <Grid Grid.Row="1" x:Name="WebHost" Visibility="Collapsed"/>
+
+        <!-- Fallback (no outer border to keep the card single-layer) -->
+        <Border x:Name="FallbackPanel" Grid.Row="1" Visibility="Collapsed"
+                Background="#FFF9F9F9" BorderBrush="#DDD" BorderThickness="1"
+                CornerRadius="8" Padding="14">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="520">
+                <TextBlock Text="Can’t display the meteogram here." FontWeight="Bold" FontSize="14" TextAlignment="Center"/>
+                <TextBlock Text="Install the WebView2 runtime or try copying the link."
+                           Foreground="#666" TextAlignment="Center" Margin="0,4,0,0"/>
+                <Button Content="Copy Link" Padding="10,4" Margin="0,8,0,0" Click="BtnCopy_Click"/>
+                <TextBlock x:Name="TxtError" Foreground="#A33" TextWrapping="Wrap" TextAlignment="Center" Margin="0,6,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Grid.Row="2" x:Name="LblStatus" Foreground="#666" FontSize="12"/>
+    </Grid>
 </UserControl>

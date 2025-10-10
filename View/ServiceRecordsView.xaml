@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.ServiceRecordsView" 
+﻿<UserControl x:Class="HouseholdMS.View.ServiceRecordsView"  
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -357,17 +357,10 @@
                               MouseDoubleClick="ServiceListView_MouseDoubleClick">
                         <ListView.View>
                             <GridView AllowsColumnReorder="True">
-                                <GridViewColumn Header="{x:Static res:Strings.SR_Column_ID}" Width="60">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Style="{StaticResource CellText}"
-                                                       Text="{Binding ServiceID}"
-                                                       Foreground="{StaticResource Col.TextMut}"/>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
 
-                                <GridViewColumn Header="{x:Static res:Strings.SR_Column_Household}" Width="280">
+                                <!-- ID column removed as requested -->
+
+                                <GridViewColumn Header="{x:Static res:Strings.SR_Column_Household}" Width="240">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding HouseholdText}"/>
@@ -375,7 +368,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="{x:Static res:Strings.SR_Column_Technicians}" Width="220">
+                                <GridViewColumn Header="{x:Static res:Strings.SR_Column_Technicians}" Width="200">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding AllTechnicians}"/>
@@ -383,7 +376,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="{x:Static res:Strings.SR_Column_Problem}" Width="220">
+                                <GridViewColumn Header="{x:Static res:Strings.SR_Column_Problem}" Width="200">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding Problem}"/>
@@ -391,7 +384,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="{x:Static res:Strings.SR_Column_Action}" Width="220">
+                                <GridViewColumn Header="{x:Static res:Strings.SR_Column_Action}" Width="200">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}" Text="{Binding Action}"/>

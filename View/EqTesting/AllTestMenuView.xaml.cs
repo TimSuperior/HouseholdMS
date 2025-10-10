@@ -83,38 +83,38 @@ namespace HouseholdMS.View.EqTesting
                 ["en"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["gallery_name"] = "Blue Smart Charger",
-                    ["album_bvi"] = "Battery Visual Inspection",
+                    ["album_bvi"] = " ",
                     ["missing_image"] = "Missing image: {0}",
                     ["err_one_album_required"] = "At least one album is required.",
                     ["err_album_empty"] = "Album '{0}' must contain at least one image.",
                     ["prev"] = "Back",
                     ["next"] = "Next",
                     ["version_prefix"] = "v",
-                    ["step_sep"] = " — "
+                    ["step_sep"] = " "
                 },
                 ["es"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["gallery_name"] = "Cargador Blue Smart",
-                    ["album_bvi"] = "Inspección visual de la batería",
+                    ["album_bvi"] = "",
                     ["missing_image"] = "Imagen ausente: {0}",
                     ["err_one_album_required"] = "Se requiere al menos un álbum.",
                     ["err_album_empty"] = "El álbum '{0}' debe contener al menos una imagen.",
                     ["prev"] = "Atrás",
                     ["next"] = "Siguiente",
                     ["version_prefix"] = "v",
-                    ["step_sep"] = " — "
+                    ["step_sep"] = ""
                 },
                 ["ko"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["gallery_name"] = "블루 스마트 충전기",
-                    ["album_bvi"] = "배터리 육안 점검",
+                    ["album_bvi"] = "",
                     ["missing_image"] = "이미지를 찾을 수 없음: {0}",
                     ["err_one_album_required"] = "앨범이 하나 이상 필요합니다.",
                     ["err_album_empty"] = "앨범 '{0}'에는 하나 이상의 이미지가 있어야 합니다.",
                     ["prev"] = "이전",
                     ["next"] = "다음",
                     ["version_prefix"] = "v",
-                    ["step_sep"] = " — "
+                    ["step_sep"] = ""
                 }
             };
 

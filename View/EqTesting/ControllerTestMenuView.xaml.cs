@@ -82,7 +82,7 @@ namespace HouseholdMS.View.EqTesting
                 ["en"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["gallery_name"] = "Victron Controller",
-                    ["album_controller"] = "Controller Visual Inspection",
+                    ["album_controller"] = "",
                     ["missing_image"] = "Missing image: {0}",
                     ["err_one_album_required"] = "At least one album is required.",
                     ["err_album_empty"] = "Album '{0}' must contain at least one image.",
@@ -94,7 +94,7 @@ namespace HouseholdMS.View.EqTesting
                 ["es"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["gallery_name"] = "Controlador Victron",
-                    ["album_controller"] = "Inspección visual del controlador",
+                    ["album_controller"] = "",
                     ["missing_image"] = "Imagen ausente: {0}",
                     ["err_one_album_required"] = "Se requiere al menos un álbum.",
                     ["err_album_empty"] = "El álbum '{0}' debe contener al menos una imagen.",
@@ -106,14 +106,14 @@ namespace HouseholdMS.View.EqTesting
                 ["ko"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["gallery_name"] = "빅트론 컨트롤러",
-                    ["album_controller"] = "컨트롤러 육안 점검",
+                    ["album_controller"] = "",
                     ["missing_image"] = "이미지를 찾을 수 없음: {0}",
                     ["err_one_album_required"] = "앨범이 하나 이상 필요합니다.",
                     ["err_album_empty"] = "앨범 '{0}'에는 하나 이상의 이미지가 있어야 합니다.",
                     ["prev"] = "이전",
                     ["next"] = "다음",
                     ["version_prefix"] = "v",
-                    ["step_sep"] = " — "
+                    ["step_sep"] = ""
                 }
             };
 

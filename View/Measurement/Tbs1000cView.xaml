@@ -92,8 +92,8 @@
                                             <ComboBoxItem Content="AVER"/>
                                         </ComboBox>
                                         <TextBlock Text="NumAvg:" VerticalAlignment="Center" Margin="8,0,6,0"/>
-                                        <TextBox x:Name="AcqNumAvg2" Width="70" Text="16"/>
-                                        <Button Content="Apply" Click="BtnAcqApply2_Click" Margin="8,0,0,0"/>
+                                        <TextBox x:Name="AcqNumAvg2" Width="70" Text="16" Margin="0,6,6,0"/>
+                                        <Button Content="Apply" Click="BtnAcqApply2_Click" Margin="8,6,0,0"/>
                                     </WrapPanel>
                                 </StackPanel>
                             </Expander>
@@ -105,16 +105,16 @@
                                         <TextBlock Text="Scale (s/div)" Margin="0,0,6,0"/>
                                         <TextBox x:Name="TbScale2" Width="90" Text="0.001" Margin="0,0,6,0"/>
                                         <TextBlock Text="Pos (s)" Margin="0,0,6,0"/>
-                                        <TextBox x:Name="TbPos2" Width="90" Text="0" Margin="0,0,6,0"/>
-                                        <Button Content="Apply" Click="BtnTbApply2_Click" Margin="6,0,0,0"/>
+                                        <TextBox x:Name="TbPos2" Width="90" Text="0" Margin="0,6,6,0"/>
+                                        <Button Content="Apply" Click="BtnTbApply2_Click" Margin="6,6,0,0"/>
                                     </WrapPanel>
                                     <WrapPanel Margin="8,6,8,8">
                                         <TextBlock Text="Record Len" Margin="0,0,6,0"/>
                                         <TextBox x:Name="TbRecord" Width="90" Text="2000" Margin="0,0,6,0"/>
                                         <Button Content="Set" Click="BtnTbRecord_Click" Margin="0,0,6,0"/>
                                         <CheckBox x:Name="TbRoll" Content="Roll Mode" Margin="0,0,6,0"/>
-                                        <Button Content="Apply" Click="BtnTbRoll_Click" Margin="0,0,6,0"/>
-                                        <Button Content="Sample Rate?" Click="BtnTbSrq_Click"/>
+                                        <Button Content="Apply" Click="BtnTbRoll_Click" Margin="0,6,6,0"/>
+                                        <Button Content="Sample Rate?" Click="BtnTbSrq_Click" Margin="0,6,6,0"/>
                                     </WrapPanel>
                                 </StackPanel>
                             </Expander>
@@ -175,9 +175,9 @@
                                         <TextBox x:Name="TrigLevel" Width="90" Text="0.2" Margin="0,0,6,0"/>
                                         <Button Content="Set Level" Click="BtnTrigLevel_Click" Margin="0,0,6,0"/>
                                         <TextBlock Text="Holdoff (s)" Margin="0,0,6,0"/>
-                                        <TextBox x:Name="TrigHoldoff" Width="90" Text="0" Margin="0,0,6,0"/>
-                                        <Button Content="Set Holdoff" Click="BtnTrigHoldoff_Click" Margin="0,0,6,0"/>
-                                        <Button Content="State?" Click="BtnTrigState_Click"/>
+                                        <TextBox x:Name="TrigHoldoff" Width="90" Text="0" Margin="0,6,6,0"/>
+                                        <Button Content="Set Holdoff" Click="BtnTrigHoldoff_Click" Margin="0,6,6,0"/>
+                                        <Button Content="State?" Click="BtnTrigState_Click" Margin="0,6,6,0"/>
                                     </WrapPanel>
                                 </StackPanel>
                             </Expander>
@@ -192,14 +192,14 @@
                                                 Click="BtnCurToggle_Click"
                                                 Margin="0,0,8,0"/>
                                         <TextBlock Text="Function" Margin="0,0,6,0"/>
-                                        <ComboBox x:Name="CurFunc" Width="140" Margin="0,0,6,0" SelectedIndex="1">
+                                        <ComboBox x:Name="CurFunc" Width="140" Margin="0,6,6,0" SelectedIndex="1">
                                             <ComboBoxItem Content="HBARs"/>
                                             <ComboBoxItem Content="VBARs"/>
                                             <ComboBoxItem Content="SCREEN"/>
                                             <ComboBoxItem Content="WAVEform"/>
                                             <ComboBoxItem Content="OFF"/>
                                         </ComboBox>
-                                        <Button Content="Apply" Click="BtnCurApply_Click"/>
+                                        <Button Content="Apply" Click="BtnCurApply_Click" Margin="0,6,6,0"/>
                                     </WrapPanel>
 
                                     <WrapPanel Margin="0,0,0,6">
@@ -229,7 +229,7 @@
                                         <CheckBox x:Name="DispPersistOn" Content="Persistence On" Margin="0,0,6,0"/>
                                         <TextBlock Text="Persistence (s)" Margin="6,0,6,0"/>
                                         <TextBox x:Name="DispPersistSec" Width="80" Text="3"/>
-                                        <Button Content="Apply" Click="BtnDispApply_Click" Margin="6,0,0,0"/>
+                                        <Button Content="Apply" Click="BtnDispApply_Click" Margin="0,0,0,0"/>
                                     </WrapPanel>
                                 </StackPanel>
                             </Expander>

@@ -82,7 +82,7 @@
 
                                     <WrapPanel Margin="0,6,0,0">
                                         <Label Content="Setpoint:"/>
-                                        <TextBox x:Name="TxtSetpoint" Width="120" Text="1.000" Margin="6,0,6,0"/>
+                                        <TextBox x:Name="TxtSetpoint" Width="120" Text="1.000" Height="23"/>
                                         <TextBlock x:Name="TxtSetpointUnits" Text="A" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                         <Button x:Name="BtnApplySetpoint" Content="Apply" Margin="0,0,12,0" Click="BtnApplySetpoint_Click"/>
                                         <CheckBox x:Name="ChkEnable" Content="Enable Input" Click="ChkEnable_Click" />
@@ -90,9 +90,9 @@
 
                                     <WrapPanel Margin="0,6,0,0">
                                         <Label Content="Power Factor:"/>
-                                        <TextBox x:Name="TxtPf" Width="80" Text="1.00" Margin="6,0,12,0"/>
+                                        <TextBox x:Name="TxtPf" Width="80" Text="1.00" Margin="6,0,12,0" Height="23"/>
                                         <Label Content="Crest Factor:"/>
-                                        <TextBox x:Name="TxtCf" Width="80" Text="1.41" Margin="6,0,12,0"/>
+                                        <TextBox x:Name="TxtCf" Width="80" Text="1.41" Margin="6,0,12,0" Height="23"/>
                                         <Button x:Name="BtnApplyPfCf" Content="Apply Power Factor / Crest Factor" Click="BtnApplyPfCf_Click"/>
                                     </WrapPanel>
 
@@ -310,7 +310,7 @@
                                     <TextBlock Text="Slope" VerticalAlignment="Center"/>
                                     <ComboBox x:Name="CboTrigSlope" Width="110" Margin="6,0,12,0" ItemsSource="{StaticResource TrigSlopes}" SelectedIndex="0"/>
                                     <TextBlock Text="Mode" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="CboTrigMode" Width="110" Margin="6,0,12,0" ItemsSource="{StaticResource TrigModes}" SelectedIndex="0"/>
+                                    <ComboBox x:Name="CboTrigMode" Width="110" Margin="0,6,12,0" ItemsSource="{StaticResource TrigModes}" SelectedIndex="0"/>
                                 </WrapPanel>
 
                                 <WrapPanel>
@@ -318,7 +318,7 @@
                                     <TextBox x:Name="TxtTrigLevel" Width="80" Margin="6,0,12,0" Text="10"/>
                                     <TextBlock Text="Delay (s)" VerticalAlignment="Center"/>
                                     <TextBox x:Name="TxtTrigDelay" Width="80" Margin="6,0,12,0" Text="0.0"/>
-                                    <Button Content="Apply Trigger" Width="120" Click="BtnApplyTrigger_Click"/>
+                                    <Button Content="Apply Trigger" Width="120" Click="BtnApplyTrigger_Click" Margin="0,6,12,0"/>
                                     <TextBlock x:Name="TxtTrigState" Margin="12,0,0,0" VerticalAlignment="Center" Foreground="Gray"/>
                                 </WrapPanel>
                             </StackPanel>

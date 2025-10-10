@@ -20,18 +20,18 @@
 
   <data name="Section_Monitoring" xml:space="preserve"><value>🛰 Monitoring</value></data>
   <data name="Monitoring_LiveInstruments" xml:space="preserve"><value>Live Instruments</value></data>
-  <data name="Menu_MpptMonitoring" xml:space="preserve"><value>🔋 MPPT Monitoring</value></data>
+  <data name="Menu_MpptMonitoring" xml:space="preserve"><value>📡 MPPT Monitoring</value></data>
   <data name="Menu_Oscilloscope" xml:space="preserve"><value>📈 Oscilloscope</value></data>
-  <data name="Menu_Multimeter" xml:space="preserve"><value>📊 Multimeter</value></data>
+  <data name="Menu_Multimeter" xml:space="preserve"><value>📶 Multimeter</value></data>
   <data name="Menu_ElectronicLoad" xml:space="preserve"><value>⚡Electronic Load</value></data>
 
 	<!-- Test Manuals -->
 	<data name="Section_TestManuals" xml:space="preserve"><value>🧪 Test Manuals</value></data>
-	<data name="TestManuals_TestModules" xml:space="preserve"><value>Test Modules</value></data>
+	<data name="TestManuals_TestModules" xml:space="preserve"><value>🧪 Test Modules</value></data>
 
 	<!-- Test Modules buttons -->
-	<data name="Menu_TestProcedure" xml:space="preserve"><value>PV Panel</value></data>
-	<data name="Menu_ControllerTest" xml:space="preserve"><value>🧭 MPPT Charge Controller</value></data>
+	<data name="Menu_TestProcedure" xml:space="preserve"><value>🎛️ PV Panel</value></data>
+	<data name="Menu_ControllerTest" xml:space="preserve"><value>🔄 MPPT Charge Controller</value></data>
 	<data name="Menu_SwitchTest" xml:space="preserve"><value>🔀 Inverter</value></data>
 	<data name="Menu_BlueSmartCharger" xml:space="preserve"><value>🔌 Blue Smart Charger</value></data>
 	<data name="Menu_K4BatteryBalancing" xml:space="preserve"><value>🔋 K4 Battery Balancing</value></data>
