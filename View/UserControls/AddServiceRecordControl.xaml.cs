@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using HouseholdMS.Model;
 
@@ -32,6 +33,18 @@ namespace HouseholdMS.View.UserControls
             SaveButton.Visibility = Visibility.Visible;
             DeleteButton.Visibility = Visibility.Collapsed;
             CancelButton.Content = "Close";
+
+            // Optional: ESC to close (doesn't change existing flows)
+            PreviewKeyDown += AddServiceRecordControl_PreviewKeyDown;
+        }
+
+        private void AddServiceRecordControl_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                Cancel_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+            }
         }
 
         // ===== Details mode from an existing ServiceRow (kept) =====
@@ -223,23 +236,23 @@ namespace HouseholdMS.View.UserControls
         {
             var s = (status ?? "").Trim().ToLowerInvariant();
 
-            Brush bg = (Brush)FindResource("Pill.DefaultBg");
-            Brush fg = (Brush)FindResource("Pill.DefaultFg");
+            var bg = TryFindResource("Pill.DefaultBg") as Brush ?? Brushes.Gainsboro;
+            var fg = TryFindResource("Pill.DefaultFg") as Brush ?? Brushes.Black;
 
             if (s == "open")
             {
-                bg = (Brush)FindResource("Pill.OpenBg");
-                fg = (Brush)FindResource("Pill.OpenFg");
+                bg = (TryFindResource("Pill.OpenBg") as Brush) ?? bg;
+                fg = (TryFindResource("Pill.OpenFg") as Brush) ?? fg;
             }
             else if (s == "finished" || s == "closed")
             {
-                bg = (Brush)FindResource("Pill.FinishBg");
-                fg = (Brush)FindResource("Pill.FinishFg");
+                bg = (TryFindResource("Pill.FinishBg") as Brush) ?? bg;
+                fg = (TryFindResource("Pill.FinishFg") as Brush) ?? fg;
             }
             else if (s == "canceled" || s == "cancelled")
             {
-                bg = (Brush)FindResource("Pill.CancelBg");
-                fg = (Brush)FindResource("Pill.CancelFg");
+                bg = (TryFindResource("Pill.CancelBg") as Brush) ?? bg;
+                fg = (TryFindResource("Pill.CancelFg") as Brush) ?? fg;
             }
 
             StatusPill.Background = bg;

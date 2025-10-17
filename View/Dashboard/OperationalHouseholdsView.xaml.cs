@@ -9,9 +9,8 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using HouseholdMS;              // DatabaseHelper
-using HouseholdMS.Model;
-using HouseholdMS.View.Dashboard; // AddServiceControl
+using HouseholdMS.Model;           // DatabaseHelper + Household
+using HouseholdMS.View.Dashboard;  // AddServiceControl (existing)
 
 namespace HouseholdMS.View.Dashboard
 {
@@ -27,11 +26,13 @@ namespace HouseholdMS.View.Dashboard
         private GridViewColumnHeader _lastHeaderClicked;
         private ListSortDirection _lastDirection = ListSortDirection.Ascending;
 
-        private readonly Dictionary<string, string> _headerToProperty = new Dictionary<string, string>()
+        // header text -> property name (keep literals; add both keys for safety)
+        private readonly Dictionary<string, string> _headerToProperty = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "ID", "HouseholdID" },
             { "Owner Name", "OwnerName" },
-            { "User Name", "UserName" },
+            { "User Name", "DNI" }, // legacy header text maps to DNI
+            { "DNI", "DNI" },       // new header text
             { "Municipality", "Municipality" },
             { "District", "District" },
             { "Contact", "ContactNum" },
@@ -45,12 +46,8 @@ namespace HouseholdMS.View.Dashboard
 
         // ===== Minimal parent refresh hook (no new files) =====
         private Action _notifyParent;
-        public Action NotifyParent
-        {
-            get { return _notifyParent; }
-            set { _notifyParent = value; }
-        }
-        public void SetParentRefreshCallback(Action cb) { _notifyParent = cb; }
+        public Action NotifyParent { get => _notifyParent; set => _notifyParent = value; }
+        public void SetParentRefreshCallback(Action cb) => _notifyParent = cb;
         public event EventHandler RefreshRequested; // optional for event-based wiring
         private void RaiseParentRefresh()
         {
@@ -66,7 +63,7 @@ namespace HouseholdMS.View.Dashboard
         {
             nameof(Household.HouseholdID),
             nameof(Household.OwnerName),
-            nameof(Household.UserName),
+            nameof(Household.DNI),             // UserName -> DNI
             nameof(Household.Municipality),
             nameof(Household.District),
             nameof(Household.ContactNum),
@@ -76,12 +73,12 @@ namespace HouseholdMS.View.Dashboard
             nameof(Household.UserComm)
         };
 
-        // Default search columns = EXACTLY what this view used before (no ID match)
+        // Default search columns = same set but with DNI
         private static readonly string[] DefaultColumnKeys = new[]
         {
             nameof(Household.OwnerName),
             nameof(Household.ContactNum),
-            nameof(Household.UserName),
+            nameof(Household.DNI),             // UserName -> DNI
             nameof(Household.Municipality),
             nameof(Household.District)
         };
@@ -102,7 +99,7 @@ namespace HouseholdMS.View.Dashboard
             ApplyFilter();
         }
 
-        // New overloads to allow SitesView to pass a callback directly
+        // New overloads to allow parent to pass a callback directly
         public OperationalHouseholdsView(string userRole, Action notifyParent) : this(userRole)
         {
             _notifyParent = notifyParent;
@@ -136,7 +133,11 @@ namespace HouseholdMS.View.Dashboard
             {
                 conn.Open();
 
-                const string sql = @"SELECT * FROM Households;";
+                // Pull explicit columns (UserName -> DNI; include new columns though not displayed)
+                const string sql = @"
+                    SELECT HouseholdID, OwnerName, DNI, Municipality, District, X, Y,
+                           ContactNum, InstallDate, LastInspect, UserComm, Statuss, SP, SMI, SB
+                    FROM Households;";
                 using (SQLiteCommand cmd = new SQLiteCommand(sql, conn))
                 using (SQLiteDataReader reader = cmd.ExecuteReader())
                 {
@@ -145,18 +146,37 @@ namespace HouseholdMS.View.Dashboard
                         DateTime installDate = DateTime.TryParse(reader["InstallDate"] == DBNull.Value ? null : reader["InstallDate"].ToString(), out DateTime dt1) ? dt1 : DateTime.MinValue;
                         DateTime lastInspect = DateTime.TryParse(reader["LastInspect"] == DBNull.Value ? null : reader["LastInspect"].ToString(), out DateTime dt2) ? dt2 : DateTime.MinValue;
 
+                        double? readDouble(string col)
+                        {
+                            var o = reader[col];
+                            if (o == DBNull.Value) return null;
+                            try { return Convert.ToDouble(o, System.Globalization.CultureInfo.InvariantCulture); }
+                            catch
+                            {
+                                if (double.TryParse(Convert.ToString(o), out double d)) return d;
+                                return null;
+                            }
+                        }
+
                         Household h = new Household
                         {
                             HouseholdID = Convert.ToInt32(reader["HouseholdID"]),
                             OwnerName = reader["OwnerName"] == DBNull.Value ? null : reader["OwnerName"].ToString(),
-                            UserName = reader["UserName"] == DBNull.Value ? null : reader["UserName"].ToString(),
+                            DNI = reader["DNI"] == DBNull.Value ? null : reader["DNI"].ToString(),
                             Municipality = reader["Municipality"] == DBNull.Value ? null : reader["Municipality"].ToString(),
                             District = reader["District"] == DBNull.Value ? null : reader["District"].ToString(),
                             ContactNum = reader["ContactNum"] == DBNull.Value ? null : reader["ContactNum"].ToString(),
                             InstallDate = installDate,
                             LastInspect = lastInspect,
                             UserComm = reader["UserComm"] != DBNull.Value ? reader["UserComm"].ToString() : string.Empty,
-                            Statuss = reader["Statuss"] != DBNull.Value ? reader["Statuss"].ToString() : string.Empty
+                            Statuss = reader["Statuss"] != DBNull.Value ? reader["Statuss"].ToString() : string.Empty,
+
+                            // new fields (not displayed here, but kept in the model)
+                            X = readDouble("X"),
+                            Y = readDouble("Y"),
+                            SP = reader["SP"] == DBNull.Value ? null : reader["SP"].ToString(),
+                            SMI = reader["SMI"] == DBNull.Value ? null : reader["SMI"].ToString(),
+                            SB = reader["SB"] == DBNull.Value ? null : reader["SB"].ToString()
                         };
 
                         allHouseholds.Add(h);
@@ -217,10 +237,10 @@ namespace HouseholdMS.View.Dashboard
 
                 if (_selectedColumnKeys.Count == 0)
                 {
-                    // ORIGINAL behavior: owner/contact/username/municipality/district
+                    // ORIGINAL behavior: owner/contact/username/municipality/district -> now owner/contact/DNI/municipality/district
                     return (h.OwnerName != null && h.OwnerName.ToLowerInvariant().Contains(search))
                         || (h.ContactNum != null && h.ContactNum.ToLowerInvariant().Contains(search))
-                        || (h.UserName != null && h.UserName.ToLowerInvariant().Contains(search))
+                        || (h.DNI != null && h.DNI.ToLowerInvariant().Contains(search))
                         || (h.Municipality != null && h.Municipality.ToLowerInvariant().Contains(search))
                         || (h.District != null && h.District.ToLowerInvariant().Contains(search));
                 }
@@ -244,7 +264,7 @@ namespace HouseholdMS.View.Dashboard
             {
                 case nameof(Household.HouseholdID): return h.HouseholdID.ToString();
                 case nameof(Household.OwnerName): return h.OwnerName ?? string.Empty;
-                case nameof(Household.UserName): return h.UserName ?? string.Empty;
+                case nameof(Household.DNI): return h.DNI ?? string.Empty; // UserName -> DNI
                 case nameof(Household.Municipality): return h.Municipality ?? string.Empty;
                 case nameof(Household.District): return h.District ?? string.Empty;
                 case nameof(Household.ContactNum): return h.ContactNum ?? string.Empty;
@@ -356,7 +376,7 @@ namespace HouseholdMS.View.Dashboard
                 ApplyFilter();
                 HouseholdListView.SelectedItem = null;
 
-                // Tell SitesView to refresh tiles (minimal hook)
+                // Tell parent to refresh tiles (if wired)
                 RaiseParentRefresh();
             };
 
@@ -462,7 +482,6 @@ namespace HouseholdMS.View.Dashboard
             // close the popup
             ColumnPopup.IsOpen = false;
         }
-
 
         private IEnumerable<CheckBox> FindPopupCheckBoxes()
         {

@@ -63,12 +63,28 @@ namespace HouseholdMS.View.UserControls
 
             ShowIdChip(EditingHouseholdID.Value);
 
+            // Basic fields
             OwnerBox.Text = householdToEdit.OwnerName;
-            UserNameBox.Text = householdToEdit.UserName;
+            DNIBox.Text = householdToEdit.DNI; // NEW
             MunicipalityBox.Text = householdToEdit.Municipality;
             DistrictBox.Text = householdToEdit.District;
             ContactBox.Text = householdToEdit.ContactNum;
             NoteBox.Text = householdToEdit.UserComm;
+
+            // Coordinates and series
+            if (householdToEdit.X.HasValue && householdToEdit.Y.HasValue)
+            {
+                UseCoordinatesCheck.IsChecked = true;
+                XBox.Text = householdToEdit.X.Value.ToString("0.########", CultureInfo.InvariantCulture);
+                YBox.Text = householdToEdit.Y.Value.ToString("0.########", CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                UseCoordinatesCheck.IsChecked = false;
+            }
+            SPBox.Text = householdToEdit.SP;
+            SMIBox.Text = householdToEdit.SMI;
+            SBBox.Text = householdToEdit.SB;
 
             InstDatePicker.SelectedDate = householdToEdit.InstallDate;
             LastInspPicker.SelectedDate = householdToEdit.LastInspect;
@@ -76,6 +92,7 @@ namespace HouseholdMS.View.UserControls
             SelectStatus(householdToEdit.Statuss);
             UpdateStatusChip();
 
+            ToggleAddressMode();
             UpdateServiceHistoryVisibility();
             LoadServiceHistory();
         }
@@ -91,8 +108,13 @@ namespace HouseholdMS.View.UserControls
             LastInspPicker.SelectedDate = DateTime.Today;
             StatusCombo.SelectedIndex = 0;
 
+            UseCoordinatesCheck.IsChecked = false;
+            XBox.Text = YBox.Text = string.Empty;
+            SPBox.Text = SMIBox.Text = SBBox.Text = string.Empty;
+
             HideIdChip();
             UpdateStatusChip();
+            ToggleAddressMode();
 
             _serviceRows.Clear();
             UpdateServiceHistoryVisibility();
@@ -109,6 +131,7 @@ namespace HouseholdMS.View.UserControls
             ShowIdChip(householdId);
             UpdateStatusChip();
 
+            ToggleAddressMode();
             UpdateServiceHistoryVisibility();
             LoadServiceHistory();
             ClearAllErrors();
@@ -117,6 +140,7 @@ namespace HouseholdMS.View.UserControls
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             UpdateStatusChip();
+            ToggleAddressMode();
         }
 
         private void StatusCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -165,10 +189,29 @@ namespace HouseholdMS.View.UserControls
         private void OnAnyTextChanged(object sender, TextChangedEventArgs e)
         {
             if (sender == OwnerBox) { ClearError(OwnerBox, OwnerErr); }
-            else if (sender == UserNameBox) { ClearError(UserNameBox, UserNameErr); }
+            else if (sender == DNIBox) { ClearError(DNIBox, DNIErr); }
             else if (sender == MunicipalityBox) { ClearError(MunicipalityBox, MunicipalityErr); }
             else if (sender == DistrictBox) { ClearError(DistrictBox, DistrictErr); }
             else if (sender == ContactBox) { ClearError(ContactBox, ContactErr); }
+            else if (sender == XBox) { ClearError(XBox, XErr); }
+            else if (sender == YBox) { ClearError(YBox, YErr); }
+        }
+
+        private void UseCoordinatesCheck_Changed(object sender, RoutedEventArgs e)
+        {
+            ToggleAddressMode();
+            // Clear address/coord errors when switching modes
+            ClearError(MunicipalityBox, MunicipalityErr);
+            ClearError(DistrictBox, DistrictErr);
+            ClearError(XBox, XErr);
+            ClearError(YBox, YErr);
+        }
+
+        private void ToggleAddressMode()
+        {
+            bool useCoords = UseCoordinates;
+            if (AddressPanel != null) AddressPanel.Visibility = useCoords ? Visibility.Collapsed : Visibility.Visible;
+            if (CoordinatesPanel != null) CoordinatesPanel.Visibility = useCoords ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)
@@ -181,6 +224,7 @@ namespace HouseholdMS.View.UserControls
                 {
                     conn.Open();
 
+                    // Dup by Contact (business rule already present)
                     using (var contactCheck = new SQLiteCommand(@"
                         SELECT COUNT(*) FROM Households
                         WHERE ContactNum = @Contact
@@ -197,6 +241,7 @@ namespace HouseholdMS.View.UserControls
                         }
                     }
 
+                    // Soft check by Owner
                     using (var softCheck = new SQLiteCommand(@"
                         SELECT COUNT(*) FROM Households
                         WHERE OwnerName = @Owner
@@ -217,55 +262,78 @@ namespace HouseholdMS.View.UserControls
                         }
                     }
 
+                    // UQ: (OwnerName, DNI, ContactNum)
                     using (var uqCheck = new SQLiteCommand(@"
                         SELECT COUNT(*) FROM Households
-                        WHERE OwnerName = @Owner AND UserName = @UserName AND ContactNum = @Contact
+                        WHERE OwnerName = @Owner AND DNI = @DNI AND ContactNum = @Contact
                           AND (@ID IS NULL OR HouseholdID != @ID);", conn))
                     {
                         uqCheck.Parameters.AddWithValue("@Owner", OwnerName);
-                        uqCheck.Parameters.AddWithValue("@UserName", UserName);
+                        uqCheck.Parameters.AddWithValue("@DNI", DNI);
                         uqCheck.Parameters.AddWithValue("@Contact", Contact);
                         uqCheck.Parameters.AddWithValue("@ID", (object)EditingHouseholdID ?? DBNull.Value);
                         if (Convert.ToInt32(uqCheck.ExecuteScalar()) > 0)
                         {
-                            MessageBox.Show("That owner, user name and contact combination already exists.",
+                            MessageBox.Show("That owner, DNI and contact combination already exists.",
                                             "Duplicate Household", MessageBoxButton.OK, MessageBoxImage.Error);
                             return;
                         }
                     }
 
-                    string query =
-                        (EditingHouseholdID == null)
-                        ? @"INSERT INTO Households 
-                               (OwnerName, UserName, Municipality, District, ContactNum, InstallDate, LastInspect, UserComm, Statuss)
-                            VALUES 
-                               (@Owner, @UserName, @Municipality, @District, @Contact, @Inst, @Last, @UserComm, @Status)"
-                        : @"UPDATE Households SET 
-                               OwnerName   = @Owner,
-                               UserName    = @UserName,
-                               Municipality= @Municipality,
-                               District    = @District,
-                               ContactNum  = @Contact,
-                               InstallDate = @Inst,
-                               LastInspect = @Last,
-                               UserComm    = @UserComm,
-                               Statuss     = @Status
-                            WHERE HouseholdID = @ID";
+                    string insertSql = @"
+                        INSERT INTO Households 
+                            (OwnerName, DNI, Municipality, District, X, Y, ContactNum, InstallDate, LastInspect, UserComm, Statuss, SP, SMI, SB)
+                        VALUES 
+                            (@Owner, @DNI, @Municipality, @District, @X, @Y, @Contact, @Inst, @Last, @UserComm, @Status, @SP, @SMI, @SB)";
 
-                    using (var cmd = new SQLiteCommand(query, conn))
+                    string updateSql = @"
+                        UPDATE Households SET 
+                            OwnerName    = @Owner,
+                            DNI          = @DNI,
+                            Municipality = @Municipality,
+                            District     = @District,
+                            X            = @X,
+                            Y            = @Y,
+                            ContactNum   = @Contact,
+                            InstallDate  = @Inst,
+                            LastInspect  = @Last,
+                            UserComm     = @UserComm,
+                            Statuss      = @Status,
+                            SP           = @SP,
+                            SMI          = @SMI,
+                            SB           = @SB
+                        WHERE HouseholdID = @ID";
+
+                    using (var cmd = new SQLiteCommand(EditingHouseholdID == null ? insertSql : updateSql, conn))
                     {
                         var inst = InstDatePicker.SelectedDate.Value;
                         var last = LastInspPicker.SelectedDate.Value;
 
+                        // Address/Coord choice
+                        string municipality = UseCoordinates ? null : Municipality;
+                        string district = UseCoordinates ? null : District;
+                        object xParam = (object)DBNull.Value;
+                        object yParam = (object)DBNull.Value;
+                        if (UseCoordinates && XCoord.HasValue && YCoord.HasValue)
+                        {
+                            xParam = XCoord.Value;
+                            yParam = YCoord.Value;
+                        }
+
                         cmd.Parameters.AddWithValue("@Owner", OwnerName);
-                        cmd.Parameters.AddWithValue("@UserName", UserName);
-                        cmd.Parameters.AddWithValue("@Municipality", Municipality);
-                        cmd.Parameters.AddWithValue("@District", District);
+                        cmd.Parameters.AddWithValue("@DNI", DNI);
+                        cmd.Parameters.AddWithValue("@Municipality", (object)municipality ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@District", (object)district ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@X", xParam);
+                        cmd.Parameters.AddWithValue("@Y", yParam);
                         cmd.Parameters.AddWithValue("@Contact", Contact);
                         cmd.Parameters.AddWithValue("@Inst", inst.ToString("yyyy-MM-dd"));
                         cmd.Parameters.AddWithValue("@Last", last.ToString("yyyy-MM-dd"));
                         cmd.Parameters.AddWithValue("@UserComm", string.IsNullOrWhiteSpace(Note) ? (object)DBNull.Value : Note);
                         cmd.Parameters.AddWithValue("@Status", Status);
+                        cmd.Parameters.AddWithValue("@SP", string.IsNullOrWhiteSpace(SP) ? (object)DBNull.Value : SP);
+                        cmd.Parameters.AddWithValue("@SMI", string.IsNullOrWhiteSpace(SMI) ? (object)DBNull.Value : SMI);
+                        cmd.Parameters.AddWithValue("@SB", string.IsNullOrWhiteSpace(SB) ? (object)DBNull.Value : SB);
 
                         if (EditingHouseholdID != null)
                             cmd.Parameters.AddWithValue("@ID", EditingHouseholdID);
@@ -340,14 +408,24 @@ namespace HouseholdMS.View.UserControls
             if (string.IsNullOrWhiteSpace(OwnerName))
             { MarkError(OwnerBox, OwnerErr, requiredMsg); hasError = true; }
 
-            if (string.IsNullOrWhiteSpace(UserName))
-            { MarkError(UserNameBox, UserNameErr, requiredMsg); hasError = true; }
+            if (string.IsNullOrWhiteSpace(DNI))
+            { MarkError(DNIBox, DNIErr, requiredMsg); hasError = true; }
 
-            if (string.IsNullOrWhiteSpace(Municipality))
-            { MarkError(MunicipalityBox, MunicipalityErr, requiredMsg); hasError = true; }
+            if (UseCoordinates)
+            {
+                if (!XCoord.HasValue)
+                { MarkError(XBox, XErr, "Enter a valid numeric X."); hasError = true; }
+                if (!YCoord.HasValue)
+                { MarkError(YBox, YErr, "Enter a valid numeric Y."); hasError = true; }
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(Municipality))
+                { MarkError(MunicipalityBox, MunicipalityErr, requiredMsg); hasError = true; }
 
-            if (string.IsNullOrWhiteSpace(District))
-            { MarkError(DistrictBox, DistrictErr, requiredMsg); hasError = true; }
+                if (string.IsNullOrWhiteSpace(District))
+                { MarkError(DistrictBox, DistrictErr, requiredMsg); hasError = true; }
+            }
 
             if (string.IsNullOrWhiteSpace(Contact))
             {
@@ -688,6 +766,12 @@ namespace HouseholdMS.View.UserControls
             }
         }
 
+        private void Coordinate_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            // allow digits, minus, dot, comma (locales)
+            e.Handled = !Regex.IsMatch(e.Text, @"^[0-9\-\.,]+$");
+        }
+
         private void MarkError(Control input, TextBlock errorText, string message)
         {
             if (input != null) input.Tag = "error";
@@ -711,21 +795,51 @@ namespace HouseholdMS.View.UserControls
         private void ClearAllErrors()
         {
             ClearError(OwnerBox, OwnerErr);
-            ClearError(UserNameBox, UserNameErr);
+            ClearError(DNIBox, DNIErr);
             ClearError(MunicipalityBox, MunicipalityErr);
             ClearError(DistrictBox, DistrictErr);
             ClearError(ContactBox, ContactErr);
             ClearError(InstDatePicker, InstDateErr);
             ClearError(LastInspPicker, LastInspErr);
             ClearError(StatusCombo, StatusErr);
+            ClearError(XBox, XErr);
+            ClearError(YBox, YErr);
         }
 
+        // ----------- Properties (updated) -----------
+        public bool UseCoordinates => UseCoordinatesCheck?.IsChecked == true;
+
         public string OwnerName => OwnerBox.Text.Trim();
-        public string UserName => UserNameBox.Text.Trim();
+        public string DNI => DNIBox.Text.Trim();
         public string Municipality => MunicipalityBox.Text.Trim();
         public string District => DistrictBox.Text.Trim();
         public string Contact => ContactBox.Text.Trim();
         public string Note => NoteBox.Text.Trim();
+
+        public string SP => SPBox.Text.Trim();
+        public string SMI => SMIBox.Text.Trim();
+        public string SB => SBBox.Text.Trim();
+
+        public double? XCoord
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(XBox.Text)) return null;
+                if (double.TryParse(XBox.Text.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var val)) return val;
+                if (double.TryParse(XBox.Text.Trim(), NumberStyles.Float, CultureInfo.CurrentCulture, out val)) return val;
+                return null;
+            }
+        }
+        public double? YCoord
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(YBox.Text)) return null;
+                if (double.TryParse(YBox.Text.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var val)) return val;
+                if (double.TryParse(YBox.Text.Trim(), NumberStyles.Float, CultureInfo.CurrentCulture, out val)) return val;
+                return null;
+            }
+        }
 
         public string Status
         {

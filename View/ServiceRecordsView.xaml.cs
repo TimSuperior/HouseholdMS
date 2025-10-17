@@ -23,6 +23,7 @@ namespace HouseholdMS.View
         private GridViewColumnHeader _lastHeaderClicked;
         private ListSortDirection _lastDirection = ListSortDirection.Ascending;
 
+        // Header-text mapping retained (compat). We also add robust index-based fallback below.
         private readonly Dictionary<string, string> _headerToProperty = new Dictionary<string, string>
         {
             { "ID", "ServiceID" },
@@ -31,8 +32,11 @@ namespace HouseholdMS.View
             { "Problem", "Problem"},
             { "Action", "Action"},
             { "Inv. Used", "InventorySummary"},
+            { "Inventory Used", "InventorySummary"}, // added to match XAML header
             { "Start", "StartDate"},
+            { "Start Date", "StartDate"},            // added to match resource text
             { "Finish", "FinishDate"},
+            { "Finish Date", "FinishDate"},          // added to match resource text
             { "Status", "StatusRank"}
         };
 
@@ -50,6 +54,20 @@ namespace HouseholdMS.View
             nameof(ServiceRow.StartDateText),
             nameof(ServiceRow.FinishDateText),
             nameof(ServiceRow.StatusText)
+        };
+
+        // Fallback mapping by column index: aligns with GridView column order in XAML.
+        // (Keeps previous behavior: "Household" sorts by OwnerName, not by composite text.)
+        private static readonly string[] IndexSortMap = new[]
+        {
+            "OwnerName",        // 0: Household
+            "AllTechnicians",   // 1: Technicians
+            "Problem",          // 2: Problem
+            "Action",           // 3: Action
+            "InventorySummary", // 4: Inventory Used
+            "StartDate",        // 5: Start
+            "FinishDate",       // 6: Finish
+            "StatusRank"        // 7: Status
         };
 
         private readonly HashSet<string> _selectedColumnKeys = new HashSet<string>(StringComparer.Ordinal);
@@ -261,17 +279,29 @@ ORDER BY datetime(COALESCE(s.FinishDate, s.StartDate)) DESC, s.ServiceID DESC;";
             }
         }
 
-        // ===== Sorting on header click =====
+        // ===== Sorting on header click (robust to localized header text) =====
         private void GridViewColumnHeader_Click(object sender, RoutedEventArgs e)
         {
             var header = e.OriginalSource as GridViewColumnHeader;
             if (header == null) return;
 
-            string headerText = header.Content as string;
-            if (string.IsNullOrEmpty(headerText) || !_headerToProperty.ContainsKey(headerText))
-                return;
+            string sortBy = null;
 
-            string sortBy = _headerToProperty[headerText];
+            // First try by header text (for English/known labels)
+            string headerText = header.Content as string;
+            if (!string.IsNullOrEmpty(headerText) && _headerToProperty.TryGetValue(headerText, out var mapped))
+            {
+                sortBy = mapped;
+            }
+            else
+            {
+                // Fallback: map by column index (stable regardless of localization)
+                int idx = GetHeaderColumnIndex(header);
+                if (idx >= 0 && idx < IndexSortMap.Length)
+                    sortBy = IndexSortMap[idx];
+            }
+
+            if (string.IsNullOrEmpty(sortBy)) return;
 
             var direction =
                 (_lastHeaderClicked == header && _lastDirection == ListSortDirection.Ascending)
@@ -284,6 +314,14 @@ ORDER BY datetime(COALESCE(s.FinishDate, s.StartDate)) DESC, s.ServiceID DESC;";
             _view.SortDescriptions.Clear();
             _view.SortDescriptions.Add(new SortDescription(sortBy, direction));
             _view.Refresh();
+        }
+
+        private int GetHeaderColumnIndex(GridViewColumnHeader header)
+        {
+            if (header?.Column == null) return -1;
+            var gv = ServiceListView?.View as GridView;
+            if (gv == null) return -1;
+            return gv.Columns.IndexOf(header.Column);
         }
 
         // ===== Double-click → open AddServiceRecordControl (details mode) =====

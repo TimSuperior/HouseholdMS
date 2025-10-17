@@ -166,7 +166,7 @@ namespace HouseholdMS.View.Dashboard
             // Summary
             HHIdText.Text = household.HouseholdID.ToString();
             OwnerText.Text = household.OwnerName ?? "";
-            UserText.Text = household.UserName ?? "";
+            UserText.Text = household.DNI ?? "";                 // UserName -> DNI
             MunicipalityText.Text = household.Municipality ?? "";
             DistrictText.Text = household.District ?? "";
             ContactText.Text = household.ContactNum ?? "";

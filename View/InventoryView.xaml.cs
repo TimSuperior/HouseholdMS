@@ -119,14 +119,15 @@ namespace HouseholdMS.View
         {
             if (SearchBox == null) return;
 
-            string ph = "Search…";
-            SearchBox.Tag = ph;
+            // Respect whatever is in Tag/Text (e.g., localized placeholder). Fall back to "Search…".
+            var placeholder = (SearchBox.Tag as string);
+            if (string.IsNullOrWhiteSpace(placeholder))
+                placeholder = "Search…";
+            SearchBox.Tag = placeholder;
 
-            if (string.IsNullOrWhiteSpace(SearchBox.Text) ||
-                SearchBox.Text == "Search by item type" ||
-                SearchBox.Text == ph)
+            if (string.IsNullOrWhiteSpace(SearchBox.Text) || SearchBox.Text == placeholder)
             {
-                SearchBox.Text = ph;
+                SearchBox.Text = placeholder;
                 SearchBox.Foreground = Brushes.Gray;
                 SearchBox.FontStyle = FontStyles.Italic;
             }
@@ -582,17 +583,16 @@ namespace HouseholdMS.View
             var text = SearchBox?.Text ?? string.Empty;
             if (!string.IsNullOrWhiteSpace(text) && !string.Equals(text, tagText, StringComparison.Ordinal))
             {
-                ApplySearchFilter();   // <- no argument
+                ApplySearchFilter();
             }
             else
             {
-                ApplySearchFilter();   // clears filter because text is empty/placeholder
+                ApplySearchFilter();
             }
 
             // Close the popup
             ColumnPopup.IsOpen = false;
         }
-
 
         private IEnumerable<CheckBox> FindPopupCheckBoxes()
         {

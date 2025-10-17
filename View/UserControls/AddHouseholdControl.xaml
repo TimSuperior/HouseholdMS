@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.UserControls.AddHouseholdControl"  
+﻿<UserControl x:Class="HouseholdMS.View.UserControls.AddHouseholdControl"   
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:System="clr-namespace:System;assembly=mscorlib"
@@ -78,7 +78,7 @@
                     <Setter Property="FontSize" Value="{DynamicResource AppFontSize}"/>
                 </Style>
 
-                <!-- Inputs (no fixed Height; larger MinHeight & Padding so they grow with FontSize) -->
+                <!-- Inputs -->
                 <Style x:Key="ErrorBoxStyle" TargetType="TextBox">
                     <Setter Property="MinHeight" Value="42"/>
                     <Setter Property="Padding" Value="12,8"/>
@@ -141,7 +141,7 @@
                     </Style.Triggers>
                 </Style>
 
-                <!-- Buttons (no fixed Height; larger MinHeight & Padding) -->
+                <!-- Buttons -->
                 <Style x:Key="ActionButtonStyle" TargetType="Button">
                     <Setter Property="MinHeight" Value="44"/>
                     <Setter Property="MinWidth" Value="120"/>
@@ -269,41 +269,87 @@
                              TextChanged="OnAnyTextChanged"/>
                     <TextBlock x:Name="OwnerErr" Style="{StaticResource ErrorText}"/>
 
-                    <!-- User Name -->
+                    <!-- DNI -->
                     <TextBlock Style="{StaticResource FormLabel}">
-                        <Run Text="{x:Static res:Strings.AHC_Label_UserName}"/>
+                        <Run Text="DNI"/>
                         <Run Text=" *" Foreground="{StaticResource ErrorBrush}"/>
                     </TextBlock>
-                    <TextBox x:Name="UserNameBox"
+                    <TextBox x:Name="DNIBox"
                              Style="{StaticResource InputTextBox}"
                              Margin="0,0,0,0"
                              TabIndex="2"
                              TextChanged="OnAnyTextChanged"/>
-                    <TextBlock x:Name="UserNameErr" Style="{StaticResource ErrorText}"/>
+                    <TextBlock x:Name="DNIErr" Style="{StaticResource ErrorText}"/>
 
-                    <!-- Municipality -->
-                    <TextBlock Style="{StaticResource FormLabel}">
-                        <Run Text="{x:Static res:Strings.AHC_Label_Municipality}"/>
-                        <Run Text=" *" Foreground="{StaticResource ErrorBrush}"/>
-                    </TextBlock>
-                    <TextBox x:Name="MunicipalityBox"
-                             Style="{StaticResource InputTextBox}"
-                             Margin="0,0,0,0"
-                             TabIndex="3"
-                             TextChanged="OnAnyTextChanged"/>
-                    <TextBlock x:Name="MunicipalityErr" Style="{StaticResource ErrorText}"/>
+                    <!-- Address mode switch -->
+                    <CheckBox x:Name="UseCoordinatesCheck"
+                              Margin="0,12,0,0"
+                              Content="Use coordinates (X / Y) instead of municipality and district"
+                              IsChecked="False"
+                              Checked="UseCoordinatesCheck_Changed"
+                              Unchecked="UseCoordinatesCheck_Changed"
+                              TabIndex="3"/>
 
-                    <!-- District -->
-                    <TextBlock Style="{StaticResource FormLabel}">
-                        <Run Text="{x:Static res:Strings.AHC_Label_District}"/>
-                        <Run Text=" *" Foreground="{StaticResource ErrorBrush}"/>
-                    </TextBlock>
-                    <TextBox x:Name="DistrictBox"
-                             Style="{StaticResource InputTextBox}"
-                             Margin="0,0,0,0"
-                             TabIndex="4"
-                             TextChanged="OnAnyTextChanged"/>
-                    <TextBlock x:Name="DistrictErr" Style="{StaticResource ErrorText}"/>
+                    <!-- Address Panel (textual address) -->
+                    <StackPanel x:Name="AddressPanel">
+                        <!-- Municipality -->
+                        <TextBlock Style="{StaticResource FormLabel}">
+                            <Run Text="{x:Static res:Strings.AHC_Label_Municipality}"/>
+                            <Run Text=" *" Foreground="{StaticResource ErrorBrush}"/>
+                        </TextBlock>
+                        <TextBox x:Name="MunicipalityBox"
+                                 Style="{StaticResource InputTextBox}"
+                                 Margin="0,0,0,0"
+                                 TabIndex="4"
+                                 TextChanged="OnAnyTextChanged"/>
+                        <TextBlock x:Name="MunicipalityErr" Style="{StaticResource ErrorText}"/>
+
+                        <!-- District -->
+                        <TextBlock Style="{StaticResource FormLabel}">
+                            <Run Text="{x:Static res:Strings.AHC_Label_District}"/>
+                            <Run Text=" *" Foreground="{StaticResource ErrorBrush}"/>
+                        </TextBlock>
+                        <TextBox x:Name="DistrictBox"
+                                 Style="{StaticResource InputTextBox}"
+                                 Margin="0,0,0,0"
+                                 TabIndex="5"
+                                 TextChanged="OnAnyTextChanged"/>
+                        <TextBlock x:Name="DistrictErr" Style="{StaticResource ErrorText}"/>
+                    </StackPanel>
+
+                    <!-- Coordinates Panel -->
+                    <StackPanel x:Name="CoordinatesPanel" Visibility="Collapsed" Margin="0,6,0,0">
+                        <TextBlock Style="{StaticResource FormLabel}">
+                            <Run Text="Coordinates (X, Y)"/>
+                            <Run Text=" *" Foreground="{StaticResource ErrorBrush}"/>
+                        </TextBlock>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox x:Name="XBox"
+                                     Grid.Column="0"
+                                     Style="{StaticResource InputTextBox}"
+                                     Margin="0,0,0,0"
+                                     TabIndex="4"
+                                     TextChanged="OnAnyTextChanged"
+                                     PreviewTextInput="Coordinate_PreviewTextInput"/>
+                            <TextBlock Grid.ColumnSpan="3" x:Name="XErr" Style="{StaticResource ErrorText}"/>
+
+                            <TextBox x:Name="YBox"
+                                     Grid.Column="2"
+                                     Style="{StaticResource InputTextBox}"
+                                     Margin="0,0,0,0"
+                                     TabIndex="5"
+                                     TextChanged="OnAnyTextChanged"
+                                     PreviewTextInput="Coordinate_PreviewTextInput"/>
+                            <TextBlock Grid.ColumnSpan="3" x:Name="YErr" Style="{StaticResource ErrorText}"/>
+                        </Grid>
+                    </StackPanel>
 
                     <!-- Contact -->
                     <TextBlock Style="{StaticResource FormLabel}">
@@ -314,7 +360,7 @@
                              Style="{StaticResource ErrorBoxStyle}"
                              Margin="0,0,0,0"
                              PreviewTextInput="ContactBox_PreviewTextInput"
-                             TabIndex="5"
+                             TabIndex="6"
                              MaxLength="20"
                              TextChanged="OnAnyTextChanged"/>
                     <TextBlock x:Name="ContactErr" Style="{StaticResource ErrorText}"/>
@@ -329,7 +375,7 @@
                                 DisplayDateEnd="{x:Static System:DateTime.Today}"
                                 Margin="0,0,0,0"
                                 SelectedDateChanged="DatePicker_SelectedDateChanged"
-                                TabIndex="6"/>
+                                TabIndex="7"/>
                     <TextBlock x:Name="InstDateErr" Style="{StaticResource ErrorText}"/>
 
                     <!-- Last Inspect Date -->
@@ -342,7 +388,7 @@
                                 DisplayDateEnd="{x:Static System:DateTime.Today}"
                                 Margin="0,0,0,0"
                                 SelectedDateChanged="DatePicker_SelectedDateChanged"
-                                TabIndex="7"/>
+                                TabIndex="8"/>
                     <TextBlock x:Name="LastInspErr" Style="{StaticResource ErrorText}"/>
 
                     <!-- Status -->
@@ -353,7 +399,7 @@
                     <ComboBox x:Name="StatusCombo"
                               Style="{StaticResource InputComboBox}"
                               Margin="0,0,0,0"
-                              TabIndex="8"
+                              TabIndex="9"
                               SelectionChanged="StatusCombo_SelectionChanged"
                               SelectedIndex="0"
                               IsEditable="False">
@@ -361,6 +407,16 @@
                         <ComboBoxItem Content="{x:Static res:Strings.Common_Status_OutOfService}" Tag="Out of Service"/>
                     </ComboBox>
                     <TextBlock x:Name="StatusErr" Style="{StaticResource ErrorText}"/>
+
+                    <!-- SP, SMI, SB (optional) -->
+                    <TextBlock Text="Serie Panel (SP)" Style="{StaticResource FormLabel}"/>
+                    <TextBox x:Name="SPBox" Style="{StaticResource InputTextBox}" TabIndex="10"/>
+
+                    <TextBlock Text="Serie Mòdulo Integrado (SMI)" Style="{StaticResource FormLabel}"/>
+                    <TextBox x:Name="SMIBox" Style="{StaticResource InputTextBox}" TabIndex="11"/>
+
+                    <TextBlock Text="Serie Bateria (SB)" Style="{StaticResource FormLabel}"/>
+                    <TextBox x:Name="SBBox" Style="{StaticResource InputTextBox}" TabIndex="12"/>
 
                     <!-- Note (optional) -->
                     <TextBlock Text="{x:Static res:Strings.AHC_Label_NoteOptional}" Style="{StaticResource FormLabel}"/>
@@ -374,7 +430,7 @@
                              BorderThickness="1"
                              Padding="12,8"
                              Margin="0,0,0,0"
-                             TabIndex="9"/>
+                             TabIndex="13"/>
 
                     <!-- Service History -->
                     <Border x:Name="ServiceHistoryPanel"
@@ -476,18 +532,18 @@
                         Content="{x:Static res:Strings.AHC_Btn_Save}"
                         Style="{StaticResource PrimaryButton}"
                         Click="Save_Click"
-                        TabIndex="10"/>
+                        TabIndex="14"/>
                 <Button x:Name="CancelButton"
                         Content="{x:Static res:Strings.AHC_Btn_Cancel}"
                         Style="{StaticResource CancelButton}"
                         Click="Cancel_Click"
-                        TabIndex="11"/>
+                        TabIndex="15"/>
                 <Button x:Name="DeleteButton"
                         Content="{x:Static res:Strings.AHC_Btn_Delete}"
                         Style="{StaticResource DeleteButtonStyle}"
                         Visibility="Collapsed"
                         Click="Delete_Click"
-                        TabIndex="12"/>
+                        TabIndex="16"/>
             </StackPanel>
         </Grid>
     </Border>

@@ -2248,6 +2248,15 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 🔬 Test Procedures.
+        /// </summary>
+        public static string Section_TestProcedures {
+            get {
+                return ResourceManager.GetString("Section_TestProcedures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ≡ Main Menu.
         /// </summary>
         public static string Sidebar_MainMenu {

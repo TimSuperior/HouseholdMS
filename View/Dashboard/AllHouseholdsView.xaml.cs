@@ -26,7 +26,7 @@ namespace HouseholdMS.View.Dashboard
 
         private bool _modalOpen = false;
 
-        // GridView header → Household property map (uses localized captions)
+        // GridView header → Household property map (uses header text)
         private Dictionary<string, string> _headerToProperty;
 
         private readonly string _currentUserRole;
@@ -42,7 +42,7 @@ namespace HouseholdMS.View.Dashboard
         {
             nameof(Household.HouseholdID),
             nameof(Household.OwnerName),
-            nameof(Household.UserName),
+            nameof(Household.DNI),           // <-- UserName -> DNI
             nameof(Household.Municipality),
             nameof(Household.District),
             nameof(Household.ContactNum),
@@ -56,7 +56,7 @@ namespace HouseholdMS.View.Dashboard
         private static readonly string[] DefaultColumnKeys = new[]
         {
             nameof(Household.OwnerName),
-            nameof(Household.UserName),
+            nameof(Household.DNI),           // <-- UserName -> DNI
             nameof(Household.Municipality),
             nameof(Household.District),
             nameof(Household.ContactNum)
@@ -108,7 +108,8 @@ namespace HouseholdMS.View.Dashboard
             {
                 { Strings.AHV_Column_ID,          "HouseholdID" },
                 { Strings.AHV_Column_OwnerName,   "OwnerName" },
-                { Strings.AHV_Column_UserName,    "UserName" },
+                // Username header is now literal "DNI" in XAML
+                { "DNI",                           "DNI" },
                 { Strings.AHV_Column_Municipality,"Municipality" },
                 { Strings.AHV_Column_District,    "District" },
                 { Strings.AHV_Column_Contact,     "ContactNum" },
@@ -134,7 +135,8 @@ namespace HouseholdMS.View.Dashboard
             {
                 conn.Open();
                 using (var cmd = new System.Data.SQLite.SQLiteCommand(
-                    "SELECT HouseholdID, OwnerName, UserName, Municipality, District, ContactNum, InstallDate, LastInspect, UserComm, Statuss FROM Households;", conn))
+                    // UserName -> DNI; also select new columns (not shown but available)
+                    "SELECT HouseholdID, OwnerName, DNI, Municipality, District, X, Y, ContactNum, InstallDate, LastInspect, UserComm, Statuss, SP, SMI, SB FROM Households;", conn))
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
@@ -148,18 +150,37 @@ namespace HouseholdMS.View.Dashboard
                         var statusRaw = reader["Statuss"] == DBNull.Value ? string.Empty : Convert.ToString(reader["Statuss"]);
                         var normalizedStatus = NormalizeStatus(statusRaw);
 
+                        double? readDouble(string col)
+                        {
+                            if (!reader.GetSchemaTable().Columns.Contains(col)) return null;
+                            var o = reader[col];
+                            if (o == DBNull.Value) return null;
+                            try { return Convert.ToDouble(o, System.Globalization.CultureInfo.InvariantCulture); }
+                            catch
+                            {
+                                double d;
+                                return double.TryParse(Convert.ToString(o), out d) ? d : (double?)null;
+                            }
+                        }
+
                         var h = new Household
                         {
                             HouseholdID = Convert.ToInt32(reader["HouseholdID"]),
                             OwnerName = reader["OwnerName"] == DBNull.Value ? string.Empty : Convert.ToString(reader["OwnerName"]),
-                            UserName = reader["UserName"] == DBNull.Value ? string.Empty : Convert.ToString(reader["UserName"]),
+                            DNI = reader["DNI"] == DBNull.Value ? string.Empty : Convert.ToString(reader["DNI"]),
                             Municipality = reader["Municipality"] == DBNull.Value ? string.Empty : Convert.ToString(reader["Municipality"]),
                             District = reader["District"] == DBNull.Value ? string.Empty : Convert.ToString(reader["District"]),
                             ContactNum = reader["ContactNum"] == DBNull.Value ? string.Empty : Convert.ToString(reader["ContactNum"]),
                             InstallDate = installDate,
                             LastInspect = lastInspect,
                             UserComm = reader["UserComm"] == DBNull.Value ? string.Empty : Convert.ToString(reader["UserComm"]),
-                            Statuss = normalizedStatus
+                            Statuss = normalizedStatus,
+                            // extra fields (not shown in grid but stored)
+                            X = readDouble("X"),
+                            Y = readDouble("Y"),
+                            SP = reader["SP"] == DBNull.Value ? null : Convert.ToString(reader["SP"]),
+                            SMI = reader["SMI"] == DBNull.Value ? null : Convert.ToString(reader["SMI"]),
+                            SB = reader["SB"] == DBNull.Value ? null : Convert.ToString(reader["SB"])
                         };
 
                         allHouseholds.Add(h);
@@ -243,7 +264,7 @@ namespace HouseholdMS.View.Dashboard
             {
                 case nameof(Household.HouseholdID): return h.HouseholdID.ToString();
                 case nameof(Household.OwnerName): return h.OwnerName ?? string.Empty;
-                case nameof(Household.UserName): return h.UserName ?? string.Empty;
+                case nameof(Household.DNI): return h.DNI ?? string.Empty;           // <-- UserName -> DNI
                 case nameof(Household.Municipality): return h.Municipality ?? string.Empty;
                 case nameof(Household.District): return h.District ?? string.Empty;
                 case nameof(Household.ContactNum): return h.ContactNum ?? string.Empty;

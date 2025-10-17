@@ -26,6 +26,7 @@
   <data name="Menu_ElectronicLoad" xml:space="preserve"><value>⚡Electronic Load</value></data>
 
 	<!-- Test Manuals -->
+	<data name="Section_TestProcedures" xml:space="preserve"><value>🔬 Test Procedures</value></data>
 	<data name="Section_TestManuals" xml:space="preserve"><value>🧪 Test Manuals</value></data>
 	<data name="TestManuals_TestModules" xml:space="preserve"><value>🧪 Test Modules</value></data>
 

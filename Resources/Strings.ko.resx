@@ -26,6 +26,7 @@
   <data name="Menu_ElectronicLoad" xml:space="preserve"><value>⚡ 전자 부하</value></data>
 
 	<!-- 시험 지침 -->
+	<data name="Section_TestProcedures" xml:space="preserve"><value>🔬 Test Procedures</value></data>
 	<data name="Section_TestManuals" xml:space="preserve"><value>🧪 시험 지침</value></data>
 	<data name="TestManuals_TestModules" xml:space="preserve"><value>🧪 시험 모듈</value></data>
 

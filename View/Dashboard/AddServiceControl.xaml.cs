@@ -29,7 +29,7 @@ namespace HouseholdMS.View.Dashboard
             // Fill read-only texts
             HHIdText.Text = household.HouseholdID.ToString();
             OwnerText.Text = household.OwnerName ?? "";
-            UserText.Text = household.UserName ?? "";
+            UserText.Text = household.DNI ?? "";                  // <-- changed from UserName to DNI
             MunicipalityText.Text = household.Municipality ?? "";
             DistrictText.Text = household.District ?? "";
             ContactText.Text = household.ContactNum ?? "";

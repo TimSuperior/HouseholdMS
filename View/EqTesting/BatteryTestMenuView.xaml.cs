@@ -84,27 +84,27 @@ namespace HouseholdMS.View.EqTesting
             {
                 ["en"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    ["gallery_name"] = "Victron",
-                    ["album_bvi"] = "",
+                    ["gallery_name"] = "K4 Battery Balancing",
+                    ["album_bvi"] = " ",
                     ["missing_image"] = "Missing image: {0}",
                     ["err_one_album_required"] = "At least one album is required.",
                     ["err_album_empty"] = "Album '{0}' must contain at least one image.",
                     ["prev"] = "Back",
                     ["next"] = "Next",
                     ["version_prefix"] = "v",
-                    ["step_sep"] = ""
+                    ["step_sep"] = " "
                 },
                 ["es"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    ["gallery_name"] = "Victron",
-                    ["album_bvi"] = "",
+                    ["gallery_name"] = "Balanceo de baterías K4",
+                    ["album_bvi"] = " ",
                     ["missing_image"] = "Imagen ausente: {0}",
                     ["err_one_album_required"] = "Se requiere al menos un álbum.",
                     ["err_album_empty"] = "El álbum '{0}' debe contener al menos una imagen.",
                     ["prev"] = "Atrás",
                     ["next"] = "Siguiente",
                     ["version_prefix"] = "v",
-                    ["step_sep"] = ""
+                    ["step_sep"] = " "
                 },
                 ["ko"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {

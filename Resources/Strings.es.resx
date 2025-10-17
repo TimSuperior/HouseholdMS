@@ -26,6 +26,7 @@
   <data name="Menu_ElectronicLoad" xml:space="preserve"><value>⚡ Carga electrónica</value></data>
 
 	<!-- Manuales de prueba -->
+	<data name="Section_TestProcedures" xml:space="preserve"><value>🔬 Test Procedures</value></data>
 	<data name="Section_TestManuals" xml:space="preserve"><value>🧪 Manuales de prueba</value></data>
 	<data name="TestManuals_TestModules" xml:space="preserve"><value>🧪 Módulos de prueba</value></data>
 

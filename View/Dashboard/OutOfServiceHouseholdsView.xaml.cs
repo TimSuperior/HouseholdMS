@@ -10,7 +10,7 @@ using HouseholdMS.View.UserControls; // AddHouseholdControl (edit form)
 using HouseholdMS.Model;
 using System.Data.SQLite;
 using System.Windows.Media;
-using HouseholdMS.Resources; // <-- for Strings (localized resources)
+using HouseholdMS.Resources; // for Strings (localized resources)
 using System.Windows.Input;
 
 namespace HouseholdMS.View.Dashboard
@@ -41,7 +41,7 @@ namespace HouseholdMS.View.Dashboard
         {
             nameof(Household.HouseholdID),
             nameof(Household.OwnerName),
-            nameof(Household.UserName),
+            nameof(Household.DNI),           // UserName -> DNI
             nameof(Household.Municipality),
             nameof(Household.District),
             nameof(Household.ContactNum),
@@ -55,7 +55,7 @@ namespace HouseholdMS.View.Dashboard
         private static readonly string[] DefaultColumnKeys = new[]
         {
             nameof(Household.OwnerName),
-            nameof(Household.UserName),
+            nameof(Household.DNI),           // UserName -> DNI
             nameof(Household.Municipality),
             nameof(Household.District),
             nameof(Household.ContactNum)
@@ -128,32 +128,47 @@ namespace HouseholdMS.View.Dashboard
             {
                 conn.Open();
 
-                using (var cmd = new SQLiteCommand("SELECT HouseholdID, OwnerName, UserName, Municipality, District, ContactNum, InstallDate, LastInspect, UserComm, Statuss FROM Households;", conn))
+                // Explicit column list; include new fields to populate the model.
+                using (var cmd = new SQLiteCommand(
+                    "SELECT HouseholdID, OwnerName, DNI, Municipality, District, X, Y, ContactNum, InstallDate, LastInspect, UserComm, Statuss, SP, SMI, SB FROM Households;", conn))
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        DateTime installDate;
-                        DateTime lastInspect;
-
                         var installRaw = reader["InstallDate"] == DBNull.Value ? null : Convert.ToString(reader["InstallDate"]);
                         var lastRaw = reader["LastInspect"] == DBNull.Value ? null : Convert.ToString(reader["LastInspect"]);
 
-                        installDate = DateTime.TryParse(installRaw, out var dt1) ? dt1 : DateTime.MinValue;
-                        lastInspect = DateTime.TryParse(lastRaw, out var dt2) ? dt2 : DateTime.MinValue;
+                        DateTime installDate = DateTime.TryParse(installRaw, out var dt1) ? dt1 : DateTime.MinValue;
+                        DateTime lastInspect = DateTime.TryParse(lastRaw, out var dt2) ? dt2 : DateTime.MinValue;
+
+                        double? readDouble(string col)
+                        {
+                            var o = reader[col];
+                            if (o == DBNull.Value) return null;
+                            if (o is double dd) return dd;
+                            if (double.TryParse(Convert.ToString(o), out var d)) return d;
+                            return null;
+                        }
 
                         var h = new Household
                         {
                             HouseholdID = Convert.ToInt32(reader["HouseholdID"]),
                             OwnerName = reader["OwnerName"] == DBNull.Value ? string.Empty : Convert.ToString(reader["OwnerName"]),
-                            UserName = reader["UserName"] == DBNull.Value ? string.Empty : Convert.ToString(reader["UserName"]),
+                            DNI = reader["DNI"] == DBNull.Value ? string.Empty : Convert.ToString(reader["DNI"]),
                             Municipality = reader["Municipality"] == DBNull.Value ? string.Empty : Convert.ToString(reader["Municipality"]),
                             District = reader["District"] == DBNull.Value ? string.Empty : Convert.ToString(reader["District"]),
                             ContactNum = reader["ContactNum"] == DBNull.Value ? string.Empty : Convert.ToString(reader["ContactNum"]),
                             InstallDate = installDate,
                             LastInspect = lastInspect,
                             UserComm = reader["UserComm"] == DBNull.Value ? string.Empty : Convert.ToString(reader["UserComm"]),
-                            Statuss = reader["Statuss"] == DBNull.Value ? string.Empty : Convert.ToString(reader["Statuss"])
+                            Statuss = reader["Statuss"] == DBNull.Value ? string.Empty : Convert.ToString(reader["Statuss"]),
+
+                            // New fields (not displayed in this view but populated for completeness)
+                            X = readDouble("X"),
+                            Y = readDouble("Y"),
+                            SP = reader["SP"] == DBNull.Value ? null : Convert.ToString(reader["SP"]),
+                            SMI = reader["SMI"] == DBNull.Value ? null : Convert.ToString(reader["SMI"]),
+                            SB = reader["SB"] == DBNull.Value ? null : Convert.ToString(reader["SB"])
                         };
 
                         allHouseholds.Add(h);
@@ -246,15 +261,14 @@ namespace HouseholdMS.View.Dashboard
 
                 if (_selectedColumnKeys.Count == 0)
                 {
-                    // ORIGINAL behavior
+                    // ORIGINAL behavior, with UserName -> DNI
                     if (!string.IsNullOrEmpty(h.OwnerName) && h.OwnerName.ToLowerInvariant().Contains(search)) return true;
-                    if (!string.IsNullOrEmpty(h.UserName) && h.UserName.ToLowerInvariant().Contains(search)) return true;
+                    if (!string.IsNullOrEmpty(h.DNI) && h.DNI.ToLowerInvariant().Contains(search)) return true;
                     if (!string.IsNullOrEmpty(h.Municipality) && h.Municipality.ToLowerInvariant().Contains(search)) return true;
                     if (!string.IsNullOrEmpty(h.District) && h.District.ToLowerInvariant().Contains(search)) return true;
                     if (!string.IsNullOrEmpty(h.ContactNum) && h.ContactNum.ToLowerInvariant().Contains(search)) return true;
 
-                    int id;
-                    if (int.TryParse(search, out id) && h.HouseholdID == id) return true;
+                    if (int.TryParse(search, out int id) && h.HouseholdID == id) return true;
 
                     return false;
                 }
@@ -278,7 +292,7 @@ namespace HouseholdMS.View.Dashboard
             {
                 case nameof(Household.HouseholdID): return h.HouseholdID.ToString();
                 case nameof(Household.OwnerName): return h.OwnerName ?? string.Empty;
-                case nameof(Household.UserName): return h.UserName ?? string.Empty;
+                case nameof(Household.DNI): return h.DNI ?? string.Empty; // UserName -> DNI
                 case nameof(Household.Municipality): return h.Municipality ?? string.Empty;
                 case nameof(Household.District): return h.District ?? string.Empty;
                 case nameof(Household.ContactNum): return h.ContactNum ?? string.Empty;

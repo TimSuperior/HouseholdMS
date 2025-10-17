@@ -321,7 +321,7 @@
 
                     <!-- Test Procedures -->
                     <Button x:Name="Header_TestManuals"
-                            Content="🔬 Test Procedures"
+                            Content="{x:Static res:Strings.Section_TestProcedures}"
                             Click="Header_TestManuals_Click"
                             Style="{StaticResource SectionHeaderButtonStyle}"/>
 

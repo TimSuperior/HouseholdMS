@@ -13,10 +13,20 @@ namespace HouseholdMS.Model
     public class Household
     {
         public int HouseholdID { get; set; }
+
         public string OwnerName { get; set; }
-        public string UserName { get; set; }
-        public string Municipality { get; set; }
-        public string District { get; set; }
+
+        // NEW: replaces UserName
+        public string DNI { get; set; }
+
+        // Address (either Municipality+District OR X+Y per DB CHECK)
+        public string Municipality { get; set; } // nullable in DB
+        public string District { get; set; } // nullable in DB
+
+        // NEW: coordinate address option
+        public double? X { get; set; }
+        public double? Y { get; set; }
+
         public string ContactNum { get; set; }
 
         // DB stores TEXT dates; you can still use DateTime in code
@@ -27,5 +37,19 @@ namespace HouseholdMS.Model
 
         // Defaults to Operational to avoid null/status typos
         public string Statuss { get; set; } = HouseholdStatuses.Operational;
+
+        // NEW: series fields (optional)
+        public string SP { get; set; }  // Serie Panel
+        public string SMI { get; set; }  // Serie Mòdulo Integrado
+        public string SB { get; set; }  // Serie Bateria
+
+        // ---- Back-compat shim ----
+        // If any old code still references UserName, keep it compiling and map to DNI.
+        [Obsolete("Use DNI instead of UserName")]
+        public string UserName
+        {
+            get => DNI;
+            set => DNI = value;
+        }
     }
 }

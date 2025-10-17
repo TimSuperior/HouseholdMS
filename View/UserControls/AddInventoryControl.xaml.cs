@@ -255,7 +255,7 @@ VALUES (@type, @total, 0, @date, @threshold, @note)";
             }
             catch { /* leave defaults */ }
 
-            var available = _totalQtyFromDb;
+            var available = Math.Max(0, _totalQtyFromDb - _usedQtyFromDb);
             AvailQtyInfoText.Text = available.ToString(CultureInfo.InvariantCulture);
             UsedQtyInfoText.Text = _usedQtyFromDb.ToString(CultureInfo.InvariantCulture);
             LastRestockedInfoText.Text = string.IsNullOrWhiteSpace(_lastRestockedUtc) ? "—" : ToKstString(_lastRestockedUtc);
@@ -270,7 +270,7 @@ VALUES (@type, @total, 0, @date, @threshold, @note)";
 
             int threshold = 0;
             int.TryParse(ThresholdBox.Text?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out threshold);
-            var available = _totalQtyFromDb;
+            var available = Math.Max(0, _totalQtyFromDb - _usedQtyFromDb);
 
             string label;
             Brush bg;

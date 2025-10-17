@@ -81,7 +81,7 @@ namespace HouseholdMS.View.EqTesting
             {
                 ["en"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    ["gallery_name"] = "Victron Controller",
+                    ["gallery_name"] = "MPPT Charge Controller",
                     ["album_controller"] = "",
                     ["missing_image"] = "Missing image: {0}",
                     ["err_one_album_required"] = "At least one album is required.",
@@ -89,19 +89,19 @@ namespace HouseholdMS.View.EqTesting
                     ["prev"] = "Back",
                     ["next"] = "Next",
                     ["version_prefix"] = "v",
-                    ["step_sep"] = " — "
+                    ["step_sep"] = " "
                 },
                 ["es"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    ["gallery_name"] = "Controlador Victron",
-                    ["album_controller"] = "",
+                    ["gallery_name"] = "Controlador de carga MPPT",
+                    ["album_controller"] = " ",
                     ["missing_image"] = "Imagen ausente: {0}",
                     ["err_one_album_required"] = "Se requiere al menos un álbum.",
                     ["err_album_empty"] = "El álbum '{0}' debe contener al menos una imagen.",
                     ["prev"] = "Atrás",
                     ["next"] = "Siguiente",
                     ["version_prefix"] = "v",
-                    ["step_sep"] = " — "
+                    ["step_sep"] = " "
                 },
                 ["ko"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {

@@ -130,19 +130,33 @@ SELECT UserID, Name, Username, Phone, Address, AssignedArea, Note, CreatedAt
 FROM Users
 WHERE Role='Technician' AND IsActive=1 AND TechApproved=0;
 
-/* HOUSEHOLDS */
+/* HOUSEHOLDS (UPDATED) */
 CREATE TABLE IF NOT EXISTS Households (
     HouseholdID   INTEGER PRIMARY KEY AUTOINCREMENT,
     OwnerName     TEXT NOT NULL,
-    UserName      TEXT NOT NULL,
-    Municipality  TEXT NOT NULL,
-    District      TEXT NOT NULL,
+    DNI           TEXT NOT NULL,
+    Municipality  TEXT,          -- now nullable to allow coord-only
+    District      TEXT,          -- now nullable to allow coord-only
+    X             REAL,          -- coordinate X
+    Y             REAL,          -- coordinate Y
     ContactNum    TEXT NOT NULL,
     InstallDate   TEXT NOT NULL,
     LastInspect   TEXT NOT NULL,
     UserComm      TEXT,
     Statuss       TEXT,
-    CONSTRAINT UQ_Household UNIQUE (OwnerName, UserName, ContactNum)
+    SP            TEXT,          -- Serie Panel
+    SMI           TEXT,          -- Serie Mòdulo Integrado
+    SB            TEXT,          -- Serie Bateria
+    CONSTRAINT CK_Households_Address
+      CHECK (
+        (
+          (Municipality IS NOT NULL AND TRIM(Municipality) <> '' AND
+           District    IS NOT NULL AND TRIM(District)    <> '')
+          OR
+          (X IS NOT NULL AND Y IS NOT NULL)
+        )
+      ),
+    CONSTRAINT UQ_Household UNIQUE (OwnerName, DNI, ContactNum)
 );
 CREATE INDEX IF NOT EXISTS IX_Households_Statuss ON Households(Statuss);
 
@@ -423,7 +437,7 @@ FROM ItemUsage u;
             {
                 conn.Open();
 
-                // Base schema (with DisplayOrder + trigger + index)
+                // Base schema (with updated Households definition)
                 using (var cmd = new SQLiteCommand(schema, conn))
                     cmd.ExecuteNonQuery();
 
@@ -453,13 +467,15 @@ FROM ItemUsage u;
                         idx.ExecuteNonQuery();
                 }
 
-                // ---- NEW: migration for DisplayOrder in StockInventory ----
+                // ---- NEW: migration for updated Households (DNI + SP/SMI/SB + X/Y, and address choice) ----
+                MigrateHouseholdsIfNeeded(conn);
+
+                // ---- migration for DisplayOrder in StockInventory (unchanged) ----
                 if (!TableHasColumn(conn, "StockInventory", "DisplayOrder"))
                 {
                     using (var alter = new SQLiteCommand("ALTER TABLE StockInventory ADD COLUMN DisplayOrder INTEGER;", conn))
                         alter.ExecuteNonQuery();
 
-                    // Initialize order consistently (use ItemID to start)
                     using (var seed = new SQLiteCommand("UPDATE StockInventory SET DisplayOrder = ItemID WHERE DisplayOrder IS NULL;", conn))
                         seed.ExecuteNonQuery();
 
@@ -488,7 +504,6 @@ END;", conn))
                 {
                     Fix_TestReportsFk(conn);
 
-                    // Re-create the TestReports role-check trigger (drop/create)
                     using (var tcmd = new SQLiteCommand(@"
 DROP TRIGGER IF EXISTS trg_check_TestReports_role;
 CREATE TRIGGER trg_check_TestReports_role
@@ -509,6 +524,154 @@ END;", conn))
                         tcmd.ExecuteNonQuery();
                     }
                 }
+            }
+        }
+
+        // --- NEW: migration helper for Households schema change ---
+        private static void MigrateHouseholdsIfNeeded(SQLiteConnection conn)
+        {
+            bool needsRebuild = false;
+
+            // If Households table doesn't exist, nothing to migrate (fresh create already done by base schema)
+            using (var chk = new SQLiteCommand("SELECT name FROM sqlite_master WHERE type='table' AND name='Households';", conn))
+            {
+                var exists = chk.ExecuteScalar() as string;
+                if (string.IsNullOrEmpty(exists)) return;
+            }
+
+            // Conditions: we need the new columns and must not have old UserName
+            bool hasDni = TableHasColumn(conn, "Households", "DNI");
+            bool hasUserName = TableHasColumn(conn, "Households", "UserName");
+            bool hasX = TableHasColumn(conn, "Households", "X");
+            bool hasY = TableHasColumn(conn, "Households", "Y");
+            bool hasSP = TableHasColumn(conn, "Households", "SP");
+            bool hasSMI = TableHasColumn(conn, "Households", "SMI");
+            bool hasSB = TableHasColumn(conn, "Households", "SB");
+
+            // If any required piece is missing or legacy column exists -> rebuild
+            if (!hasDni || hasUserName || !hasX || !hasY || !hasSP || !hasSMI || !hasSB)
+                needsRebuild = true;
+
+            if (!needsRebuild)
+                return;
+
+            using (var tx = conn.BeginTransaction())
+            {
+                // Drop triggers that reference Households so they don't stick to the renamed table
+                using (var dropTrig1 = new SQLiteCommand("DROP TRIGGER IF EXISTS trg_hh_insert_inservice;", conn, tx))
+                    dropTrig1.ExecuteNonQuery();
+                using (var dropTrig2 = new SQLiteCommand("DROP TRIGGER IF EXISTS trg_hh_update_inservice;", conn, tx))
+                    dropTrig2.ExecuteNonQuery();
+
+                // Also drop the index so name conflicts don't block recreation
+                using (var dropIdx = new SQLiteCommand("DROP INDEX IF EXISTS IX_Households_Statuss;", conn, tx))
+                    dropIdx.ExecuteNonQuery();
+
+                // Rename current table
+                using (var rename = new SQLiteCommand("ALTER TABLE Households RENAME TO _Households_old;", conn, tx))
+                    rename.ExecuteNonQuery();
+
+                // Create the NEW table exactly as in base schema
+                using (var createNew = new SQLiteCommand(@"
+CREATE TABLE Households (
+    HouseholdID   INTEGER PRIMARY KEY AUTOINCREMENT,
+    OwnerName     TEXT NOT NULL,
+    DNI           TEXT NOT NULL,
+    Municipality  TEXT,
+    District      TEXT,
+    X             REAL,
+    Y             REAL,
+    ContactNum    TEXT NOT NULL,
+    InstallDate   TEXT NOT NULL,
+    LastInspect   TEXT NOT NULL,
+    UserComm      TEXT,
+    Statuss       TEXT,
+    SP            TEXT,
+    SMI           TEXT,
+    SB            TEXT,
+    CONSTRAINT CK_Households_Address
+      CHECK (
+        (
+          (Municipality IS NOT NULL AND TRIM(Municipality) <> '' AND
+           District    IS NOT NULL AND TRIM(District)    <> '')
+          OR
+          (X IS NOT NULL AND Y IS NOT NULL)
+        )
+      ),
+    CONSTRAINT UQ_Household UNIQUE (OwnerName, DNI, ContactNum)
+);", conn, tx))
+                    createNew.ExecuteNonQuery();
+
+                // Detect which columns existed in the old table to copy safely
+                bool oldHasDNI = TableHasColumn(conn, "_Households_old", "DNI");
+                bool oldHasUserName = TableHasColumn(conn, "_Households_old", "UserName");
+                bool oldHasX = TableHasColumn(conn, "_Households_old", "X");
+                bool oldHasY = TableHasColumn(conn, "_Households_old", "Y");
+                bool oldHasSP = TableHasColumn(conn, "_Households_old", "SP");
+                bool oldHasSMI = TableHasColumn(conn, "_Households_old", "SMI");
+                bool oldHasSB = TableHasColumn(conn, "_Households_old", "SB");
+
+                string dniExpr = oldHasDNI ? "DNI" : (oldHasUserName ? "UserName" : "NULL");
+                string xExpr = oldHasX ? "X" : "NULL";
+                string yExpr = oldHasY ? "Y" : "NULL";
+                string spExpr = oldHasSP ? "SP" : "NULL";
+                string smiExpr = oldHasSMI ? "SMI" : "NULL";
+                string sbExpr = oldHasSB ? "SB" : "NULL";
+
+                // Copy data
+                using (var copy = new SQLiteCommand($@"
+INSERT INTO Households
+    (HouseholdID, OwnerName, DNI, Municipality, District, X, Y, ContactNum, InstallDate, LastInspect, UserComm, Statuss, SP, SMI, SB)
+SELECT
+    HouseholdID,
+    OwnerName,
+    {dniExpr} AS DNI,
+    Municipality,
+    District,
+    {xExpr}   AS X,
+    {yExpr}   AS Y,
+    ContactNum,
+    InstallDate,
+    LastInspect,
+    UserComm,
+    Statuss,
+    {spExpr}  AS SP,
+    {smiExpr} AS SMI,
+    {sbExpr}  AS SB
+FROM _Households_old;", conn, tx))
+                    copy.ExecuteNonQuery();
+
+                // Drop old table
+                using (var dropOld = new SQLiteCommand("DROP TABLE _Households_old;", conn, tx))
+                    dropOld.ExecuteNonQuery();
+
+                // Recreate index and triggers
+                using (var idx = new SQLiteCommand("CREATE INDEX IF NOT EXISTS IX_Households_Statuss ON Households(Statuss);", conn, tx))
+                    idx.ExecuteNonQuery();
+
+                using (var trig1 = new SQLiteCommand(@"
+CREATE TRIGGER IF NOT EXISTS trg_hh_insert_inservice
+AFTER INSERT ON Households
+WHEN NEW.Statuss = 'In Service'
+BEGIN
+    INSERT OR IGNORE INTO Service (HouseholdID) VALUES (NEW.HouseholdID);
+END;", conn, tx))
+                    trig1.ExecuteNonQuery();
+
+                using (var trig2 = new SQLiteCommand(@"
+CREATE TRIGGER IF NOT EXISTS trg_hh_update_inservice
+AFTER UPDATE OF Statuss ON Households
+WHEN NEW.Statuss = 'In Service'
+BEGIN
+    INSERT OR IGNORE INTO Service (HouseholdID) VALUES (NEW.HouseholdID);
+END;", conn, tx))
+                    trig2.ExecuteNonQuery();
+
+                // Normalize legacy statuses if any
+                using (var upd = new SQLiteCommand("UPDATE Households SET Statuss = 'In Service' WHERE Statuss = 'Not Operational';", conn, tx))
+                    upd.ExecuteNonQuery();
+
+                tx.Commit();
             }
         }
 
