@@ -16,7 +16,7 @@ namespace HouseholdMS.View
 {
     public partial class UserManagementView : UserControl
     {
-        // Commands (referenced in XAML via local:UserManagementView.*)
+        // Commands ...
         public static readonly RoutedUICommand ApproveCommand = new RoutedUICommand("Approve", "ApproveCommand", typeof(UserManagementView));
         public static readonly RoutedUICommand DeclineCommand = new RoutedUICommand("Decline", "DeclineCommand", typeof(UserManagementView));
         public static readonly RoutedUICommand DeleteUserCommand = new RoutedUICommand("DeleteUser", "DeleteUserCommand", typeof(UserManagementView));
@@ -150,6 +150,7 @@ namespace HouseholdMS.View
                 }
             }
 
+            // Keep current search/filter after reload
             ApplySearchFilter(SearchBox != null ? SearchBox.Text : null);
         }
 
@@ -167,15 +168,18 @@ namespace HouseholdMS.View
         {
             if (UserListView == null) return;
 
+            // normalize placeholder comparison before any lower-casing
             string placeholder = SearchBox != null ? (SearchBox.Tag as string ?? string.Empty) : string.Empty;
-            string term = (raw ?? "").Trim().ToLowerInvariant();
+            string termOriginal = (raw ?? string.Empty).Trim();
 
-            if (string.IsNullOrWhiteSpace(term) || term == placeholder)
+            if (string.IsNullOrWhiteSpace(termOriginal) ||
+                string.Equals(termOriginal, placeholder, StringComparison.OrdinalIgnoreCase))
             {
                 UserListView.ItemsSource = _all;
                 return;
             }
 
+            string termLower = termOriginal.ToLowerInvariant();
             var keys = _selectedColumnKeys.Count == 0 ? AllColumnKeys : _selectedColumnKeys.ToArray();
 
             var filtered = _all.Where(u =>
@@ -183,7 +187,8 @@ namespace HouseholdMS.View
                 for (int i = 0; i < keys.Length; i++)
                 {
                     string cell = GetCellString(u, keys[i]);
-                    if (!string.IsNullOrEmpty(cell) && cell.ToLowerInvariant().Contains(term))
+                    if (!string.IsNullOrEmpty(cell) &&
+                        cell.IndexOf(termLower, StringComparison.OrdinalIgnoreCase) >= 0)
                         return true;
                 }
                 return false;
@@ -246,7 +251,6 @@ namespace HouseholdMS.View
             OpenUserWindow(ToModel(row), canEdit);
         }
 
-        // Hook kept for parity with XAML; no functional change besides optional recompute
         private void UserListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (UserListView != null && UserListView.SelectedItem is UserRow row) ComputePermissions(row);
@@ -291,15 +295,14 @@ namespace HouseholdMS.View
                 Window.GetWindow(form)?.Close();
             };
 
-            // Respect the form's min size; cap to screen
             double workW = SystemParameters.WorkArea.Width;
             double workH = SystemParameters.WorkArea.Height;
 
             const double chromeW = 32;
             const double chromeH = 48;
 
-            double minW = Math.Max(form.MinWidth, form.MinWidth) + chromeW; // form.MinWidth is 640
-            double minH = Math.Max(form.MinHeight, form.MinHeight) + chromeH; // form.MinHeight is 520
+            double minW = Math.Max(form.MinWidth, form.MinWidth) + chromeW;
+            double minH = Math.Max(form.MinHeight, form.MinHeight) + chromeH;
 
             var win = new Window
             {
@@ -339,7 +342,7 @@ namespace HouseholdMS.View
             string placeholder = SearchBox != null ? (SearchBox.Tag as string ?? string.Empty) : string.Empty;
             string text = SearchBox != null ? (SearchBox.Text ?? string.Empty) : string.Empty;
 
-            if (!string.IsNullOrWhiteSpace(text) && text != placeholder)
+            if (!string.IsNullOrWhiteSpace(text) && !string.Equals(text, placeholder, StringComparison.OrdinalIgnoreCase))
                 ApplySearchFilter(text);
         }
 
@@ -368,22 +371,17 @@ namespace HouseholdMS.View
 
         private void OkColumns_Click(object sender, RoutedEventArgs e)
         {
-            // reflect current selection count on the chip
             UpdateColumnFilterButtonContent();
 
-            // if search box has user text (not placeholder), apply the filter now
             var tagText = SearchBox?.Tag as string ?? string.Empty;
             var text = SearchBox?.Text ?? string.Empty;
-            if (!string.IsNullOrWhiteSpace(text) && !string.Equals(text, tagText, StringComparison.Ordinal))
+            if (!string.IsNullOrWhiteSpace(text) && !string.Equals(text, tagText, StringComparison.OrdinalIgnoreCase))
             {
-                ApplySearchFilter(text); // apply current search with the selected columns
+                ApplySearchFilter(text);
             }
 
-
-            // close the popup
             ColumnPopup.IsOpen = false;
         }
-
 
         private IEnumerable<CheckBox> FindPopupCheckBoxes()
         {
@@ -409,9 +407,9 @@ namespace HouseholdMS.View
         private void UpdateColumnFilterButtonContent()
         {
             if (_selectedColumnKeys.Count == 0)
-                ColumnFilterButton.Content = "All ▾";
+                ColumnFilterButton.Content = Strings.UM_Cols_Chip_All; // localized "All ▾"
             else
-                ColumnFilterButton.Content = string.Format("{0} selected ▾", _selectedColumnKeys.Count);
+                ColumnFilterButton.Content = string.Format(Strings.UM_Cols_Chip_SelectedFmt, _selectedColumnKeys.Count);
         }
 
         // Command handlers
@@ -606,7 +604,7 @@ namespace HouseholdMS.View
             {
                 case "approved": return Strings.Status_Approved;
                 case "pending": return Strings.Status_Pending;
-                case "declined": return Strings.Status_Blocked; // reuse "blocked" text if you like
+                case "declined": return Strings.Status_Blocked; // maps to "Declined" in resx
                 case "active": return Strings.Status_Active;
                 case "inactive": return Strings.Status_Inactive;
                 case "user": return Strings.Status_User;

@@ -1051,6 +1051,51 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string Common_Cancel {
+            get {
+                return ResourceManager.GetString("Common_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clear.
+        /// </summary>
+        public static string Common_Clear {
+            get {
+                return ResourceManager.GetString("Common_Clear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Close.
+        /// </summary>
+        public static string Common_Close {
+            get {
+                return ResourceManager.GetString("Common_Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        public static string Common_OK {
+            get {
+                return ResourceManager.GetString("Common_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select all.
+        /// </summary>
+        public static string Common_SelectAll {
+            get {
+                return ResourceManager.GetString("Common_SelectAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Operational.
         /// </summary>
         public static string Common_Status_Operational {
@@ -1191,6 +1236,42 @@ namespace HouseholdMS.Resources {
         public static string Dashboard_Sections {
             get {
                 return ResourceManager.GetString("Dashboard_Sections", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Database connection error:.
+        /// </summary>
+        public static string Db_Error_Prefix {
+            get {
+                return ResourceManager.GetString("Db_Error_Prefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Database Error.
+        /// </summary>
+        public static string Db_Error_Title {
+            get {
+                return ResourceManager.GetString("Db_Error_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        public static string Error_Title {
+            get {
+                return ResourceManager.GetString("Error_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unexpected error occurred:.
+        /// </summary>
+        public static string Error_UnexpectedPrefix {
+            get {
+                return ResourceManager.GetString("Error_UnexpectedPrefix", resourceCulture);
             }
         }
         
@@ -1641,6 +1722,42 @@ namespace HouseholdMS.Resources {
         public static string Login_Button_RegisterNewUser {
             get {
                 return ResourceManager.GetString("Login_Button_RegisterNewUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Login Failed.
+        /// </summary>
+        public static string Login_Failed_Title {
+            get {
+                return ResourceManager.GetString("Login_Failed_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid username or password..
+        /// </summary>
+        public static string Login_InvalidCredentials_Body {
+            get {
+                return ResourceManager.GetString("Login_InvalidCredentials_Body", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter both Username and Password..
+        /// </summary>
+        public static string Login_MissingCredentials_Body {
+            get {
+                return ResourceManager.GetString("Login_MissingCredentials_Body", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Missing Credentials.
+        /// </summary>
+        public static string Login_MissingCredentials_Title {
+            get {
+                return ResourceManager.GetString("Login_MissingCredentials_Title", resourceCulture);
             }
         }
         
@@ -2113,6 +2230,25 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to User registered as Guest successfully!.
+        /// </summary>
+        public static string Register_Complete_Guest {
+            get {
+                return ResourceManager.GetString("Register_Complete_Guest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registration submitted as Guest.
+        ///Your technician request is pending admin approval..
+        /// </summary>
+        public static string Register_Complete_TechPending {
+            get {
+                return ResourceManager.GetString("Register_Complete_TechPending", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Confirm Password.
         /// </summary>
         public static string Register_ConfirmPassword {
@@ -2194,6 +2330,42 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Registration Complete.
+        /// </summary>
+        public static string Registration_Complete_Title {
+            get {
+                return ResourceManager.GetString("Registration_Complete_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registration Failed.
+        /// </summary>
+        public static string Registration_Failed_Title {
+            get {
+                return ResourceManager.GetString("Registration_Failed_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username already exists. Please choose another..
+        /// </summary>
+        public static string Registration_UsernameTaken_Body {
+            get {
+                return ResourceManager.GetString("Registration_UsernameTaken_Body", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username Taken.
+        /// </summary>
+        public static string Registration_UsernameTaken_Title {
+            get {
+                return ResourceManager.GetString("Registration_UsernameTaken_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Admin.
         /// </summary>
         public static string Role_Admin {
@@ -2217,6 +2389,548 @@ namespace HouseholdMS.Resources {
         public static string Role_Technician {
             get {
                 return ResourceManager.GetString("Role_Technician", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Action taken.
+        /// </summary>
+        public static string SCDC_Action_Title {
+            get {
+                return ResourceManager.GetString("SCDC_Action_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to What did you do this visit?.
+        /// </summary>
+        public static string SCDC_Action_Watermark {
+            get {
+                return ResourceManager.GetString("SCDC_Action_Watermark", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Done.
+        /// </summary>
+        public static string SCDC_Btn_Done {
+            get {
+                return ResourceManager.GetString("SCDC_Btn_Done", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ✖ Cancel service call.
+        /// </summary>
+        public static string SCDC_Button_Cancel {
+            get {
+                return ResourceManager.GetString("SCDC_Button_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ✔ Finish service call.
+        /// </summary>
+        public static string SCDC_Button_Finish {
+            get {
+                return ResourceManager.GetString("SCDC_Button_Finish", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 💾 Save and keep the service call.
+        /// </summary>
+        public static string SCDC_Button_SaveOpen {
+            get {
+                return ResourceManager.GetString("SCDC_Button_SaveOpen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel this service call?
+        ///
+        ///This will:
+        ///• Mark the ticket as Canceled
+        ///• Close it now (sets FinishDate)
+        ///• NOT deduct any inventory
+        ///• Clear any pending item selections
+        ///• Set household to Operational.
+        /// </summary>
+        public static string SCDC_Cancel_ConfirmBody {
+            get {
+                return ResourceManager.GetString("SCDC_Cancel_ConfirmBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel service call?.
+        /// </summary>
+        public static string SCDC_Cancel_ConfirmTitle {
+            get {
+                return ResourceManager.GetString("SCDC_Cancel_ConfirmTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service canceled. Household set to Operational. No stock deducted..
+        /// </summary>
+        public static string SCDC_Cancel_Success {
+            get {
+                return ResourceManager.GetString("SCDC_Cancel_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service finished. Household set to Operational and inventory updated..
+        /// </summary>
+        public static string SCDC_Finish_Success {
+            get {
+                return ResourceManager.GetString("SCDC_Finish_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service Call Details.
+        /// </summary>
+        public static string SCDC_Header_Title {
+            get {
+                return ResourceManager.GetString("SCDC_Header_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service Call Details (Opened At: {0}).
+        /// </summary>
+        public static string SCDC_Header_Title_WithOpenedFmt {
+            get {
+                return ResourceManager.GetString("SCDC_Header_Title_WithOpenedFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Initial action.
+        /// </summary>
+        public static string SCDC_InitialAction {
+            get {
+                return ResourceManager.GetString("SCDC_InitialAction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Initial problem.
+        /// </summary>
+        public static string SCDC_InitialProblem {
+            get {
+                return ResourceManager.GetString("SCDC_InitialProblem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to In-stock only.
+        /// </summary>
+        public static string SCDC_InStockOnly {
+            get {
+                return ResourceManager.GetString("SCDC_InStockOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search items....
+        /// </summary>
+        public static string SCDC_Inv_SearchPlaceholder {
+            get {
+                return ResourceManager.GetString("SCDC_Inv_SearchPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select in-stock.
+        /// </summary>
+        public static string SCDC_Inv_SelectInStock {
+            get {
+                return ResourceManager.GetString("SCDC_Inv_SelectInStock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Inventory used.
+        /// </summary>
+        public static string SCDC_Inventory_Title {
+            get {
+                return ResourceManager.GetString("SCDC_Inventory_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add Inventory Items.
+        /// </summary>
+        public static string SCDC_InvPicker_AddItems {
+            get {
+                return ResourceManager.GetString("SCDC_InvPicker_AddItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add Inventory Items.
+        /// </summary>
+        public static string SCDC_InvPicker_Title {
+            get {
+                return ResourceManager.GetString("SCDC_InvPicker_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contact:.
+        /// </summary>
+        public static string SCDC_Label_Contact {
+            get {
+                return ResourceManager.GetString("SCDC_Label_Contact", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current Status:.
+        /// </summary>
+        public static string SCDC_Label_CurrentStatus {
+            get {
+                return ResourceManager.GetString("SCDC_Label_CurrentStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to District:.
+        /// </summary>
+        public static string SCDC_Label_District {
+            get {
+                return ResourceManager.GetString("SCDC_Label_District", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DNI:.
+        /// </summary>
+        public static string SCDC_Label_DNI {
+            get {
+                return ResourceManager.GetString("SCDC_Label_DNI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Household ID:.
+        /// </summary>
+        public static string SCDC_Label_HouseholdID {
+            get {
+                return ResourceManager.GetString("SCDC_Label_HouseholdID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Municipality:.
+        /// </summary>
+        public static string SCDC_Label_Municipality {
+            get {
+                return ResourceManager.GetString("SCDC_Label_Municipality", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Opened At:.
+        /// </summary>
+        public static string SCDC_Label_OpenedAt {
+            get {
+                return ResourceManager.GetString("SCDC_Label_OpenedAt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Owner:.
+        /// </summary>
+        public static string SCDC_Label_Owner {
+            get {
+                return ResourceManager.GetString("SCDC_Label_Owner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service ID:.
+        /// </summary>
+        public static string SCDC_Label_ServiceID {
+            get {
+                return ResourceManager.GetString("SCDC_Label_ServiceID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to inventory items.
+        /// </summary>
+        public static string SCDC_Missing_Inventory {
+            get {
+                return ResourceManager.GetString("SCDC_Missing_Inventory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to technicians.
+        /// </summary>
+        public static string SCDC_Missing_Technicians {
+            get {
+                return ResourceManager.GetString("SCDC_Missing_Technicians", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finish/Save/Cancel is disabled while a dialog is open. Close it first..
+        /// </summary>
+        public static string SCDC_ModalActive_Body {
+            get {
+                return ResourceManager.GetString("SCDC_ModalActive_Body", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Modal active.
+        /// </summary>
+        public static string SCDC_ModalActive_Title {
+            get {
+                return ResourceManager.GetString("SCDC_ModalActive_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New update.
+        /// </summary>
+        public static string SCDC_NewUpdate {
+            get {
+                return ResourceManager.GetString("SCDC_NewUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No open service ticket for this household..
+        /// </summary>
+        public static string SCDC_NoOpenTicket {
+            get {
+                return ResourceManager.GetString("SCDC_NoOpenTicket", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Only Admin or Technician can perform this action..
+        /// </summary>
+        public static string SCDC_Permission_Tip {
+            get {
+                return ResourceManager.GetString("SCDC_Permission_Tip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Previous.
+        /// </summary>
+        public static string SCDC_Previous {
+            get {
+                return ResourceManager.GetString("SCDC_Previous", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Problem description.
+        /// </summary>
+        public static string SCDC_Problem_Title {
+            get {
+                return ResourceManager.GetString("SCDC_Problem_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to What did you find now?.
+        /// </summary>
+        public static string SCDC_Problem_Watermark {
+            get {
+                return ResourceManager.GetString("SCDC_Problem_Watermark", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No technicians and no inventory items are selected.
+        ///
+        ///Do you still want to proceed?.
+        /// </summary>
+        public static string SCDC_Proceed_ConfirmBoth {
+            get {
+                return ResourceManager.GetString("SCDC_Proceed_ConfirmBoth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No {0} are selected.
+        ///
+        ///Do you still want to proceed?.
+        /// </summary>
+        public static string SCDC_Proceed_ConfirmOneFmt {
+            get {
+                return ResourceManager.GetString("SCDC_Proceed_ConfirmOneFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Proceed without selections?.
+        /// </summary>
+        public static string SCDC_Proceed_Title {
+            get {
+                return ResourceManager.GetString("SCDC_Proceed_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saved. Ticket remains open. No stock deducted..
+        /// </summary>
+        public static string SCDC_SaveOpen_Success {
+            get {
+                return ResourceManager.GetString("SCDC_SaveOpen_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search....
+        /// </summary>
+        public static string SCDC_SearchPlaceholder {
+            get {
+                return ResourceManager.GetString("SCDC_SearchPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ({0} selected).
+        /// </summary>
+        public static string SCDC_SelectedFmt {
+            get {
+                return ResourceManager.GetString("SCDC_SelectedFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (0 selected).
+        /// </summary>
+        public static string SCDC_SelectedZero {
+            get {
+                return ResourceManager.GetString("SCDC_SelectedZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Low.
+        /// </summary>
+        public static string SCDC_Stock_Low {
+            get {
+                return ResourceManager.GetString("SCDC_Stock_Low", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        public static string SCDC_Stock_OK {
+            get {
+                return ResourceManager.GetString("SCDC_Stock_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Out of stock.
+        /// </summary>
+        public static string SCDC_Stock_OutOfStock {
+            get {
+                return ResourceManager.GetString("SCDC_Stock_OutOfStock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service summary.
+        /// </summary>
+        public static string SCDC_Summary_Title {
+            get {
+                return ResourceManager.GetString("SCDC_Summary_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Technicians involved.
+        /// </summary>
+        public static string SCDC_Tech_Title {
+            get {
+                return ResourceManager.GetString("SCDC_Tech_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select Technicians ({0}).
+        /// </summary>
+        public static string SCDC_TechPicker_ButtonFmt {
+            get {
+                return ResourceManager.GetString("SCDC_TechPicker_ButtonFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select Technicians (0).
+        /// </summary>
+        public static string SCDC_TechPicker_ButtonInit {
+            get {
+                return ResourceManager.GetString("SCDC_TechPicker_ButtonInit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select Technicians.
+        /// </summary>
+        public static string SCDC_TechPicker_Title {
+            get {
+                return ResourceManager.GetString("SCDC_TechPicker_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service.
+        /// </summary>
+        public static string SCDC_Title_Service {
+            get {
+                return ResourceManager.GetString("SCDC_Title_Service", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (unknown).
+        /// </summary>
+        public static string SCDC_Unknown {
+            get {
+                return ResourceManager.GetString("SCDC_Unknown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not enough stock for &quot;{0}&quot;. Available: {1}.
+        /// </summary>
+        public static string SCDC_Validation_NotEnoughStock {
+            get {
+                return ResourceManager.GetString("SCDC_Validation_NotEnoughStock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Insufficient stock for &quot;{0}&quot;. Available now: {1}.
+        /// </summary>
+        public static string SCDC_Validation_NotEnoughStock_Now {
+            get {
+                return ResourceManager.GetString("SCDC_Validation_NotEnoughStock_Now", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Quantity for &quot;{0}&quot; must be at least 1..
+        /// </summary>
+        public static string SCDC_Validation_QtyAtLeastOne {
+            get {
+                return ResourceManager.GetString("SCDC_Validation_QtyAtLeastOne", resourceCulture);
             }
         }
         
@@ -2473,7 +3187,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Approved.
+        ///   Looks up a localized string similar to approved.
         /// </summary>
         public static string Status_Approved {
             get {
@@ -2491,15 +3205,6 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Declined.
-        /// </summary>
-        public static string Status_Declined {
-            get {
-                return ResourceManager.GetString("Status_Declined", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to inactive.
         /// </summary>
         public static string Status_Inactive {
@@ -2509,7 +3214,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Pending.
+        ///   Looks up a localized string similar to pending.
         /// </summary>
         public static string Status_Pending {
             get {
@@ -2518,7 +3223,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to User.
+        ///   Looks up a localized string similar to user.
         /// </summary>
         public static string Status_User {
             get {
@@ -2649,6 +3354,150 @@ namespace HouseholdMS.Resources {
         public static string UM_Approve {
             get {
                 return ResourceManager.GetString("UM_Approve", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Address.
+        /// </summary>
+        public static string UM_Cols_Address {
+            get {
+                return ResourceManager.GetString("UM_Cols_Address", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Assigned Area.
+        /// </summary>
+        public static string UM_Cols_AssignedArea {
+            get {
+                return ResourceManager.GetString("UM_Cols_AssignedArea", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All ▾.
+        /// </summary>
+        public static string UM_Cols_Chip_All {
+            get {
+                return ResourceManager.GetString("UM_Cols_Chip_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} selected ▾.
+        /// </summary>
+        public static string UM_Cols_Chip_SelectedFmt {
+            get {
+                return ResourceManager.GetString("UM_Cols_Chip_SelectedFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Columns.
+        /// </summary>
+        public static string UM_Cols_Chip_Tag {
+            get {
+                return ResourceManager.GetString("UM_Cols_Chip_Tag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clear.
+        /// </summary>
+        public static string UM_Cols_Clear {
+            get {
+                return ResourceManager.GetString("UM_Cols_Clear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        public static string UM_Cols_Name {
+            get {
+                return ResourceManager.GetString("UM_Cols_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Note.
+        /// </summary>
+        public static string UM_Cols_Note {
+            get {
+                return ResourceManager.GetString("UM_Cols_Note", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        public static string UM_Cols_OK {
+            get {
+                return ResourceManager.GetString("UM_Cols_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Phone.
+        /// </summary>
+        public static string UM_Cols_Phone {
+            get {
+                return ResourceManager.GetString("UM_Cols_Phone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Role.
+        /// </summary>
+        public static string UM_Cols_Role {
+            get {
+                return ResourceManager.GetString("UM_Cols_Role", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select all.
+        /// </summary>
+        public static string UM_Cols_SelectAll {
+            get {
+                return ResourceManager.GetString("UM_Cols_SelectAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} selected ▾.
+        /// </summary>
+        public static string UM_Cols_SelectedFmt {
+            get {
+                return ResourceManager.GetString("UM_Cols_SelectedFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        public static string UM_Cols_Status {
+            get {
+                return ResourceManager.GetString("UM_Cols_Status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choose columns.
+        /// </summary>
+        public static string UM_Cols_Title {
+            get {
+                return ResourceManager.GetString("UM_Cols_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username.
+        /// </summary>
+        public static string UM_Cols_Username {
+            get {
+                return ResourceManager.GetString("UM_Cols_Username", resourceCulture);
             }
         }
         
@@ -2820,6 +3669,141 @@ namespace HouseholdMS.Resources {
         public static string UM_Title {
             get {
                 return ResourceManager.GetString("UM_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Address must be at least 5 characters..
+        /// </summary>
+        public static string Val_Address_Min5 {
+            get {
+                return ResourceManager.GetString("Val_Address_Min5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Assigned Area must be at least 2 characters..
+        /// </summary>
+        public static string Val_Area_Min2 {
+            get {
+                return ResourceManager.GetString("Val_Area_Min2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please confirm your password..
+        /// </summary>
+        public static string Val_ConfirmPassword_Empty {
+            get {
+                return ResourceManager.GetString("Val_ConfirmPassword_Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Confirm Password must match Password exactly..
+        /// </summary>
+        public static string Val_ConfirmPassword_MustMatch {
+            get {
+                return ResourceManager.GetString("Val_ConfirmPassword_MustMatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fix the highlighted issues.
+        /// </summary>
+        public static string Val_FixIssues_Title {
+            get {
+                return ResourceManager.GetString("Val_FixIssues_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name must be at least 2 characters..
+        /// </summary>
+        public static string Val_Name_Min2 {
+            get {
+                return ResourceManager.GetString("Val_Name_Min2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password must be longer than 6 characters..
+        /// </summary>
+        public static string Val_Password_MinLen {
+            get {
+                return ResourceManager.GetString("Val_Password_MinLen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password must include at least one number or symbol..
+        /// </summary>
+        public static string Val_Password_MustContainDigitOrSymbol {
+            get {
+                return ResourceManager.GetString("Val_Password_MustContainDigitOrSymbol", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password must be different from Name..
+        /// </summary>
+        public static string Val_Password_NotEqualName {
+            get {
+                return ResourceManager.GetString("Val_Password_NotEqualName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password must be different from Username..
+        /// </summary>
+        public static string Val_Password_NotEqualUsername {
+            get {
+                return ResourceManager.GetString("Val_Password_NotEqualUsername", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Phone (optional) must be 8–15 digits if provided..
+        /// </summary>
+        public static string Val_Phone_OptionalRange {
+            get {
+                return ResourceManager.GetString("Val_Phone_OptionalRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Phone must be 8–15 digits (digits only)..
+        /// </summary>
+        public static string Val_Phone_Range {
+            get {
+                return ResourceManager.GetString("Val_Phone_Range", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username must be at least 4 characters..
+        /// </summary>
+        public static string Val_Username_Min4 {
+            get {
+                return ResourceManager.GetString("Val_Username_Min4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username cannot contain spaces..
+        /// </summary>
+        public static string Val_Username_NoSpaces {
+            get {
+                return ResourceManager.GetString("Val_Username_NoSpaces", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username must be different from Name..
+        /// </summary>
+        public static string Val_Username_NotEqualName {
+            get {
+                return ResourceManager.GetString("Val_Username_NotEqualName", resourceCulture);
             }
         }
     }

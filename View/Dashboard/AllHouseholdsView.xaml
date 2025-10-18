@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.Dashboard.AllHouseholdsView"  
+﻿<UserControl x:Class="HouseholdMS.View.Dashboard.AllHouseholdsView"   
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -273,6 +273,12 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <!-- NEW rows -->
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Static res:Strings.AHV_RO_OwnerName}" FontWeight="SemiBold" Margin="0,0,8,6"/>
@@ -302,6 +308,23 @@
 
                     <TextBlock Grid.Row="8" Grid.Column="0" Text="{x:Static res:Strings.AHV_RO_Comment}" FontWeight="SemiBold" Margin="0,0,8,0"/>
                     <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding UserComm}" TextWrapping="Wrap"/>
+
+                    <!-- NEW: Coordinates -->
+                    <TextBlock Grid.Row="9"  Grid.Column="0" Text="X" FontWeight="SemiBold" Margin="0,8,8,6"/>
+                    <TextBlock Grid.Row="9"  Grid.Column="1" Text="{Binding X}" Margin="0,8,0,6"/>
+
+                    <TextBlock Grid.Row="10" Grid.Column="0" Text="Y" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding Y}" Margin="0,0,0,6"/>
+
+                    <!-- NEW: Series -->
+                    <TextBlock Grid.Row="11" Grid.Column="0" Text="SP" FontWeight="SemiBold" Margin="0,8,8,6"/>
+                    <TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding SP}" Margin="0,8,0,6"/>
+
+                    <TextBlock Grid.Row="12" Grid.Column="0" Text="SMI" FontWeight="SemiBold" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding SMI}" Margin="0,0,0,6"/>
+
+                    <TextBlock Grid.Row="13" Grid.Column="0" Text="SB" FontWeight="SemiBold" Margin="0,0,8,0"/>
+                    <TextBlock Grid.Row="13" Grid.Column="1" Text="{Binding SB}" Margin="0,0,0,0"/>
                 </Grid>
             </Border>
         </DataTemplate>
@@ -358,6 +381,14 @@
                                     <CheckBox Content="Last Inspect" Tag="LastInspectText" Margin="4" Click="ColumnCheckBox_Click"/>
                                     <CheckBox Content="Status" Tag="Statuss" Margin="4" Click="ColumnCheckBox_Click"/>
                                     <CheckBox Content="Comment" Tag="UserComm" Margin="4" Click="ColumnCheckBox_Click"/>
+
+                                    <!-- NEW: extra DB columns -->
+                                    <Separator Margin="4,6"/>
+                                    <CheckBox Content="X" Tag="X" Margin="4" Click="ColumnCheckBox_Click"/>
+                                    <CheckBox Content="Y" Tag="Y" Margin="4" Click="ColumnCheckBox_Click"/>
+                                    <CheckBox Content="SP" Tag="SP" Margin="4" Click="ColumnCheckBox_Click"/>
+                                    <CheckBox Content="SMI" Tag="SMI" Margin="4" Click="ColumnCheckBox_Click"/>
+                                    <CheckBox Content="SB" Tag="SB" Margin="4" Click="ColumnCheckBox_Click"/>
                                 </StackPanel>
                             </ScrollViewer>
                             <Separator Margin="0,6,0,6"/>
@@ -393,7 +424,10 @@
                               ScrollViewer.VerticalScrollBarVisibility="Auto"
                               VirtualizingPanel.IsVirtualizing="True"
                               VirtualizingPanel.VirtualizationMode="Recycling"
-                              SelectionMode="Single"
+                              VirtualizingPanel.ScrollUnit="Pixel"  
+                        ScrollViewer.IsDeferredScrollingEnabled="True"
+                        
+                        SelectionMode="Single"
                               MouseDoubleClick="HouseholdListView_MouseDoubleClick">
                         <ListView.View>
                             <GridView AllowsColumnReorder="True">
@@ -440,6 +474,25 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
+                                <!-- NEW: Coordinates -->
+                                <GridViewColumn Header="X" Width="90">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" 
+                                                       Text="{Binding X}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="Y" Width="90">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" 
+                                                       Text="{Binding Y}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
                                 <GridViewColumn Header="{x:Static res:Strings.AHV_Column_Contact}" Width="120">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
@@ -462,6 +515,31 @@
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
                                                        Text="{Binding LastInspect, StringFormat='{}{0:yyyy-MM-dd}'}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <!-- NEW: Series -->
+                                <GridViewColumn Header="SP" Width="140">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding SP}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="SMI" Width="160">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding SMI}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="SB" Width="140">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding SB}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>

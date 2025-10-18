@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.Dashboard.OutOfServiceHouseholdsView"  
+﻿<UserControl x:Class="HouseholdMS.View.Dashboard.OutOfServiceHouseholdsView"   
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -256,6 +256,12 @@
                                     <CheckBox Content="Last Inspect" Tag="LastInspectText" Margin="4" Click="ColumnCheckBox_Click"/>
                                     <CheckBox Content="Status" Tag="Statuss" Margin="4" Click="ColumnCheckBox_Click"/>
                                     <CheckBox Content="Comment" Tag="UserComm" Margin="4" Click="ColumnCheckBox_Click"/>
+                                    <!-- NEW -->
+                                    <CheckBox Content="X" Tag="X" Margin="4" Click="ColumnCheckBox_Click"/>
+                                    <CheckBox Content="Y" Tag="Y" Margin="4" Click="ColumnCheckBox_Click"/>
+                                    <CheckBox Content="SP" Tag="SP" Margin="4" Click="ColumnCheckBox_Click"/>
+                                    <CheckBox Content="SMI" Tag="SMI" Margin="4" Click="ColumnCheckBox_Click"/>
+                                    <CheckBox Content="SB" Tag="SB" Margin="4" Click="ColumnCheckBox_Click"/>
                                 </StackPanel>
                             </ScrollViewer>
                             <Separator Margin="0,6,0,6"/>
@@ -349,6 +355,31 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
+                                <!-- NEW: Coordinates -->
+                                <GridViewColumn Width="90">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="X" Tag="X"/>
+                                    </GridViewColumn.Header>
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}"
+                                                       Text="{Binding X, StringFormat=0.######, TargetNullValue=''}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Width="90">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="Y" Tag="Y"/>
+                                    </GridViewColumn.Header>
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}"
+                                                       Text="{Binding Y, StringFormat=0.######, TargetNullValue=''}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
                                 <GridViewColumn Width="120">
                                     <GridViewColumn.Header>
                                         <TextBlock Text="{x:Static res:Strings.OOSV_Column_Contact}" Tag="ContactNum"/>
@@ -380,6 +411,40 @@
                                         <DataTemplate>
                                             <TextBlock Style="{StaticResource CellText}"
                                                        Text="{Binding LastInspect, StringFormat='{}{0:yyyy-MM-dd}'}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <!-- NEW: Series -->
+                                <GridViewColumn Width="140">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="SP" Tag="SP"/>
+                                    </GridViewColumn.Header>
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding SP}" ToolTip="{Binding SP}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Width="160">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="SMI" Tag="SMI"/>
+                                    </GridViewColumn.Header>
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding SMI}" ToolTip="{Binding SMI}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Width="140">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="SB" Tag="SB"/>
+                                    </GridViewColumn.Header>
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Style="{StaticResource CellText}" Text="{Binding SB}" ToolTip="{Binding SB}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>

@@ -39,7 +39,13 @@ namespace HouseholdMS.View.Dashboard
             { "Installed", "InstallDate" },
             { "Last Inspect", "LastInspect" },
             { "Status", "Statuss" },
-            { "Comment", "UserComm" }
+            { "Comment", "UserComm" },
+            // NEW:
+            { "X", "X" },
+            { "Y", "Y" },
+            { "SP", "SP" },
+            { "SMI", "SMI" },
+            { "SB", "SB" }
         };
 
         private readonly string _currentUserRole;
@@ -47,7 +53,7 @@ namespace HouseholdMS.View.Dashboard
         // ===== Minimal parent refresh hook (no new files) =====
         private Action _notifyParent;
         public Action NotifyParent { get => _notifyParent; set => _notifyParent = value; }
-        public void SetParentRefreshCallback(Action cb) => _notifyParent = cb;
+        public void SetParentRefreshCallback(Action cb) { _notifyParent = cb; }
         public event EventHandler RefreshRequested; // optional for event-based wiring
         private void RaiseParentRefresh()
         {
@@ -70,10 +76,16 @@ namespace HouseholdMS.View.Dashboard
             "InstallDateText",
             "LastInspectText",
             nameof(Household.Statuss),
-            nameof(Household.UserComm)
+            nameof(Household.UserComm),
+            // NEW: add to chooser
+            "XText",
+            "YText",
+            nameof(Household.SP),
+            nameof(Household.SMI),
+            nameof(Household.SB)
         };
 
-        // Default search columns = same set but with DNI
+        // Default search columns (kept as before)
         private static readonly string[] DefaultColumnKeys = new[]
         {
             nameof(Household.OwnerName),
@@ -133,7 +145,7 @@ namespace HouseholdMS.View.Dashboard
             {
                 conn.Open();
 
-                // Pull explicit columns (UserName -> DNI; include new columns though not displayed)
+                // Pull explicit columns (UserName -> DNI; include new columns)
                 const string sql = @"
                     SELECT HouseholdID, OwnerName, DNI, Municipality, District, X, Y,
                            ContactNum, InstallDate, LastInspect, UserComm, Statuss, SP, SMI, SB
@@ -148,12 +160,13 @@ namespace HouseholdMS.View.Dashboard
 
                         double? readDouble(string col)
                         {
-                            var o = reader[col];
+                            object o = reader[col];
                             if (o == DBNull.Value) return null;
                             try { return Convert.ToDouble(o, System.Globalization.CultureInfo.InvariantCulture); }
                             catch
                             {
-                                if (double.TryParse(Convert.ToString(o), out double d)) return d;
+                                double d;
+                                if (double.TryParse(Convert.ToString(o), out d)) return d;
                                 return null;
                             }
                         }
@@ -171,7 +184,7 @@ namespace HouseholdMS.View.Dashboard
                             UserComm = reader["UserComm"] != DBNull.Value ? reader["UserComm"].ToString() : string.Empty,
                             Statuss = reader["Statuss"] != DBNull.Value ? reader["Statuss"].ToString() : string.Empty,
 
-                            // new fields (not displayed here, but kept in the model)
+                            // new fields (now shown too)
                             X = readDouble("X"),
                             Y = readDouble("Y"),
                             SP = reader["SP"] == DBNull.Value ? null : reader["SP"].ToString(),
@@ -272,6 +285,12 @@ namespace HouseholdMS.View.Dashboard
                 case "LastInspectText": return h.LastInspect == DateTime.MinValue ? string.Empty : h.LastInspect.ToString("yyyy-MM-dd");
                 case nameof(Household.Statuss): return h.Statuss ?? string.Empty;
                 case nameof(Household.UserComm): return h.UserComm ?? string.Empty;
+                // NEW:
+                case "XText": return h.X.HasValue ? h.X.Value.ToString("0.######") : string.Empty;
+                case "YText": return h.Y.HasValue ? h.Y.Value.ToString("0.######") : string.Empty;
+                case nameof(Household.SP): return h.SP ?? string.Empty;
+                case nameof(Household.SMI): return h.SMI ?? string.Empty;
+                case nameof(Household.SB): return h.SB ?? string.Empty;
                 default: return string.Empty;
             }
         }
@@ -445,8 +464,8 @@ namespace HouseholdMS.View.Dashboard
 
         private void ColumnCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            var cb = sender as CheckBox;
-            var key = cb != null ? cb.Tag as string : null;
+            CheckBox cb = sender as CheckBox;
+            string key = cb != null ? cb.Tag as string : null;
             if (string.IsNullOrWhiteSpace(key)) return;
 
             if (cb.IsChecked == true) _selectedColumnKeys.Add(key);
@@ -456,14 +475,14 @@ namespace HouseholdMS.View.Dashboard
         private void SelectAllColumns_Click(object sender, RoutedEventArgs e)
         {
             _selectedColumnKeys.Clear();
-            foreach (var child in FindPopupCheckBoxes()) child.IsChecked = true;
+            foreach (CheckBox child in FindPopupCheckBoxes()) child.IsChecked = true;
             for (int i = 0; i < AllColumnKeys.Length; i++) _selectedColumnKeys.Add(AllColumnKeys[i]);
         }
 
         private void ClearAllColumns_Click(object sender, RoutedEventArgs e)
         {
             _selectedColumnKeys.Clear(); // empty => default behavior
-            foreach (var child in FindPopupCheckBoxes()) child.IsChecked = false;
+            foreach (CheckBox child in FindPopupCheckBoxes()) child.IsChecked = false;
         }
 
         private void OkColumns_Click(object sender, RoutedEventArgs e)
@@ -472,8 +491,8 @@ namespace HouseholdMS.View.Dashboard
             UpdateColumnFilterButtonContent();
 
             // if search box has user text (not placeholder), apply the filter now
-            var tagText = SearchBox?.Tag as string ?? string.Empty;
-            var text = SearchBox?.Text ?? string.Empty;
+            string tagText = SearchBox != null ? (SearchBox.Tag as string ?? string.Empty) : string.Empty;
+            string text = SearchBox != null ? (SearchBox.Text ?? string.Empty) : string.Empty;
             if (!string.IsNullOrWhiteSpace(text) && !string.Equals(text, tagText, StringComparison.Ordinal))
             {
                 ApplyFilter();
@@ -485,21 +504,21 @@ namespace HouseholdMS.View.Dashboard
 
         private IEnumerable<CheckBox> FindPopupCheckBoxes()
         {
-            var border = ColumnPopup.Child as Border;
+            Border border = ColumnPopup.Child as Border;
             if (border == null) yield break;
 
-            var sp = border.Child as StackPanel;
+            StackPanel sp = border.Child as StackPanel;
             if (sp == null) yield break;
 
-            var sv = sp.Children.OfType<ScrollViewer>().FirstOrDefault();
+            ScrollViewer sv = sp.Children.OfType<ScrollViewer>().FirstOrDefault();
             if (sv == null) yield break;
 
-            var inner = sv.Content as StackPanel;
+            StackPanel inner = sv.Content as StackPanel;
             if (inner == null) yield break;
 
-            foreach (var child in inner.Children)
+            foreach (object child in inner.Children)
             {
-                var cb = child as CheckBox;
+                CheckBox cb = child as CheckBox;
                 if (cb != null) yield return cb;
             }
         }

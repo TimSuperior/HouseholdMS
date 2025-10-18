@@ -101,7 +101,7 @@ SELECT
   s.ServiceID,
   s.HouseholdID,
   h.OwnerName,
-  h.UserName,
+  COALESCE(h.DNI,'') AS UserName,
   s.TechnicianID,
   COALESCE(vt.Name,'') AS PrimaryTechName,
   COALESCE(s.Problem,'') AS Problem,

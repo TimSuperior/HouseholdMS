@@ -8,6 +8,8 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Input;
 using System.Linq; // for Linq helpers
+using System.Data; // NEW: for GetSchemaTable rows
+using System.Windows.Threading; // NEW: for debounce
 using HouseholdMS.Model;
 using HouseholdMS.View.UserControls;     // AddHouseholdControl
 using HouseholdMS.Resources;             // Strings.*
@@ -37,6 +39,9 @@ namespace HouseholdMS.View.Dashboard
         private bool _categoryFilterActive = false;
         private string _searchText = string.Empty;
 
+        // NEW: debounce to prevent UI churn for large lists
+        private DispatcherTimer _searchDebounce;
+
         // ===== Column chooser state (empty = default behavior) =====
         private static readonly string[] AllColumnKeys = new[]
         {
@@ -45,9 +50,16 @@ namespace HouseholdMS.View.Dashboard
             nameof(Household.DNI),           // <-- UserName -> DNI
             nameof(Household.Municipality),
             nameof(Household.District),
+            // NEW: Coordinates
+            nameof(Household.X),
+            nameof(Household.Y),
             nameof(Household.ContactNum),
             "InstallDateText",
             "LastInspectText",
+            // NEW: Series
+            nameof(Household.SP),
+            nameof(Household.SMI),
+            nameof(Household.SB),
             nameof(Household.Statuss),
             nameof(Household.UserComm)
         };
@@ -96,6 +108,10 @@ namespace HouseholdMS.View.Dashboard
             HouseholdListView.AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(GridViewColumnHeader_Click));
             HouseholdListView.MouseDoubleClick += HouseholdListView_MouseDoubleClick;
 
+            // NEW: initialize debounce timer (does not change results, only timing)
+            _searchDebounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+            _searchDebounce.Tick += (s, e) => { _searchDebounce.Stop(); ApplyFilter(); };
+
             ApplyAccessRestrictions();
             UpdateSearchPlaceholder();   // sets Tag only (watermark handles visuals)
             UpdateColumnFilterButtonContent();
@@ -112,9 +128,15 @@ namespace HouseholdMS.View.Dashboard
                 { "DNI",                           "DNI" },
                 { Strings.AHV_Column_Municipality,"Municipality" },
                 { Strings.AHV_Column_District,    "District" },
+                // NEW: headers for extra columns (literal)
+                { "X",                             "X" },
+                { "Y",                             "Y" },
                 { Strings.AHV_Column_Contact,     "ContactNum" },
                 { Strings.AHV_Column_Installed,   "InstallDate" },
                 { Strings.AHV_Column_LastInspect, "LastInspect" },
+                { "SP",                            "SP" },
+                { "SMI",                           "SMI" },
+                { "SB",                            "SB" },
                 { Strings.AHV_Column_Status,      "Statuss" },
                 { Strings.AHV_Column_Comment,     "UserComm" }
             };
@@ -135,10 +157,34 @@ namespace HouseholdMS.View.Dashboard
             {
                 conn.Open();
                 using (var cmd = new System.Data.SQLite.SQLiteCommand(
-                    // UserName -> DNI; also select new columns (not shown but available)
+                    // UserName -> DNI; include new columns
                     "SELECT HouseholdID, OwnerName, DNI, Municipality, District, X, Y, ContactNum, InstallDate, LastInspect, UserComm, Statuss, SP, SMI, SB FROM Households;", conn))
                 using (var reader = cmd.ExecuteReader())
                 {
+                    // NEW: cache schema once (avoid per-row GetSchemaTable() overhead)
+                    var schemaCols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    var schema = reader.GetSchemaTable();
+                    if (schema != null)
+                    {
+                        foreach (DataRow r in schema.Rows)
+                        {
+                            schemaCols.Add(Convert.ToString(r["ColumnName"]));
+                        }
+                    }
+
+                    double? readDouble(string col)
+                    {
+                        if (!schemaCols.Contains(col)) return null;
+                        var o = reader[col];
+                        if (o == DBNull.Value) return null;
+                        try { return Convert.ToDouble(o, System.Globalization.CultureInfo.InvariantCulture); }
+                        catch
+                        {
+                            double d;
+                            return double.TryParse(Convert.ToString(o), out d) ? d : (double?)null;
+                        }
+                    }
+
                     while (reader.Read())
                     {
                         var installRaw = reader["InstallDate"] == DBNull.Value ? null : Convert.ToString(reader["InstallDate"]);
@@ -149,19 +195,6 @@ namespace HouseholdMS.View.Dashboard
 
                         var statusRaw = reader["Statuss"] == DBNull.Value ? string.Empty : Convert.ToString(reader["Statuss"]);
                         var normalizedStatus = NormalizeStatus(statusRaw);
-
-                        double? readDouble(string col)
-                        {
-                            if (!reader.GetSchemaTable().Columns.Contains(col)) return null;
-                            var o = reader[col];
-                            if (o == DBNull.Value) return null;
-                            try { return Convert.ToDouble(o, System.Globalization.CultureInfo.InvariantCulture); }
-                            catch
-                            {
-                                double d;
-                                return double.TryParse(Convert.ToString(o), out d) ? d : (double?)null;
-                            }
-                        }
 
                         var h = new Household
                         {
@@ -175,7 +208,7 @@ namespace HouseholdMS.View.Dashboard
                             LastInspect = lastInspect,
                             UserComm = reader["UserComm"] == DBNull.Value ? string.Empty : Convert.ToString(reader["UserComm"]),
                             Statuss = normalizedStatus,
-                            // extra fields (not shown in grid but stored)
+                            // NEW: extra fields
                             X = readDouble("X"),
                             Y = readDouble("Y"),
                             SP = reader["SP"] == DBNull.Value ? null : Convert.ToString(reader["SP"]),
@@ -227,35 +260,36 @@ namespace HouseholdMS.View.Dashboard
             // Decide which columns to use
             var keys = _selectedColumnKeys.Count == 0 ? DefaultColumnKeys : _selectedColumnKeys.ToArray();
 
-            view.Filter = delegate (object obj)
+            using (view.DeferRefresh()) // NEW: single refresh at the end
             {
-                var h = obj as Household;
-                if (h == null) return false;
-
-                if (useCategory)
+                view.Filter = delegate (object obj)
                 {
-                    var hn = NormalizeStatus(h.Statuss);
-                    if (hn != _normalizedStatusFilter) return false;
-                }
+                    var h = obj as Household;
+                    if (h == null) return false;
 
-                if (string.IsNullOrEmpty(search)) return true;
+                    if (useCategory)
+                    {
+                        var hn = NormalizeStatus(h.Statuss);
+                        if (hn != _normalizedStatusFilter) return false;
+                    }
 
-                // Preserve previous exact ID behavior (in addition to column matching)
-                int idValue;
-                if (int.TryParse(search, out idValue) && h.HouseholdID == idValue) return true;
+                    if (string.IsNullOrEmpty(search)) return true;
 
-                // Column-based matching
-                for (int i = 0; i < keys.Length; i++)
-                {
-                    string cell = GetCellString(h, keys[i]);
-                    if (!string.IsNullOrEmpty(cell) && cell.ToLowerInvariant().Contains(search))
-                        return true;
-                }
+                    // Preserve previous exact ID behavior (in addition to column matching)
+                    int idValue;
+                    if (int.TryParse(search, out idValue) && h.HouseholdID == idValue) return true;
 
-                return false;
-            };
+                    // Column-based matching
+                    for (int i = 0; i < keys.Length; i++)
+                    {
+                        string cell = GetCellString(h, keys[i]);
+                        if (!string.IsNullOrEmpty(cell) && cell.ToLowerInvariant().Contains(search))
+                            return true;
+                    }
 
-            view.Refresh();
+                    return false;
+                };
+            }
         }
 
         private static string GetCellString(Household h, string key)
@@ -272,6 +306,12 @@ namespace HouseholdMS.View.Dashboard
                 case "LastInspectText": return h.LastInspect == DateTime.MinValue ? string.Empty : h.LastInspect.ToString("yyyy-MM-dd");
                 case nameof(Household.Statuss): return h.Statuss ?? string.Empty;
                 case nameof(Household.UserComm): return h.UserComm ?? string.Empty;
+                // NEW: extra DB columns
+                case nameof(Household.X): return h.X?.ToString() ?? string.Empty;
+                case nameof(Household.Y): return h.Y?.ToString() ?? string.Empty;
+                case nameof(Household.SP): return h.SP ?? string.Empty;
+                case nameof(Household.SMI): return h.SMI ?? string.Empty;
+                case nameof(Household.SB): return h.SB ?? string.Empty;
                 default: return string.Empty;
             }
         }
@@ -279,7 +319,17 @@ namespace HouseholdMS.View.Dashboard
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             _searchText = SearchBox?.Text ?? string.Empty;
-            ApplyFilter();
+
+            // NEW: debounce instead of refreshing on every keystroke
+            if (_searchDebounce != null)
+            {
+                _searchDebounce.Stop();
+                _searchDebounce.Start();
+            }
+            else
+            {
+                ApplyFilter();
+            }
         }
 
         private void ResetText(object sender, RoutedEventArgs e) { /* not used by watermark style */ }
@@ -561,7 +611,6 @@ namespace HouseholdMS.View.Dashboard
             // close the popup
             ColumnPopup.IsOpen = false;
         }
-
 
         private IEnumerable<CheckBox> FindPopupCheckBoxes()
         {

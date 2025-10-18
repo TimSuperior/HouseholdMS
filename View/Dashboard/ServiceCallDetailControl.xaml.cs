@@ -10,6 +10,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using HouseholdMS.Model;
+using HouseholdMS.Resources; // <-- IMPORTANT: gives access to Strings.*
 
 namespace HouseholdMS.View.Dashboard
 {
@@ -113,9 +114,9 @@ namespace HouseholdMS.View.Dashboard
             {
                 get
                 {
-                    if (Available <= 0) return "Out of stock";
-                    if (Available <= 2) return "Low";
-                    return "OK";
+                    if (Available <= 0) return Strings.SCDC_Stock_OutOfStock;
+                    if (Available <= 2) return Strings.SCDC_Stock_Low;
+                    return Strings.SCDC_Stock_OK;
                 }
             }
             public Brush StockBadgeBrush
@@ -166,11 +167,11 @@ namespace HouseholdMS.View.Dashboard
             // Summary
             HHIdText.Text = household.HouseholdID.ToString();
             OwnerText.Text = household.OwnerName ?? "";
-            UserText.Text = household.DNI ?? "";                 // UserName -> DNI
+            UserText.Text = household.DNI ?? "";
             MunicipalityText.Text = household.Municipality ?? "";
             DistrictText.Text = household.District ?? "";
             ContactText.Text = household.ContactNum ?? "";
-            StatusText.Text = string.IsNullOrWhiteSpace(household.Statuss) ? "Operational" : household.Statuss;
+            StatusText.Text = string.IsNullOrWhiteSpace(household.Statuss) ? Strings.Common_Status_Operational : household.Statuss;
 
             // Permissions
             bool canProceed = string.Equals(_userRole, "Admin", StringComparison.OrdinalIgnoreCase)
@@ -182,7 +183,7 @@ namespace HouseholdMS.View.Dashboard
             CancelBtn.IsEnabled = canProceed;
             if (!canProceed)
             {
-                var tip = "Only Admin or Technician can perform this action.";
+                var tip = Strings.SCDC_Permission_Tip;
                 FinishBtn.ToolTip = tip;
                 SaveOpenBtn.ToolTip = tip;
                 CancelBtn.ToolTip = tip;
@@ -242,7 +243,7 @@ namespace HouseholdMS.View.Dashboard
                     {
                         if (!r1.Read())
                         {
-                            MessageBox.Show("No open service ticket for this household.", "Service", MessageBoxButton.OK, MessageBoxImage.Information);
+                            MessageBox.Show(Strings.SCDC_NoOpenTicket, Strings.SCDC_Title_Service, MessageBoxButton.OK, MessageBoxImage.Information);
                             FinishBtn.IsEnabled = false;
                             SaveOpenBtn.IsEnabled = false;
                             CancelBtn.IsEnabled = false;
@@ -255,14 +256,16 @@ namespace HouseholdMS.View.Dashboard
                         DateTime dt;
                         DateTime.TryParse(r1["StartDate"] == DBNull.Value ? null : r1["StartDate"].ToString(), out dt);
                         _openedAt = dt;
-                        OpenedAtText.Text = _openedAt == default(DateTime) ? "(unknown)" : _openedAt.ToString("yyyy-MM-dd HH:mm");
-                        HeaderText.Text = "Service Call Details (Opened At: " + OpenedAtText.Text + ")";
+                        OpenedAtText.Text = _openedAt == default(DateTime) ? Strings.SCDC_Unknown : _openedAt.ToString("yyyy-MM-dd HH:mm");
+                        HeaderText.Text = _openedAt == default(DateTime)
+                            ? Strings.SCDC_Header_Title
+                            : string.Format(Strings.SCDC_Header_Title_WithOpenedFmt, OpenedAtText.Text);
 
                         var prevProblem = r1["Problem"] == DBNull.Value ? "" : r1["Problem"].ToString();
                         var prevAction = r1["Action"] == DBNull.Value ? "" : r1["Action"].ToString();
 
-                        SetPrevBlock(ProblemPrevBox, ProblemPrevLabel, prevProblem, "Initial problem");
-                        SetPrevBlock(ActionPrevBox, ActionPrevLabel, prevAction, "Initial action");
+                        SetPrevBlock(ProblemPrevBox, ProblemPrevLabel, prevProblem, Strings.SCDC_InitialProblem);
+                        SetPrevBlock(ActionPrevBox, ActionPrevLabel, prevAction, Strings.SCDC_InitialAction);
 
                         ProblemNewBox.Text = "";
                         ActionNewBox.Text = "";
@@ -304,7 +307,7 @@ namespace HouseholdMS.View.Dashboard
             {
                 conn.Open();
 
-                // 1) Try the legacy schema: a real Technicians table.
+                // 1) Legacy schema: Technicians table.
                 try
                 {
                     using (var cmd = new SQLiteCommand(
@@ -327,7 +330,6 @@ namespace HouseholdMS.View.Dashboard
                         }
                     }
 
-                    // If we made it here, Technicians table exists; we're done.
                     UpdateTechButton();
                     UpdateTechOverlayHeader();
                     return;
@@ -337,7 +339,7 @@ namespace HouseholdMS.View.Dashboard
                     // Fall through to Users-based lookup.
                 }
 
-                // 2) Modern/simple schema: use Users as the source of technicians.
+                // 2) Use Users where Role='technician'
                 using (var cmd = new SQLiteCommand(
                     "SELECT rowid AS TechnicianID, Name FROM Users WHERE LOWER(Role)='technician' ORDER BY Name;", conn))
                 using (var r = cmd.ExecuteReader())
@@ -405,19 +407,19 @@ namespace HouseholdMS.View.Dashboard
         // ===== UI helpers =====
         private void UpdateTechButton()
         {
-            OpenTechPickerBtn.Content = string.Format("Select Technicians ({0})", _techSelected.Count);
+            OpenTechPickerBtn.Content = string.Format(Strings.SCDC_TechPicker_ButtonFmt, _techSelected.Count);
         }
 
         private void UpdateTechOverlayHeader()
         {
             int sel = _techAll.Count(t => t.IsSelected);
-            if (TechHeaderCountText != null) TechHeaderCountText.Text = "(" + sel + " selected)";
+            if (TechHeaderCountText != null) TechHeaderCountText.Text = string.Format(Strings.SCDC_SelectedFmt, sel);
         }
 
         private void UpdateInvOverlayHeader()
         {
             int sel = _invAll.Count(i => i.IsSelected && i.CanSelect);
-            if (InvHeaderCountText != null) InvHeaderCountText.Text = "(" + sel + " selected)";
+            if (InvHeaderCountText != null) InvHeaderCountText.Text = string.Format(Strings.SCDC_SelectedFmt, sel);
         }
 
         private void ShowValidation(string msg)
@@ -442,7 +444,7 @@ namespace HouseholdMS.View.Dashboard
 
         private static string PickPrevLabel(string content, string initialLabel)
         {
-            return LooksLikeMerged(content) ? "Previous" : initialLabel;
+            return LooksLikeMerged(content) ? Strings.SCDC_Previous : initialLabel;
         }
 
         private static void SetPrevBlock(TextBox box, TextBlock label, string text, string initialLabel)
@@ -512,7 +514,7 @@ namespace HouseholdMS.View.Dashboard
             ApplyTechFilter();
             UpdateTechOverlayHeader();
             ApplyActionButtonsEnabledState();
-            Dispatcher.BeginInvoke(new Action(() => TechSearchBox?.Focus()));
+            Dispatcher.BeginInvoke(new Action(delegate { if (TechSearchBox != null) TechSearchBox.Focus(); }));
         }
 
         private void TechPickerClose_Click(object sender, RoutedEventArgs e)
@@ -577,7 +579,7 @@ namespace HouseholdMS.View.Dashboard
             ApplyInvFilter();
             UpdateInvOverlayHeader();
             ApplyActionButtonsEnabledState();
-            Dispatcher.BeginInvoke(new Action(() => InvSearchBox?.Focus()));
+            Dispatcher.BeginInvoke(new Action(delegate { if (InvSearchBox != null) InvSearchBox.Focus(); }));
         }
 
         private void InvPickerClose_Click(object sender, RoutedEventArgs e)
@@ -692,7 +694,7 @@ namespace HouseholdMS.View.Dashboard
             var inv = lbi.DataContext as InvRow;
             if (inv != null)
             {
-                if (QtyPopup.IsOpen) return; // do not allow changing item while quantity popup active
+                if (QtyPopup.IsOpen) return;
                 if (inv.CanSelect)
                 {
                     inv.IsSelected = true;
@@ -742,7 +744,7 @@ namespace HouseholdMS.View.Dashboard
 
             QtyPopup.DataContext = row;
             QtyPopup.PlacementTarget = target;
-            QtyPopup.IsOpen = true; // Opened event will make overlay content non-interactive
+            QtyPopup.IsOpen = true;
         }
 
         private void QtyPreset_Click(object sender, RoutedEventArgs e)
@@ -785,15 +787,16 @@ namespace HouseholdMS.View.Dashboard
 
         private void QtyPopup_Opened(object sender, EventArgs e)
         {
-            // Disable the overlay content while the popup is active; footer is already disabled by ApplyActionButtonsEnabledState
             if (InvOverlayRoot != null) InvOverlayRoot.IsEnabled = false;
             ApplyActionButtonsEnabledState();
 
-            // Focus the quantity box
-            Dispatcher.BeginInvoke(new Action(() =>
+            Dispatcher.BeginInvoke(new Action(delegate
             {
-                QtyPopupTextBox?.Focus();
-                QtyPopupTextBox?.SelectAll();
+                if (QtyPopupTextBox != null)
+                {
+                    QtyPopupTextBox.Focus();
+                    QtyPopupTextBox.SelectAll();
+                }
             }));
         }
 
@@ -821,18 +824,18 @@ namespace HouseholdMS.View.Dashboard
         private bool ConfirmProceedIfMissing()
         {
             var missing = new List<string>();
-            if (_techSelected.Count == 0) missing.Add("technicians");
-            if (_invSelected.Count == 0) missing.Add("inventory items");
+            if (_techSelected.Count == 0) missing.Add(Strings.SCDC_Missing_Technicians);
+            if (_invSelected.Count == 0) missing.Add(Strings.SCDC_Missing_Inventory);
 
             if (missing.Count == 0) return true;
 
             string msg;
             if (missing.Count == 2)
-                msg = "No technicians and no inventory items are selected.\n\nDo you still want to proceed?";
+                msg = Strings.SCDC_Proceed_ConfirmBoth;
             else
-                msg = "No " + missing[0] + " are selected.\n\nDo you still want to proceed?";
+                msg = string.Format(Strings.SCDC_Proceed_ConfirmOneFmt, missing[0]);
 
-            var res = MessageBox.Show(msg, "Proceed without selections?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var res = MessageBox.Show(msg, Strings.SCDC_Proceed_Title, MessageBoxButton.YesNo, MessageBoxImage.Warning);
             return res == MessageBoxResult.Yes;
         }
 
@@ -841,9 +844,8 @@ namespace HouseholdMS.View.Dashboard
         {
             var add = (addition ?? "").Trim();
             var prev = (existing ?? "").Trim();
-            if (string.IsNullOrEmpty(add)) return existing; // nothing new
+            if (string.IsNullOrEmpty(add)) return existing;
 
-            // First notes → just store the text (no headers)
             if (string.IsNullOrEmpty(prev))
                 return add;
 
@@ -863,13 +865,13 @@ namespace HouseholdMS.View.Dashboard
 
             if (_serviceId == 0)
             {
-                MessageBox.Show("No open service ticket found.", "Service", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(Strings.SCDC_NoOpenTicket, Strings.SCDC_Title_Service, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (AnyModalOpen)
             {
-                MessageBox.Show("Finish/Save/Cancel is disabled while a dialog is open. Close it first.", "Modal active", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(Strings.SCDC_ModalActive_Body, Strings.SCDC_ModalActive_Title, MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -885,7 +887,6 @@ namespace HouseholdMS.View.Dashboard
                     conn.Open();
                     using (var tx = conn.BeginTransaction())
                     {
-                        // Persist notes and keep ticket open (explicit Status)
                         using (var cmd = new SQLiteCommand(
                             "UPDATE Service SET Problem=@p, Action=@a, Status='Open' WHERE ServiceID=@sid;", conn, tx))
                         {
@@ -895,7 +896,6 @@ namespace HouseholdMS.View.Dashboard
                             cmd.ExecuteNonQuery();
                         }
 
-                        // Update tech links
                         using (var cmdDelTech = new SQLiteCommand("DELETE FROM ServiceTechnicians WHERE ServiceID=@sid;", conn, tx))
                         {
                             cmdDelTech.Parameters.AddWithValue("@sid", _serviceId);
@@ -912,7 +912,6 @@ namespace HouseholdMS.View.Dashboard
                             }
                         }
 
-                        // Update inventory snapshot (no deduction)
                         using (var cmdDelInv = new SQLiteCommand("DELETE FROM ServiceInventory WHERE ServiceID=@sid;", conn, tx))
                         {
                             cmdDelInv.Parameters.AddWithValue("@sid", _serviceId);
@@ -930,7 +929,6 @@ namespace HouseholdMS.View.Dashboard
                             }
                         }
 
-                        // Keep household Out of Service while open
                         using (var cmdUpdHh = new SQLiteCommand(
                             "UPDATE Households SET Statuss='In Service' WHERE HouseholdID=@hh;", conn, tx))
                         {
@@ -944,17 +942,16 @@ namespace HouseholdMS.View.Dashboard
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to save service (kept open).\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(Strings.Error_UnexpectedPrefix + "\n" + ex.Message, Strings.Error_Title, MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            // Refresh previous blocks and clear new input
-            SetPrevBlock(ProblemPrevBox, ProblemPrevLabel, mergedProblem, "Initial problem");
-            SetPrevBlock(ActionPrevBox, ActionPrevLabel, mergedAction, "Initial action");
+            SetPrevBlock(ProblemPrevBox, ProblemPrevLabel, mergedProblem, Strings.SCDC_InitialProblem);
+            SetPrevBlock(ActionPrevBox, ActionPrevLabel, mergedAction, Strings.SCDC_InitialAction);
             ProblemNewBox.Text = "";
             ActionNewBox.Text = "";
 
-            MessageBox.Show("Saved. Ticket remains open. No stock deducted.", "Service", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(Strings.SCDC_SaveOpen_Success, Strings.SCDC_Title_Service, MessageBoxButton.OK, MessageBoxImage.Information);
 
             var h = ServiceFinished; if (h != null) h(this, EventArgs.Empty);
         }
@@ -965,29 +962,28 @@ namespace HouseholdMS.View.Dashboard
 
             if (_serviceId == 0)
             {
-                MessageBox.Show("No open service ticket found.", "Service", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(Strings.SCDC_NoOpenTicket, Strings.SCDC_Title_Service, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (AnyModalOpen)
             {
-                MessageBox.Show("Finish/Save/Cancel is disabled while a dialog is open. Close it first.", "Modal active", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(Strings.SCDC_ModalActive_Body, Strings.SCDC_ModalActive_Title, MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
             if (!ConfirmProceedIfMissing()) return;
 
-            // Validate quantities
             foreach (var i in _invSelected)
             {
                 if (i.QuantityUsed < 1)
                 {
-                    ShowValidation("Quantity for \"" + i.ItemType + "\" must be at least 1.");
+                    ShowValidation(string.Format(Strings.SCDC_Validation_QtyAtLeastOne, i.ItemType));
                     return;
                 }
                 if (i.QuantityUsed > i.Available)
                 {
-                    ShowValidation("Not enough stock for \"" + i.ItemType + "\". Available: " + i.Available);
+                    ShowValidation(string.Format(Strings.SCDC_Validation_NotEnoughStock, i.ItemType, i.Available));
                     return;
                 }
             }
@@ -1033,7 +1029,6 @@ namespace HouseholdMS.View.Dashboard
                             cmdDelInv.ExecuteNonQuery();
                         }
 
-                        // Deduct stock for selected items
                         foreach (var inv in _invSelected)
                         {
                             int currentAvail;
@@ -1045,7 +1040,7 @@ namespace HouseholdMS.View.Dashboard
                                 currentAvail = Convert.ToInt32(obj);
                             }
                             if (inv.QuantityUsed > currentAvail)
-                                throw new InvalidOperationException("Insufficient stock for \"" + inv.ItemType + "\". Available now: " + currentAvail);
+                                throw new InvalidOperationException(string.Format(Strings.SCDC_Validation_NotEnoughStock_Now, inv.ItemType, currentAvail));
 
                             using (var cmdInsInv = new SQLiteCommand(
                                 "INSERT INTO ServiceInventory (ServiceID, ItemID, QuantityUsed) VALUES (@sid,@iid,@q);", conn, tx))
@@ -1078,11 +1073,11 @@ namespace HouseholdMS.View.Dashboard
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to finish service.\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(Strings.Error_UnexpectedPrefix + "\n" + ex.Message, Strings.Error_Title, MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            MessageBox.Show("Service finished. Household set to Operational and inventory updated.", "Service", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(Strings.SCDC_Finish_Success, Strings.SCDC_Title_Service, MessageBoxButton.OK, MessageBoxImage.Information);
 
             var h2 = ServiceFinished; if (h2 != null) h2(this, EventArgs.Empty);
         }
@@ -1093,19 +1088,19 @@ namespace HouseholdMS.View.Dashboard
 
             if (_serviceId == 0)
             {
-                MessageBox.Show("No open service ticket found.", "Service", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(Strings.SCDC_NoOpenTicket, Strings.SCDC_Title_Service, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (AnyModalOpen)
             {
-                MessageBox.Show("Finish/Save/Cancel is disabled while a dialog is open. Close it first.", "Modal active", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(Strings.SCDC_ModalActive_Body, Strings.SCDC_ModalActive_Title, MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
             var confirm = MessageBox.Show(
-                "Cancel this service call?\n\nThis will:\n• Mark the ticket as Canceled\n• Close it now (sets FinishDate)\n• NOT deduct any inventory\n• Clear any pending item selections\n• Set household to Operational",
-                "Cancel service call?",
+                Strings.SCDC_Cancel_ConfirmBody,
+                Strings.SCDC_Cancel_ConfirmTitle,
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
@@ -1121,7 +1116,6 @@ namespace HouseholdMS.View.Dashboard
                     conn.Open();
                     using (var tx = conn.BeginTransaction())
                     {
-                        // Mark canceled + close
                         using (var cmd = new SQLiteCommand(
                             "UPDATE Service SET Problem=@p, Action=@a, FinishDate=datetime('now'), Status='Canceled' WHERE ServiceID=@sid;", conn, tx))
                         {
@@ -1131,7 +1125,6 @@ namespace HouseholdMS.View.Dashboard
                             cmd.ExecuteNonQuery();
                         }
 
-                        // Remove any snapshot from ServiceInventory
                         using (var cmdDelInv = new SQLiteCommand(
                             "DELETE FROM ServiceInventory WHERE ServiceID=@sid;", conn, tx))
                         {
@@ -1139,7 +1132,6 @@ namespace HouseholdMS.View.Dashboard
                             cmdDelInv.ExecuteNonQuery();
                         }
 
-                        // Household back to Operational
                         using (var cmdUpdHh = new SQLiteCommand(
                             "UPDATE Households SET Statuss='Operational' WHERE HouseholdID=@hh;", conn, tx))
                         {
@@ -1153,11 +1145,11 @@ namespace HouseholdMS.View.Dashboard
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to cancel service.\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(Strings.Error_UnexpectedPrefix + "\n" + ex.Message, Strings.Error_Title, MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            MessageBox.Show("Service canceled. Household set to Operational. No stock deducted.", "Service", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(Strings.SCDC_Cancel_Success, Strings.SCDC_Title_Service, MessageBoxButton.OK, MessageBoxImage.Information);
 
             var h = ServiceFinished; if (h != null) h(this, EventArgs.Empty);
         }

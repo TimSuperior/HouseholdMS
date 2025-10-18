@@ -1,48 +1,54 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
-  <resheader name="version"><value>2.0</value></resheader>
-  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
 
-  <data name="App_Title" xml:space="preserve"><value>PV Testing Workbench</value></data>
+	<!-- ===================== App / Navigation ===================== -->
+	<data name="App_Title" xml:space="preserve"><value>PV Testing Workbench</value></data>
+	<data name="Nav_Settings" xml:space="preserve"><value>⚙ Settings</value></data>
+	<data name="Nav_Logout" xml:space="preserve"><value>Logout</value></data>
+	<data name="Sidebar_MainMenu" xml:space="preserve"><value>≡ Main Menu</value></data>
 
-  <data name="Nav_Settings" xml:space="preserve"><value>⚙ Settings</value></data>
-  <data name="Nav_Logout" xml:space="preserve"><value>Logout</value></data>
+	<!-- ===================== Dashboard ===================== -->
+	<data name="Section_Dashboard" xml:space="preserve"><value>📊 Dashboard</value></data>
+	<data name="Dashboard_Sections" xml:space="preserve"><value>Dashboard Sections</value></data>
+	<data name="Menu_Sites" xml:space="preserve"><value>🏠 Sites</value></data>
+	<data name="Menu_Inventory" xml:space="preserve"><value>📦 Inventory</value></data>
+	<data name="Menu_ServiceRecords" xml:space="preserve"><value>🛠 Service Records</value></data>
 
-  <data name="Sidebar_MainMenu" xml:space="preserve"><value>≡ Main Menu</value></data>
+	<!-- ===================== Monitoring ===================== -->
+	<data name="Section_Monitoring" xml:space="preserve"><value>🛰 Monitoring</value></data>
+	<data name="Monitoring_LiveInstruments" xml:space="preserve"><value>Live Instruments</value></data>
+	<data name="Menu_MpptMonitoring" xml:space="preserve"><value>📡 MPPT Monitoring</value></data>
+	<data name="Menu_Oscilloscope" xml:space="preserve"><value>📈 Oscilloscope</value></data>
+	<data name="Menu_Multimeter" xml:space="preserve"><value>📶 Multimeter</value></data>
+	<data name="Menu_ElectronicLoad" xml:space="preserve"><value>⚡Electronic Load</value></data>
 
-  <data name="Section_Dashboard" xml:space="preserve"><value>📊 Dashboard</value></data>
-  <data name="Dashboard_Sections" xml:space="preserve"><value>Dashboard Sections</value></data>
-  <data name="Menu_Sites" xml:space="preserve"><value>🏠 Sites</value></data>
-  <data name="Menu_Inventory" xml:space="preserve"><value>📦 Inventory</value></data>
-  <data name="Menu_ServiceRecords" xml:space="preserve"><value>🛠 Service Records</value></data>
-
-  <data name="Section_Monitoring" xml:space="preserve"><value>🛰 Monitoring</value></data>
-  <data name="Monitoring_LiveInstruments" xml:space="preserve"><value>Live Instruments</value></data>
-  <data name="Menu_MpptMonitoring" xml:space="preserve"><value>📡 MPPT Monitoring</value></data>
-  <data name="Menu_Oscilloscope" xml:space="preserve"><value>📈 Oscilloscope</value></data>
-  <data name="Menu_Multimeter" xml:space="preserve"><value>📶 Multimeter</value></data>
-  <data name="Menu_ElectronicLoad" xml:space="preserve"><value>⚡Electronic Load</value></data>
-
-	<!-- Test Manuals -->
+	<!-- ===================== Test Manuals / Modules ===================== -->
 	<data name="Section_TestProcedures" xml:space="preserve"><value>🔬 Test Procedures</value></data>
 	<data name="Section_TestManuals" xml:space="preserve"><value>🧪 Test Manuals</value></data>
 	<data name="TestManuals_TestModules" xml:space="preserve"><value>🧪 Test Modules</value></data>
-
-	<!-- Test Modules buttons -->
 	<data name="Menu_TestProcedure" xml:space="preserve"><value>🎛️ PV Panel</value></data>
 	<data name="Menu_ControllerTest" xml:space="preserve"><value>🔄 MPPT Charge Controller</value></data>
 	<data name="Menu_SwitchTest" xml:space="preserve"><value>🔀 Inverter</value></data>
 	<data name="Menu_BlueSmartCharger" xml:space="preserve"><value>🔌 Blue Smart Charger</value></data>
 	<data name="Menu_K4BatteryBalancing" xml:space="preserve"><value>🔋 K4 Battery Balancing</value></data>
-
-
 	<data name="TestManuals_Documentation" xml:space="preserve"><value>Documentation</value></data>
-  <data name="Menu_TestReports" xml:space="preserve"><value>📄 Test Reports</value></data>
-  <data name="Menu_Templates" xml:space="preserve"><value>📁 Templates</value></data>
-  <data name="Menu_ManageUsers" xml:space="preserve"><value>👥 Manage Users</value></data>
+	<data name="Menu_TestReports" xml:space="preserve"><value>📄 Test Reports</value></data>
+	<data name="Menu_Templates" xml:space="preserve"><value>📁 Templates</value></data>
+	<data name="Menu_ManageUsers" xml:space="preserve"><value>👥 Manage Users</value></data>
 
+	<!-- ===================== User Management ===================== -->
 	<data name="UM_Title" xml:space="preserve"><value>👥 User Management</value></data>
 	<data name="UM_SearchPlaceholder" xml:space="preserve"><value>Search name/username/role/phone/address/area/note/status</value></data>
 	<data name="UM_AddUser" xml:space="preserve"><value>➕ Add User</value></data>
@@ -69,36 +75,40 @@
 
 	<data name="UM_EmptyState" xml:space="preserve"><value>No users found</value></data>
 
-	<data name="Role_Admin">
-		<value>Admin</value>
-	</data>
-	<data name="Role_Technician">
-		<value>Technician</value>
-	</data>
-	<data name="Role_Guest">
-		<value>Guest</value>
-	</data>
+	<!-- ===== Column chooser (chip + popup) ===== -->
+	<data name="UM_Cols_Chip_Tag" xml:space="preserve"><value>Columns</value></data>
+	<data name="UM_Cols_Chip_All" xml:space="preserve"><value>All ▾</value></data>
+	<!-- Provide BOTH key names to match any XAML usage -->
+	<data name="UM_Cols_SelectedFmt" xml:space="preserve"><value>{0} selected ▾</value></data>
+	<data name="UM_Cols_Chip_SelectedFmt" xml:space="preserve"><value>{0} selected ▾</value></data>
 
-	<data name="Status_Approved">
-		<value>approved</value>
-	</data>
-	<data name="Status_Pending">
-		<value>pending</value>
-	</data>
-	<data name="Status_Blocked">
-		<value>blocked</value>
-	</data>
-	<data name="Status_Active">
-		<value>active</value>
-	</data>
-	<data name="Status_Inactive">
-		<value>inactive</value>
-	</data>
-	<data name="Status_User">
-		<value>user</value>
-	</data>
+	<data name="UM_Cols_Title" xml:space="preserve"><value>Choose columns</value></data>
+	<data name="UM_Cols_Name" xml:space="preserve"><value>Name</value></data>
+	<data name="UM_Cols_Username" xml:space="preserve"><value>Username</value></data>
+	<data name="UM_Cols_Role" xml:space="preserve"><value>Role</value></data>
+	<data name="UM_Cols_Phone" xml:space="preserve"><value>Phone</value></data>
+	<data name="UM_Cols_Address" xml:space="preserve"><value>Address</value></data>
+	<data name="UM_Cols_AssignedArea" xml:space="preserve"><value>Assigned Area</value></data>
+	<data name="UM_Cols_Note" xml:space="preserve"><value>Note</value></data>
+	<data name="UM_Cols_Status" xml:space="preserve"><value>Status</value></data>
+	<data name="UM_Cols_SelectAll" xml:space="preserve"><value>Select all</value></data>
+	<data name="UM_Cols_Clear" xml:space="preserve"><value>Clear</value></data>
+	<data name="UM_Cols_OK" xml:space="preserve"><value>OK</value></data>
 
-	<!-- ===== Login ===== -->
+	<!-- ===== Display labels used by converters ===== -->
+	<data name="Role_Admin" xml:space="preserve"><value>Admin</value></data>
+	<data name="Role_Technician" xml:space="preserve"><value>Technician</value></data>
+	<data name="Role_Guest" xml:space="preserve"><value>Guest</value></data>
+
+	<data name="Status_Admin" xml:space="preserve"><value>Admin</value></data>
+	<data name="Status_Approved" xml:space="preserve"><value>approved</value></data>
+	<data name="Status_Pending" xml:space="preserve"><value>pending</value></data>
+	<data name="Status_Blocked" xml:space="preserve"><value>blocked</value></data>
+	<data name="Status_Active" xml:space="preserve"><value>active</value></data>
+	<data name="Status_Inactive" xml:space="preserve"><value>inactive</value></data>
+	<data name="Status_User" xml:space="preserve"><value>user</value></data>
+
+	<!-- ===================== Login ===================== -->
 	<data name="Login_Title" xml:space="preserve"><value>Login</value></data>
 	<data name="Login_Welcome" xml:space="preserve"><value>Welcome Back</value></data>
 	<data name="Login_Username" xml:space="preserve"><value>Username</value></data>
@@ -107,7 +117,7 @@
 	<data name="Login_Button_RegisterNewUser" xml:space="preserve"><value>Register New User</value></data>
 	<data name="Login_Button_Exit" xml:space="preserve"><value>Exit</value></data>
 
-	<!-- ===== Register ===== -->
+	<!-- ===================== Register ===================== -->
 	<data name="Register_Title" xml:space="preserve"><value>Create New Account</value></data>
 	<data name="Register_Name" xml:space="preserve"><value>Name</value></data>
 	<data name="Register_Username" xml:space="preserve"><value>Username</value></data>
@@ -124,45 +134,7 @@
 	<data name="Register_Button_Register" xml:space="preserve"><value>Register</value></data>
 	<data name="Register_Button_BackToLogin" xml:space="preserve"><value>Back to Login</value></data>
 
-	<!-- ===== User Management (UI) ===== -->
-	<data name="UM_Title" xml:space="preserve"><value>👥 User Management</value></data>
-	<data name="UM_SearchPlaceholder" xml:space="preserve"><value>Search name/username/role/phone/address/area/note/status</value></data>
-	<data name="UM_AddUser" xml:space="preserve"><value>➕ Add User</value></data>
-
-	<data name="UM_Column_ID" xml:space="preserve"><value>ID</value></data>
-	<data name="UM_Column_Name" xml:space="preserve"><value>Name</value></data>
-	<data name="UM_Column_Username" xml:space="preserve"><value>Username</value></data>
-	<data name="UM_Column_Role" xml:space="preserve"><value>Role</value></data>
-	<data name="UM_Column_Phone" xml:space="preserve"><value>Phone</value></data>
-	<data name="UM_Column_Address" xml:space="preserve"><value>Address</value></data>
-	<data name="UM_Column_AssignedArea" xml:space="preserve"><value>Assigned Area</value></data>
-	<data name="UM_Column_Note" xml:space="preserve"><value>Note</value></data>
-	<data name="UM_Column_Status" xml:space="preserve"><value>Status</value></data>
-	<data name="UM_Column_Approval" xml:space="preserve"><value>Approval</value></data>
-
-	<data name="UM_Approve" xml:space="preserve"><value>Approve</value></data>
-	<data name="UM_Decline" xml:space="preserve"><value>Decline</value></data>
-
-	<data name="UM_Context_ChangeRole" xml:space="preserve"><value>Change role</value></data>
-	<data name="UM_Context_Guest" xml:space="preserve"><value>Guest</value></data>
-	<data name="UM_Context_Technician" xml:space="preserve"><value>Technician</value></data>
-	<data name="UM_Context_Admin" xml:space="preserve"><value>Admin</value></data>
-	<data name="UM_Context_DeleteUser" xml:space="preserve"><value>Delete user</value></data>
-
-	<data name="UM_EmptyState" xml:space="preserve"><value>No users found</value></data>
-
-	<!-- ===== Display labels used by converters ===== -->
-	<data name="Role_Admin" xml:space="preserve"><value>Admin</value></data>
-	<data name="Role_Technician" xml:space="preserve"><value>Technician</value></data>
-	<data name="Role_Guest" xml:space="preserve"><value>Guest</value></data>
-
-	<data name="Status_Admin" xml:space="preserve"><value>Admin</value></data>
-	<data name="Status_Approved" xml:space="preserve"><value>Approved</value></data>
-	<data name="Status_Declined" xml:space="preserve"><value>Declined</value></data>
-	<data name="Status_Pending" xml:space="preserve"><value>Pending</value></data>
-	<data name="Status_User" xml:space="preserve"><value>User</value></data>
-
-	<!-- ===== Item Action Dialog ===== -->
+	<!-- ===================== Item Action Dialog ===================== -->
 	<data name="ItemDlg_Title" xml:space="preserve"><value>Action</value></data>
 	<data name="ItemDlg_Quantity" xml:space="preserve"><value>Quantity</value></data>
 	<data name="ItemDlg_Person" xml:space="preserve"><value>Person</value></data>
@@ -170,7 +142,7 @@
 	<data name="ItemDlg_OK" xml:space="preserve"><value>✔ OK</value></data>
 	<data name="ItemDlg_Cancel" xml:space="preserve"><value>✖ Cancel</value></data>
 
-	<!-- ===== InventoryView ===== -->
+	<!-- ===================== Inventory View ===================== -->
 	<data name="Inv_SearchPlaceholder" xml:space="preserve"><value>Search by item type</value></data>
 	<data name="Inv_NewItem" xml:space="preserve"><value>➕ New Item</value></data>
 
@@ -195,7 +167,7 @@
 	<data name="Inv_Detail_LastRestockedLabel" xml:space="preserve"><value>Last Restocked:</value></data>
 	<data name="Inv_Detail_NoteLabel" xml:space="preserve"><value>Note:</value></data>
 
-	<!-- ServiceRecordsView-->
+	<!-- ===================== Service Records View ===================== -->
 	<data name="SR_SearchPlaceholder" xml:space="preserve"><value>Search by household/tech/problem/action/status</value></data>
 	<data name="SR_Column_ID" xml:space="preserve"><value>ID</value></data>
 	<data name="SR_Column_Household" xml:space="preserve"><value>Household</value></data>
@@ -219,7 +191,7 @@
 	<data name="SR_Detail_Finished" xml:space="preserve"><value>Finished:</value></data>
 	<data name="SR_Detail_Status" xml:space="preserve"><value>Status:</value></data>
 
-	<!-- DashboardView-->
+	<!-- ===================== Dashboard View ===================== -->
 	<data name="Dash_Header" xml:space="preserve"><value>Dashboard</value></data>
 	<data name="Dash_Section_Household" xml:space="preserve"><value>🏠 Household</value></data>
 	<data name="Dash_TotalHouseholds" xml:space="preserve"><value>Total Households</value></data>
@@ -235,9 +207,9 @@
 
 	<data name="Dash_Status_Out" xml:space="preserve"><value>OUT</value></data>
 	<data name="Dash_Status_Low" xml:space="preserve"><value>LOW</value></data>
-	<data name="Dash_Status_Ok"  xml:space="preserve"><value>OK</value></data>
+	<data name="Dash_Status_Ok" xml:space="preserve"><value>OK</value></data>
 
-	<!--InventoryDetails-->
+	<!-- ===================== Inventory Details ===================== -->
 	<data name="InvDet_Title" xml:space="preserve"><value>Inventory Details</value></data>
 	<data name="InvDet_Status_InStock" xml:space="preserve"><value>In Stock</value></data>
 	<data name="InvDet_LowStockMsg" xml:space="preserve"><value>This item is low on stock.</value></data>
@@ -265,7 +237,7 @@
 
 	<data name="InvDet_Close" xml:space="preserve"><value>✖ Close</value></data>
 
-	<!--AllHouseholdsView-->
+	<!-- ===================== All Households View ===================== -->
 	<data name="AHV_SearchPlaceholder" xml:space="preserve"><value>Search by owner, user, area or contact</value></data>
 	<data name="AHV_AddHousehold" xml:space="preserve"><value>➕ Add Household</value></data>
 
@@ -292,10 +264,9 @@
 	<data name="AHV_RO_LastInspect" xml:space="preserve"><value>Last Inspect:</value></data>
 	<data name="AHV_RO_Status" xml:space="preserve"><value>Status:</value></data>
 	<data name="AHV_RO_Comment" xml:space="preserve"><value>Comment:</value></data>
-	
-	<!--Operational-->
-	<data name="OHV_SearchPlaceholder" xml:space="preserve"><value>Search by owner, user, area or contact</value></data>
 
+	<!-- ===================== Operational Households ===================== -->
+	<data name="OHV_SearchPlaceholder" xml:space="preserve"><value>Search by owner, user, area or contact</value></data>
 	<data name="OHV_Column_ID" xml:space="preserve"><value>ID</value></data>
 	<data name="OHV_Column_OwnerName" xml:space="preserve"><value>Owner Name</value></data>
 	<data name="OHV_Column_UserName" xml:space="preserve"><value>User Name</value></data>
@@ -306,13 +277,11 @@
 	<data name="OHV_Column_LastInspect" xml:space="preserve"><value>Last Inspect</value></data>
 	<data name="OHV_Column_Status" xml:space="preserve"><value>Status</value></data>
 	<data name="OHV_Column_Comment" xml:space="preserve"><value>Comment</value></data>
-
 	<data name="OHV_EmptyState" xml:space="preserve"><value>No operational households found</value></data>
 	<data name="OHV_Status_Tooltip" xml:space="preserve"><value>Status (read-only in this view)</value></data>
 
-	<!--OutOfServiceHouseholdsView-->
+	<!-- ===================== Out Of Service Households ===================== -->
 	<data name="OOSV_SearchPlaceholder" xml:space="preserve"><value>Search by owner, user, area or contact</value></data>
-
 	<data name="OOSV_Column_ID" xml:space="preserve"><value>ID</value></data>
 	<data name="OOSV_Column_OwnerName" xml:space="preserve"><value>Owner Name</value></data>
 	<data name="OOSV_Column_UserName" xml:space="preserve"><value>User Name</value></data>
@@ -323,11 +292,10 @@
 	<data name="OOSV_Column_LastInspect" xml:space="preserve"><value>Last Inspect</value></data>
 	<data name="OOSV_Column_Status" xml:space="preserve"><value>Status</value></data>
 	<data name="OOSV_Column_Comment" xml:space="preserve"><value>Comment</value></data>
-
 	<data name="OOSV_EmptyState" xml:space="preserve"><value>No out-of-service households found</value></data>
 	<data name="OOSV_Status_Tooltip" xml:space="preserve"><value>Click to change status (Admins only)</value></data>
 
-	<!--SitesView-->
+	<!-- ===================== Sites View ===================== -->
 	<data name="SV_Breadcrumb_Dashboard" xml:space="preserve"><value>Dashboard</value></data>
 	<data name="SV_Breadcrumb_Dashboard_Tooltip" xml:space="preserve"><value>Go to Dashboard</value></data>
 	<data name="SV_Breadcrumb_Sites" xml:space="preserve"><value>Sites</value></data>
@@ -341,9 +309,8 @@
 
 	<data name="SV_Placeholder" xml:space="preserve"><value>Select a tile to show details here…</value></data>
 
-	<!--AddServiceControl-->
+	<!-- ===================== Add Service Control ===================== -->
 	<data name="AS_Header" xml:space="preserve"><value>Start Service Call</value></data>
-
 	<data name="AS_Summary_Title" xml:space="preserve"><value>Household summary</value></data>
 	<data name="AS_Summary_HouseholdID" xml:space="preserve"><value>Household ID:</value></data>
 	<data name="AS_Summary_Owner" xml:space="preserve"><value>Owner:</value></data>
@@ -355,11 +322,10 @@
 
 	<data name="AS_Problem_Label" xml:space="preserve"><value>Problem description (optional)</value></data>
 	<data name="AS_FieldRequired" xml:space="preserve"><value>This field is required.</value></data>
-
 	<data name="AS_Confirm" xml:space="preserve"><value>✔ Confirm Service</value></data>
 	<data name="AS_Cancel" xml:space="preserve"><value>✖ Cancel</value></data>
 
-	<!--AddHouseholdControl-->
+	<!-- ===================== Add Household Control ===================== -->
 	<data name="AHC_FieldRequired" xml:space="preserve"><value>This field is required.</value></data>
 	<data name="AHC_Info_OutOfService" xml:space="preserve"><value>Status is set to Out of Service. Please add a short note describing the reason and consider opening a Service Call from the dashboard.</value></data>
 
@@ -387,13 +353,12 @@
 	<data name="AHC_Btn_Cancel" xml:space="preserve"><value>✖ Cancel</value></data>
 	<data name="AHC_Btn_Delete" xml:space="preserve"><value>🗑 Delete</value></data>
 
-	<!-- Common status captions (shared) -->
+	<!-- ===================== Common status ===================== -->
 	<data name="Common_Status_Operational" xml:space="preserve"><value>Operational</value></data>
 	<data name="Common_Status_OutOfService" xml:space="preserve"><value>Out of Service</value></data>
 
-	<!--AddInventoryControl-->
+	<!-- ===================== Add Inventory Control ===================== -->
 	<data name="AIC_Header_Subtitle" xml:space="preserve"><value>Manage inventory item</value></data>
-
 	<data name="AIC_Label_ItemType" xml:space="preserve"><value>Item Type</value></data>
 	<data name="AIC_Label_InitialQty" xml:space="preserve"><value>Initial Quantity</value></data>
 	<data name="AIC_Label_Threshold" xml:space="preserve"><value>Low Stock Threshold</value></data>
@@ -422,14 +387,13 @@
 	<data name="AIC_Btn_Cancel" xml:space="preserve"><value>✖ Cancel</value></data>
 	<data name="AIC_Btn_Delete" xml:space="preserve"><value>🗑 Delete</value></data>
 
-	<!-- Optional: for code-behind messages/pill -->
 	<data name="AIC_Info_LowStock" xml:space="preserve"><value>This item is low on stock.</value></data>
 	<data name="AIC_Info_OutOfStock" xml:space="preserve"><value>This item is out of stock.</value></data>
 	<data name="AIC_Status_InStock" xml:space="preserve"><value>In Stock</value></data>
 	<data name="AIC_Status_LowStock" xml:space="preserve"><value>Low Stock</value></data>
 	<data name="AIC_Status_OutOfStock" xml:space="preserve"><value>Out of Stock</value></data>
 
-	<!--AddServiceRecordControl-->
+	<!-- ===================== Add Service Record Control ===================== -->
 	<data name="ASRC_Header_Title" xml:space="preserve"><value>➕ Add Service Record</value></data>
 	<data name="ASRC_Header_Subtitle" xml:space="preserve"><value>Service details and activity</value></data>
 
@@ -453,9 +417,129 @@
 	<data name="ASRC_Btn_Save" xml:space="preserve"><value>✔ Save</value></data>
 	<data name="ASRC_Btn_Close" xml:space="preserve"><value>✖ Close</value></data>
 
-	<!-- Optional status strings if you want to set StatusPillText from resources -->
 	<data name="ASRC_Status_Open" xml:space="preserve"><value>Open</value></data>
 	<data name="ASRC_Status_Finished" xml:space="preserve"><value>Finished</value></data>
 	<data name="ASRC_Status_Canceled" xml:space="preserve"><value>Canceled</value></data>
+
+	<!-- ===================== Common (general use) ===================== -->
+	<data name="Common_OK" xml:space="preserve"><value>OK</value></data>
+	<data name="Common_Cancel" xml:space="preserve"><value>Cancel</value></data>
+	<data name="Common_SelectAll" xml:space="preserve"><value>Select all</value></data>
+	<data name="Common_Clear" xml:space="preserve"><value>Clear</value></data>
+	<data name="Common_Close" xml:space="preserve"><value>Close</value></data>
+
+	<!-- ===== Generic/Error titles & prefixes ===== -->
+	<data name="Db_Error_Title" xml:space="preserve"><value>Database Error</value></data>
+	<data name="Db_Error_Prefix" xml:space="preserve"><value>Database connection error:</value></data>
+	<data name="Error_Title" xml:space="preserve"><value>Error</value></data>
+	<data name="Error_UnexpectedPrefix" xml:space="preserve"><value>An unexpected error occurred:</value></data>
+
+	<!-- ===== Login messages ===== -->
+	<data name="Login_MissingCredentials_Title" xml:space="preserve"><value>Missing Credentials</value></data>
+	<data name="Login_MissingCredentials_Body" xml:space="preserve"><value>Please enter both Username and Password.</value></data>
+	<data name="Login_Failed_Title" xml:space="preserve"><value>Login Failed</value></data>
+	<data name="Login_InvalidCredentials_Body" xml:space="preserve"><value>Invalid username or password.</value></data>
+
+	<!-- ===== Registration messages ===== -->
+	<data name="Registration_UsernameTaken_Title" xml:space="preserve"><value>Username Taken</value></data>
+	<data name="Registration_UsernameTaken_Body" xml:space="preserve"><value>Username already exists. Please choose another.</value></data>
+	<data name="Registration_Complete_Title" xml:space="preserve"><value>Registration Complete</value></data>
+	<data name="Register_Complete_TechPending" xml:space="preserve"><value>Registration submitted as Guest.&#x0a;Your technician request is pending admin approval.</value></data>
+	<data name="Register_Complete_Guest" xml:space="preserve"><value>User registered as Guest successfully!</value></data>
+	<data name="Registration_Failed_Title" xml:space="preserve"><value>Registration Failed</value></data>
+
+	<!-- ===== Validation headings ===== -->
+	<data name="Val_FixIssues_Title" xml:space="preserve"><value>Fix the highlighted issues</value></data>
+
+	<!-- ===== Validation rule lines ===== -->
+	<data name="Val_Name_Min2" xml:space="preserve"><value>Name must be at least 2 characters.</value></data>
+	<data name="Val_Username_Min4" xml:space="preserve"><value>Username must be at least 4 characters.</value></data>
+	<data name="Val_Username_NoSpaces" xml:space="preserve"><value>Username cannot contain spaces.</value></data>
+	<data name="Val_Username_NotEqualName" xml:space="preserve"><value>Username must be different from Name.</value></data>
+
+	<data name="Val_Password_MinLen" xml:space="preserve"><value>Password must be longer than 6 characters.</value></data>
+	<data name="Val_Password_NotEqualName" xml:space="preserve"><value>Password must be different from Name.</value></data>
+	<data name="Val_Password_NotEqualUsername" xml:space="preserve"><value>Password must be different from Username.</value></data>
+	<data name="Val_Password_MustContainDigitOrSymbol" xml:space="preserve"><value>Password must include at least one number or symbol.</value></data>
+
+	<data name="Val_ConfirmPassword_Empty" xml:space="preserve"><value>Please confirm your password.</value></data>
+	<data name="Val_ConfirmPassword_MustMatch" xml:space="preserve"><value>Confirm Password must match Password exactly.</value></data>
+
+	<data name="Val_Phone_Range" xml:space="preserve"><value>Phone must be 8–15 digits (digits only).</value></data>
+	<data name="Val_Address_Min5" xml:space="preserve"><value>Address must be at least 5 characters.</value></data>
+	<data name="Val_Area_Min2" xml:space="preserve"><value>Assigned Area must be at least 2 characters.</value></data>
+	<data name="Val_Phone_OptionalRange" xml:space="preserve"><value>Phone (optional) must be 8–15 digits if provided.</value></data>
+
+	<!-- ===== Service Call Detail Control (SCDC) ===== -->
+	<data name="SCDC_Header_Title" xml:space="preserve"><value>Service Call Details</value></data>
+	<data name="SCDC_Header_Title_WithOpenedFmt" xml:space="preserve"><value>Service Call Details (Opened At: {0})</value></data>
+	<data name="SCDC_Summary_Title" xml:space="preserve"><value>Service summary</value></data>
+
+	<data name="SCDC_Label_ServiceID" xml:space="preserve"><value>Service ID:</value></data>
+	<data name="SCDC_Label_OpenedAt" xml:space="preserve"><value>Opened At:</value></data>
+	<data name="SCDC_Label_HouseholdID" xml:space="preserve"><value>Household ID:</value></data>
+	<data name="SCDC_Label_Owner" xml:space="preserve"><value>Owner:</value></data>
+	<data name="SCDC_Label_DNI" xml:space="preserve"><value>DNI:</value></data>
+	<data name="SCDC_Label_Municipality" xml:space="preserve"><value>Municipality:</value></data>
+	<data name="SCDC_Label_District" xml:space="preserve"><value>District:</value></data>
+	<data name="SCDC_Label_Contact" xml:space="preserve"><value>Contact:</value></data>
+	<data name="SCDC_Label_CurrentStatus" xml:space="preserve"><value>Current Status:</value></data>
+
+	<data name="SCDC_Problem_Title" xml:space="preserve"><value>Problem description</value></data>
+	<data name="SCDC_Action_Title" xml:space="preserve"><value>Action taken</value></data>
+	<data name="SCDC_Previous" xml:space="preserve"><value>Previous</value></data>
+	<data name="SCDC_NewUpdate" xml:space="preserve"><value>New update</value></data>
+	<data name="SCDC_Problem_Watermark" xml:space="preserve"><value>What did you find now?</value></data>
+	<data name="SCDC_Action_Watermark" xml:space="preserve"><value>What did you do this visit?</value></data>
+	<data name="SCDC_InitialProblem" xml:space="preserve"><value>Initial problem</value></data>
+	<data name="SCDC_InitialAction" xml:space="preserve"><value>Initial action</value></data>
+
+	<data name="SCDC_Tech_Title" xml:space="preserve"><value>Technicians involved</value></data>
+	<data name="SCDC_TechPicker_ButtonInit" xml:space="preserve"><value>Select Technicians (0)</value></data>
+	<data name="SCDC_TechPicker_ButtonFmt" xml:space="preserve"><value>Select Technicians ({0})</value></data>
+	<data name="SCDC_TechPicker_Title" xml:space="preserve"><value>Select Technicians</value></data>
+
+	<data name="SCDC_Inventory_Title" xml:space="preserve"><value>Inventory used</value></data>
+	<data name="SCDC_InvPicker_Title" xml:space="preserve"><value>Add Inventory Items</value></data>
+	<data name="SCDC_InvPicker_AddItems" xml:space="preserve"><value>Add Inventory Items</value></data>
+	<data name="SCDC_Inv_SearchPlaceholder" xml:space="preserve"><value>Search items...</value></data>
+	<data name="SCDC_InStockOnly" xml:space="preserve"><value>In-stock only</value></data>
+	<data name="SCDC_Inv_SelectInStock" xml:space="preserve"><value>Select in-stock</value></data>
+
+	<data name="SCDC_Btn_Done" xml:space="preserve"><value>Done</value></data>
+	<data name="SCDC_Button_SaveOpen" xml:space="preserve"><value>💾 Save and keep the service call</value></data>
+	<data name="SCDC_Button_Cancel" xml:space="preserve"><value>✖ Cancel service call</value></data>
+	<data name="SCDC_Button_Finish" xml:space="preserve"><value>✔ Finish service call</value></data>
+
+	<data name="SCDC_SelectedFmt" xml:space="preserve"><value>({0} selected)</value></data>
+	<data name="SCDC_SelectedZero" xml:space="preserve"><value>(0 selected)</value></data>
+	<data name="SCDC_SearchPlaceholder" xml:space="preserve"><value>Search...</value></data>
+
+	<data name="SCDC_Stock_OutOfStock" xml:space="preserve"><value>Out of stock</value></data>
+	<data name="SCDC_Stock_Low" xml:space="preserve"><value>Low</value></data>
+	<data name="SCDC_Stock_OK" xml:space="preserve"><value>OK</value></data>
+
+	<data name="SCDC_Title_Service" xml:space="preserve"><value>Service</value></data>
+	<data name="SCDC_NoOpenTicket" xml:space="preserve"><value>No open service ticket for this household.</value></data>
+	<data name="SCDC_ModalActive_Title" xml:space="preserve"><value>Modal active</value></data>
+	<data name="SCDC_ModalActive_Body" xml:space="preserve"><value>Finish/Save/Cancel is disabled while a dialog is open. Close it first.</value></data>
+	<data name="SCDC_Permission_Tip" xml:space="preserve"><value>Only Admin or Technician can perform this action.</value></data>
+	<data name="SCDC_Unknown" xml:space="preserve"><value>(unknown)</value></data>
+
+	<data name="SCDC_Missing_Technicians" xml:space="preserve"><value>technicians</value></data>
+	<data name="SCDC_Missing_Inventory" xml:space="preserve"><value>inventory items</value></data>
+	<data name="SCDC_Proceed_Title" xml:space="preserve"><value>Proceed without selections?</value></data>
+	<data name="SCDC_Proceed_ConfirmOneFmt" xml:space="preserve"><value>No {0} are selected.&#x0a;&#x0a;Do you still want to proceed?</value></data>
+	<data name="SCDC_Proceed_ConfirmBoth" xml:space="preserve"><value>No technicians and no inventory items are selected.&#x0a;&#x0a;Do you still want to proceed?</value></data>
+
+	<data name="SCDC_Validation_QtyAtLeastOne" xml:space="preserve"><value>Quantity for &quot;{0}&quot; must be at least 1.</value></data>
+	<data name="SCDC_Validation_NotEnoughStock" xml:space="preserve"><value>Not enough stock for &quot;{0}&quot;. Available: {1}</value></data>
+	<data name="SCDC_Validation_NotEnoughStock_Now" xml:space="preserve"><value>Insufficient stock for &quot;{0}&quot;. Available now: {1}</value></data>
+
+	<data name="SCDC_SaveOpen_Success" xml:space="preserve"><value>Saved. Ticket remains open. No stock deducted.</value></data>
+	<data name="SCDC_Finish_Success" xml:space="preserve"><value>Service finished. Household set to Operational and inventory updated.</value></data>
+	<data name="SCDC_Cancel_ConfirmTitle" xml:space="preserve"><value>Cancel service call?</value></data>
+	<data name="SCDC_Cancel_ConfirmBody" xml:space="preserve"><value>Cancel this service call?&#x0a;&#x0a;This will:&#x0a;• Mark the ticket as Canceled&#x0a;• Close it now (sets FinishDate)&#x0a;• NOT deduct any inventory&#x0a;• Clear any pending item selections&#x0a;• Set household to Operational</value></data>
+	<data name="SCDC_Cancel_Success" xml:space="preserve"><value>Service canceled. Household set to Operational. No stock deducted.</value></data>
 
 </root>

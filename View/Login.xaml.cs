@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using HouseholdMS;          // MainWindow
 using HouseholdMS.Model;
+using HouseholdMS.Resources;   // Strings.*
 
 namespace HouseholdMS.View
 {
@@ -58,7 +59,7 @@ namespace HouseholdMS.View
         // ===== Panel toggles =====
         private void ShowLoginPanel()
         {
-            Title = "Login";
+            Title = Strings.Login_Title;               // localized
             LoginCard.Visibility = Visibility.Visible;
             RegisterCard.Visibility = Visibility.Collapsed;
 
@@ -71,7 +72,7 @@ namespace HouseholdMS.View
 
         private void ShowRegisterPanel()
         {
-            Title = "Register New User";
+            Title = Strings.Register_Title;            // localized
             RegisterCard.Visibility = Visibility.Visible;
             LoginCard.Visibility = Visibility.Collapsed;
 
@@ -105,7 +106,9 @@ namespace HouseholdMS.View
 
             if (username.Length == 0 || password.Length == 0)
             {
-                MessageBox.Show("Please enter both Username and Password.", "Missing Credentials",
+                MessageBox.Show(
+                    Strings.Login_MissingCredentials_Body,
+                    Strings.Login_MissingCredentials_Title,
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 Keyboard.Focus(LoginUsernameBox);
                 return;
@@ -137,7 +140,9 @@ namespace HouseholdMS.View
                         }
                         else
                         {
-                            MessageBox.Show("Invalid username or password.", "Login Failed",
+                            MessageBox.Show(
+                                Strings.Login_InvalidCredentials_Body,
+                                Strings.Login_Failed_Title,
                                 MessageBoxButton.OK, MessageBoxImage.Warning);
                             LoginUsernameBox.Clear();
                             LoginPasswordBox.Clear();
@@ -148,12 +153,16 @@ namespace HouseholdMS.View
             }
             catch (SQLiteException ex)
             {
-                MessageBox.Show($"Database connection error:\n{ex.Message}", "Database Error",
+                MessageBox.Show(
+                    $"{Strings.Db_Error_Prefix}\n{ex.Message}",
+                    Strings.Db_Error_Title,
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"An unexpected error occurred:\n{ex.Message}", "Error",
+                MessageBox.Show(
+                    $"{Strings.Error_UnexpectedPrefix}\n{ex.Message}",
+                    Strings.Error_Title,
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -196,101 +205,76 @@ namespace HouseholdMS.View
         {
             sanitizedPhone = DigitsOnly(phoneRaw);
             var sb = new StringBuilder();
-            focusTarget = null;
+
+            // Avoid CS1628 by not capturing the out variable in a local function
+            Control firstFocus = null;
+            void AddMsg(string msg, Control focus)
+            {
+                sb.Append("• ");
+                sb.AppendLine(msg);
+                if (firstFocus == null) firstFocus = focus;
+            }
 
             // Name
             if (string.IsNullOrWhiteSpace(name) || name.Trim().Length < 2)
-            {
-                sb.AppendLine("• Name must be at least 2 characters.");
-                if (focusTarget == null) focusTarget = RegNameBox;
-            }
+                AddMsg(Strings.Val_Name_Min2, RegNameBox);
 
             // Username rules (≥4 chars, no spaces, not equal to Name)
             if (string.IsNullOrWhiteSpace(username) || username.Trim().Length < 4)
-            {
-                sb.AppendLine("• Username must be at least 4 characters.");
-                if (focusTarget == null) focusTarget = RegUsernameBox;
-            }
+                AddMsg(Strings.Val_Username_Min4, RegUsernameBox);
+
             if (!string.IsNullOrWhiteSpace(username) && username.IndexOf(' ') >= 0)
-            {
-                sb.AppendLine("• Username cannot contain spaces.");
-                if (focusTarget == null) focusTarget = RegUsernameBox;
-            }
+                AddMsg(Strings.Val_Username_NoSpaces, RegUsernameBox);
+
             if (!string.IsNullOrWhiteSpace(username) && !string.IsNullOrWhiteSpace(name) &&
                 string.Equals(username.Trim(), name.Trim(), StringComparison.OrdinalIgnoreCase))
-            {
-                sb.AppendLine("• Username must be different from Name.");
-                if (focusTarget == null) focusTarget = RegUsernameBox;
-            }
+                AddMsg(Strings.Val_Username_NotEqualName, RegUsernameBox);
 
             // Password rules
             if (string.IsNullOrEmpty(password) || password.Length <= 6)
             {
-                sb.AppendLine("• Password must be longer than 6 characters.");
-                if (focusTarget == null) focusTarget = RegPasswordBox;
+                AddMsg(Strings.Val_Password_MinLen, RegPasswordBox);
             }
             else
             {
                 if (!string.IsNullOrWhiteSpace(name) &&
                     string.Equals(password, name, StringComparison.OrdinalIgnoreCase))
-                {
-                    sb.AppendLine("• Password must be different from Name.");
-                    if (focusTarget == null) focusTarget = RegPasswordBox;
-                }
+                    AddMsg(Strings.Val_Password_NotEqualName, RegPasswordBox);
+
                 if (!string.IsNullOrWhiteSpace(username) &&
                     string.Equals(password, username, StringComparison.OrdinalIgnoreCase))
-                {
-                    sb.AppendLine("• Password must be different from Username.");
-                    if (focusTarget == null) focusTarget = RegPasswordBox;
-                }
+                    AddMsg(Strings.Val_Password_NotEqualUsername, RegPasswordBox);
+
                 if (!(HasDigit(password) || HasSymbol(password)))
-                {
-                    sb.AppendLine("• Password must include at least one number or symbol.");
-                    if (focusTarget == null) focusTarget = RegPasswordBox;
-                }
+                    AddMsg(Strings.Val_Password_MustContainDigitOrSymbol, RegPasswordBox);
             }
 
             // Confirm password
             if (string.IsNullOrEmpty(confirmPassword))
-            {
-                sb.AppendLine("• Please confirm your password.");
-                if (focusTarget == null) focusTarget = RegConfirmPasswordBox;
-            }
+                AddMsg(Strings.Val_ConfirmPassword_Empty, RegConfirmPasswordBox);
             else if (!string.Equals(password, confirmPassword))
-            {
-                sb.AppendLine("• Confirm Password must match Password exactly.");
-                if (focusTarget == null) focusTarget = RegConfirmPasswordBox;
-            }
+                AddMsg(Strings.Val_ConfirmPassword_MustMatch, RegConfirmPasswordBox);
 
             // Technician-only rules
             if (wantsTech)
             {
                 if (sanitizedPhone.Length < 8 || sanitizedPhone.Length > 15)
-                {
-                    sb.AppendLine("• Phone must be 8–15 digits (digits only).");
-                    if (focusTarget == null) focusTarget = RegPhoneBox;
-                }
+                    AddMsg(Strings.Val_Phone_Range, RegPhoneBox);
+
                 if (string.IsNullOrWhiteSpace(address) || address.Trim().Length < 5)
-                {
-                    sb.AppendLine("• Address must be at least 5 characters.");
-                    if (focusTarget == null) focusTarget = RegAddressBox;
-                }
+                    AddMsg(Strings.Val_Address_Min5, RegAddressBox);
+
                 if (string.IsNullOrWhiteSpace(area) || area.Trim().Length < 2)
-                {
-                    sb.AppendLine("• Assigned Area must be at least 2 characters.");
-                    if (focusTarget == null) focusTarget = RegAreaBox;
-                }
+                    AddMsg(Strings.Val_Area_Min2, RegAreaBox);
             }
             else
             {
                 if (sanitizedPhone.Length > 0 && (sanitizedPhone.Length < 8 || sanitizedPhone.Length > 15))
-                {
-                    sb.AppendLine("• Phone (optional) must be 8–15 digits if provided.");
-                    if (focusTarget == null) focusTarget = RegPhoneBox;
-                }
+                    AddMsg(Strings.Val_Phone_OptionalRange, RegPhoneBox);
             }
 
             errorMessage = sb.ToString().Trim();
+            focusTarget = firstFocus; // assign to out parameter at the end
             return errorMessage.Length == 0;
         }
 
@@ -318,14 +302,15 @@ namespace HouseholdMS.View
                 if (RegPhoneBox != null && phoneRaw != sanitizedPhone)
                     RegPhoneBox.Text = sanitizedPhone;
 
-                MessageBox.Show(errors, "Fix the highlighted issues",
+                MessageBox.Show(
+                    errors,
+                    Strings.Val_FixIssues_Title,
                     MessageBoxButton.OK, MessageBoxImage.Warning);
 
                 if (focusTarget != null)
                 {
                     Keyboard.Focus(focusTarget);
-                    var tb = focusTarget as TextBox;
-                    if (tb != null) tb.SelectAll();
+                    if (focusTarget is TextBox tb) tb.SelectAll();
                 }
                 return;
             }
@@ -344,8 +329,10 @@ namespace HouseholdMS.View
                         int existing = Convert.ToInt32(checkCmd.ExecuteScalar());
                         if (existing > 0)
                         {
-                            MessageBox.Show("Username already exists. Please choose another.",
-                                "Username Taken", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            MessageBox.Show(
+                                Strings.Registration_UsernameTaken_Body,
+                                Strings.Registration_UsernameTaken_Title,
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
                             Keyboard.Focus(RegUsernameBox);
                             RegUsernameBox.SelectAll();
                             return;
@@ -380,13 +367,15 @@ VALUES
                 if (wantsTech)
                 {
                     MessageBox.Show(
-                        "Registration submitted as Guest.\nYour technician request is pending admin approval.",
-                        "Registration Complete",
+                        Strings.Register_Complete_TechPending,
+                        Strings.Registration_Complete_Title,
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
-                    MessageBox.Show("User registered as Guest successfully!", "Registration Complete",
+                    MessageBox.Show(
+                        Strings.Register_Complete_Guest,
+                        Strings.Registration_Complete_Title,
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
@@ -398,12 +387,16 @@ VALUES
             }
             catch (SQLiteException ex)
             {
-                MessageBox.Show($"Database error: {ex.Message}", "Registration Failed",
+                MessageBox.Show(
+                    $"{Strings.Db_Error_Prefix} {ex.Message}",
+                    Strings.Registration_Failed_Title,
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}", "Registration Failed",
+                MessageBox.Show(
+                    $"{Strings.Error_UnexpectedPrefix} {ex.Message}",
+                    Strings.Registration_Failed_Title,
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -437,8 +430,7 @@ VALUES
                 {
                     string text = (string)e.DataObject.GetData(typeof(string));
                     string digits = DigitsOnly(text);
-                    var tb = sender as TextBox;
-                    if (tb != null)
+                    if (sender is TextBox tb)
                     {
                         e.CancelCommand();
                         int selStart = tb.SelectionStart;

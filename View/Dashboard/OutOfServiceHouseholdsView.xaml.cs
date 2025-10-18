@@ -48,7 +48,13 @@ namespace HouseholdMS.View.Dashboard
             "InstallDateText",
             "LastInspectText",
             nameof(Household.Statuss),
-            nameof(Household.UserComm)
+            nameof(Household.UserComm),
+            // NEW
+            nameof(Household.X),
+            nameof(Household.Y),
+            nameof(Household.SP),
+            nameof(Household.SMI),
+            nameof(Household.SB)
         };
 
         // ORIGINAL default search columns for this view (preserved when none selected)
@@ -146,7 +152,8 @@ namespace HouseholdMS.View.Dashboard
                             var o = reader[col];
                             if (o == DBNull.Value) return null;
                             if (o is double dd) return dd;
-                            if (double.TryParse(Convert.ToString(o), out var d)) return d;
+                            double d;
+                            if (double.TryParse(Convert.ToString(o), out d)) return d;
                             return null;
                         }
 
@@ -163,7 +170,7 @@ namespace HouseholdMS.View.Dashboard
                             UserComm = reader["UserComm"] == DBNull.Value ? string.Empty : Convert.ToString(reader["UserComm"]),
                             Statuss = reader["Statuss"] == DBNull.Value ? string.Empty : Convert.ToString(reader["Statuss"]),
 
-                            // New fields (not displayed in this view but populated for completeness)
+                            // New fields
                             X = readDouble("X"),
                             Y = readDouble("Y"),
                             SP = reader["SP"] == DBNull.Value ? null : Convert.ToString(reader["SP"]),
@@ -268,7 +275,8 @@ namespace HouseholdMS.View.Dashboard
                     if (!string.IsNullOrEmpty(h.District) && h.District.ToLowerInvariant().Contains(search)) return true;
                     if (!string.IsNullOrEmpty(h.ContactNum) && h.ContactNum.ToLowerInvariant().Contains(search)) return true;
 
-                    if (int.TryParse(search, out int id) && h.HouseholdID == id) return true;
+                    int id;
+                    if (int.TryParse(search, out id) && h.HouseholdID == id) return true;
 
                     return false;
                 }
@@ -300,13 +308,21 @@ namespace HouseholdMS.View.Dashboard
                 case "LastInspectText": return h.LastInspect == DateTime.MinValue ? string.Empty : h.LastInspect.ToString("yyyy-MM-dd");
                 case nameof(Household.Statuss): return h.Statuss ?? string.Empty;
                 case nameof(Household.UserComm): return h.UserComm ?? string.Empty;
+
+                // NEW
+                case nameof(Household.X): return h.X.HasValue ? h.X.Value.ToString("0.######") : string.Empty;
+                case nameof(Household.Y): return h.Y.HasValue ? h.Y.Value.ToString("0.######") : string.Empty;
+                case nameof(Household.SP): return h.SP ?? string.Empty;
+                case nameof(Household.SMI): return h.SMI ?? string.Empty;
+                case nameof(Household.SB): return h.SB ?? string.Empty;
+
                 default: return string.Empty;
             }
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            var tagText = SearchBox?.Tag as string ?? string.Empty;
+            var tagText = SearchBox != null ? (SearchBox.Tag as string ?? string.Empty) : string.Empty;
 
             // If Text equals Tag (placeholder), treat as empty search
             if (SearchBox != null && IsPlaceholder(SearchBox.Text, tagText))
@@ -353,9 +369,10 @@ namespace HouseholdMS.View.Dashboard
 
             string sortBy = null;
 
-            if (header.Content is FrameworkElement fe && fe.Tag is string tag && !string.IsNullOrWhiteSpace(tag))
+            var fe = header.Content as FrameworkElement;
+            if (fe != null && fe.Tag is string && !string.IsNullOrWhiteSpace((string)fe.Tag))
             {
-                sortBy = tag;
+                sortBy = (string)fe.Tag;
             }
 
             if (string.IsNullOrWhiteSpace(sortBy)) return;
@@ -374,7 +391,7 @@ namespace HouseholdMS.View.Dashboard
         }
 
         // ===================== Double-click behavior =====================
-        private void HouseholdListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void HouseholdListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var selected = HouseholdListView.SelectedItem as Household;
             if (selected == null) return;
@@ -442,7 +459,7 @@ namespace HouseholdMS.View.Dashboard
         }
 
         // ===================== Status change context menu =====================
-        private void StatusText_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void StatusText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             var tb = sender as TextBlock;
             if (tb == null) return;
@@ -451,16 +468,16 @@ namespace HouseholdMS.View.Dashboard
 
             var cm = new ContextMenu();
 
-            void AddItem(string text)
+            Action<string> addItem = delegate (string text)
             {
                 var mi = new MenuItem { Header = text };
                 mi.Click += delegate { ChangeStatus(h, text); };
                 cm.Items.Add(mi);
-            }
+            };
 
-            AddItem(OPERATIONAL);
-            AddItem(IN_SERVICE);
-            AddItem(NOT_OPERATIONAL);
+            addItem(OPERATIONAL);
+            addItem(IN_SERVICE);
+            addItem(NOT_OPERATIONAL);
 
             cm.PlacementTarget = tb;
             cm.IsOpen = true;
@@ -556,8 +573,8 @@ namespace HouseholdMS.View.Dashboard
             UpdateColumnFilterButtonContent();
 
             // if search box has user text (not placeholder), apply the filter now
-            var tagText = SearchBox?.Tag as string ?? string.Empty;
-            var text = SearchBox?.Text ?? string.Empty;
+            var tagText = SearchBox != null ? (SearchBox.Tag as string ?? string.Empty) : string.Empty;
+            var text = SearchBox != null ? (SearchBox.Text ?? string.Empty) : string.Empty;
             if (!string.IsNullOrWhiteSpace(text) && !string.Equals(text, tagText, StringComparison.Ordinal))
             {
                 ApplyFilter();
@@ -566,7 +583,6 @@ namespace HouseholdMS.View.Dashboard
             // close the popup
             ColumnPopup.IsOpen = false;
         }
-
 
         private IEnumerable<CheckBox> FindPopupCheckBoxes()
         {
