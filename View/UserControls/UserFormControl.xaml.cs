@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using HouseholdMS.Model;
 using System.Data.SQLite;
+using HouseholdMS.Resources; // <-- for Strings.*
 
 namespace HouseholdMS.View.UserControls
 {
@@ -15,7 +16,7 @@ namespace HouseholdMS.View.UserControls
 
         // widths for dialog; tweak if you want
         private const double NarrowDialogWidth = 760;  // single-column
-        private const double WideDialogWidth = 1040; // two-columns
+        private const double WideDialogWidth = 1040;   // two-columns
 
         public event EventHandler OnSaveSuccess;
         public event EventHandler OnCancel;
@@ -38,15 +39,15 @@ namespace HouseholdMS.View.UserControls
             // Header & editability
             if (_user.UserID == 0)
             {
-                FormHeader.Text = "➕ Add User";
+                FormHeader.Text = Strings.UF_Header_Add;
                 UsernameBox.IsReadOnly = false;
-                PasswordLabel.Text = "Password (required on add)";
+                PasswordLabel.Text = Strings.UF_Label_Password_Add;
             }
             else
             {
-                FormHeader.Text = "✏ Edit User";
+                FormHeader.Text = Strings.UF_Header_Edit;
                 UsernameBox.IsReadOnly = true;
-                PasswordLabel.Text = "New Password (optional)";
+                PasswordLabel.Text = Strings.UF_Label_Password_Edit;
             }
 
             if (_user.UserID == 1) _canEdit = false; // root
@@ -78,7 +79,15 @@ namespace HouseholdMS.View.UserControls
         private string GetSelectedRole()
         {
             var item = RoleComboBox.SelectedItem as ComboBoxItem;
-            var role = (item?.Content as string) ?? "Guest";
+            string role = "Guest";
+
+            if (item != null)
+            {
+                // Prefer Tag (canonical), fallback to Content text
+                var tag = item.Tag as string;
+                role = !string.IsNullOrWhiteSpace(tag) ? tag : (item.Content as string ?? "Guest");
+            }
+
             if (string.Equals(role, "user", StringComparison.OrdinalIgnoreCase)) role = "Guest";
             return role;
         }
@@ -86,8 +95,21 @@ namespace HouseholdMS.View.UserControls
         private void SelectRole(string role)
         {
             if (string.Equals(role, "user", StringComparison.OrdinalIgnoreCase)) role = "Guest";
-            var target = RoleComboBox.Items.Cast<ComboBoxItem>()
-                .FirstOrDefault(i => string.Equals((string)i.Content, role, StringComparison.OrdinalIgnoreCase));
+
+            var target = RoleComboBox.Items
+                .Cast<ComboBoxItem>()
+                .FirstOrDefault(i =>
+                {
+                    var tag = i.Tag as string;
+                    if (!string.IsNullOrEmpty(tag) &&
+                        string.Equals(tag, role, StringComparison.OrdinalIgnoreCase))
+                        return true;
+
+                    var content = i.Content as string;
+                    return !string.IsNullOrEmpty(content) &&
+                           string.Equals(content, role, StringComparison.OrdinalIgnoreCase);
+                });
+
             RoleComboBox.SelectedItem = target ?? RoleComboBox.Items.Cast<ComboBoxItem>().First();
         }
 
@@ -130,12 +152,11 @@ namespace HouseholdMS.View.UserControls
             double target = isTech ? WideDialogWidth : NarrowDialogWidth;
             target = Math.Min(target, workW - margin);
 
-            // Width is controlled by window; height remains SizeToContent (set in opener)
             if (win.Width < target && isTech) win.Width = target;
             if (!isTech && win.Width > target) win.Width = target;
         }
 
-        // ===== Helpers & validation (unchanged) =====
+        // ===== Helpers & validation (unchanged logic) =====
         private static bool HasDigit(string s)
         {
             if (string.IsNullOrEmpty(s)) return false;
@@ -181,57 +202,57 @@ namespace HouseholdMS.View.UserControls
             if (string.IsNullOrWhiteSpace(name) || name.Length < 2)
             {
                 NameBox.Tag = "error"; ok = false;
-                sb.AppendLine("• Name must be at least 2 characters.");
+                sb.AppendLine("• " + Strings.Val_Name_Min2);
             }
 
             // Username (add-only)
             if (isAdd)
             {
                 if (string.IsNullOrWhiteSpace(username) || username.Length < 4)
-                { UsernameBox.Tag = "error"; ok = false; sb.AppendLine("• Username must be at least 4 characters."); }
+                { UsernameBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_Username_Min4); }
                 if (!string.IsNullOrEmpty(username) && username.IndexOf(' ') >= 0)
-                { UsernameBox.Tag = "error"; ok = false; sb.AppendLine("• Username cannot contain spaces."); }
+                { UsernameBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_Username_NoSpaces); }
                 if (!string.IsNullOrEmpty(username) &&
                     string.Equals(username, name, StringComparison.OrdinalIgnoreCase))
-                { UsernameBox.Tag = "error"; ok = false; sb.AppendLine("• Username must be different from Name."); }
+                { UsernameBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_Username_NotEqualName); }
             }
 
             // Password rules
             if (isAdd)
             {
                 if (string.IsNullOrEmpty(pwd) || pwd.Length <= 6)
-                { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• Password must be longer than 6 characters."); }
+                { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_Password_MinLen); }
                 else
                 {
                     if (string.Equals(pwd, name, StringComparison.OrdinalIgnoreCase))
-                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• Password must be different from Name."); }
+                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_Password_NotEqualName); }
                     if (!string.IsNullOrEmpty(username) &&
                         string.Equals(pwd, username, StringComparison.OrdinalIgnoreCase))
-                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• Password must be different from Username."); }
+                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_Password_NotEqualUsername); }
                     if (!(HasDigit(pwd) || HasSymbol(pwd)))
-                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• Password must include at least one number or symbol."); }
+                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_Password_MustContainDigitOrSymbol); }
                 }
 
                 if (string.IsNullOrEmpty(confirm))
-                { ConfirmPasswordBox.Tag = "error"; ok = false; sb.AppendLine("• Please confirm the password."); }
+                { ConfirmPasswordBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_ConfirmPassword_Empty); }
                 else if (!string.Equals(pwd, confirm))
-                { ConfirmPasswordBox.Tag = "error"; ok = false; sb.AppendLine("• Confirm Password must match Password exactly."); }
+                { ConfirmPasswordBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_ConfirmPassword_MustMatch); }
             }
             else
             {
                 if (!string.IsNullOrWhiteSpace(pwd))
                 {
                     if (pwd.Length <= 6)
-                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• New Password must be longer than 6 characters."); }
+                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_Password_MinLen); }
                     if (string.Equals(pwd, name, StringComparison.OrdinalIgnoreCase))
-                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• New Password must be different from Name."); }
+                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_Password_NotEqualName); }
                     if (!string.IsNullOrEmpty(username) &&
                         string.Equals(pwd, username, StringComparison.OrdinalIgnoreCase))
-                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• New Password must be different from Username."); }
+                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_Password_NotEqualUsername); }
                     if (!(HasDigit(pwd) || HasSymbol(pwd)))
-                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• New Password must include at least one number or symbol."); }
+                    { PasswordBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_Password_MustContainDigitOrSymbol); }
                     if (string.IsNullOrEmpty(confirm) || !string.Equals(pwd, confirm))
-                    { ConfirmPasswordBox.Tag = "error"; ok = false; sb.AppendLine("• Confirm Password must match the new Password exactly."); }
+                    { ConfirmPasswordBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_ConfirmPassword_MustMatch); }
                 }
             }
 
@@ -239,16 +260,16 @@ namespace HouseholdMS.View.UserControls
             if (isTech)
             {
                 if (sanitizedPhone.Length < 8 || sanitizedPhone.Length > 15)
-                { PhoneBox.Tag = "error"; ok = false; sb.AppendLine("• Phone must be 8–15 digits (digits only)."); }
+                { PhoneBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_Phone_Range); }
                 if (string.IsNullOrWhiteSpace(AddressBox.Text) || AddressBox.Text.Trim().Length < 5)
-                { AddressBox.Tag = "error"; ok = false; sb.AppendLine("• Address must be at least 5 characters."); }
+                { AddressBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_Address_Min5); }
                 if (string.IsNullOrWhiteSpace(AreaBox.Text) || AreaBox.Text.Trim().Length < 2)
-                { AreaBox.Tag = "error"; ok = false; sb.AppendLine("• Assigned Area must be at least 2 characters."); }
+                { AreaBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_Area_Min2); }
             }
             else
             {
                 if (sanitizedPhone.Length > 0 && (sanitizedPhone.Length < 8 || sanitizedPhone.Length > 15))
-                { PhoneBox.Tag = "error"; ok = false; sb.AppendLine("• Phone (optional) must be 8–15 digits if provided."); }
+                { PhoneBox.Tag = "error"; ok = false; sb.AppendLine("• " + Strings.Val_Phone_OptionalRange); }
             }
 
             errorMessage = sb.ToString().Trim();
@@ -261,8 +282,8 @@ namespace HouseholdMS.View.UserControls
 
             if (!ValidateForm(out string errors, out string sanitizedPhone))
             {
-                MessageBox.Show(errors.Length == 0 ? "Please fix highlighted fields." : errors,
-                                "Validation",
+                MessageBox.Show(errors.Length == 0 ? Strings.Val_FixIssues_Title : errors,
+                                Strings.UF_Validation_Title,
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Warning);
                 return;
@@ -295,7 +316,8 @@ namespace HouseholdMS.View.UserControls
                             if (exists > 0)
                             {
                                 UsernameBox.Tag = "error";
-                                MessageBox.Show("Username already exists. Choose another.", "Username Taken",
+                                MessageBox.Show(Strings.Registration_UsernameTaken_Body,
+                                                Strings.Registration_UsernameTaken_Title,
                                                 MessageBoxButton.OK, MessageBoxImage.Warning);
                                 return;
                             }
@@ -356,12 +378,15 @@ WHERE UserID=@id;", conn))
                     }
                 }
 
-                MessageBox.Show("Saved successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(Strings.UF_Save_Success, Strings.UF_Success_Title,
+                                MessageBoxButton.OK, MessageBoxImage.Information);
                 OnSaveSuccess?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving user:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(Strings.UF_Error_Save_Prefix + "\n" + ex.Message,
+                                Strings.Error_Title,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -373,8 +398,8 @@ WHERE UserID=@id;", conn))
             if (!_canEdit || _user.UserID <= 0 || _user.UserID == 1) return;
 
             var result = MessageBox.Show(
-                $"Delete user '{_user.Username}'?",
-                "Confirm Deletion",
+                string.Format(Strings.UF_Delete_Confirm_Text_Format, _user.Username),
+                Strings.UF_Delete_Confirm_Title,
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
@@ -392,12 +417,16 @@ WHERE UserID=@id;", conn))
                     }
                 }
 
-                MessageBox.Show("User deleted.", "Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(Strings.UF_Delete_Success_Text,
+                                Strings.UF_Delete_Success_Title,
+                                MessageBoxButton.OK, MessageBoxImage.Information);
                 OnSaveSuccess?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error deleting user:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(Strings.UF_Error_Delete_Prefix + "\n" + ex.Message,
+                                Strings.Error_Title,
+                                MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

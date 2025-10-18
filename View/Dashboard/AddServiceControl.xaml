@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HouseholdMS.View.Dashboard.AddServiceControl" 
+﻿<UserControl x:Class="HouseholdMS.View.Dashboard.AddServiceControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -202,8 +202,8 @@
 
                                 <Border Grid.Row="3" Grid.ColumnSpan="2" Background="{StaticResource DividerBrush}" />
 
-                                <!-- Row 4 (label changed to literal "DNI:" to avoid resource dependency) -->
-                                <TextBlock Grid.Row="4" Grid.Column="0" Text="DNI:" Style="{StaticResource SummaryLabelStyle}"/>
+                                <!-- Row 4 (DNI localized) -->
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="{x:Static res:Strings.SCDC_Label_DNI}" Style="{StaticResource SummaryLabelStyle}"/>
                                 <TextBlock x:Name="UserText" Grid.Row="4" Grid.Column="1" Style="{StaticResource SummaryValueStyle}"/>
 
                                 <Border Grid.Row="5" Grid.ColumnSpan="2" Background="{StaticResource DividerBrush}" />
@@ -244,7 +244,7 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <!-- Footer: buttons pinned to the RIGHT -->
+            <!-- Footer -->
             <Grid Grid.Row="2" Margin="0,18,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>

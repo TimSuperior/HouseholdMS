@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using HouseholdMS.Model;
 using HouseholdMS.View.UserControls; // for AddServiceRecordControl
+using HouseholdMS.Resources; // <-- for Strings
 
 namespace HouseholdMS.View.UserControls
 {
@@ -32,10 +33,11 @@ namespace HouseholdMS.View.UserControls
             // Ensure the host window is large enough when this control is shown
             this.Loaded += (_, __) => EnsureHostWindowSize();
 
-            FormHeader.Text = "➕ Add Inventory Item";
-            SaveButton.Content = "➕ Add";
+            // ===== Create mode UI (localized) =====
+            FormHeader.Text = Strings.AIC_Header_Add;
+            SaveButton.Content = Strings.AIC_Btn_Add;
 
-            // Create mode: show Initial Quantity, hide snapshot (snapshot is now placed BEFORE the form in XAML)
+            // Create mode: show Initial Quantity, hide snapshot/status
             InitialQtyPanel.Visibility = Visibility.Visible;
             SnapshotCard.Visibility = Visibility.Collapsed;
             StatusPill.Visibility = Visibility.Collapsed;
@@ -48,8 +50,9 @@ namespace HouseholdMS.View.UserControls
             _editingItem = item ?? throw new ArgumentNullException(nameof(item));
             isEditMode = true;
 
-            FormHeader.Text = $"✏ Edit Inventory #{item.ItemID}";
-            SaveButton.Content = "✏ Save Changes";
+            // ===== Edit mode UI (localized) =====
+            FormHeader.Text = string.Format(CultureInfo.InvariantCulture, Strings.AIC_Header_Edit_Format, item.ItemID);
+            SaveButton.Content = Strings.AIC_Btn_SaveChanges;
             DeleteButton.Visibility = Visibility.Visible;
 
             ItemTypeBox.Text = item.ItemType;
@@ -102,9 +105,10 @@ namespace HouseholdMS.View.UserControls
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            if (!int.TryParse(ThresholdBox.Text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int threshold) || threshold < 0)
+            int thresholdParsed;
+            if (!int.TryParse(ThresholdBox.Text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out thresholdParsed) || thresholdParsed < 0)
             {
-                MessageBox.Show("Please enter a valid non-negative number for Low Stock Threshold.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(Strings.AIC_Validation_Threshold, Strings.AIC_Validation_Title, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -113,7 +117,7 @@ namespace HouseholdMS.View.UserControls
 
             if (string.IsNullOrWhiteSpace(type))
             {
-                MessageBox.Show("Item Type is required.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(Strings.AIC_Validation_ItemTypeRequired, Strings.AIC_Validation_Title, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -132,7 +136,7 @@ WHERE ItemID = @id";
                     using (var cmd = new SQLiteCommand(upd, conn))
                     {
                         cmd.Parameters.AddWithValue("@type", type);
-                        cmd.Parameters.AddWithValue("@threshold", threshold);
+                        cmd.Parameters.AddWithValue("@threshold", thresholdParsed);
                         cmd.Parameters.AddWithValue("@note", string.IsNullOrWhiteSpace(note) ? DBNull.Value : (object)note);
                         cmd.Parameters.AddWithValue("@id", _editingItem.ItemID);
                         cmd.ExecuteNonQuery();
@@ -141,9 +145,10 @@ WHERE ItemID = @id";
                 else
                 {
                     // Create mode: need initial quantity
-                    if (!int.TryParse(InitialQtyBox.Text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int initialQty) || initialQty < 0)
+                    int initialQtyParsed;
+                    if (!int.TryParse(InitialQtyBox.Text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out initialQtyParsed) || initialQtyParsed < 0)
                     {
-                        MessageBox.Show("Please enter a valid non-negative number for Initial Quantity.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show(Strings.AIC_Validation_InitialQty, Strings.AIC_Validation_Title, MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
 
@@ -153,8 +158,8 @@ VALUES (@type, @total, 0, @date, @threshold, @note)";
                     using (var cmd = new SQLiteCommand(ins, conn))
                     {
                         cmd.Parameters.AddWithValue("@type", type);
-                        cmd.Parameters.AddWithValue("@total", initialQty);
-                        cmd.Parameters.AddWithValue("@threshold", threshold);
+                        cmd.Parameters.AddWithValue("@total", initialQtyParsed);
+                        cmd.Parameters.AddWithValue("@threshold", thresholdParsed);
                         cmd.Parameters.AddWithValue("@note", string.IsNullOrWhiteSpace(note) ? DBNull.Value : (object)note);
                         cmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                         cmd.ExecuteNonQuery();
@@ -162,19 +167,27 @@ VALUES (@type, @total, 0, @date, @threshold, @note)";
                 }
             }
 
-            MessageBox.Show(isEditMode ? "Inventory item updated." : "Inventory item added.",
-                            "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-            OnSavedSuccessfully?.Invoke(this, EventArgs.Empty);
+            MessageBox.Show(isEditMode ? Strings.AIC_Save_Success_Updated : Strings.AIC_Save_Success_Added,
+                            Strings.AIC_Save_Success_Title, MessageBoxButton.OK, MessageBoxImage.Information);
+            var handler = OnSavedSuccessfully;
+            if (handler != null) handler(this, EventArgs.Empty);
         }
 
-        private void Cancel_Click(object sender, RoutedEventArgs e) => OnCancelRequested?.Invoke(this, EventArgs.Empty);
+        private void Cancel_Click(object sender, RoutedEventArgs e)
+        {
+            var handler = OnCancelRequested;
+            if (handler != null) handler(this, EventArgs.Empty);
+        }
 
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
             if (!isEditMode || _editingItem == null) return;
 
-            var result = MessageBox.Show($"Are you sure you want to delete item '{_editingItem.ItemType}'?",
-                                         "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var result = MessageBox.Show(
+                string.Format(CultureInfo.InvariantCulture, Strings.AIC_Delete_Confirm_Text_Format, _editingItem.ItemType),
+                Strings.AIC_Delete_Confirm_Title,
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
 
             if (result == MessageBoxResult.Yes)
             {
@@ -190,12 +203,13 @@ VALUES (@type, @total, 0, @date, @threshold, @note)";
                         }
                     }
 
-                    MessageBox.Show("Inventory item deleted successfully.", "Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
-                    OnSavedSuccessfully?.Invoke(this, EventArgs.Empty);
+                    MessageBox.Show(Strings.AIC_Delete_Success_Text, Strings.AIC_Delete_Success_Title, MessageBoxButton.OK, MessageBoxImage.Information);
+                    var handler = OnSavedSuccessfully;
+                    if (handler != null) handler(this, EventArgs.Empty);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error deleting item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(Strings.AIC_Delete_Error_Text_Prefix + " " + ex.Message, Strings.AIC_Error_Title, MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -227,7 +241,8 @@ VALUES (@type, @total, 0, @date, @threshold, @note)";
                                 _totalQtyFromDb = r["TotalQuantity"] == DBNull.Value ? 0 : Convert.ToInt32(r["TotalQuantity"], CultureInfo.InvariantCulture);
                                 _usedQtyFromDb = r["UsedQuantity"] == DBNull.Value ? 0 : Convert.ToInt32(r["UsedQuantity"], CultureInfo.InvariantCulture);
                                 _lastRestockedUtc = r["LastRestockedDate"] == DBNull.Value ? null : Convert.ToString(r["LastRestockedDate"], CultureInfo.InvariantCulture);
-                                if (int.TryParse(ThresholdBox.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var th))
+                                int th;
+                                if (int.TryParse(ThresholdBox.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out th))
                                     _thresholdCached = th;
                                 else
                                     _thresholdCached = r["LowStockThreshold"] == DBNull.Value ? 0 : Convert.ToInt32(r["LowStockThreshold"], CultureInfo.InvariantCulture);
@@ -253,7 +268,10 @@ VALUES (@type, @total, 0, @date, @threshold, @note)";
                     }
                 }
             }
-            catch { /* leave defaults */ }
+            catch
+            {
+                // leave defaults
+            }
 
             var available = Math.Max(0, _totalQtyFromDb - _usedQtyFromDb);
             AvailQtyInfoText.Text = available.ToString(CultureInfo.InvariantCulture);
@@ -269,7 +287,7 @@ VALUES (@type, @total, 0, @date, @threshold, @note)";
             if (StatusPill == null) return;
 
             int threshold = 0;
-            int.TryParse(ThresholdBox.Text?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out threshold);
+            int.TryParse(ThresholdBox.Text == null ? "" : ThresholdBox.Text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out threshold);
             var available = Math.Max(0, _totalQtyFromDb - _usedQtyFromDb);
 
             string label;
@@ -278,17 +296,17 @@ VALUES (@type, @total, 0, @date, @threshold, @note)";
 
             if (available <= 0)
             {
-                label = "Out of Stock";
+                label = Strings.AIC_Status_OutOfStock;
                 bg = (Brush)(TryFindResource("Col.Danger") ?? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444")));
             }
             else if (available <= threshold)
             {
-                label = "Low Stock";
+                label = Strings.AIC_Status_LowStock;
                 bg = (Brush)(TryFindResource("Col.Warn") ?? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B")));
             }
             else
             {
-                label = "In Stock";
+                label = Strings.AIC_Status_InStock;
                 bg = (Brush)(TryFindResource("Col.Success") ?? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981")));
             }
 
@@ -299,12 +317,12 @@ VALUES (@type, @total, 0, @date, @threshold, @note)";
             if (available <= 0)
             {
                 StatusInfoBar.Visibility = Visibility.Visible;
-                StatusInfoText.Text = "This item is out of stock.";
+                StatusInfoText.Text = Strings.AIC_StatusBar_Out;
             }
             else if (available <= threshold)
             {
                 StatusInfoBar.Visibility = Visibility.Visible;
-                StatusInfoText.Text = "This item is low on stock.";
+                StatusInfoText.Text = Strings.AIC_StatusBar_Low;
             }
             else
             {
@@ -429,7 +447,7 @@ ORDER BY UsedAt DESC;";
                     foreach (DataRow row in dt.Rows)
                     {
                         var sid = row["ServiceID"] == DBNull.Value ? "" : Convert.ToString(row["ServiceID"], CultureInfo.InvariantCulture);
-                        row["ServiceCol"] = string.IsNullOrWhiteSpace(sid) ? "" : ("Service #" + sid);
+                        row["ServiceCol"] = string.IsNullOrWhiteSpace(sid) ? "" : (Strings.AIC_UH_ServicePrefix + sid);
 
                         var raw = row["UsedAt"] == DBNull.Value ? "" : Convert.ToString(row["UsedAt"], CultureInfo.InvariantCulture);
                         row["UsedAtLocal"] = ToKstString(raw);
@@ -450,7 +468,7 @@ ORDER BY UsedAt DESC;";
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading usage history: " + ex.Message, "Error",
+                MessageBox.Show(Strings.AIC_LoadUsage_Error + " " + ex.Message, Strings.AIC_Error_Title,
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -494,25 +512,25 @@ ORDER BY RestockedAt DESC;", conn))
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading restock history: " + ex.Message, "Error",
+                MessageBox.Show(Strings.AIC_LoadRestock_Error + " " + ex.Message, Strings.AIC_Error_Title,
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-
         private void UsageGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (UsageGrid?.SelectedItem is System.Data.DataRowView drv)
-            {
-                if (!drv.Row.Table.Columns.Contains("ServiceID")) return;
-                var val = drv["ServiceID"];
-                if (val == null || val == DBNull.Value) return;
+            var drv = UsageGrid != null ? UsageGrid.SelectedItem as System.Data.DataRowView : null;
+            if (drv == null) return;
 
-                if (int.TryParse(Convert.ToString(val, CultureInfo.InvariantCulture), out int serviceId) && serviceId > 0)
-                {
-                    OpenServiceDetailsDialog(serviceId);
-                    e.Handled = true;
-                }
+            if (!drv.Row.Table.Columns.Contains("ServiceID")) return;
+            var val = drv["ServiceID"];
+            if (val == null || val == DBNull.Value) return;
+
+            int serviceId;
+            if (int.TryParse(Convert.ToString(val, CultureInfo.InvariantCulture), out serviceId) && serviceId > 0)
+            {
+                OpenServiceDetailsDialog(serviceId);
+                e.Handled = true;
             }
         }
 
@@ -523,7 +541,7 @@ ORDER BY RestockedAt DESC;", conn))
 
             var dlg = new Window
             {
-                Title = $"Service #{serviceId}",
+                Title = string.Format(CultureInfo.InvariantCulture, Strings.AIC_Service_Title_Format, serviceId),
                 Content = ctrl,
                 Owner = ownerWindow,
                 Width = 560,
@@ -621,7 +639,8 @@ ORDER BY RestockedAt DESC;", conn))
         {
             if (string.IsNullOrWhiteSpace(dbValue)) return "—";
 
-            if (DateTimeOffset.TryParse(dbValue, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dto))
+            DateTimeOffset dto;
+            if (DateTimeOffset.TryParse(dbValue, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out dto))
             {
                 var utc = dto.ToUniversalTime();
                 TimeZoneInfo tz;
@@ -635,7 +654,8 @@ ORDER BY RestockedAt DESC;", conn))
                 return kst.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
             }
 
-            if (DateTime.TryParse(dbValue, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dt))
+            DateTime dt;
+            if (DateTime.TryParse(dbValue, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out dt))
             {
                 var utc = dt.Kind == DateTimeKind.Utc ? dt : DateTime.SpecifyKind(dt, DateTimeKind.Utc);
                 TimeZoneInfo tz;

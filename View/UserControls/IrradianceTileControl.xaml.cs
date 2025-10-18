@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using HouseholdMS.Resources; // <-- access to Strings.*
 
 namespace HouseholdMS.View.UserControls
 {
@@ -35,16 +36,40 @@ namespace HouseholdMS.View.UserControls
             set { SetValue(LongitudeProperty, value); }
         }
 
+        // -------- State booleans for language-agnostic triggers --------
+        public static readonly DependencyProperty IsLoadingProperty =
+            DependencyProperty.Register(nameof(IsLoading), typeof(bool), typeof(IrradianceTileControl),
+                new PropertyMetadata(false));
+
+        public static readonly DependencyProperty IsErrorProperty =
+            DependencyProperty.Register(nameof(IsError), typeof(bool), typeof(IrradianceTileControl),
+                new PropertyMetadata(false));
+
+        public bool IsLoading
+        {
+            get { return (bool)GetValue(IsLoadingProperty); }
+            set { SetValue(IsLoadingProperty, value); }
+        }
+
+        public bool IsError
+        {
+            get { return (bool)GetValue(IsErrorProperty); }
+            set { SetValue(IsErrorProperty, value); }
+        }
+
         // -------- UI text (DependencyProperties) --------
         public static readonly DependencyProperty StatusTextProperty =
             DependencyProperty.Register(nameof(StatusText), typeof(string), typeof(IrradianceTileControl),
-                new PropertyMetadata("(loading...)"));
+                new PropertyMetadata(Strings.IRR_Status_Loading));
+
         public static readonly DependencyProperty TodayGhiTextProperty =
             DependencyProperty.Register(nameof(TodayGhiText), typeof(string), typeof(IrradianceTileControl),
                 new PropertyMetadata("—"));
+
         public static readonly DependencyProperty TomorrowPeakTextProperty =
             DependencyProperty.Register(nameof(TomorrowPeakText), typeof(string), typeof(IrradianceTileControl),
                 new PropertyMetadata("—"));
+
         public static readonly DependencyProperty LastUpdatedTextProperty =
             DependencyProperty.Register(nameof(LastUpdatedText), typeof(string), typeof(IrradianceTileControl),
                 new PropertyMetadata(string.Empty));
@@ -100,14 +125,17 @@ namespace HouseholdMS.View.UserControls
         {
             try
             {
-                StatusText = "(loading...)";
+                IsLoading = true;
+                IsError = false;
+                StatusText = Strings.IRR_Status_Loading;
 
                 if (double.IsNaN(Latitude) || double.IsNaN(Longitude))
                 {
-                    TodayGhiText = "No coords";
+                    TodayGhiText = Strings.IRR_NoCoords;
                     TomorrowPeakText = "—";
-                    StatusText = "";
-                    LastUpdatedText = "";
+                    StatusText = string.Empty;
+                    LastUpdatedText = string.Empty;
+                    IsLoading = false;
                     return;
                 }
 
@@ -118,8 +146,8 @@ namespace HouseholdMS.View.UserControls
                     Latitude, Longitude, todayUtc, TimeSpan.FromMinutes(10));
 
                 TodayGhiText = todayKwhm2.HasValue
-                    ? string.Format(CultureInfo.InvariantCulture, "Today GHI: {0:0.0} kWh/m²", todayKwhm2.Value)
-                    : "Today GHI: —";
+                    ? string.Format(CultureInfo.CurrentCulture, Strings.IRR_TodayGhiFmt, todayKwhm2.Value)
+                    : Strings.IRR_TodayGhiDash;
 
                 // Tomorrow peak from Open-Meteo hourly
                 DateTime tomorrow = todayUtc.AddDays(1);
@@ -127,15 +155,21 @@ namespace HouseholdMS.View.UserControls
                     Latitude, Longitude, tomorrow);
 
                 TomorrowPeakText = peakWm2.HasValue
-                    ? string.Format(CultureInfo.InvariantCulture, "Tomorrow peak: {0:0} W/m²", peakWm2.Value)
-                    : "Tomorrow peak: —";
+                    ? string.Format(CultureInfo.CurrentCulture, Strings.IRR_TomorrowPeakFmt, peakWm2.Value)
+                    : Strings.IRR_TomorrowPeakDash;
 
-                StatusText = "";
-                LastUpdatedText = "Updated " + DateTime.Now.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+                StatusText = string.Empty;
+                // keep explicit yyyy-MM-dd HH:mm like before, but localized prefix
+                string ts = DateTime.Now.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+                LastUpdatedText = string.Format(CultureInfo.CurrentCulture, Strings.IRR_UpdatedFmt, ts);
+
+                IsLoading = false;
             }
             catch
             {
-                StatusText = "(error)";
+                IsLoading = false;
+                IsError = true;
+                StatusText = Strings.IRR_Status_Error;
             }
         }
     }

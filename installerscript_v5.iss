@@ -1,5 +1,5 @@
 #define MyAppName     "HouseholdMS"
-#define MyAppVersion  "67"
+#define MyAppVersion  "71"
 #define MyAppPublisher "Timur"
 #define MyAppURL      "https://www.example.com/"
 #define MyAppExeName  "HouseholdMS.exe"
@@ -21,7 +21,7 @@ ArchitecturesAllowed=x86 x64
 ArchitecturesInstallIn64BitMode=x64
 PrivilegesRequired=admin
 DisableProgramGroupPage=yes
-OutputBaseFilename=Workbench_Installer_v67
+OutputBaseFilename=Workbench_Installer_v71
 WizardStyle=modern
 SolidCompression=yes
 Compression=lzma2/ultra

@@ -1,6 +1,7 @@
 ﻿<UserControl x:Class="HouseholdMS.View.UserControls.PvEnergyTileControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:res="clr-namespace:HouseholdMS.Resources"
              MinHeight="130" MinWidth="240">
     <UserControl.Resources>
         <SolidColorBrush x:Key="Col.Heading" Color="#0F172A"/>
@@ -45,7 +46,7 @@
             </Setter>
         </Style>
 
-        <!-- Spin when StatusText == (loading...) -->
+        <!-- Spin when IsBusy == true (locale-agnostic) -->
         <Style x:Key="RefreshGlyphSpinStyle" TargetType="TextBlock">
             <Setter Property="RenderTransform">
                 <Setter.Value>
@@ -53,7 +54,7 @@
                 </Setter.Value>
             </Setter>
             <Style.Triggers>
-                <DataTrigger Binding="{Binding StatusText, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="(loading...)">
+                <DataTrigger Binding="{Binding IsBusy, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
                     <DataTrigger.EnterActions>
                         <BeginStoryboard x:Name="SpinSB">
                             <Storyboard>
@@ -86,13 +87,15 @@
 
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="⚡" FontSize="18" Foreground="{StaticResource Col.Primary}" VerticalAlignment="Center"/>
-                <TextBlock Text="PV Energy (PVGIS)" FontWeight="Bold" FontSize="16"
+                <TextBlock Text="{x:Static res:Strings.PVET_Header_Title}"
+                           FontWeight="Bold" FontSize="16"
                            Foreground="{StaticResource Col.Heading}" Margin="8,0,0,0"/>
                 <TextBlock Text="{Binding StatusText, RelativeSource={RelativeSource AncestorType=UserControl}}"
                            Margin="10,0,0,0" FontSize="12" Foreground="{StaticResource Col.Muted}"/>
             </StackPanel>
 
-            <Button Grid.Column="1" Style="{StaticResource IconButton}" ToolTip="Refresh"
+            <Button Grid.Column="1" Style="{StaticResource IconButton}"
+                    ToolTip="{x:Static res:Strings.PVET_Tooltip_Refresh}"
                     Click="Refresh_Click">
                 <TextBlock Style="{StaticResource RefreshGlyphSpinStyle}"
                            Text="↻" FontSize="14" Foreground="{StaticResource Col.Primary}"/>

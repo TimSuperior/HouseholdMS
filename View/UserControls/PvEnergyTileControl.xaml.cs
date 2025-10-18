@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using HouseholdMS.Resources; // Strings.*
 
 namespace HouseholdMS.View.UserControls
 {
@@ -12,18 +13,23 @@ namespace HouseholdMS.View.UserControls
         public static readonly DependencyProperty LatitudeProperty =
             DependencyProperty.Register(nameof(Latitude), typeof(double), typeof(PvEnergyTileControl),
                 new PropertyMetadata(double.NaN, OnParamsChanged));
+
         public static readonly DependencyProperty LongitudeProperty =
             DependencyProperty.Register(nameof(Longitude), typeof(double), typeof(PvEnergyTileControl),
                 new PropertyMetadata(double.NaN, OnParamsChanged));
+
         public static readonly DependencyProperty PeakKwProperty =
             DependencyProperty.Register(nameof(PeakKw), typeof(double), typeof(PvEnergyTileControl),
                 new PropertyMetadata(5.0, OnParamsChanged));
+
         public static readonly DependencyProperty TiltProperty =
             DependencyProperty.Register(nameof(Tilt), typeof(int), typeof(PvEnergyTileControl),
                 new PropertyMetadata(30, OnParamsChanged));
+
         public static readonly DependencyProperty AzimuthProperty =
             DependencyProperty.Register(nameof(Azimuth), typeof(int), typeof(PvEnergyTileControl),
                 new PropertyMetadata(180, OnParamsChanged));
+
         public static readonly DependencyProperty LossesPctProperty =
             DependencyProperty.Register(nameof(LossesPct), typeof(double), typeof(PvEnergyTileControl),
                 new PropertyMetadata(14.0, OnParamsChanged));
@@ -35,16 +41,29 @@ namespace HouseholdMS.View.UserControls
         public int Azimuth { get { return (int)GetValue(AzimuthProperty); } set { SetValue(AzimuthProperty, value); } }
         public double LossesPct { get { return (double)GetValue(LossesPctProperty); } set { SetValue(LossesPctProperty, value); } }
 
-        // -------- UI text (DependencyProperties) --------
+        // -------- UI state / text (DependencyProperties) --------
+        public static readonly DependencyProperty IsBusyProperty =
+            DependencyProperty.Register(nameof(IsBusy), typeof(bool), typeof(PvEnergyTileControl),
+                new PropertyMetadata(false));
+
+        public bool IsBusy
+        {
+            get { return (bool)GetValue(IsBusyProperty); }
+            set { SetValue(IsBusyProperty, value); }
+        }
+
         public static readonly DependencyProperty StatusTextProperty =
             DependencyProperty.Register(nameof(StatusText), typeof(string), typeof(PvEnergyTileControl),
-                new PropertyMetadata("(loading...)"));
+                new PropertyMetadata(Strings.PVET_Status_Loading));
+
         public static readonly DependencyProperty MonthlyTextProperty =
             DependencyProperty.Register(nameof(MonthlyText), typeof(string), typeof(PvEnergyTileControl),
                 new PropertyMetadata("—"));
+
         public static readonly DependencyProperty AnnualTextProperty =
             DependencyProperty.Register(nameof(AnnualText), typeof(string), typeof(PvEnergyTileControl),
                 new PropertyMetadata("—"));
+
         public static readonly DependencyProperty ConfigTextProperty =
             DependencyProperty.Register(nameof(ConfigText), typeof(string), typeof(PvEnergyTileControl),
                 new PropertyMetadata(string.Empty));
@@ -83,14 +102,16 @@ namespace HouseholdMS.View.UserControls
         {
             try
             {
-                StatusText = "(loading...)";
+                IsBusy = true;
+                StatusText = Strings.PVET_Status_Loading;
 
                 if (double.IsNaN(Latitude) || double.IsNaN(Longitude) || PeakKw <= 0)
                 {
-                    MonthlyText = "No config";
-                    AnnualText = "—";
-                    ConfigText = "";
-                    StatusText = "";
+                    MonthlyText = Strings.PVET_NoConfig;
+                    AnnualText = Strings.PVET_AnnualDash;
+                    ConfigText = string.Empty;
+                    StatusText = string.Empty;
+                    IsBusy = false;
                     return;
                 }
 
@@ -103,27 +124,42 @@ namespace HouseholdMS.View.UserControls
                     {
                         if (!double.IsNaN(res.Monthly[i])) { avg += res.Monthly[i]; cnt++; }
                     }
-                    MonthlyText = (cnt > 0)
-                        ? string.Format(CultureInfo.InvariantCulture, "Monthly avg: {0:0} kWh", (avg / cnt))
-                        : "Monthly avg: —";
-                    AnnualText = double.IsNaN(res.AnnualKWh) ? "Annual: —"
-                        : string.Format(CultureInfo.InvariantCulture, "Annual: {0:0} kWh", res.AnnualKWh);
+
+                    if (cnt > 0)
+                    {
+                        MonthlyText = string.Format(
+                            CultureInfo.InvariantCulture,
+                            Strings.PVET_MonthlyAvgFmt, (avg / cnt));
+                    }
+                    else
+                    {
+                        MonthlyText = Strings.PVET_MonthlyAvgDash;
+                    }
+
+                    AnnualText = double.IsNaN(res.AnnualKWh)
+                        ? Strings.PVET_AnnualDash
+                        : string.Format(CultureInfo.InvariantCulture, Strings.PVET_AnnualFmt, res.AnnualKWh);
                 }
                 else
                 {
-                    MonthlyText = "Monthly avg: —";
-                    AnnualText = "Annual: —";
+                    MonthlyText = Strings.PVET_MonthlyAvgDash;
+                    AnnualText = Strings.PVET_AnnualDash;
                 }
 
-                ConfigText = string.Format(CultureInfo.InvariantCulture,
-                    "Config: {0:0.##} kWp, tilt {1}°, az {2}°, losses {3:0.#}%",
+                ConfigText = string.Format(
+                    CultureInfo.InvariantCulture,
+                    Strings.PVET_ConfigFmt,
                     PeakKw, Tilt, Azimuth, LossesPct);
 
-                StatusText = "";
+                StatusText = string.Empty;
             }
             catch
             {
-                StatusText = "(error)";
+                StatusText = Strings.PVET_Status_Error;
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
     }

@@ -1,17 +1,17 @@
-﻿// HouseholdMS.View.UserControls.YrMeteogramWindow.xaml.cs  (C# 7.3 compatible)
-using System;
+﻿using System;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Web.WebView2.Core;
+using HouseholdMS.Resources; // Strings.*
 
 namespace HouseholdMS.View.UserControls
 {
     public partial class YrMeteogramWindow : Window
     {
         private readonly string _locationId;
-        private readonly string _lang;
+        private readonly string _lang;              // app language ("en", "es", "es-ES", etc.)
         private Microsoft.Web.WebView2.Wpf.WebView2 _web;
 
         private bool _retryAfterReset = false;
@@ -22,6 +22,7 @@ namespace HouseholdMS.View.UserControls
             InitializeComponent();
             _locationId = locationId ?? "";
             _lang = string.IsNullOrWhiteSpace(lang) ? "en" : lang.Trim().ToLowerInvariant();
+
             Loaded += YrMeteogramWindow_Loaded;
             SizeChanged += delegate { ApplyZoom(); };
         }
@@ -31,7 +32,7 @@ namespace HouseholdMS.View.UserControls
         {
             try
             {
-                LblStatus.Text = "Initializing WebView2…";
+                LblStatus.Text = Strings.YR_Status_Initializing;
 
                 _web = new Microsoft.Web.WebView2.Wpf.WebView2
                 {
@@ -50,7 +51,7 @@ namespace HouseholdMS.View.UserControls
             }
             catch (Exception ex)
             {
-                Fallback(true, "WebView2 initialization failed: " + ex.Message);
+                Fallback(true, Strings.YR_Error_InitFailed + ex.Message);
             }
         }
 
@@ -90,7 +91,7 @@ namespace HouseholdMS.View.UserControls
             try { ver = CoreWebView2Environment.GetAvailableBrowserVersionString(); } catch { }
             if (string.IsNullOrEmpty(ver))
             {
-                Fallback(true, "WebView2 Runtime is not installed.");
+                Fallback(true, Strings.YR_Error_RuntimeMissing);
                 return;
             }
 
@@ -114,20 +115,32 @@ namespace HouseholdMS.View.UserControls
                 }
                 else
                 {
-                    Fallback(true, "WebView2 could not initialize. " + ex.Message);
+                    Fallback(true, Strings.YR_Error_CouldNotInitialize + " " + ex.Message);
                 }
             }
         }
 
-        // Build SVG URL for the WebView tab
+        // ---------- Build yr.no meteogram URL (normalize language to 'en' or 'es') ----------
+        private static string NormalizeYrLang(string lang)
+        {
+            if (string.IsNullOrWhiteSpace(lang)) return "en";
+            lang = lang.ToLowerInvariant();
+            if (lang.StartsWith("es")) return "es";
+            if (lang.StartsWith("en")) return "en";
+            return "en";
+        }
+
         private string BuildUrl()
         {
+            var langPath = NormalizeYrLang(_lang);
+
             if (_locationId.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
                 bool hasSvg = _locationId.IndexOf("meteogram.svg", StringComparison.OrdinalIgnoreCase) >= 0;
                 return hasSvg ? _locationId : (_locationId.TrimEnd('/') + "/meteogram.svg");
             }
-            return "https://www.yr.no/" + _lang + "/content/" + _locationId.Trim('/') + "/meteogram.svg";
+            // e.g. https://www.yr.no/es/content/<place-id>/meteogram.svg
+            return "https://www.yr.no/" + langPath + "/content/" + _locationId.Trim('/') + "/meteogram.svg";
         }
 
         private void Navigate()
@@ -138,26 +151,108 @@ namespace HouseholdMS.View.UserControls
                 if (_web != null && _web.CoreWebView2 != null) _web.CoreWebView2.Navigate(url);
                 else _web.Source = new Uri(url);
                 Fallback(false, null);
-                LblStatus.Text = "Loading…";
+                LblStatus.Text = Strings.YR_Status_Loading;
             }
             catch (Exception ex)
             {
-                Fallback(true, "Navigation error: " + ex.Message);
+                Fallback(true, Strings.YR_Error_NavigationPrefix + ex.Message);
             }
         }
 
         private void Web_CoreWebView2InitializationCompleted(object sender, CoreWebView2InitializationCompletedEventArgs e)
         {
-            if (!e.IsSuccess) { Fallback(true, "WebView2 could not initialize."); return; }
+            if (!e.IsSuccess)
+            {
+                Fallback(true, Strings.YR_Error_CouldNotInitialize);
+                return;
+            }
             ApplyZoom();
         }
 
-        private void Web_NavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
+        private async void Web_NavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
         {
-            LblStatus.Text = e.IsSuccess ? "Meteogram ready." : ("Failed to load. " + e.WebErrorStatus);
-            if (!e.IsSuccess) Fallback(true, "Failed to load SVG. ErrorStatus=" + e.WebErrorStatus);
+            LblStatus.Text = e.IsSuccess
+                ? Strings.YR_Status_Ready
+                : (Strings.YR_Status_LoadFailed + " " + e.WebErrorStatus);
+
+            if (!e.IsSuccess)
+            {
+                Fallback(true, Strings.YR_Error_LoadSvgPrefix + e.WebErrorStatus);
+                return;
+            }
+
             ApplyZoom();
             InjectScaleScriptFallback();
+            await LocalizeMeteogramSvgAsync();   // <-- NEW: fix legend + headline to chosen language
+        }
+
+        // ---------------------- In-SVG localization ----------------------
+        private static string JsEscape(string s) =>
+            (s ?? string.Empty).Replace("\\", "\\\\").Replace("'", "\\'");
+
+        private async Task LocalizeMeteogramSvgAsync()
+        {
+            try
+            {
+                if (_web?.CoreWebView2 == null) return;
+
+                // Target labels from resources (they’ll resolve to EN or ES automatically)
+                var tgtTemp = JsEscape(Strings.YR_SVG_Temperature);
+                var tgtPrec = JsEscape(Strings.YR_SVG_Precipitation);
+                var tgtWind = JsEscape(Strings.YR_SVG_Wind);
+                var tgtForecastPrefix = JsEscape(Strings.YR_SVG_WeatherForecastFor) + " ";
+
+                // Known forms the SVG may ship with (EN/ES today). We normalize them to the current locale.
+                var js = @"
+(function(){
+  try {
+    var KNOWN_TEMP = ['Temperature °C','Temperatura °C'];
+    var KNOWN_PREC = ['Precipitation mm','Precipitación mm'];
+    var KNOWN_WIND = ['Wind m/s','Viento m/s'];
+    var KNOWN_FORECAST_PREFIX = ['Weather forecast for ','Pronóstico del tiempo para '];
+
+    var T_TEMP = '" + tgtTemp + @"';
+    var T_PREC = '" + tgtPrec + @"';
+    var T_WIND = '" + tgtWind + @"';
+    var T_FORECAST_PREFIX = '" + tgtForecastPrefix + @"';
+
+    var svg = document.querySelector('svg');
+    if (!svg) return;
+
+    var texts = svg.querySelectorAll('text');
+
+    texts.forEach(function(node){
+      var t = (node.textContent || '').trim();
+
+      // Legend labels
+      if (KNOWN_TEMP.indexOf(t) >= 0) { node.textContent = T_TEMP; return; }
+      if (KNOWN_PREC.indexOf(t) >= 0) { node.textContent = T_PREC; return; }
+      if (KNOWN_WIND.indexOf(t) >= 0) { node.textContent = T_WIND; return; }
+
+      // Big headline: preserve the place name
+      for (var i=0;i<KNOWN_FORECAST_PREFIX.length;i++) {
+        var p = KNOWN_FORECAST_PREFIX[i];
+        if (t.indexOf(p) === 0 && t.length > p.length) {
+          var place = t.substring(p.length);
+          node.textContent = T_FORECAST_PREFIX + place;
+          return;
+        }
+      }
+    });
+
+    // Accessibility hint
+    document.documentElement.setAttribute('lang', '" + JsEscape(NormalizeYrLang(_lang)) + @"');
+  } catch(_) {}
+})();";
+
+                // Tiny delay helps when SVG sub-resources lay out after onload
+                await Task.Delay(60);
+                await _web.CoreWebView2.ExecuteScriptAsync(js);
+            }
+            catch
+            {
+                // Non-fatal; keep going silently
+            }
         }
 
         private void Fallback(bool show, string error)

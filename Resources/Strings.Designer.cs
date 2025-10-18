@@ -466,7 +466,16 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ✖ Cancel.
+        ///   Looks up a localized string similar to ➕ Add.
+        /// </summary>
+        public static string AIC_Btn_Add {
+            get {
+                return ResourceManager.GetString("AIC_Btn_Add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
         /// </summary>
         public static string AIC_Btn_Cancel {
             get {
@@ -475,7 +484,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 🗑 Delete.
+        ///   Looks up a localized string similar to Delete.
         /// </summary>
         public static string AIC_Btn_Delete {
             get {
@@ -493,7 +502,88 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Manage inventory item.
+        ///   Looks up a localized string similar to ✏ Save Changes.
+        /// </summary>
+        public static string AIC_Btn_SaveChanges {
+            get {
+                return ResourceManager.GetString("AIC_Btn_SaveChanges", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to delete item &apos;{0}&apos;?.
+        /// </summary>
+        public static string AIC_Delete_Confirm_Text_Format {
+            get {
+                return ResourceManager.GetString("AIC_Delete_Confirm_Text_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Confirm Deletion.
+        /// </summary>
+        public static string AIC_Delete_Confirm_Title {
+            get {
+                return ResourceManager.GetString("AIC_Delete_Confirm_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error deleting item:.
+        /// </summary>
+        public static string AIC_Delete_Error_Text_Prefix {
+            get {
+                return ResourceManager.GetString("AIC_Delete_Error_Text_Prefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Inventory item deleted successfully..
+        /// </summary>
+        public static string AIC_Delete_Success_Text {
+            get {
+                return ResourceManager.GetString("AIC_Delete_Success_Text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deleted.
+        /// </summary>
+        public static string AIC_Delete_Success_Title {
+            get {
+                return ResourceManager.GetString("AIC_Delete_Success_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        public static string AIC_Error_Title {
+            get {
+                return ResourceManager.GetString("AIC_Error_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ➕ Add Inventory Item.
+        /// </summary>
+        public static string AIC_Header_Add {
+            get {
+                return ResourceManager.GetString("AIC_Header_Add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ✏ Edit Inventory #{0}.
+        /// </summary>
+        public static string AIC_Header_Edit_Format {
+            get {
+                return ResourceManager.GetString("AIC_Header_Edit_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create or update inventory items. Track stock and usage history..
         /// </summary>
         public static string AIC_Header_Subtitle {
             get {
@@ -520,7 +610,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Initial Quantity.
+        ///   Looks up a localized string similar to Initial quantity.
         /// </summary>
         public static string AIC_Label_InitialQty {
             get {
@@ -529,7 +619,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Item Type.
+        ///   Looks up a localized string similar to Item type.
         /// </summary>
         public static string AIC_Label_ItemType {
             get {
@@ -547,7 +637,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Low Stock Threshold.
+        ///   Looks up a localized string similar to Low-stock threshold.
         /// </summary>
         public static string AIC_Label_Threshold {
             get {
@@ -556,7 +646,25 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Restock History.
+        ///   Looks up a localized string similar to Error loading restock history:.
+        /// </summary>
+        public static string AIC_LoadRestock_Error {
+            get {
+                return ResourceManager.GetString("AIC_LoadRestock_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error loading usage history:.
+        /// </summary>
+        public static string AIC_LoadUsage_Error {
+            get {
+                return ResourceManager.GetString("AIC_LoadUsage_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restock history.
         /// </summary>
         public static string AIC_RestockHistory_Title {
             get {
@@ -592,11 +700,47 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Date.
+        ///   Looks up a localized string similar to When.
         /// </summary>
         public static string AIC_RH_Col_When {
             get {
                 return ResourceManager.GetString("AIC_RH_Col_When", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Inventory item added..
+        /// </summary>
+        public static string AIC_Save_Success_Added {
+            get {
+                return ResourceManager.GetString("AIC_Save_Success_Added", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Success.
+        /// </summary>
+        public static string AIC_Save_Success_Title {
+            get {
+                return ResourceManager.GetString("AIC_Save_Success_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Inventory item updated..
+        /// </summary>
+        public static string AIC_Save_Success_Updated {
+            get {
+                return ResourceManager.GetString("AIC_Save_Success_Updated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service #{0}.
+        /// </summary>
+        public static string AIC_Service_Title_Format {
+            get {
+                return ResourceManager.GetString("AIC_Service_Title_Format", resourceCulture);
             }
         }
         
@@ -610,7 +754,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Last Restocked.
+        ///   Looks up a localized string similar to Last restocked.
         /// </summary>
         public static string AIC_Snapshot_LastRestocked {
             get {
@@ -619,7 +763,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Last Used.
+        ///   Looks up a localized string similar to Last used.
         /// </summary>
         public static string AIC_Snapshot_LastUsed {
             get {
@@ -628,7 +772,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Item Snapshot.
+        ///   Looks up a localized string similar to Snapshot.
         /// </summary>
         public static string AIC_Snapshot_Title {
             get {
@@ -673,7 +817,25 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Qty Used.
+        ///   Looks up a localized string similar to This item is low on stock..
+        /// </summary>
+        public static string AIC_StatusBar_Low {
+            get {
+                return ResourceManager.GetString("AIC_StatusBar_Low", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This item is out of stock..
+        /// </summary>
+        public static string AIC_StatusBar_Out {
+            get {
+                return ResourceManager.GetString("AIC_StatusBar_Out", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Qty used.
         /// </summary>
         public static string AIC_UH_Col_QtyUsed {
             get {
@@ -691,7 +853,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Technician(s).
+        ///   Looks up a localized string similar to Technicians.
         /// </summary>
         public static string AIC_UH_Col_Technicians {
             get {
@@ -700,7 +862,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Used By.
+        ///   Looks up a localized string similar to Used by.
         /// </summary>
         public static string AIC_UH_Col_UsedBy {
             get {
@@ -709,7 +871,7 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Date.
+        ///   Looks up a localized string similar to When.
         /// </summary>
         public static string AIC_UH_Col_When {
             get {
@@ -718,11 +880,56 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Usage History.
+        ///   Looks up a localized string similar to Service #.
+        /// </summary>
+        public static string AIC_UH_ServicePrefix {
+            get {
+                return ResourceManager.GetString("AIC_UH_ServicePrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Usage history.
         /// </summary>
         public static string AIC_UsageHistory_Title {
             get {
                 return ResourceManager.GetString("AIC_UsageHistory_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter a valid non-negative number for Initial Quantity..
+        /// </summary>
+        public static string AIC_Validation_InitialQty {
+            get {
+                return ResourceManager.GetString("AIC_Validation_InitialQty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item Type is required..
+        /// </summary>
+        public static string AIC_Validation_ItemTypeRequired {
+            get {
+                return ResourceManager.GetString("AIC_Validation_ItemTypeRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter a valid non-negative number for Low Stock Threshold..
+        /// </summary>
+        public static string AIC_Validation_Threshold {
+            get {
+                return ResourceManager.GetString("AIC_Validation_Threshold", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Validation Error.
+        /// </summary>
+        public static string AIC_Validation_Title {
+            get {
+                return ResourceManager.GetString("AIC_Validation_Title", resourceCulture);
             }
         }
         
@@ -732,6 +939,24 @@ namespace HouseholdMS.Resources {
         public static string App_Title {
             get {
                 return ResourceManager.GetString("App_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🚀 Start Service (Move to Out of Service).
+        /// </summary>
+        public static string AS_Btn_StartService {
+            get {
+                return ResourceManager.GetString("AS_Btn_StartService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🛠 Update Problem on Open Service.
+        /// </summary>
+        public static string AS_Btn_UpdateOpen {
+            get {
+                return ResourceManager.GetString("AS_Btn_UpdateOpen", resourceCulture);
             }
         }
         
@@ -754,6 +979,15 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Service call started. Household moved to &apos;Out of Service&apos;..
+        /// </summary>
+        public static string AS_Create_Success {
+            get {
+                return ResourceManager.GetString("AS_Create_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This field is required..
         /// </summary>
         public static string AS_FieldRequired {
@@ -768,6 +1002,33 @@ namespace HouseholdMS.Resources {
         public static string AS_Header {
             get {
                 return ResourceManager.GetString("AS_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An open service already exists for this household..
+        /// </summary>
+        public static string AS_Info_HasOpen {
+            get {
+                return ResourceManager.GetString("AS_Info_HasOpen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An open service (#{0}) already exists for this household..
+        /// </summary>
+        public static string AS_Info_HasOpenFmt {
+            get {
+                return ResourceManager.GetString("AS_Info_HasOpenFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This will move the household to Out of Service and open a service ticket..
+        /// </summary>
+        public static string AS_Info_StartNew {
+            get {
+                return ResourceManager.GetString("AS_Info_StartNew", resourceCulture);
             }
         }
         
@@ -849,6 +1110,33 @@ namespace HouseholdMS.Resources {
         public static string AS_Summary_User {
             get {
                 return ResourceManager.GetString("AS_Summary_User", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service Created.
+        /// </summary>
+        public static string AS_Title_Created {
+            get {
+                return ResourceManager.GetString("AS_Title_Created", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service Updated.
+        /// </summary>
+        public static string AS_Title_Updated {
+            get {
+                return ResourceManager.GetString("AS_Title_Updated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updated open service #{0}..
+        /// </summary>
+        public static string AS_Update_SuccessFmt {
+            get {
+                return ResourceManager.GetString("AS_Update_SuccessFmt", resourceCulture);
             }
         }
         
@@ -1078,6 +1366,24 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        public static string Common_ErrorCaption {
+            get {
+                return ResourceManager.GetString("Common_ErrorCaption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to —.
+        /// </summary>
+        public static string Common_NoDataDash {
+            get {
+                return ResourceManager.GetString("Common_NoDataDash", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to OK.
         /// </summary>
         public static string Common_OK {
@@ -1254,6 +1560,15 @@ namespace HouseholdMS.Resources {
         public static string Db_Error_Title {
             get {
                 return ResourceManager.GetString("Db_Error_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load irradiance data..
+        /// </summary>
+        public static string Err_IrradianceLoadFailed {
+            get {
+                return ResourceManager.GetString("Err_IrradianceLoadFailed", resourceCulture);
             }
         }
         
@@ -1641,6 +1956,213 @@ namespace HouseholdMS.Resources {
         public static string InvDet_Used {
             get {
                 return ResourceManager.GetString("InvDet_Used", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Irradiance.
+        /// </summary>
+        public static string IRR_Header_Title {
+            get {
+                return ResourceManager.GetString("IRR_Header_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No coords.
+        /// </summary>
+        public static string IRR_NoCoords {
+            get {
+                return ResourceManager.GetString("IRR_NoCoords", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (error).
+        /// </summary>
+        public static string IRR_Status_Error {
+            get {
+                return ResourceManager.GetString("IRR_Status_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (loading...).
+        /// </summary>
+        public static string IRR_Status_Loading {
+            get {
+                return ResourceManager.GetString("IRR_Status_Loading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Today GHI: —.
+        /// </summary>
+        public static string IRR_TodayGhiDash {
+            get {
+                return ResourceManager.GetString("IRR_TodayGhiDash", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Today GHI: {0:0.0} kWh/m².
+        /// </summary>
+        public static string IRR_TodayGhiFmt {
+            get {
+                return ResourceManager.GetString("IRR_TodayGhiFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tomorrow peak: —.
+        /// </summary>
+        public static string IRR_TomorrowPeakDash {
+            get {
+                return ResourceManager.GetString("IRR_TomorrowPeakDash", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tomorrow peak: {0:0} W/m².
+        /// </summary>
+        public static string IRR_TomorrowPeakFmt {
+            get {
+                return ResourceManager.GetString("IRR_TomorrowPeakFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh.
+        /// </summary>
+        public static string IRR_Tooltip_Refresh {
+            get {
+                return ResourceManager.GetString("IRR_Tooltip_Refresh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updated {0}.
+        /// </summary>
+        public static string IRR_UpdatedFmt {
+            get {
+                return ResourceManager.GetString("IRR_UpdatedFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh.
+        /// </summary>
+        public static string IrrDet_Btn_Refresh {
+            get {
+                return ResourceManager.GetString("IrrDet_Btn_Refresh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date (UTC).
+        /// </summary>
+        public static string IrrDet_Col_DateUtc {
+            get {
+                return ResourceManager.GetString("IrrDet_Col_DateUtc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to GHI (kWh/m²).
+        /// </summary>
+        public static string IrrDet_Col_Ghi {
+            get {
+                return ResourceManager.GetString("IrrDet_Col_Ghi", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Peak (W/m²).
+        /// </summary>
+        public static string IrrDet_Col_Peak {
+            get {
+                return ResourceManager.GetString("IrrDet_Col_Peak", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to   Forecast (next 3 days).
+        /// </summary>
+        public static string IrrDet_Forecast3_Header {
+            get {
+                return ResourceManager.GetString("IrrDet_Forecast3_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ⭘  Irradiance (Fast mode: Open-Meteo).
+        /// </summary>
+        public static string IrrDet_Heading {
+            get {
+                return ResourceManager.GetString("IrrDet_Heading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last 7 days + next 3 days • GHI in kWh/m² • Peak only for forecast days.
+        /// </summary>
+        public static string IrrDet_Loc_Hint {
+            get {
+                return ResourceManager.GetString("IrrDet_Loc_Hint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NASA+OM (fallback).
+        /// </summary>
+        public static string IrrDet_Mode_NasaFallback {
+            get {
+                return ResourceManager.GetString("IrrDet_Mode_NasaFallback", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open-Meteo (fast).
+        /// </summary>
+        public static string IrrDet_Mode_OpenMeteoFast {
+            get {
+                return ResourceManager.GetString("IrrDet_Mode_OpenMeteoFast", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to   Past 7 days.
+        /// </summary>
+        public static string IrrDet_Past7_Header {
+            get {
+                return ResourceManager.GetString("IrrDet_Past7_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to rows.
+        /// </summary>
+        public static string IrrDet_RowsLabel {
+            get {
+                return ResourceManager.GetString("IrrDet_RowsLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} • 7-day avg: {1} kWh/m²   •   Next-3 avg: {2} kWh/m².
+        /// </summary>
+        public static string IrrDet_Summary_Format {
+            get {
+                return ResourceManager.GetString("IrrDet_Summary_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Irradiance Details.
+        /// </summary>
+        public static string IrrDet_Title_Base {
+            get {
+                return ResourceManager.GetString("IrrDet_Title_Base", resourceCulture);
             }
         }
         
@@ -2190,6 +2712,213 @@ namespace HouseholdMS.Resources {
         public static string OOSV_Status_Tooltip {
             get {
                 return ResourceManager.GetString("OOSV_Status_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Annual:.
+        /// </summary>
+        public static string PVEDW_Annual_Label {
+            get {
+                return ResourceManager.GetString("PVEDW_Annual_Label", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh.
+        /// </summary>
+        public static string PVEDW_Btn_Refresh {
+            get {
+                return ResourceManager.GetString("PVEDW_Btn_Refresh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Capacity factor:.
+        /// </summary>
+        public static string PVEDW_CapacityFactor {
+            get {
+                return ResourceManager.GetString("PVEDW_CapacityFactor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to kWh.
+        /// </summary>
+        public static string PVEDW_Col_kWh {
+            get {
+                return ResourceManager.GetString("PVEDW_Col_kWh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Month.
+        /// </summary>
+        public static string PVEDW_Col_Month {
+            get {
+                return ResourceManager.GetString("PVEDW_Col_Month", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        public static string PVEDW_Error_Caption {
+            get {
+                return ResourceManager.GetString("PVEDW_Error_Caption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load PV energy data..
+        /// </summary>
+        public static string PVEDW_Error_LoadFailed {
+            get {
+                return ResourceManager.GetString("PVEDW_Error_LoadFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ⚡ Baseline PV Energy (PVGIS).
+        /// </summary>
+        public static string PVEDW_Header {
+            get {
+                return ResourceManager.GetString("PVEDW_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Info.
+        /// </summary>
+        public static string PVEDW_Info_Caption {
+            get {
+                return ResourceManager.GetString("PVEDW_Info_Caption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Monthly energy (kWh) and annual total.
+        /// </summary>
+        public static string PVEDW_MonthlyDesc {
+            get {
+                return ResourceManager.GetString("PVEDW_MonthlyDesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PVGIS returned no data..
+        /// </summary>
+        public static string PVEDW_NoData_Text {
+            get {
+                return ResourceManager.GetString("PVEDW_NoData_Text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specific yield:.
+        /// </summary>
+        public static string PVEDW_SpecificYield {
+            get {
+                return ResourceManager.GetString("PVEDW_SpecificYield", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PV Energy Details (PVGIS).
+        /// </summary>
+        public static string PVEDW_Title {
+            get {
+                return ResourceManager.GetString("PVEDW_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Annual: —.
+        /// </summary>
+        public static string PVET_AnnualDash {
+            get {
+                return ResourceManager.GetString("PVET_AnnualDash", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Annual: {0:0} kWh.
+        /// </summary>
+        public static string PVET_AnnualFmt {
+            get {
+                return ResourceManager.GetString("PVET_AnnualFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Config: {0:0.##} kWp, tilt {1}°, az {2}°, losses {3:0.#}%.
+        /// </summary>
+        public static string PVET_ConfigFmt {
+            get {
+                return ResourceManager.GetString("PVET_ConfigFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PV Energy (PVGIS).
+        /// </summary>
+        public static string PVET_Header_Title {
+            get {
+                return ResourceManager.GetString("PVET_Header_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Monthly avg: —.
+        /// </summary>
+        public static string PVET_MonthlyAvgDash {
+            get {
+                return ResourceManager.GetString("PVET_MonthlyAvgDash", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Monthly avg: {0:0} kWh.
+        /// </summary>
+        public static string PVET_MonthlyAvgFmt {
+            get {
+                return ResourceManager.GetString("PVET_MonthlyAvgFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No config.
+        /// </summary>
+        public static string PVET_NoConfig {
+            get {
+                return ResourceManager.GetString("PVET_NoConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (error).
+        /// </summary>
+        public static string PVET_Status_Error {
+            get {
+                return ResourceManager.GetString("PVET_Status_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (loading...).
+        /// </summary>
+        public static string PVET_Status_Loading {
+            get {
+                return ResourceManager.GetString("PVET_Status_Loading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh.
+        /// </summary>
+        public static string PVET_Tooltip_Refresh {
+            get {
+                return ResourceManager.GetString("PVET_Tooltip_Refresh", resourceCulture);
             }
         }
         
@@ -3340,6 +4069,249 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ✖ Close.
+        /// </summary>
+        public static string UF_Btn_Close {
+            get {
+                return ResourceManager.GetString("UF_Btn_Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🗑 Delete.
+        /// </summary>
+        public static string UF_Btn_Delete {
+            get {
+                return ResourceManager.GetString("UF_Btn_Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ✔ Save.
+        /// </summary>
+        public static string UF_Btn_Save {
+            get {
+                return ResourceManager.GetString("UF_Btn_Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete user &apos;{0}&apos;?.
+        /// </summary>
+        public static string UF_Delete_Confirm_Text_Format {
+            get {
+                return ResourceManager.GetString("UF_Delete_Confirm_Text_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Confirm Deletion.
+        /// </summary>
+        public static string UF_Delete_Confirm_Title {
+            get {
+                return ResourceManager.GetString("UF_Delete_Confirm_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User deleted..
+        /// </summary>
+        public static string UF_Delete_Success_Text {
+            get {
+                return ResourceManager.GetString("UF_Delete_Success_Text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deleted.
+        /// </summary>
+        public static string UF_Delete_Success_Title {
+            get {
+                return ResourceManager.GetString("UF_Delete_Success_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error deleting user:.
+        /// </summary>
+        public static string UF_Error_Delete_Prefix {
+            get {
+                return ResourceManager.GetString("UF_Error_Delete_Prefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error saving user:.
+        /// </summary>
+        public static string UF_Error_Save_Prefix {
+            get {
+                return ResourceManager.GetString("UF_Error_Save_Prefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ➕ Add User.
+        /// </summary>
+        public static string UF_Header_Add {
+            get {
+                return ResourceManager.GetString("UF_Header_Add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ✏ Edit User.
+        /// </summary>
+        public static string UF_Header_Edit {
+            get {
+                return ResourceManager.GetString("UF_Header_Edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fill required fields • Strong password recommended.
+        /// </summary>
+        public static string UF_Header_Hint {
+            get {
+                return ResourceManager.GetString("UF_Header_Hint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Confirm Password.
+        /// </summary>
+        public static string UF_Label_ConfirmPassword {
+            get {
+                return ResourceManager.GetString("UF_Label_ConfirmPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        public static string UF_Label_Name {
+            get {
+                return ResourceManager.GetString("UF_Label_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Note.
+        /// </summary>
+        public static string UF_Label_Note {
+            get {
+                return ResourceManager.GetString("UF_Label_Note", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password (required on add).
+        /// </summary>
+        public static string UF_Label_Password_Add {
+            get {
+                return ResourceManager.GetString("UF_Label_Password_Add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Password (optional).
+        /// </summary>
+        public static string UF_Label_Password_Edit {
+            get {
+                return ResourceManager.GetString("UF_Label_Password_Edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Role.
+        /// </summary>
+        public static string UF_Label_Role {
+            get {
+                return ResourceManager.GetString("UF_Label_Role", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username.
+        /// </summary>
+        public static string UF_Label_Username {
+            get {
+                return ResourceManager.GetString("UF_Label_Username", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password must be longer than 6 characters and include at least one number or symbol. It cannot be the same as the Name or the Username..
+        /// </summary>
+        public static string UF_PasswordRules {
+            get {
+                return ResourceManager.GetString("UF_PasswordRules", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saved successfully..
+        /// </summary>
+        public static string UF_Save_Success {
+            get {
+                return ResourceManager.GetString("UF_Save_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Success.
+        /// </summary>
+        public static string UF_Success_Title {
+            get {
+                return ResourceManager.GetString("UF_Success_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Address (Technician required).
+        /// </summary>
+        public static string UF_Tech_AddressReq {
+            get {
+                return ResourceManager.GetString("UF_Tech_AddressReq", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Assigned Area (Technician required).
+        /// </summary>
+        public static string UF_Tech_AreaReq {
+            get {
+                return ResourceManager.GetString("UF_Tech_AreaReq", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Phone (Technician required).
+        /// </summary>
+        public static string UF_Tech_PhoneReq {
+            get {
+                return ResourceManager.GetString("UF_Tech_PhoneReq", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Technician details.
+        /// </summary>
+        public static string UF_Tech_Title {
+            get {
+                return ResourceManager.GetString("UF_Tech_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Validation.
+        /// </summary>
+        public static string UF_Validation_Title {
+            get {
+                return ResourceManager.GetString("UF_Validation_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ➕ Add User.
         /// </summary>
         public static string UM_AddUser {
@@ -3804,6 +4776,348 @@ namespace HouseholdMS.Resources {
         public static string Val_Username_NotEqualName {
             get {
                 return ResourceManager.GetString("Val_Username_NotEqualName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy Link.
+        /// </summary>
+        public static string YR_Btn_Copy {
+            get {
+                return ResourceManager.GetString("YR_Btn_Copy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reload.
+        /// </summary>
+        public static string YR_Btn_Reload {
+            get {
+                return ResourceManager.GetString("YR_Btn_Reload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Retry.
+        /// </summary>
+        public static string YR_Btn_Retry {
+            get {
+                return ResourceManager.GetString("YR_Btn_Retry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy failed: {0}.
+        /// </summary>
+        public static string YR_Error_CopyFailed {
+            get {
+                return ResourceManager.GetString("YR_Error_CopyFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to WebView2 could not initialize..
+        /// </summary>
+        public static string YR_Error_CouldNotInitialize {
+            get {
+                return ResourceManager.GetString("YR_Error_CouldNotInitialize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to WebView2 initialization failed: .
+        /// </summary>
+        public static string YR_Error_InitFailed {
+            get {
+                return ResourceManager.GetString("YR_Error_InitFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load SVG. ErrorStatus=.
+        /// </summary>
+        public static string YR_Error_LoadSvgPrefix {
+            get {
+                return ResourceManager.GetString("YR_Error_LoadSvgPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Navigation error: {0}.
+        /// </summary>
+        public static string YR_Error_Navigation {
+            get {
+                return ResourceManager.GetString("YR_Error_Navigation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Navigation error: .
+        /// </summary>
+        public static string YR_Error_NavigationPrefix {
+            get {
+                return ResourceManager.GetString("YR_Error_NavigationPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open window failed:.
+        /// </summary>
+        public static string YR_Error_OpenWindow {
+            get {
+                return ResourceManager.GetString("YR_Error_OpenWindow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to WebView2 Runtime is not installed..
+        /// </summary>
+        public static string YR_Error_RuntimeMissing {
+            get {
+                return ResourceManager.GetString("YR_Error_RuntimeMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load SVG. ErrorStatus=.
+        /// </summary>
+        public static string YR_Error_SVGFailed {
+            get {
+                return ResourceManager.GetString("YR_Error_SVGFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to WebView2 initialization failed: {0}.
+        /// </summary>
+        public static string YR_Error_WebView2InitFailed {
+            get {
+                return ResourceManager.GetString("YR_Error_WebView2InitFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to WebView2 could not initialize..
+        /// </summary>
+        public static string YR_Error_WebView2NotInit {
+            get {
+                return ResourceManager.GetString("YR_Error_WebView2NotInit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can’t display the meteogram here..
+        /// </summary>
+        public static string YR_Fallback_CantDisplay {
+            get {
+                return ResourceManager.GetString("YR_Fallback_CantDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Install the WebView2 runtime or try copying the link..
+        /// </summary>
+        public static string YR_Fallback_Sub {
+            get {
+                return ResourceManager.GetString("YR_Fallback_Sub", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can’t display the meteogram here..
+        /// </summary>
+        public static string YR_Fallback_Title {
+            get {
+                return ResourceManager.GetString("YR_Fallback_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sucre Department — Meteogram (yr.no).
+        /// </summary>
+        public static string YR_Header_Title {
+            get {
+                return ResourceManager.GetString("YR_Header_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Link copied..
+        /// </summary>
+        public static string YR_Link_Copied {
+            get {
+                return ResourceManager.GetString("YR_Link_Copied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loading meteogram….
+        /// </summary>
+        public static string YR_Meteogram_Loading {
+            get {
+                return ResourceManager.GetString("YR_Meteogram_Loading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Meteogram ready..
+        /// </summary>
+        public static string YR_Meteogram_Ready {
+            get {
+                return ResourceManager.GetString("YR_Meteogram_Ready", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Initializing WebView2....
+        /// </summary>
+        public static string YR_Status_Initializing {
+            get {
+                return ResourceManager.GetString("YR_Status_Initializing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load..
+        /// </summary>
+        public static string YR_Status_LoadFailed {
+            get {
+                return ResourceManager.GetString("YR_Status_LoadFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loading….
+        /// </summary>
+        public static string YR_Status_Loading {
+            get {
+                return ResourceManager.GetString("YR_Status_Loading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Meteogram ready..
+        /// </summary>
+        public static string YR_Status_Ready {
+            get {
+                return ResourceManager.GetString("YR_Status_Ready", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 24h: H {0:0.#}°  L {1:0.#}°   •   Rain {2:0.#} mm.
+        /// </summary>
+        public static string YR_Summary_24h {
+            get {
+                return ResourceManager.GetString("YR_Summary_24h", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Summary load failed..
+        /// </summary>
+        public static string YR_Summary_Failed {
+            get {
+                return ResourceManager.GetString("YR_Summary_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loading forecast….
+        /// </summary>
+        public static string YR_Summary_Loading {
+            get {
+                return ResourceManager.GetString("YR_Summary_Loading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Now: {0:0.#}°C.
+        /// </summary>
+        public static string YR_Summary_Now {
+            get {
+                return ResourceManager.GetString("YR_Summary_Now", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set Latitude/Longitude or PlaceName.
+        /// </summary>
+        public static string YR_Summary_SetLatLon {
+            get {
+                return ResourceManager.GetString("YR_Summary_SetLatLon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wind {0:0.#} m/s   •   Updated {1}.
+        /// </summary>
+        public static string YR_Summary_WindUpdated {
+            get {
+                return ResourceManager.GetString("YR_Summary_WindUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Precipitation mm.
+        /// </summary>
+        public static string YR_SVG_Precipitation {
+            get {
+                return ResourceManager.GetString("YR_SVG_Precipitation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Temperature °C.
+        /// </summary>
+        public static string YR_SVG_Temperature {
+            get {
+                return ResourceManager.GetString("YR_SVG_Temperature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Weather forecast for.
+        /// </summary>
+        public static string YR_SVG_WeatherForecastFor {
+            get {
+                return ResourceManager.GetString("YR_SVG_WeatherForecastFor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wind m/s.
+        /// </summary>
+        public static string YR_SVG_Wind {
+            get {
+                return ResourceManager.GetString("YR_SVG_Wind", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Meteogram.
+        /// </summary>
+        public static string YR_Tab_Meteogram {
+            get {
+                return ResourceManager.GetString("YR_Tab_Meteogram", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Meteogram — yr.no.
+        /// </summary>
+        public static string YR_Title {
+            get {
+                return ResourceManager.GetString("YR_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reload.
+        /// </summary>
+        public static string YR_Tooltip_Reload {
+            get {
+                return ResourceManager.GetString("YR_Tooltip_Reload", resourceCulture);
             }
         }
     }

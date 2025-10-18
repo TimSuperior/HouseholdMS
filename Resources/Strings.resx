@@ -542,4 +542,343 @@
 	<data name="SCDC_Cancel_ConfirmBody" xml:space="preserve"><value>Cancel this service call?&#x0a;&#x0a;This will:&#x0a;• Mark the ticket as Canceled&#x0a;• Close it now (sets FinishDate)&#x0a;• NOT deduct any inventory&#x0a;• Clear any pending item selections&#x0a;• Set household to Operational</value></data>
 	<data name="SCDC_Cancel_Success" xml:space="preserve"><value>Service canceled. Household set to Operational. No stock deducted.</value></data>
 
+	  <!-- ===== AddServiceControl: dynamic messages/buttons ===== -->
+  <data name="AS_Btn_UpdateOpen" xml:space="preserve"><value>🛠 Update Problem on Open Service</value></data>
+  <data name="AS_Btn_StartService" xml:space="preserve"><value>🚀 Start Service (Move to Out of Service)</value></data>
+
+  <data name="AS_Info_HasOpen" xml:space="preserve"><value>An open service already exists for this household.</value></data>
+  <data name="AS_Info_HasOpenFmt" xml:space="preserve"><value>An open service (#{0}) already exists for this household.</value></data>
+  <data name="AS_Info_StartNew" xml:space="preserve"><value>This will move the household to Out of Service and open a service ticket.</value></data>
+
+  <data name="AS_Title_Updated" xml:space="preserve"><value>Service Updated</value></data>
+  <data name="AS_Title_Created" xml:space="preserve"><value>Service Created</value></data>
+
+  <data name="AS_Update_SuccessFmt" xml:space="preserve"><value>Updated open service #{0}.</value></data>
+  <data name="AS_Create_Success" xml:space="preserve"><value>Service call started. Household moved to 'Out of Service'.</value></data>
+
+	<!-- ===== AddInventoryControl: Header & Buttons ===== -->
+	<data name="AIC_Header_Add" xml:space="preserve"><value>➕ Add Inventory Item</value></data>
+	<data name="AIC_Header_Edit_Format" xml:space="preserve"><value>✏ Edit Inventory #{0}</value></data>
+	<data name="AIC_Header_Subtitle" xml:space="preserve"><value>Create or update inventory items. Track stock and usage history.</value></data>
+
+	<data name="AIC_Btn_Add" xml:space="preserve"><value>➕ Add</value></data>
+	<data name="AIC_Btn_SaveChanges" xml:space="preserve"><value>✏ Save Changes</value></data>
+	<data name="AIC_Btn_Cancel" xml:space="preserve"><value>Cancel</value></data>
+	<data name="AIC_Btn_Delete" xml:space="preserve"><value>Delete</value></data>
+
+	<!-- ===== Snapshot Titles ===== -->
+	<data name="AIC_Snapshot_Title" xml:space="preserve"><value>Snapshot</value></data>
+	<data name="AIC_Snapshot_Available" xml:space="preserve"><value>Available</value></data>
+	<data name="AIC_Snapshot_Used" xml:space="preserve"><value>Used</value></data>
+	<data name="AIC_Snapshot_LastRestocked" xml:space="preserve"><value>Last restocked</value></data>
+	<data name="AIC_Snapshot_LastUsed" xml:space="preserve"><value>Last used</value></data>
+
+	<!-- ===== Usage History ===== -->
+	<data name="AIC_UsageHistory_Title" xml:space="preserve"><value>Usage history</value></data>
+	<data name="AIC_UH_Col_When" xml:space="preserve"><value>When</value></data>
+	<data name="AIC_UH_Col_QtyUsed" xml:space="preserve"><value>Qty used</value></data>
+	<data name="AIC_UH_Col_Service" xml:space="preserve"><value>Service</value></data>
+	<data name="AIC_UH_Col_UsedBy" xml:space="preserve"><value>Used by</value></data>
+	<data name="AIC_UH_Col_Technicians" xml:space="preserve"><value>Technicians</value></data>
+	<data name="AIC_UH_ServicePrefix" xml:space="preserve"><value>Service #</value></data>
+
+	<!-- ===== Restock History ===== -->
+	<data name="AIC_RestockHistory_Title" xml:space="preserve"><value>Restock history</value></data>
+	<data name="AIC_RH_Col_When" xml:space="preserve"><value>When</value></data>
+	<data name="AIC_RH_Col_Qty" xml:space="preserve"><value>Qty</value></data>
+	<data name="AIC_RH_Col_By" xml:space="preserve"><value>By</value></data>
+	<data name="AIC_RH_Col_Note" xml:space="preserve"><value>Note</value></data>
+
+	<!-- ===== Form Labels ===== -->
+	<data name="AIC_Label_ItemType" xml:space="preserve"><value>Item type</value></data>
+	<data name="AIC_Label_InitialQty" xml:space="preserve"><value>Initial quantity</value></data>
+	<data name="AIC_Label_Threshold" xml:space="preserve"><value>Low-stock threshold</value></data>
+	<data name="AIC_Label_NoteOptional" xml:space="preserve"><value>Note (optional)</value></data>
+
+	<!-- ===== Validation / Status / Dialogs ===== -->
+	<data name="AIC_Validation_Title" xml:space="preserve"><value>Validation Error</value></data>
+	<data name="AIC_Validation_Threshold" xml:space="preserve"><value>Please enter a valid non-negative number for Low Stock Threshold.</value></data>
+	<data name="AIC_Validation_InitialQty" xml:space="preserve"><value>Please enter a valid non-negative number for Initial Quantity.</value></data>
+	<data name="AIC_Validation_ItemTypeRequired" xml:space="preserve"><value>Item Type is required.</value></data>
+
+	<data name="AIC_Save_Success_Title" xml:space="preserve"><value>Success</value></data>
+	<data name="AIC_Save_Success_Added" xml:space="preserve"><value>Inventory item added.</value></data>
+	<data name="AIC_Save_Success_Updated" xml:space="preserve"><value>Inventory item updated.</value></data>
+
+	<data name="AIC_Delete_Confirm_Title" xml:space="preserve"><value>Confirm Deletion</value></data>
+	<data name="AIC_Delete_Confirm_Text_Format" xml:space="preserve"><value>Are you sure you want to delete item '{0}'?</value></data>
+	<data name="AIC_Delete_Success_Title" xml:space="preserve"><value>Deleted</value></data>
+	<data name="AIC_Delete_Success_Text" xml:space="preserve"><value>Inventory item deleted successfully.</value></data>
+	<data name="AIC_Delete_Error_Text_Prefix" xml:space="preserve"><value>Error deleting item:</value></data>
+
+	<data name="AIC_Error_Title" xml:space="preserve"><value>Error</value></data>
+	<data name="AIC_LoadUsage_Error" xml:space="preserve"><value>Error loading usage history:</value></data>
+	<data name="AIC_LoadRestock_Error" xml:space="preserve"><value>Error loading restock history:</value></data>
+
+	<!-- ===== Status Chip ===== -->
+	<data name="AIC_Status_OutOfStock" xml:space="preserve"><value>Out of Stock</value></data>
+	<data name="AIC_Status_LowStock" xml:space="preserve"><value>Low Stock</value></data>
+	<data name="AIC_Status_InStock" xml:space="preserve"><value>In Stock</value></data>
+	<data name="AIC_StatusBar_Out" xml:space="preserve"><value>This item is out of stock.</value></data>
+	<data name="AIC_StatusBar_Low" xml:space="preserve"><value>This item is low on stock.</value></data>
+
+	<!-- ===== Service Dialog Title ===== -->
+	<data name="AIC_Service_Title_Format" xml:space="preserve"><value>Service #{0}</value></data>
+
+	<!-- ===== UserFormControl (User Form) ===== -->
+	<data name="UF_Header_Add" xml:space="preserve"><value>➕ Add User</value></data>
+	<data name="UF_Header_Edit" xml:space="preserve"><value>✏ Edit User</value></data>
+	<data name="UF_Header_Hint" xml:space="preserve">
+    <value>Fill required fields • Strong password recommended</value>
+  </data>
+
+	<data name="UF_Label_Name" xml:space="preserve"><value>Name</value></data>
+	<data name="UF_Label_Username" xml:space="preserve"><value>Username</value></data>
+	<data name="UF_Label_Role" xml:space="preserve"><value>Role</value></data>
+	<data name="UF_Label_Password_Add" xml:space="preserve"><value>Password (required on add)</value></data>
+	<data name="UF_Label_Password_Edit" xml:space="preserve"><value>New Password (optional)</value></data>
+	<data name="UF_Label_ConfirmPassword" xml:space="preserve"><value>Confirm Password</value></data>
+	<data name="UF_Label_Note" xml:space="preserve"><value>Note</value></data>
+
+	<data name="UF_PasswordRules" xml:space="preserve">
+    <value>Password must be longer than 6 characters and include at least one number or symbol. It cannot be the same as the Name or the Username.</value>
+  </data>
+
+	<data name="UF_Tech_Title" xml:space="preserve"><value>Technician details</value></data>
+	<data name="UF_Tech_PhoneReq" xml:space="preserve"><value>Phone (Technician required)</value></data>
+	<data name="UF_Tech_AddressReq" xml:space="preserve"><value>Address (Technician required)</value></data>
+	<data name="UF_Tech_AreaReq" xml:space="preserve"><value>Assigned Area (Technician required)</value></data>
+
+	<data name="UF_Btn_Save" xml:space="preserve"><value>✔ Save</value></data>
+	<data name="UF_Btn_Close" xml:space="preserve"><value>✖ Close</value></data>
+	<data name="UF_Btn_Delete" xml:space="preserve"><value>🗑 Delete</value></data>
+
+	<data name="UF_Validation_Title" xml:space="preserve"><value>Validation</value></data>
+	<data name="UF_Success_Title" xml:space="preserve"><value>Success</value></data>
+	<data name="UF_Save_Success" xml:space="preserve"><value>Saved successfully.</value></data>
+
+	<data name="UF_Delete_Confirm_Title" xml:space="preserve"><value>Confirm Deletion</value></data>
+	<data name="UF_Delete_Confirm_Text_Format" xml:space="preserve"><value>Delete user '{0}'?</value></data>
+	<data name="UF_Delete_Success_Title" xml:space="preserve"><value>Deleted</value></data>
+	<data name="UF_Delete_Success_Text" xml:space="preserve"><value>User deleted.</value></data>
+
+	<data name="UF_Error_Save_Prefix" xml:space="preserve"><value>Error saving user:</value></data>
+	<data name="UF_Error_Delete_Prefix" xml:space="preserve"><value>Error deleting user:</value></data>
+
+	<!-- Add these into Strings.es.resx -->
+	<data name="ASRC_Header_Title" xml:space="preserve"><value>➕ Añadir registro de servicio</value></data>
+	<data name="ASRC_Header_Subtitle" xml:space="preserve"><value>Detalles y actividad del servicio</value></data>
+
+	<data name="ASRC_Det_ServiceId" xml:space="preserve"><value>ID de servicio:</value></data>
+	<data name="ASRC_Det_Household" xml:space="preserve"><value>Hogar:</value></data>
+	<data name="ASRC_Det_Technicians" xml:space="preserve"><value>Técnicos:</value></data>
+	<data name="ASRC_Det_Problem" xml:space="preserve"><value>Problema:</value></data>
+	<data name="ASRC_Det_Action" xml:space="preserve"><value>Acción:</value></data>
+	<data name="ASRC_Det_Inventory" xml:space="preserve"><value>Inventario usado:</value></data>
+	<data name="ASRC_Det_Started" xml:space="preserve"><value>Iniciado:</value></data>
+	<data name="ASRC_Det_Finished" xml:space="preserve"><value>Finalizado:</value></data>
+
+	<data name="ASRC_Form_HouseholdID" xml:space="preserve"><value>ID del hogar</value></data>
+	<data name="ASRC_Form_TechnicianID" xml:space="preserve"><value>ID del técnico</value></data>
+	<data name="ASRC_Form_LastInspectDate" xml:space="preserve"><value>Fecha de última inspección</value></data>
+	<data name="ASRC_Form_Problem" xml:space="preserve"><value>Problema</value></data>
+	<data name="ASRC_Form_ActionTaken" xml:space="preserve"><value>Acción realizada</value></data>
+	<data name="ASRC_Form_RepairDate" xml:space="preserve"><value>Fecha de reparación</value></data>
+
+	<data name="ASRC_Btn_Delete" xml:space="preserve"><value>🗑 Eliminar</value></data>
+	<data name="ASRC_Btn_Save" xml:space="preserve"><value>✔ Guardar</value></data>
+	<data name="ASRC_Btn_Close" xml:space="preserve"><value>✖ Cerrar</value></data>
+
+	<data name="ASRC_Status_Open" xml:space="preserve"><value>Abierto</value></data>
+	<data name="ASRC_Status_Finished" xml:space="preserve"><value>Finalizado</value></data>
+	<data name="ASRC_Status_Canceled" xml:space="preserve"><value>Cancelado</value></data>
+
+	<!-- Reused in details header -->
+	<data name="SCDC_Header_Title" xml:space="preserve"><value>Detalles de la llamada de servicio</value></data>
+
+	<!-- Add/verify these in Strings.resx (EN base) -->
+	<data name="ASRC_Header_Title" xml:space="preserve"><value>➕ Add Service Record</value></data>
+	<data name="ASRC_Header_Subtitle" xml:space="preserve"><value>Service details and activity</value></data>
+
+	<data name="ASRC_Det_ServiceId" xml:space="preserve"><value>Service ID:</value></data>
+	<data name="ASRC_Det_Household" xml:space="preserve"><value>Household:</value></data>
+	<data name="ASRC_Det_Technicians" xml:space="preserve"><value>Technicians:</value></data>
+	<data name="ASRC_Det_Problem" xml:space="preserve"><value>Problem:</value></data>
+	<data name="ASRC_Det_Action" xml:space="preserve"><value>Action:</value></data>
+	<data name="ASRC_Det_Inventory" xml:space="preserve"><value>Inventory Used:</value></data>
+	<data name="ASRC_Det_Started" xml:space="preserve"><value>Started:</value></data>
+	<data name="ASRC_Det_Finished" xml:space="preserve"><value>Finished:</value></data>
+
+	<data name="ASRC_Form_HouseholdID" xml:space="preserve"><value>Household ID</value></data>
+	<data name="ASRC_Form_TechnicianID" xml:space="preserve"><value>Technician ID</value></data>
+	<data name="ASRC_Form_LastInspectDate" xml:space="preserve"><value>Last Inspect Date</value></data>
+	<data name="ASRC_Form_Problem" xml:space="preserve"><value>Problem</value></data>
+	<data name="ASRC_Form_ActionTaken" xml:space="preserve"><value>Action Taken</value></data>
+	<data name="ASRC_Form_RepairDate" xml:space="preserve"><value>Repair Date</value></data>
+
+	<data name="ASRC_Btn_Delete" xml:space="preserve"><value>🗑 Delete</value></data>
+	<data name="ASRC_Btn_Save" xml:space="preserve"><value>✔ Save</value></data>
+	<data name="ASRC_Btn_Close" xml:space="preserve"><value>✖ Close</value></data>
+
+	<data name="ASRC_Status_Open" xml:space="preserve"><value>Open</value></data>
+	<data name="ASRC_Status_Finished" xml:space="preserve"><value>Finished</value></data>
+	<data name="ASRC_Status_Canceled" xml:space="preserve"><value>Canceled</value></data>
+
+	<!-- Reused in details header -->
+	<data name="SCDC_Header_Title" xml:space="preserve"><value>Service Call Details</value></data>
+
+	<!-- YrMeteogramWindow -->
+	<data name="YR_Title" xml:space="preserve"><value>Meteogram — yr.no</value></data>
+	<data name="YR_Header_Title" xml:space="preserve"><value>🌤 Full Meteogram (yr.no)</value></data>
+	<data name="YR_Btn_Reload" xml:space="preserve"><value>Reload</value></data>
+	<data name="YR_Btn_Retry" xml:space="preserve"><value>Retry</value></data>
+	<data name="YR_Tab_Meteogram" xml:space="preserve"><value>Meteogram</value></data>
+	<data name="YR_Fallback_CantDisplay" xml:space="preserve"><value>Can’t display the meteogram here.</value></data>
+
+	<data name="YR_Status_Initializing" xml:space="preserve"><value>Initializing WebView2…</value></data>
+	<data name="YR_Status_Loading" xml:space="preserve"><value>Loading…</value></data>
+	<data name="YR_Status_Ready" xml:space="preserve"><value>Meteogram ready.</value></data>
+	<data name="YR_Status_LoadFailed" xml:space="preserve"><value>Failed to load.</value></data>
+
+	<data name="YR_Error_RuntimeMissing" xml:space="preserve"><value>WebView2 Runtime is not installed.</value></data>
+	<data name="YR_Error_CouldNotInitialize" xml:space="preserve"><value>WebView2 could not initialize.</value></data>
+	<data name="YR_Error_InitFailed" xml:space="preserve"><value>WebView2 initialization failed: </value></data>
+	<data name="YR_Error_NavigationPrefix" xml:space="preserve"><value>Navigation error: </value></data>
+	<data name="YR_Error_LoadSvgPrefix" xml:space="preserve"><value>Failed to load SVG. ErrorStatus=</value></data>
+
+	<!-- YrMeteogramControl -->
+	<data name="YR_Header_Title" xml:space="preserve"><value>Sucre Department — Meteogram (yr.no)</value></data>
+	<data name="YR_Tooltip_Reload" xml:space="preserve"><value>Reload</value></data>
+
+	<data name="YR_Summary_Loading" xml:space="preserve"><value>Loading forecast…</value></data>
+	<data name="YR_Summary_Now" xml:space="preserve"><value>Now: {0:0.#}°C</value></data>
+	<data name="YR_Summary_24h" xml:space="preserve"><value>24h: H {0:0.#}°  L {1:0.#}°   •   Rain {2:0.#} mm</value></data>
+	<data name="YR_Summary_WindUpdated" xml:space="preserve"><value>Wind {0:0.#} m/s   •   Updated {1}</value></data>
+	<data name="YR_Summary_SetLatLon" xml:space="preserve"><value>Set Latitude/Longitude or PlaceName</value></data>
+	<data name="YR_Summary_Failed" xml:space="preserve"><value>Summary load failed.</value></data>
+
+	<data name="YR_Fallback_Title" xml:space="preserve"><value>Can’t display the meteogram here.</value></data>
+	<data name="YR_Fallback_Sub" xml:space="preserve"><value>Install the WebView2 runtime or try copying the link.</value></data>
+	<data name="YR_Btn_Copy" xml:space="preserve"><value>Copy Link</value></data>
+
+	<data name="YR_Status_Initializing" xml:space="preserve"><value>Initializing WebView2...</value></data>
+	<data name="YR_Meteogram_Loading" xml:space="preserve"><value>Loading meteogram…</value></data>
+	<data name="YR_Meteogram_Ready" xml:space="preserve"><value>Meteogram ready.</value></data>
+
+	<data name="YR_Error_OpenWindow" xml:space="preserve"><value>Open window failed:</value></data>
+	<data name="YR_Error_WebView2InitFailed" xml:space="preserve"><value>WebView2 initialization failed: {0}</value></data>
+	<data name="YR_Error_WebView2NotInit" xml:space="preserve"><value>WebView2 could not initialize.</value></data>
+	<data name="YR_Error_Navigation" xml:space="preserve"><value>Navigation error: {0}</value></data>
+	<data name="YR_Error_SVGFailed" xml:space="preserve"><value>Failed to load SVG. ErrorStatus=</value></data>
+	<data name="YR_Link_Copied" xml:space="preserve"><value>Link copied.</value></data>
+	<data name="YR_Error_CopyFailed" xml:space="preserve"><value>Copy failed: {0}</value></data>
+
+	<data name="PVET_Header_Title" xml:space="preserve"><value>PV Energy (PVGIS)</value></data>
+	<data name="PVET_Tooltip_Refresh" xml:space="preserve"><value>Refresh</value></data>
+
+	<data name="PVET_Status_Loading" xml:space="preserve"><value>(loading...)</value></data>
+	<data name="PVET_Status_Error"   xml:space="preserve"><value>(error)</value></data>
+
+	<data name="PVET_NoConfig"        xml:space="preserve"><value>No config</value></data>
+	<data name="PVET_MonthlyAvgFmt"   xml:space="preserve"><value>Monthly avg: {0:0} kWh</value></data>
+	<data name="PVET_MonthlyAvgDash"  xml:space="preserve"><value>Monthly avg: —</value></data>
+	<data name="PVET_AnnualFmt"       xml:space="preserve"><value>Annual: {0:0} kWh</value></data>
+	<data name="PVET_AnnualDash"      xml:space="preserve"><value>Annual: —</value></data>
+	<data name="PVET_ConfigFmt"       xml:space="preserve"><value>Config: {0:0.##} kWp, tilt {1}°, az {2}°, losses {3:0.#}%</value></data>
+
+	<!-- ===== IrradianceTileControl ===== -->
+	<data name="IRR_Header_Title" xml:space="preserve"><value>Irradiance</value></data>
+	<data name="IRR_Tooltip_Refresh" xml:space="preserve"><value>Refresh</value></data>
+
+	<data name="IRR_Status_Loading" xml:space="preserve"><value>(loading...)</value></data>
+	<data name="IRR_Status_Error"   xml:space="preserve"><value>(error)</value></data>
+
+	<data name="IRR_NoCoords" xml:space="preserve"><value>No coords</value></data>
+
+	<data name="IRR_TodayGhiFmt"  xml:space="preserve"><value>Today GHI: {0:0.0} kWh/m²</value></data>
+	<data name="IRR_TodayGhiDash" xml:space="preserve"><value>Today GHI: —</value></data>
+
+	<data name="IRR_TomorrowPeakFmt"  xml:space="preserve"><value>Tomorrow peak: {0:0} W/m²</value></data>
+	<data name="IRR_TomorrowPeakDash" xml:space="preserve"><value>Tomorrow peak: —</value></data>
+
+	<data name="IRR_UpdatedFmt" xml:space="preserve"><value>Updated {0}</value></data>
+
+	<!-- PvEnergyDetailsWindow -->
+	<data name="PVEDW_Title" xml:space="preserve"><value>PV Energy Details (PVGIS)</value></data>
+	<data name="PVEDW_Header" xml:space="preserve"><value>⚡ Baseline PV Energy (PVGIS)</value></data>
+	<data name="PVEDW_Btn_Refresh" xml:space="preserve"><value>Refresh</value></data>
+	<data name="PVEDW_MonthlyDesc" xml:space="preserve"><value>Monthly energy (kWh) and annual total</value></data>
+	<data name="PVEDW_Col_Month" xml:space="preserve"><value>Month</value></data>
+	<data name="PVEDW_Col_kWh" xml:space="preserve"><value>kWh</value></data>
+	<data name="PVEDW_Annual_Label" xml:space="preserve"><value>Annual:</value></data>
+	<data name="PVEDW_SpecificYield" xml:space="preserve"><value>Specific yield:</value></data>
+	<data name="PVEDW_CapacityFactor" xml:space="preserve"><value>Capacity factor:</value></data>
+	<data name="PVEDW_NoData_Text" xml:space="preserve"><value>PVGIS returned no data.</value></data>
+	<data name="PVEDW_Info_Caption" xml:space="preserve"><value>Info</value></data>
+	<data name="PVEDW_Error_LoadFailed" xml:space="preserve"><value>Failed to load PV energy data.</value></data>
+	<data name="PVEDW_Error_Caption" xml:space="preserve"><value>Error</value></data>
+
+	<!-- ===== IrradianceDetailsWindow (EN) ===== -->
+	<data name="IrrDet_Title_Base" xml:space="preserve">
+  <value>Irradiance Details</value>
+</data>
+	<data name="IrrDet_RowsLabel" xml:space="preserve">
+  <value>rows</value>
+</data>
+	<data name="IrrDet_Heading" xml:space="preserve">
+  <value>⭘  Irradiance (Fast mode: Open-Meteo)</value>
+</data>
+	<data name="IrrDet_Btn_Refresh" xml:space="preserve">
+  <value>Refresh</value>
+</data>
+	<data name="IrrDet_Loc_Hint" xml:space="preserve">
+  <value>Last 7 days + next 3 days • GHI in kWh/m² • Peak only for forecast days</value>
+</data>
+
+	<data name="IrrDet_Past7_Header" xml:space="preserve">
+  <value>  Past 7 days</value>
+</data>
+	<data name="IrrDet_Forecast3_Header" xml:space="preserve">
+  <value>  Forecast (next 3 days)</value>
+</data>
+
+	<data name="IrrDet_Col_DateUtc" xml:space="preserve">
+  <value>Date (UTC)</value>
+</data>
+	<data name="IrrDet_Col_Ghi" xml:space="preserve">
+  <value>GHI (kWh/m²)</value>
+</data>
+	<data name="IrrDet_Col_Peak" xml:space="preserve">
+  <value>Peak (W/m²)</value>
+</data>
+
+	<!-- Summary format: {0}=mode, {1}=7-day avg, {2}=next-3 avg -->
+	<data name="IrrDet_Summary_Format" xml:space="preserve">
+  <value>{0} • 7-day avg: {1} kWh/m²   •   Next-3 avg: {2} kWh/m²</value>
+</data>
+	<data name="IrrDet_Mode_OpenMeteoFast" xml:space="preserve">
+  <value>Open-Meteo (fast)</value>
+</data>
+	<data name="IrrDet_Mode_NasaFallback" xml:space="preserve">
+  <value>NASA+OM (fallback)</value>
+</data>
+
+	<!-- Common / Errors (used here) -->
+	<data name="Err_IrradianceLoadFailed" xml:space="preserve">
+  <value>Failed to load irradiance data.</value>
+</data>
+	<data name="Common_ErrorCaption" xml:space="preserve">
+  <value>Error</value>
+</data>
+	<data name="Common_NoDataDash" xml:space="preserve">
+  <value>—</value>
+</data>
+
+	<!-- Yr meteogram: in-SVG labels -->
+	<data name="YR_SVG_Temperature" xml:space="preserve"><value>Temperature °C</value></data>
+	<data name="YR_SVG_Precipitation" xml:space="preserve"><value>Precipitation mm</value></data>
+	<data name="YR_SVG_Wind" xml:space="preserve"><value>Wind m/s</value></data>
+	<data name="YR_SVG_WeatherForecastFor" xml:space="preserve"><value>Weather forecast for</value></data>
+
+
 </root>

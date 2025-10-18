@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using HouseholdMS.Model;
+using HouseholdMS.Resources; // <— for Strings.*
 
 namespace HouseholdMS.View.UserControls
 {
@@ -23,8 +24,8 @@ namespace HouseholdMS.View.UserControls
         {
             InitializeComponent();
 
-            // header text (no resx dependency here to avoid namespace issues)
-            FormHeader.Text = "➕ Add Service Record";
+            ApplyLocalizationForFormHeader_AddMode();
+            ApplyLocalizationForButtons();
 
             // Form mode visible by default
             DetailsPanel.Visibility = Visibility.Collapsed;
@@ -32,7 +33,6 @@ namespace HouseholdMS.View.UserControls
 
             SaveButton.Visibility = Visibility.Visible;
             DeleteButton.Visibility = Visibility.Collapsed;
-            CancelButton.Content = "Close";
 
             // Optional: ESC to close (doesn't change existing flows)
             PreviewKeyDown += AddServiceRecordControl_PreviewKeyDown;
@@ -55,14 +55,14 @@ namespace HouseholdMS.View.UserControls
             _detailsOnly = true;
 
             // Switch to details layout
-            FormHeader.Text = $"Service #{row.ServiceID} — Details";
+            ApplyLocalizationForHeader_DetailsMode(row.ServiceID);
             DetailsPanel.Visibility = Visibility.Visible;
             FormPanel.Visibility = Visibility.Collapsed;
 
             // Buttons setup
             SaveButton.Visibility = Visibility.Collapsed;
             DeleteButton.Visibility = Visibility.Collapsed;
-            CancelButton.Content = "Close";
+            CancelButton.Content = Strings.ASRC_Btn_Close;
 
             // Populate details
             ServiceIdValue.Text = row.ServiceID.ToString();
@@ -85,14 +85,14 @@ namespace HouseholdMS.View.UserControls
             _detailsOnly = true;
 
             // Switch to details layout
-            FormHeader.Text = $"Service #{serviceId} — Details";
+            ApplyLocalizationForHeader_DetailsMode(serviceId);
             DetailsPanel.Visibility = Visibility.Visible;
             FormPanel.Visibility = Visibility.Collapsed;
 
             // Buttons setup
             SaveButton.Visibility = Visibility.Collapsed;
             DeleteButton.Visibility = Visibility.Collapsed;
-            CancelButton.Content = "Close";
+            CancelButton.Content = Strings.ASRC_Btn_Close;
 
             // Load from DB
             LoadAndPopulate(serviceId);
@@ -213,21 +213,24 @@ namespace HouseholdMS.View.UserControls
         private static string NormalizeDate(string s)
         {
             if (string.IsNullOrWhiteSpace(s)) return "";
-            if (DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var dt))
+            DateTime dt;
+            if (DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out dt))
                 return dt.ToString("yyyy-MM-dd");
             return s;
         }
 
         private static string GetString(System.Data.IDataRecord r, string col)
         {
-            int i; try { i = r.GetOrdinal(col); } catch { return ""; }
+            int i;
+            try { i = r.GetOrdinal(col); } catch { return ""; }
             if (i < 0 || r.IsDBNull(i)) return "";
             try { return r.GetString(i); } catch { return Convert.ToString(r.GetValue(i)); }
         }
 
         private static int GetInt(System.Data.IDataRecord r, string col)
         {
-            int i; try { i = r.GetOrdinal(col); } catch { return 0; }
+            int i;
+            try { i = r.GetOrdinal(col); } catch { return 0; }
             if (i < 0 || r.IsDBNull(i)) return 0;
             try { return r.GetInt32(i); } catch { return Convert.ToInt32(r.GetValue(i)); }
         }
@@ -236,28 +239,53 @@ namespace HouseholdMS.View.UserControls
         {
             var s = (status ?? "").Trim().ToLowerInvariant();
 
-            var bg = TryFindResource("Pill.DefaultBg") as Brush ?? Brushes.Gainsboro;
-            var fg = TryFindResource("Pill.DefaultFg") as Brush ?? Brushes.Black;
+            Brush bg = TryFindResource("Pill.DefaultBg") as Brush ?? Brushes.Gainsboro;
+            Brush fg = TryFindResource("Pill.DefaultFg") as Brush ?? Brushes.Black;
+            string localized = Strings.ASRC_Status_Open; // default
 
             if (s == "open")
             {
                 bg = (TryFindResource("Pill.OpenBg") as Brush) ?? bg;
                 fg = (TryFindResource("Pill.OpenFg") as Brush) ?? fg;
+                localized = Strings.ASRC_Status_Open;
             }
             else if (s == "finished" || s == "closed")
             {
                 bg = (TryFindResource("Pill.FinishBg") as Brush) ?? bg;
                 fg = (TryFindResource("Pill.FinishFg") as Brush) ?? fg;
+                localized = Strings.ASRC_Status_Finished;
             }
             else if (s == "canceled" || s == "cancelled")
             {
                 bg = (TryFindResource("Pill.CancelBg") as Brush) ?? bg;
                 fg = (TryFindResource("Pill.CancelFg") as Brush) ?? fg;
+                localized = Strings.ASRC_Status_Canceled;
             }
 
             StatusPill.Background = bg;
             StatusPillText.Foreground = fg;
-            StatusPillText.Text = string.IsNullOrWhiteSpace(status) ? "Open" : status;
+            StatusPillText.Text = localized;
+        }
+
+        private void ApplyLocalizationForFormHeader_AddMode()
+        {
+            // Keep exact emoji/formatting from resources
+            FormHeader.Text = Strings.ASRC_Header_Title;
+        }
+
+        private void ApplyLocalizationForHeader_DetailsMode(int serviceId)
+        {
+            // Use an existing "details" caption that is localized in your resources
+            // Example: "Service Call Details"
+            // Show the id alongside
+            FormHeader.Text = Strings.SCDC_Header_Title + " #" + serviceId;
+        }
+
+        private void ApplyLocalizationForButtons()
+        {
+            SaveButton.Content = Strings.ASRC_Btn_Save;
+            DeleteButton.Content = Strings.ASRC_Btn_Delete;
+            CancelButton.Content = Strings.ASRC_Btn_Close;
         }
 
         // ===== Buttons =====
@@ -289,7 +317,8 @@ namespace HouseholdMS.View.UserControls
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
-            OnCancelRequested?.Invoke(this, EventArgs.Empty);
+            EventHandler handler = OnCancelRequested;
+            if (handler != null) handler(this, EventArgs.Empty);
         }
     }
 }

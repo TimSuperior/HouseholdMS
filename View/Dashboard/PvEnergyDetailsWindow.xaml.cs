@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
+using HouseholdMS.Resources;
 
 namespace HouseholdMS.View.Dashboard
 {
@@ -16,7 +17,8 @@ namespace HouseholdMS.View.Dashboard
             InitializeComponent();
             _lat = lat; _lon = lon; _kw = peakKw; _tilt = tilt; _az = azimuth; _loss = lossesPct;
 
-            CfgText.Text = string.Format(CultureInfo.InvariantCulture,
+            CfgText.Text = string.Format(
+                CultureInfo.InvariantCulture,
                 "(lat {0:0.###}, lon {1:0.###}) • {2:0.##} kWp • tilt {3}°, az {4}° • losses {5:0.#}%",
                 _lat, _lon, _kw, _tilt, _az, _loss);
 
@@ -40,15 +42,20 @@ namespace HouseholdMS.View.Dashboard
                 var res = await SolarApiClient.GetPvGisPvcalcAsync(_lat, _lon, _kw, _tilt, _az, _loss);
                 if (res == null)
                 {
-                    MessageBox.Show("PVGIS returned no data.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(Strings.PVEDW_NoData_Text, Strings.PVEDW_Info_Caption, MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
                 var rows = new List<Row>();
                 for (int i = 0; i < res.Monthly.Length; i++)
                 {
-                    rows.Add(new Row { Month = res.MonthNames[i], Kwh = res.Monthly[i].ToString("0", CultureInfo.InvariantCulture) });
+                    rows.Add(new Row
+                    {
+                        Month = res.MonthNames[i],
+                        Kwh = res.Monthly[i].ToString("0", CultureInfo.InvariantCulture)
+                    });
                 }
+
                 MonthGrid.ItemsSource = null;
                 MonthGrid.ItemsSource = rows;
 
@@ -70,7 +77,11 @@ namespace HouseholdMS.View.Dashboard
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to load PV energy data.\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    Strings.PVEDW_Error_LoadFailed + "\n" + ex.Message,
+                    Strings.PVEDW_Error_Caption,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 

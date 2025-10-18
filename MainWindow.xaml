@@ -239,7 +239,7 @@
                          StretchDirection="DownOnly"
                          HorizontalAlignment="Left"
                          VerticalAlignment="Center">
-                    <Image Source="/Assets/MainMenuPics/mainpic.png"
+                    <Image Source="/Assets/MainMenuPics/mainpic1.png"
                            SnapsToDevicePixels="True"
                            RenderOptions.BitmapScalingMode="HighQuality"
                            ToolTip="{x:Static res:Strings.App_Title}"/>

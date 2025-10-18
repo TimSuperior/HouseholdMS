@@ -1,8 +1,9 @@
-﻿<!-- HouseholdMS.View.UserControls.YrMeteogramWindow.xaml -->
-<Window x:Class="HouseholdMS.View.UserControls.YrMeteogramWindow"
+﻿<Window x:Class="HouseholdMS.View.UserControls.YrMeteogramWindow" 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Meteogram — yr.no" Height="720" Width="1100"
+        xmlns:res="clr-namespace:HouseholdMS.Resources"
+        Title="{x:Static res:Strings.YR_Title}"
+        Height="720" Width="1100"
         WindowStartupLocation="CenterOwner">
     <Grid>
         <Grid.RowDefinitions>
@@ -13,27 +14,31 @@
 
         <!-- Header -->
         <DockPanel Grid.Row="0" LastChildFill="False" Margin="8">
-            <TextBlock Text="🌤 Full Meteogram (yr.no)" FontWeight="Bold" FontSize="16"
+            <TextBlock Text="{x:Static res:Strings.YR_Header_Title}"
+                       FontWeight="Bold" FontSize="16"
                        VerticalAlignment="Center" DockPanel.Dock="Left"/>
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                <Button Content="Reload" Click="BtnReload_Click" Padding="12,6"/>
+                <Button Content="{x:Static res:Strings.YR_Btn_Reload}"
+                        Click="BtnReload_Click" Padding="12,6"/>
             </StackPanel>
         </DockPanel>
 
-        <!-- Content: tabs (only Meteogram kept) -->
+        <!-- Content: tabs (only Meteogram) -->
         <TabControl Grid.Row="1" x:Name="Tabs">
-            <!-- Meteogram -->
-            <TabItem Header="Meteogram">
+            <TabItem Header="{x:Static res:Strings.YR_Tab_Meteogram}">
                 <Grid>
                     <Grid x:Name="WebHost"/>
                     <Border x:Name="FallbackPanel" Visibility="Collapsed"
                             Background="#FFF9F9F9" BorderBrush="#DDD" BorderThickness="1"
                             CornerRadius="8" Padding="14" Margin="8">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="560">
-                            <TextBlock Text="Can’t display the meteogram here." FontWeight="Bold" FontSize="14" TextAlignment="Center"/>
-                            <TextBlock x:Name="TxtError" Foreground="#A33" TextWrapping="Wrap" TextAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBlock Text="{x:Static res:Strings.YR_Fallback_CantDisplay}"
+                                       FontWeight="Bold" FontSize="14" TextAlignment="Center"/>
+                            <TextBlock x:Name="TxtError" Foreground="#A33"
+                                       TextWrapping="Wrap" TextAlignment="Center" Margin="0,6,0,0"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
-                                <Button Content="Retry" Click="BtnReload_Click" Padding="10,4"/>
+                                <Button Content="{x:Static res:Strings.YR_Btn_Retry}"
+                                        Click="BtnReload_Click" Padding="10,4"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>

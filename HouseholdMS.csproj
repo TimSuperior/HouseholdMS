@@ -905,6 +905,8 @@
     <SplashScreen Include="Assets\Logo\splash_720.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </SplashScreen>
+    <Resource Include="Assets\MainMenuPics\mainpic_transparent.png" />
+    <Resource Include="Assets\MainMenuPics\mainpic1.png" />
     <Content Include="Assets\Manuals\VictronConnect_Manual.pdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

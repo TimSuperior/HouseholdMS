@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.Web.WebView2.Core;
+using HouseholdMS.Resources; // <-- for Strings.*
 
 namespace HouseholdMS.View.UserControls
 {
@@ -81,7 +82,9 @@ namespace HouseholdMS.View.UserControls
             var c = (YrMeteogramControl)d;
             if (!c.IsLoaded) return;
 
+            c.ApplyLocalization();      // ensure texts match current UI language
             c.ApplyModeToggles();
+
             if (c.CompactMode) c.RefreshSummaryAsync().ConfigureAwait(false);
             else c.NavigateToMeteogram();
         }
@@ -97,6 +100,8 @@ namespace HouseholdMS.View.UserControls
 
         private async void YrMeteogramControl_Loaded(object sender, RoutedEventArgs e)
         {
+            ApplyLocalization();
+
             if (DesignerProperties.GetIsInDesignMode(this))
             {
                 Fallback(true, "Design mode: WebView2 not loaded.");
@@ -107,13 +112,14 @@ namespace HouseholdMS.View.UserControls
 
             if (CompactMode)
             {
-                LblStatus.Text = "Loading forecast…";
+                LblStatus.Text = " ";
+                LineMeta.Text = Strings.YR_Summary_Loading;
                 _autoTimer.Start();
                 await RefreshSummaryAsync();
             }
             else
             {
-                LblStatus.Text = "Initializing WebView2...";
+                LblStatus.Text = Strings.YR_Status_Initializing;
                 await EnsureWebViewAsync();
                 NavigateToMeteogram();
             }
@@ -124,6 +130,29 @@ namespace HouseholdMS.View.UserControls
             try { if (_web != null && _web.CoreWebView2 != null) _web.CoreWebView2.Stop(); } catch { }
             _autoTimer.Stop();
             if (_cts != null) _cts.Cancel();
+        }
+
+        // ---------------- Localization ----------------
+
+        private void ApplyLocalization()
+        {
+            try
+            {
+                // If your app sets Strings.Culture elsewhere, Strings.* will resolve appropriately
+                if (LblHeaderText != null) LblHeaderText.Text = Strings.YR_Header_Title;
+                if (BtnReload != null) BtnReload.ToolTip = Strings.YR_Tooltip_Reload;
+
+                if (LineMeta != null && string.IsNullOrWhiteSpace(LineMeta.Text))
+                    LineMeta.Text = Strings.YR_Summary_Loading;
+
+                if (FallbackTitleTxt != null) FallbackTitleTxt.Text = Strings.YR_Fallback_Title;
+                if (FallbackSubTxt != null) FallbackSubTxt.Text = Strings.YR_Fallback_Sub;
+                if (BtnCopy != null) BtnCopy.Content = Strings.YR_Btn_Copy;
+            }
+            catch
+            {
+                // swallow — localization should never crash the control
+            }
         }
 
         // ---------------- UI helpers ----------------
@@ -160,7 +189,7 @@ namespace HouseholdMS.View.UserControls
             }
             catch (Exception ex)
             {
-                Fallback(true, "Open window failed: " + ex.Message);
+                Fallback(true, Strings.YR_Error_OpenWindow + " " + ex.Message);
             }
         }
 
@@ -191,7 +220,7 @@ namespace HouseholdMS.View.UserControls
             }
             catch (Exception ex)
             {
-                Fallback(true, "WebView2 initialization failed: " + ex.Message);
+                Fallback(true, string.Format(Strings.YR_Error_WebView2InitFailed, ex.Message));
             }
         }
 
@@ -203,7 +232,7 @@ namespace HouseholdMS.View.UserControls
 
         private void NavigateToMeteogram()
         {
-            LblStatus.Text = "Loading meteogram…";
+            LblStatus.Text = Strings.YR_Meteogram_Loading;
             try
             {
                 if (_web != null && _web.CoreWebView2 != null)
@@ -214,13 +243,13 @@ namespace HouseholdMS.View.UserControls
             }
             catch (Exception ex)
             {
-                Fallback(true, "Navigation error: " + ex.Message);
+                Fallback(true, string.Format(Strings.YR_Error_Navigation, ex.Message));
             }
         }
 
         private void Web_CoreWebView2InitializationCompleted(object sender, CoreWebView2InitializationCompletedEventArgs e)
         {
-            if (!e.IsSuccess) { Fallback(true, "WebView2 could not initialize."); return; }
+            if (!e.IsSuccess) { Fallback(true, Strings.YR_Error_WebView2NotInit); return; }
             try
             {
                 _web.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
@@ -232,8 +261,8 @@ namespace HouseholdMS.View.UserControls
 
         private void Web_NavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
         {
-            if (e.IsSuccess) LblStatus.Text = "Meteogram ready.";
-            else Fallback(true, "Failed to load SVG. ErrorStatus=" + e.WebErrorStatus);
+            if (e.IsSuccess) LblStatus.Text = Strings.YR_Meteogram_Ready;
+            else Fallback(true, Strings.YR_Error_SVGFailed + e.WebErrorStatus);
         }
 
         // ---------------- Compact Summary ----------------
@@ -259,7 +288,7 @@ namespace HouseholdMS.View.UserControls
                     {
                         LineNow.Text = "—";
                         LineNext.Text = "—";
-                        LineMeta.Text = "Set Latitude/Longitude or PlaceName";
+                        LineMeta.Text = Strings.YR_Summary_SetLatLon;
                         return;
                     }
                     lat = resolved.Item1;
@@ -269,16 +298,16 @@ namespace HouseholdMS.View.UserControls
                 var sum = await FetchSummaryAsync(lat, lon, ct);
                 if (ct.IsCancellationRequested || sum == null) return;
 
-                LineNow.Text = string.Format("Now: {0:0.#}°C", sum.TempNow);
-                LineNext.Text = string.Format("24h: H {0:0.#}°  L {1:0.#}°   •   Rain {2:0.#} mm",
-                                              sum.Max24h, sum.Min24h, sum.Precip24h);
-                LineMeta.Text = string.Format("Wind {0:0.#} m/s   •   Updated {1}",
-                                              sum.WindNow, sum.Updated.ToLocalTime().ToString("g"));
+                LineNow.Text = string.Format(Strings.YR_Summary_Now, sum.TempNow);
+                LineNext.Text = string.Format(Strings.YR_Summary_24h, sum.Max24h, sum.Min24h, sum.Precip24h);
+                LineMeta.Text = string.Format(Strings.YR_Summary_WindUpdated,
+                                              sum.WindNow,
+                                              sum.Updated.ToLocalTime().ToString("g"));
                 LblStatus.Text = " ";
             }
             catch (Exception ex)
             {
-                LblStatus.Text = "Summary load failed.";
+                LblStatus.Text = Strings.YR_Summary_Failed;
                 LineMeta.Text = ex.Message;
             }
             finally
@@ -444,8 +473,8 @@ namespace HouseholdMS.View.UserControls
 
         private void BtnCopy_Click(object sender, RoutedEventArgs e)
         {
-            try { Clipboard.SetText(BuildUrl()); LblStatus.Text = "Link copied."; }
-            catch (Exception ex) { Fallback(true, "Copy failed: " + ex.Message); }
+            try { Clipboard.SetText(BuildUrl()); LblStatus.Text = Strings.YR_Link_Copied; }
+            catch (Exception ex) { Fallback(true, string.Format(Strings.YR_Error_CopyFailed, ex.Message)); }
         }
     }
 }

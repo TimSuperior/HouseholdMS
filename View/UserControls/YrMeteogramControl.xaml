@@ -63,12 +63,13 @@
 
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="🌤" FontSize="18" Foreground="{StaticResource Col.Primary}" VerticalAlignment="Center"/>
-                <TextBlock Text="Sucre Department — Meteogram (yr.no)"
+                <!-- Localized at runtime -->
+                <TextBlock x:Name="LblHeaderText"
                            FontWeight="Bold" FontSize="16" Foreground="{StaticResource Col.Heading}" Margin="8,0,0,0"/>
             </StackPanel>
 
             <Button x:Name="BtnReload" Grid.Column="1" Style="{StaticResource IconButton}"
-                    Click="BtnReload_Click" ToolTip="Reload">
+                    Click="BtnReload_Click">
                 <TextBlock Text="↻" FontSize="14" Foreground="{StaticResource Col.Primary}"/>
             </Button>
         </Grid>
@@ -80,8 +81,7 @@
             <StackPanel>
                 <TextBlock x:Name="LineNow"  FontSize="16" FontWeight="Bold" Text="—"/>
                 <TextBlock x:Name="LineNext" Margin="0,2,0,0" Text="—"/>
-                <TextBlock x:Name="LineMeta" Margin="0,6,0,0" Foreground="#666" FontSize="12"
-                           Text="Loading forecast…"/>
+                <TextBlock x:Name="LineMeta" Margin="0,6,0,0" Foreground="#666" FontSize="12"/>
             </StackPanel>
         </Border>
 
@@ -93,10 +93,9 @@
                 Background="#FFF9F9F9" BorderBrush="#DDD" BorderThickness="1"
                 CornerRadius="8" Padding="14">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="520">
-                <TextBlock Text="Can’t display the meteogram here." FontWeight="Bold" FontSize="14" TextAlignment="Center"/>
-                <TextBlock Text="Install the WebView2 runtime or try copying the link."
-                           Foreground="#666" TextAlignment="Center" Margin="0,4,0,0"/>
-                <Button Content="Copy Link" Padding="10,4" Margin="0,8,0,0" Click="BtnCopy_Click"/>
+                <TextBlock x:Name="FallbackTitleTxt" FontWeight="Bold" FontSize="14" TextAlignment="Center"/>
+                <TextBlock x:Name="FallbackSubTxt" Foreground="#666" TextAlignment="Center" Margin="0,4,0,0"/>
+                <Button x:Name="BtnCopy" Padding="10,4" Margin="0,8,0,0" Click="BtnCopy_Click"/>
                 <TextBlock x:Name="TxtError" Foreground="#A33" TextWrapping="Wrap" TextAlignment="Center" Margin="0,6,0,0"/>
             </StackPanel>
         </Border>

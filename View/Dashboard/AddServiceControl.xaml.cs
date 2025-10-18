@@ -3,6 +3,7 @@ using System.Data.SQLite;
 using System.Windows;
 using System.Windows.Controls;
 using HouseholdMS.Model;
+using HouseholdMS.Resources; // <-- Strings.*
 
 namespace HouseholdMS.View.Dashboard
 {
@@ -28,12 +29,12 @@ namespace HouseholdMS.View.Dashboard
 
             // Fill read-only texts
             HHIdText.Text = household.HouseholdID.ToString();
-            OwnerText.Text = household.OwnerName ?? "";
-            UserText.Text = household.DNI ?? "";                  // <-- changed from UserName to DNI
-            MunicipalityText.Text = household.Municipality ?? "";
-            DistrictText.Text = household.District ?? "";
-            ContactText.Text = household.ContactNum ?? "";
-            StatusText.Text = ToUiStatus(household.Statuss); // DB "In Service" → UI "Out of Service"
+            OwnerText.Text = household.OwnerName ?? string.Empty;
+            UserText.Text = household.DNI ?? string.Empty;           // DB uses DNI now
+            MunicipalityText.Text = household.Municipality ?? string.Empty;
+            DistrictText.Text = household.District ?? string.Empty;
+            ContactText.Text = household.ContactNum ?? string.Empty;
+            StatusText.Text = ToUiStatus(household.Statuss);            // localized
 
             // Permissions: only Admin/Technician can confirm
             bool canProceed =
@@ -42,19 +43,41 @@ namespace HouseholdMS.View.Dashboard
 
             ConfirmBtn.IsEnabled = canProceed;
             if (!canProceed)
-                ConfirmBtn.ToolTip = "Only Admin or Technician can start/update a service call.";
+                ConfirmBtn.ToolTip = L("SCDC_Permission_Tip", "Only Admin or Technician can perform this action.");
 
             // Check if there is already an open service ticket
             RefreshOpenServiceState();
             UpdateConfirmButtonUi();
         }
 
+        // Localized string getter with safe fallback (compiles even if the key isn't in .resx yet)
+        private static string L(string key, string fallback)
+        {
+            var s = Strings.ResourceManager.GetString(key, Strings.Culture);
+            return string.IsNullOrEmpty(s) ? fallback : s;
+        }
+
+        private static string Lf(string key, string fallback, params object[] args)
+        {
+            string fmt = L(key, fallback);
+            try { return string.Format(fmt, args); } catch { return fmt; }
+        }
+
         private string ToUiStatus(string dbStatus)
         {
-            var s = (dbStatus ?? "").Trim();
-            if (s.Equals("In Service", StringComparison.OrdinalIgnoreCase)) return "Out of Service";
-            if (s.Equals("Operational", StringComparison.OrdinalIgnoreCase)) return "Operational";
-            if (s.Equals("Not Operational", StringComparison.OrdinalIgnoreCase)) return "Out of Service";
+            var s = (dbStatus ?? string.Empty).Trim();
+
+            // DB values are English; map to localized UI strings
+            if (s.Equals("In Service", StringComparison.OrdinalIgnoreCase))
+                return Strings.Common_Status_OutOfService ?? "Out of Service";
+
+            if (s.Equals("Operational", StringComparison.OrdinalIgnoreCase))
+                return Strings.Common_Status_Operational ?? "Operational";
+
+            if (s.Equals("Not Operational", StringComparison.OrdinalIgnoreCase))
+                return Strings.Common_Status_OutOfService ?? "Out of Service";
+
+            // Fallback to raw if unknown
             return s;
         }
 
@@ -91,23 +114,24 @@ namespace HouseholdMS.View.Dashboard
         {
             if (_hasOpenService)
             {
-                ConfirmBtn.Content = "🛠 Update Problem on Open Service";
-                SetInfoText(LastOpenServiceId.HasValue
-                    ? $"An open service (#{LastOpenServiceId}) already exists for this household."
-                    : "An open service already exists for this household.");
+                ConfirmBtn.Content = L("AS_Btn_UpdateOpen", "🛠 Update Problem on Open Service");
+                SetInfoText(
+                    LastOpenServiceId.HasValue
+                        ? Lf("AS_Info_HasOpenFmt", "An open service (#{0}) already exists for this household.", LastOpenServiceId.Value)
+                        : L("AS_Info_HasOpen", "An open service already exists for this household.")
+                );
             }
             else
             {
-                ConfirmBtn.Content = "🚀 Start Service (Move to Out of Service)";
-                SetInfoText("This will move the household to Out of Service and open a service ticket.");
+                ConfirmBtn.Content = L("AS_Btn_StartService", "🚀 Start Service (Move to Out of Service)");
+                SetInfoText(L("AS_Info_StartNew", "This will move the household to Out of Service and open a service ticket."));
             }
         }
 
         private void SetInfoText(string text)
         {
-            // Optional TextBlock in XAML named ConfirmInfoText
             var tb = FindName("ConfirmInfoText") as TextBlock;
-            if (tb != null) tb.Text = text ?? "";
+            if (tb != null) tb.Text = text ?? string.Empty;
         }
 
         private void CancelBtn_Click(object sender, RoutedEventArgs e)
@@ -140,8 +164,10 @@ namespace HouseholdMS.View.Dashboard
                             tx.Commit();
                         }
 
-                        MessageBox.Show($"Updated open service #{LastOpenServiceId}.",
-                            "Service Updated", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show(
+                            Lf("AS_Update_SuccessFmt", "Updated open service #{0}.", LastOpenServiceId.Value),
+                            L("AS_Title_Updated", "Service Updated"),
+                            MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
                     {
@@ -186,13 +212,16 @@ namespace HouseholdMS.View.Dashboard
                             LastOpenServiceId = (val == null || val == DBNull.Value) ? (int?)null : Convert.ToInt32(val);
                         }
 
-                        MessageBox.Show("Service call started. Household moved to 'Out of Service'.",
-                            "Service Created", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show(
+                            L("AS_Create_Success", "Service call started. Household moved to 'Out of Service'."),
+                            L("AS_Title_Created", "Service Created"),
+                            MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
 
                 // Let parent refresh lists / tiles
-                ServiceCreated?.Invoke(this, EventArgs.Empty);
+                var handler = ServiceCreated;
+                if (handler != null) handler(this, EventArgs.Empty);
 
                 // Refresh local state (so subsequent clicks behave correctly)
                 RefreshOpenServiceState();
@@ -200,8 +229,10 @@ namespace HouseholdMS.View.Dashboard
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to start/update service.\n" + ex.Message,
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    (Strings.Error_UnexpectedPrefix ?? "An unexpected error occurred:") + "\n" + ex.Message,
+                    Strings.Error_Title ?? "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using HouseholdMS.Resources; // for Strings.*
 
 namespace HouseholdMS.View.Dashboard
 {
@@ -50,8 +51,8 @@ namespace HouseholdMS.View.Dashboard
                         .Select(r => new Row
                         {
                             Date = r.Date.ToString("yyyy-MM-dd"),
-                            GhiKwhm2 = r.Kwhm2.HasValue ? r.Kwhm2.Value.ToString("0.00", CultureInfo.InvariantCulture) : "—",
-                            PeakWm2 = "—" // not shown in Past grid
+                            GhiKwhm2 = r.Kwhm2.HasValue ? r.Kwhm2.Value.ToString("0.00", CultureInfo.InvariantCulture) : Strings.Common_NoDataDash,
+                            PeakWm2 = Strings.Common_NoDataDash // not shown in Past grid
                         })
                         .ToList();
 
@@ -60,12 +61,12 @@ namespace HouseholdMS.View.Dashboard
                         .Select(r => new Row
                         {
                             Date = r.Date.ToString("yyyy-MM-dd"),
-                            GhiKwhm2 = r.Kwhm2.HasValue ? r.Kwhm2.Value.ToString("0.00", CultureInfo.InvariantCulture) : "—",
-                            PeakWm2 = r.PeakWm2.HasValue ? r.PeakWm2.Value.ToString("0", CultureInfo.InvariantCulture) : "—"
+                            GhiKwhm2 = r.Kwhm2.HasValue ? r.Kwhm2.Value.ToString("0.00", CultureInfo.InvariantCulture) : Strings.Common_NoDataDash,
+                            PeakWm2 = r.PeakWm2.HasValue ? r.PeakWm2.Value.ToString("0", CultureInfo.InvariantCulture) : Strings.Common_NoDataDash
                         })
                         .ToList();
 
-                    SetSummary(past7.Select(x => x.Kwhm2), next3.Select(x => x.Kwhm2), "Open-Meteo (fast)");
+                    SetSummary(past7.Select(x => x.Kwhm2), next3.Select(x => x.Kwhm2), Strings.IrrDet_Mode_OpenMeteoFast);
                 }
                 catch
                 {
@@ -77,8 +78,8 @@ namespace HouseholdMS.View.Dashboard
                         .Select(r => new Row
                         {
                             Date = r.Date.ToString("yyyy-MM-dd"),
-                            GhiKwhm2 = r.Kwhm2.HasValue ? r.Kwhm2.Value.ToString("0.00", CultureInfo.InvariantCulture) : "—",
-                            PeakWm2 = "—"
+                            GhiKwhm2 = r.Kwhm2.HasValue ? r.Kwhm2.Value.ToString("0.00", CultureInfo.InvariantCulture) : Strings.Common_NoDataDash,
+                            PeakWm2 = Strings.Common_NoDataDash
                         })
                         .ToList();
 
@@ -87,12 +88,12 @@ namespace HouseholdMS.View.Dashboard
                         .Select(r => new Row
                         {
                             Date = r.Date.ToString("yyyy-MM-dd"),
-                            GhiKwhm2 = r.Kwhm2.HasValue ? r.Kwhm2.Value.ToString("0.00", CultureInfo.InvariantCulture) : "—",
-                            PeakWm2 = r.PeakWm2.HasValue ? r.PeakWm2.Value.ToString("0", CultureInfo.InvariantCulture) : "—"
+                            GhiKwhm2 = r.Kwhm2.HasValue ? r.Kwhm2.Value.ToString("0.00", CultureInfo.InvariantCulture) : Strings.Common_NoDataDash,
+                            PeakWm2 = r.PeakWm2.HasValue ? r.PeakWm2.Value.ToString("0", CultureInfo.InvariantCulture) : Strings.Common_NoDataDash
                         })
                         .ToList();
 
-                    SetSummary(past.Select(x => x.Kwhm2), next.Select(x => x.Kwhm2), "NASA+OM (fallback)");
+                    SetSummary(past.Select(x => x.Kwhm2), next.Select(x => x.Kwhm2), Strings.IrrDet_Mode_NasaFallback);
                 }
 
                 // Bind
@@ -102,13 +103,13 @@ namespace HouseholdMS.View.Dashboard
                 ForecastGrid.ItemsSource = null;
                 ForecastGrid.ItemsSource = forecastRows;
 
-                // Title quick sanity check
-                this.Title = $"Irradiance Details • rows:{pastRows.Count + forecastRows.Count}";
+                // Title quick sanity check (keeps localization)
+                this.Title = Strings.IrrDet_Title_Base + " • " + Strings.IrrDet_RowsLabel + ":" + (pastRows.Count + forecastRows.Count);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to load irradiance data.\n" + ex.Message, "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(Strings.Err_IrradianceLoadFailed + "\n" + ex.Message,
+                    Strings.Common_ErrorCaption, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -117,9 +118,11 @@ namespace HouseholdMS.View.Dashboard
             double? avgPast = Avg(pastVals);
             double? avgNext = Avg(nextVals);
 
-            SummaryText.Text =
-                $"{mode} • 7-day avg: {(avgPast.HasValue ? avgPast.Value.ToString("0.00", CultureInfo.InvariantCulture) : "—")} kWh/m²" +
-                $"   •   Next-3 avg: {(avgNext.HasValue ? avgNext.Value.ToString("0.00", CultureInfo.InvariantCulture) : "—")} kWh/m²";
+            string pastTxt = avgPast.HasValue ? avgPast.Value.ToString("0.00", CultureInfo.InvariantCulture) : Strings.Common_NoDataDash;
+            string nextTxt = avgNext.HasValue ? avgNext.Value.ToString("0.00", CultureInfo.InvariantCulture) : Strings.Common_NoDataDash;
+
+            SummaryText.Text = string.Format(CultureInfo.CurrentUICulture,
+                Strings.IrrDet_Summary_Format, mode, pastTxt, nextTxt);
         }
 
         private static double? Avg(IEnumerable<double?> seq)

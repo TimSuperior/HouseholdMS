@@ -540,4 +540,298 @@
 	<data name="SCDC_Cancel_ConfirmBody" xml:space="preserve"><value>¿Cancelar esta orden de servicio?&#x0a;&#x0a;Esto:&#x0a;• Marcará la orden como Cancelada&#x0a;• La cerrará ahora (asigna Fecha de cierre)&#x0a;• NO descontará inventario&#x0a;• Limpiará selecciones pendientes&#x0a;• Pondrá el hogar como Operativo</value></data>
 	<data name="SCDC_Cancel_Success" xml:space="preserve"><value>Orden cancelada. El hogar quedó Operativo. No se descontó inventario.</value></data>
 
+	<!-- ===== AddServiceControl: mensajes/botones dinámicos ===== -->
+	<data name="AS_Btn_UpdateOpen" xml:space="preserve"><value>🛠 Actualizar problema en el servicio abierto</value></data>
+	<data name="AS_Btn_StartService" xml:space="preserve"><value>🚀 Iniciar servicio (Pasar a Fuera de Servicio)</value></data>
+
+	<data name="AS_Info_HasOpen" xml:space="preserve"><value>Ya existe un servicio abierto para este hogar.</value></data>
+	<data name="AS_Info_HasOpenFmt" xml:space="preserve"><value>Ya existe un servicio abierto (#{0}) para este hogar.</value></data>
+	<data name="AS_Info_StartNew" xml:space="preserve"><value>Esto moverá el hogar a Fuera de Servicio y abrirá un ticket de servicio.</value></data>
+
+	<data name="AS_Title_Updated" xml:space="preserve"><value>Servicio actualizado</value></data>
+	<data name="AS_Title_Created" xml:space="preserve"><value>Servicio creado</value></data>
+
+	<data name="AS_Update_SuccessFmt" xml:space="preserve"><value>Servicio abierto #{0} actualizado.</value></data>
+	<data name="AS_Create_Success" xml:space="preserve"><value>Servicio iniciado. El hogar pasó a “Fuera de Servicio”.</value></data>
+
+	<!-- ===== AddInventoryControl: Encabezado y Botones ===== -->
+	<data name="AIC_Header_Add" xml:space="preserve"><value>➕ Añadir artículo de inventario</value></data>
+	<data name="AIC_Header_Edit_Format" xml:space="preserve"><value>✏ Editar inventario #{0}</value></data>
+	<data name="AIC_Header_Subtitle" xml:space="preserve"><value>Crear o actualizar artículos del inventario. Registre existencias e historial de uso.</value></data>
+
+	<data name="AIC_Btn_Add" xml:space="preserve"><value>➕ Añadir</value></data>
+	<data name="AIC_Btn_SaveChanges" xml:space="preserve"><value>✏ Guardar cambios</value></data>
+	<data name="AIC_Btn_Cancel" xml:space="preserve"><value>Cancelar</value></data>
+	<data name="AIC_Btn_Delete" xml:space="preserve"><value>Eliminar</value></data>
+
+	<!-- ===== Resumen ===== -->
+	<data name="AIC_Snapshot_Title" xml:space="preserve"><value>Resumen</value></data>
+	<data name="AIC_Snapshot_Available" xml:space="preserve"><value>Disponible</value></data>
+	<data name="AIC_Snapshot_Used" xml:space="preserve"><value>Usado</value></data>
+	<data name="AIC_Snapshot_LastRestocked" xml:space="preserve"><value>Último reabastecimiento</value></data>
+	<data name="AIC_Snapshot_LastUsed" xml:space="preserve"><value>Último uso</value></data>
+
+	<!-- ===== Historial de uso ===== -->
+	<data name="AIC_UsageHistory_Title" xml:space="preserve"><value>Historial de uso</value></data>
+	<data name="AIC_UH_Col_When" xml:space="preserve"><value>Cuándo</value></data>
+	<data name="AIC_UH_Col_QtyUsed" xml:space="preserve"><value>Cant. usada</value></data>
+	<data name="AIC_UH_Col_Service" xml:space="preserve"><value>Servicio</value></data>
+	<data name="AIC_UH_Col_UsedBy" xml:space="preserve"><value>Usado por</value></data>
+	<data name="AIC_UH_Col_Technicians" xml:space="preserve"><value>Técnicos</value></data>
+	<data name="AIC_UH_ServicePrefix" xml:space="preserve"><value>Servicio #</value></data>
+
+	<!-- ===== Historial de reabastecimiento ===== -->
+	<data name="AIC_RestockHistory_Title" xml:space="preserve"><value>Historial de reabastecimiento</value></data>
+	<data name="AIC_RH_Col_When" xml:space="preserve"><value>Cuándo</value></data>
+	<data name="AIC_RH_Col_Qty" xml:space="preserve"><value>Cant.</value></data>
+	<data name="AIC_RH_Col_By" xml:space="preserve"><value>Por</value></data>
+	<data name="AIC_RH_Col_Note" xml:space="preserve"><value>Nota</value></data>
+
+	<!-- ===== Etiquetas del formulario ===== -->
+	<data name="AIC_Label_ItemType" xml:space="preserve"><value>Tipo de artículo</value></data>
+	<data name="AIC_Label_InitialQty" xml:space="preserve"><value>Cantidad inicial</value></data>
+	<data name="AIC_Label_Threshold" xml:space="preserve"><value>Umbral de poca existencia</value></data>
+	<data name="AIC_Label_NoteOptional" xml:space="preserve"><value>Nota (opcional)</value></data>
+
+	<!-- ===== Validaciones / Estados / Diálogos ===== -->
+	<data name="AIC_Validation_Title" xml:space="preserve"><value>Error de validación</value></data>
+	<data name="AIC_Validation_Threshold" xml:space="preserve"><value>Introduzca un número válido no negativo para el umbral de poca existencia.</value></data>
+	<data name="AIC_Validation_InitialQty" xml:space="preserve"><value>Introduzca un número válido no negativo para la cantidad inicial.</value></data>
+	<data name="AIC_Validation_ItemTypeRequired" xml:space="preserve"><value>Se requiere el tipo de artículo.</value></data>
+
+	<data name="AIC_Save_Success_Title" xml:space="preserve"><value>Éxito</value></data>
+	<data name="AIC_Save_Success_Added" xml:space="preserve"><value>Artículo de inventario añadido.</value></data>
+	<data name="AIC_Save_Success_Updated" xml:space="preserve"><value>Artículo de inventario actualizado.</value></data>
+
+	<data name="AIC_Delete_Confirm_Title" xml:space="preserve"><value>Confirmar eliminación</value></data>
+	<data name="AIC_Delete_Confirm_Text_Format" xml:space="preserve"><value>¿Seguro que desea eliminar el artículo «{0}»?</value></data>
+	<data name="AIC_Delete_Success_Title" xml:space="preserve"><value>Eliminado</value></data>
+	<data name="AIC_Delete_Success_Text" xml:space="preserve"><value>Artículo de inventario eliminado correctamente.</value></data>
+	<data name="AIC_Delete_Error_Text_Prefix" xml:space="preserve"><value>Error al eliminar el artículo:</value></data>
+
+	<data name="AIC_Error_Title" xml:space="preserve"><value>Error</value></data>
+	<data name="AIC_LoadUsage_Error" xml:space="preserve"><value>Error al cargar el historial de uso:</value></data>
+	<data name="AIC_LoadRestock_Error" xml:space="preserve"><value>Error al cargar el historial de reabastecimiento:</value></data>
+
+	<!-- ===== Estado (píldora) ===== -->
+	<data name="AIC_Status_OutOfStock" xml:space="preserve"><value>Agotado</value></data>
+	<data name="AIC_Status_LowStock" xml:space="preserve"><value>Pocas existencias</value></data>
+	<data name="AIC_Status_InStock" xml:space="preserve"><value>En stock</value></data>
+	<data name="AIC_StatusBar_Out" xml:space="preserve"><value>Este artículo está agotado.</value></data>
+	<data name="AIC_StatusBar_Low" xml:space="preserve"><value>Este artículo tiene pocas existencias.</value></data>
+
+	<!-- ===== Título de la ventana de servicio ===== -->
+	<data name="AIC_Service_Title_Format" xml:space="preserve"><value>Servicio #{0}</value></data>
+
+	<!-- ===== UserFormControl (Formulario de Usuario) ===== -->
+	<data name="UF_Header_Add" xml:space="preserve"><value>➕ Agregar usuario</value></data>
+	<data name="UF_Header_Edit" xml:space="preserve"><value>✏ Editar usuario</value></data>
+	<data name="UF_Header_Hint" xml:space="preserve">
+    <value>Complete los campos obligatorios • Se recomienda una contraseña segura</value>
+  </data>
+
+	<data name="UF_Label_Name" xml:space="preserve"><value>Nombre</value></data>
+	<data name="UF_Label_Username" xml:space="preserve"><value>Usuario</value></data>
+	<data name="UF_Label_Role" xml:space="preserve"><value>Rol</value></data>
+	<data name="UF_Label_Password_Add" xml:space="preserve"><value>Contraseña (obligatoria al agregar)</value></data>
+	<data name="UF_Label_Password_Edit" xml:space="preserve"><value>Nueva contraseña (opcional)</value></data>
+	<data name="UF_Label_ConfirmPassword" xml:space="preserve"><value>Confirmar contraseña</value></data>
+	<data name="UF_Label_Note" xml:space="preserve"><value>Nota</value></data>
+
+	<data name="UF_PasswordRules" xml:space="preserve">
+    <value>La contraseña debe tener más de 6 caracteres e incluir al menos un número o símbolo. No puede ser igual al nombre ni al nombre de usuario.</value>
+  </data>
+
+	<data name="UF_Tech_Title" xml:space="preserve"><value>Detalles del técnico</value></data>
+	<data name="UF_Tech_PhoneReq" xml:space="preserve"><value>Teléfono (requerido para técnico)</value></data>
+	<data name="UF_Tech_AddressReq" xml:space="preserve"><value>Dirección (requerida para técnico)</value></data>
+	<data name="UF_Tech_AreaReq" xml:space="preserve"><value>Zona asignada (requerida para técnico)</value></data>
+
+	<data name="UF_Btn_Save" xml:space="preserve"><value>✔ Guardar</value></data>
+	<data name="UF_Btn_Close" xml:space="preserve"><value>✖ Cerrar</value></data>
+	<data name="UF_Btn_Delete" xml:space="preserve"><value>🗑 Eliminar</value></data>
+
+	<data name="UF_Validation_Title" xml:space="preserve"><value>Validación</value></data>
+	<data name="UF_Success_Title" xml:space="preserve"><value>Éxito</value></data>
+	<data name="UF_Save_Success" xml:space="preserve"><value>Guardado correctamente.</value></data>
+
+	<data name="UF_Delete_Confirm_Title" xml:space="preserve"><value>Confirmar eliminación</value></data>
+	<data name="UF_Delete_Confirm_Text_Format" xml:space="preserve"><value>¿Eliminar usuario '{0}'?</value></data>
+	<data name="UF_Delete_Success_Title" xml:space="preserve"><value>Eliminado</value></data>
+	<data name="UF_Delete_Success_Text" xml:space="preserve"><value>Usuario eliminado.</value></data>
+
+	<data name="UF_Error_Save_Prefix" xml:space="preserve"><value>Error al guardar el usuario:</value></data>
+	<data name="UF_Error_Delete_Prefix" xml:space="preserve"><value>Error al eliminar el usuario:</value></data>
+
+	<!-- YrMeteogramWindow -->
+	<data name="YR_Title" xml:space="preserve"><value>Meteograma — yr.no</value></data>
+	<data name="YR_Header_Title" xml:space="preserve"><value>🌤 Meteograma completo (yr.no)</value></data>
+	<data name="YR_Btn_Reload" xml:space="preserve"><value>Recargar</value></data>
+	<data name="YR_Btn_Retry" xml:space="preserve"><value>Reintentar</value></data>
+	<data name="YR_Tab_Meteogram" xml:space="preserve"><value>Meteograma</value></data>
+	<data name="YR_Fallback_CantDisplay" xml:space="preserve"><value>No se puede mostrar el meteograma aquí.</value></data>
+
+	<data name="YR_Status_Initializing" xml:space="preserve"><value>Inicializando WebView2…</value></data>
+	<data name="YR_Status_Loading" xml:space="preserve"><value>Cargando…</value></data>
+	<data name="YR_Status_Ready" xml:space="preserve"><value>Meteograma listo.</value></data>
+	<data name="YR_Status_LoadFailed" xml:space="preserve"><value>Error al cargar.</value></data>
+
+	<data name="YR_Error_RuntimeMissing" xml:space="preserve"><value>El runtime de WebView2 no está instalado.</value></data>
+	<data name="YR_Error_CouldNotInitialize" xml:space="preserve"><value>No se pudo inicializar WebView2.</value></data>
+	<data name="YR_Error_InitFailed" xml:space="preserve"><value>Error al inicializar WebView2: </value></data>
+	<data name="YR_Error_NavigationPrefix" xml:space="preserve"><value>Error de navegación: </value></data>
+	<data name="YR_Error_LoadSvgPrefix" xml:space="preserve"><value>Error al cargar el SVG. Estado=</value></data>
+
+	<!-- YrMeteogramControl -->
+	<data name="YR_Header_Title" xml:space="preserve"><value>Departamento de Sucre — Meteograma (yr.no)</value></data>
+	<data name="YR_Tooltip_Reload" xml:space="preserve"><value>Recargar</value></data>
+
+	<data name="YR_Summary_Loading" xml:space="preserve"><value>Cargando pronóstico…</value></data>
+	<data name="YR_Summary_Now" xml:space="preserve"><value>Ahora: {0:0.#}°C</value></data>
+	<data name="YR_Summary_24h" xml:space="preserve"><value>24 h: Máx {0:0.#}°  Mín {1:0.#}°   •   Lluvia {2:0.#} mm</value></data>
+	<data name="YR_Summary_WindUpdated" xml:space="preserve"><value>Viento {0:0.#} m/s   •   Actualizado {1}</value></data>
+	<data name="YR_Summary_SetLatLon" xml:space="preserve"><value>Configure latitud/longitud o nombre de lugar</value></data>
+	<data name="YR_Summary_Failed" xml:space="preserve"><value>Error al cargar el resumen.</value></data>
+
+	<data name="YR_Fallback_Title" xml:space="preserve"><value>No se puede mostrar el meteograma aquí.</value></data>
+	<data name="YR_Fallback_Sub" xml:space="preserve"><value>Instale WebView2 o intente copiar el enlace.</value></data>
+	<data name="YR_Btn_Copy" xml:space="preserve"><value>Copiar enlace</value></data>
+
+	<data name="YR_Status_Initializing" xml:space="preserve"><value>Inicializando WebView2...</value></data>
+	<data name="YR_Meteogram_Loading" xml:space="preserve"><value>Cargando meteograma…</value></data>
+	<data name="YR_Meteogram_Ready" xml:space="preserve"><value>Meteograma listo.</value></data>
+
+	<data name="YR_Error_OpenWindow" xml:space="preserve"><value>Error al abrir la ventana:</value></data>
+	<data name="YR_Error_WebView2InitFailed" xml:space="preserve"><value>Error al inicializar WebView2: {0}</value></data>
+	<data name="YR_Error_WebView2NotInit" xml:space="preserve"><value>No se pudo inicializar WebView2.</value></data>
+	<data name="YR_Error_Navigation" xml:space="preserve"><value>Error de navegación: {0}</value></data>
+	<data name="YR_Error_SVGFailed" xml:space="preserve"><value>No se pudo cargar el SVG. Error=</value></data>
+	<data name="YR_Link_Copied" xml:space="preserve"><value>Enlace copiado.</value></data>
+	<data name="YR_Error_CopyFailed" xml:space="preserve"><value>Error al copiar: {0}</value></data>
+
+	<data name="PVET_Header_Title" xml:space="preserve"><value>Energía FV (PVGIS)</value></data>
+	<data name="PVET_Tooltip_Refresh" xml:space="preserve"><value>Actualizar</value></data>
+
+	<data name="PVET_Status_Loading" xml:space="preserve"><value>(cargando...)</value></data>
+	<data name="PVET_Status_Error"   xml:space="preserve"><value>(error)</value></data>
+
+	<data name="PVET_NoConfig"        xml:space="preserve"><value>Sin configuración</value></data>
+	<data name="PVET_MonthlyAvgFmt"   xml:space="preserve"><value>Promedio mensual: {0:0} kWh</value></data>
+	<data name="PVET_MonthlyAvgDash"  xml:space="preserve"><value>Promedio mensual: —</value></data>
+	<data name="PVET_AnnualFmt"       xml:space="preserve"><value>Anual: {0:0} kWh</value></data>
+	<data name="PVET_AnnualDash"      xml:space="preserve"><value>Anual: —</value></data>
+	<data name="PVET_ConfigFmt"       xml:space="preserve"><value>Config.: {0:0.##} kWp, inclinación {1}°, az {2}°, pérdidas {3:0.#}%</value></data>
+
+	<!-- ===== IrradianceTileControl ===== -->
+	<data name="IRR_Header_Title" xml:space="preserve"><value>Irradiancia</value></data>
+	<data name="IRR_Tooltip_Refresh" xml:space="preserve"><value>Actualizar</value></data>
+
+	<data name="IRR_Status_Loading" xml:space="preserve"><value>(cargando...)</value></data>
+	<data name="IRR_Status_Error"   xml:space="preserve"><value>(error)</value></data>
+
+	<data name="IRR_NoCoords" xml:space="preserve"><value>Sin coordenadas</value></data>
+
+	<data name="IRR_TodayGhiFmt"  xml:space="preserve"><value>GHI de hoy: {0:0.0} kWh/m²</value></data>
+	<data name="IRR_TodayGhiDash" xml:space="preserve"><value>GHI de hoy: —</value></data>
+
+	<data name="IRR_TomorrowPeakFmt"  xml:space="preserve"><value>Pico de mañana: {0:0} W/m²</value></data>
+	<data name="IRR_TomorrowPeakDash" xml:space="preserve"><value>Pico de mañana: —</value></data>
+
+	<data name="IRR_UpdatedFmt" xml:space="preserve"><value>Actualizado {0}</value></data>
+
+	<!-- PvEnergyDetailsWindow -->
+	<data name="PVEDW_Title" xml:space="preserve"><value>Detalles de energía FV (PVGIS)</value></data>
+	<data name="PVEDW_Header" xml:space="preserve"><value>⚡ Energía FV de referencia (PVGIS)</value></data>
+	<data name="PVEDW_Btn_Refresh" xml:space="preserve"><value>Actualizar</value></data>
+	<data name="PVEDW_MonthlyDesc" xml:space="preserve"><value>Energía mensual (kWh) y total anual</value></data>
+	<data name="PVEDW_Col_Month" xml:space="preserve"><value>Mes</value></data>
+	<data name="PVEDW_Col_kWh" xml:space="preserve"><value>kWh</value></data>
+	<data name="PVEDW_Annual_Label" xml:space="preserve"><value>Anual:</value></data>
+	<data name="PVEDW_SpecificYield" xml:space="preserve"><value>Rendimiento específico:</value></data>
+	<data name="PVEDW_CapacityFactor" xml:space="preserve"><value>Factor de capacidad:</value></data>
+	<data name="PVEDW_NoData_Text" xml:space="preserve"><value>PVGIS no devolvió datos.</value></data>
+	<data name="PVEDW_Info_Caption" xml:space="preserve"><value>Información</value></data>
+	<data name="PVEDW_Error_LoadFailed" xml:space="preserve"><value>Error al cargar los datos de energía FV.</value></data>
+	<data name="PVEDW_Error_Caption" xml:space="preserve"><value>Error</value></data>
+
+	<!-- ===== IrradianceDetailsWindow (ES) ===== -->
+	<data name="IrrDet_Title_Base" xml:space="preserve">
+  <value>Detalles de Irradiancia</value>
+</data>
+	<data name="IrrDet_RowsLabel" xml:space="preserve">
+  <value>filas</value>
+</data>
+	<data name="IrrDet_Heading" xml:space="preserve">
+  <value>⭘  Irradiancia (modo rápido: Open-Meteo)</value>
+</data>
+	<data name="IrrDet_Btn_Refresh" xml:space="preserve">
+  <value>Actualizar</value>
+</data>
+	<data name="IrrDet_Loc_Hint" xml:space="preserve">
+  <value>Últimos 7 días + próximos 3 días • GHI en kWh/m² • Pico solo para días de pronóstico</value>
+</data>
+
+	<data name="IrrDet_Past7_Header" xml:space="preserve">
+  <value>  Últimos 7 días</value>
+</data>
+	<data name="IrrDet_Forecast3_Header" xml:space="preserve">
+  <value>  Pronóstico (próximos 3 días)</value>
+</data>
+
+	<data name="IrrDet_Col_DateUtc" xml:space="preserve">
+  <value>Fecha (UTC)</value>
+</data>
+	<data name="IrrDet_Col_Ghi" xml:space="preserve">
+  <value>GHI (kWh/m²)</value>
+</data>
+	<data name="IrrDet_Col_Peak" xml:space="preserve">
+  <value>Pico (W/m²)</value>
+</data>
+
+	<!-- Formato del resumen: {0}=modo, {1}=promedio 7 días, {2}=promedio próximos 3 -->
+	<data name="IrrDet_Summary_Format" xml:space="preserve">
+  <value>{0} • Promedio 7 días: {1} kWh/m²   •   Promedio próximos 3: {2} kWh/m²</value>
+</data>
+	<data name="IrrDet_Mode_OpenMeteoFast" xml:space="preserve">
+  <value>Open-Meteo (rápido)</value>
+</data>
+	<data name="IrrDet_Mode_NasaFallback" xml:space="preserve">
+  <value>NASA+OM (alterno)</value>
+</data>
+
+	<!-- Comunes / Errores -->
+	<data name="Err_IrradianceLoadFailed" xml:space="preserve">
+  <value>No se pudo cargar los datos de irradiancia.</value>
+</data>
+	<data name="Common_ErrorCaption" xml:space="preserve">
+  <value>Error</value>
+</data>
+	<data name="Common_NoDataDash" xml:space="preserve">
+  <value>—</value>
+</data>
+
+	<!-- Yr meteogram: in-SVG labels -->
+	<data name="YR_SVG_Temperature" xml:space="preserve"><value>Temperatura °C</value></data>
+	<data name="YR_SVG_Precipitation" xml:space="preserve"><value>Precipitación mm</value></data>
+	<data name="YR_SVG_Wind" xml:space="preserve"><value>Viento m/s</value></data>
+	<data name="YR_SVG_WeatherForecastFor" xml:space="preserve"><value>Pronóstico del tiempo para</value></data>
+
+	<!-- (Optional, if you want the window chrome localized too) -->
+	<data name="YR_Title" xml:space="preserve"><value>Meteograma — yr.no</value></data>
+	<data name="YR_Header_Title" xml:space="preserve"><value>🌤 Meteograma completo (yr.no)</value></data>
+	<data name="YR_Btn_Reload" xml:space="preserve"><value>Recargar</value></data>
+	<data name="YR_Btn_Retry" xml:space="preserve"><value>Reintentar</value></data>
+	<data name="YR_Tab_Meteogram" xml:space="preserve"><value>Meteograma</value></data>
+	<data name="YR_Fallback_CantDisplay" xml:space="preserve"><value>No se puede mostrar el meteograma aquí.</value></data>
+	<data name="YR_Status_Initializing" xml:space="preserve"><value>Inicializando WebView2…</value></data>
+	<data name="YR_Status_Loading" xml:space="preserve"><value>Cargando…</value></data>
+	<data name="YR_Status_Ready" xml:space="preserve"><value>Meteograma listo.</value></data>
+	<data name="YR_Status_LoadFailed" xml:space="preserve"><value>Error al cargar.</value></data>
+	<data name="YR_Error_RuntimeMissing" xml:space="preserve"><value>WebView2 Runtime no está instalado.</value></data>
+	<data name="YR_Error_CouldNotInitialize" xml:space="preserve"><value>No se pudo inicializar WebView2.</value></data>
+	<data name="YR_Error_InitFailed" xml:space="preserve"><value>Error al inicializar WebView2: </value></data>
+	<data name="YR_Error_NavigationPrefix" xml:space="preserve"><value>Error de navegación: </value></data>
+	<data name="YR_Error_LoadSvgPrefix" xml:space="preserve"><value>No se pudo cargar el SVG. ErrorStatus=</value></data>
+
+	
 </root>
