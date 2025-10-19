@@ -1339,6 +1339,15 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Apply.
+        /// </summary>
+        public static string Common_Apply {
+            get {
+                return ResourceManager.GetString("Common_Apply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cancel.
         /// </summary>
         public static string Common_Cancel {
@@ -1375,6 +1384,15 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to FAIL.
+        /// </summary>
+        public static string Common_Fail {
+            get {
+                return ResourceManager.GetString("Common_Fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to —.
         /// </summary>
         public static string Common_NoDataDash {
@@ -1393,11 +1411,29 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to PASS.
+        /// </summary>
+        public static string Common_Pass {
+            get {
+                return ResourceManager.GetString("Common_Pass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Select all.
         /// </summary>
         public static string Common_SelectAll {
             get {
                 return ResourceManager.GetString("Common_SelectAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set.
+        /// </summary>
+        public static string Common_Set {
+            get {
+                return ResourceManager.GetString("Common_Set", resourceCulture);
             }
         }
         
@@ -1560,6 +1596,762 @@ namespace HouseholdMS.Resources {
         public static string Db_Error_Title {
             get {
                 return ResourceManager.GetString("Db_Error_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Curr, A.
+        /// </summary>
+        public static string EPEV_Axis_CurrA {
+            get {
+                return ResourceManager.GetString("EPEV_Axis_CurrA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power, W.
+        /// </summary>
+        public static string EPEV_Axis_PowerW {
+            get {
+                return ResourceManager.GetString("EPEV_Axis_PowerW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time.
+        /// </summary>
+        public static string EPEV_Axis_Time {
+            get {
+                return ResourceManager.GetString("EPEV_Axis_Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Volt, V.
+        /// </summary>
+        public static string EPEV_Axis_VoltV {
+            get {
+                return ResourceManager.GetString("EPEV_Axis_VoltV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connect.
+        /// </summary>
+        public static string EPEV_Btn_Connect {
+            get {
+                return ResourceManager.GetString("EPEV_Btn_Connect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disconnect.
+        /// </summary>
+        public static string EPEV_Btn_Disconnect {
+            get {
+                return ResourceManager.GetString("EPEV_Btn_Disconnect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Read.
+        /// </summary>
+        public static string EPEV_Btn_Read {
+            get {
+                return ResourceManager.GetString("EPEV_Btn_Read", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Read Now.
+        /// </summary>
+        public static string EPEV_Btn_ReadNow {
+            get {
+                return ResourceManager.GetString("EPEV_Btn_ReadNow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh.
+        /// </summary>
+        public static string EPEV_Btn_Refresh {
+            get {
+                return ResourceManager.GetString("EPEV_Btn_Refresh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reset View.
+        /// </summary>
+        public static string EPEV_Btn_ResetView {
+            get {
+                return ResourceManager.GetString("EPEV_Btn_ResetView", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Battery (Charge).
+        /// </summary>
+        public static string EPEV_Card_Battery {
+            get {
+                return ResourceManager.GetString("EPEV_Card_Battery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Device.
+        /// </summary>
+        public static string EPEV_Card_Device {
+            get {
+                return ResourceManager.GetString("EPEV_Card_Device", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Load Output.
+        /// </summary>
+        public static string EPEV_Card_LoadOutput {
+            get {
+                return ResourceManager.GetString("EPEV_Card_LoadOutput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PV (Array).
+        /// </summary>
+        public static string EPEV_Card_PVArray {
+            get {
+                return ResourceManager.GetString("EPEV_Card_PVArray", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rated (Read-only).
+        /// </summary>
+        public static string EPEV_Card_Rated {
+            get {
+                return ResourceManager.GetString("EPEV_Card_Rated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to State.
+        /// </summary>
+        public static string EPEV_Card_State {
+            get {
+                return ResourceManager.GetString("EPEV_Card_State", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Temperatures.
+        /// </summary>
+        public static string EPEV_Card_Temperatures {
+            get {
+                return ResourceManager.GetString("EPEV_Card_Temperatures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Today&apos;s Extremes.
+        /// </summary>
+        public static string EPEV_Card_TodayExtremes {
+            get {
+                return ResourceManager.GetString("EPEV_Card_TodayExtremes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Index.
+        /// </summary>
+        public static string EPEV_Col_Index {
+            get {
+                return ResourceManager.GetString("EPEV_Col_Index", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /100.
+        /// </summary>
+        public static string EPEV_Col_Scaled100 {
+            get {
+                return ResourceManager.GetString("EPEV_Col_Scaled100", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value (dec).
+        /// </summary>
+        public static string EPEV_Col_ValueDec {
+            get {
+                return ResourceManager.GetString("EPEV_Col_ValueDec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value (hex).
+        /// </summary>
+        public static string EPEV_Col_ValueHex {
+            get {
+                return ResourceManager.GetString("EPEV_Col_ValueHex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Firmware:.
+        /// </summary>
+        public static string EPEV_Device_FirmwareLabel {
+            get {
+                return ResourceManager.GetString("EPEV_Device_FirmwareLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Product:.
+        /// </summary>
+        public static string EPEV_Device_ProductLabel {
+            get {
+                return ResourceManager.GetString("EPEV_Device_ProductLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vendor:.
+        /// </summary>
+        public static string EPEV_Device_VendorLabel {
+            get {
+                return ResourceManager.GetString("EPEV_Device_VendorLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disconnected..
+        /// </summary>
+        public static string EPEV_Disconnected {
+            get {
+                return ResourceManager.GetString("EPEV_Disconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to READ-ONLY.
+        /// </summary>
+        public static string EPEV_Header_ReadOnlyChip {
+            get {
+                return ResourceManager.GetString("EPEV_Header_ReadOnlyChip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status:.
+        /// </summary>
+        public static string EPEV_Header_StatusLabel {
+            get {
+                return ResourceManager.GetString("EPEV_Header_StatusLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to EPEVER MPPT Monitor.
+        /// </summary>
+        public static string EPEV_Header_Title {
+            get {
+                return ResourceManager.GetString("EPEV_Header_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 1s.
+        /// </summary>
+        public static string EPEV_Interval_1s {
+            get {
+                return ResourceManager.GetString("EPEV_Interval_1s", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 2s.
+        /// </summary>
+        public static string EPEV_Interval_2s {
+            get {
+                return ResourceManager.GetString("EPEV_Interval_2s", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 5s.
+        /// </summary>
+        public static string EPEV_Interval_5s {
+            get {
+                return ResourceManager.GetString("EPEV_Interval_5s", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Charge Current:.
+        /// </summary>
+        public static string EPEV_Label_ChargeCurrent {
+            get {
+                return ResourceManager.GetString("EPEV_Label_ChargeCurrent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Charge Power:.
+        /// </summary>
+        public static string EPEV_Label_ChargePower {
+            get {
+                return ResourceManager.GetString("EPEV_Label_ChargePower", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Charge Stage:.
+        /// </summary>
+        public static string EPEV_Label_ChargeStage {
+            get {
+                return ResourceManager.GetString("EPEV_Label_ChargeStage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Count:.
+        /// </summary>
+        public static string EPEV_Label_Count {
+            get {
+                return ResourceManager.GetString("EPEV_Label_Count", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current:.
+        /// </summary>
+        public static string EPEV_Label_Current {
+            get {
+                return ResourceManager.GetString("EPEV_Label_Current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last update:.
+        /// </summary>
+        public static string EPEV_Label_LastUpdate {
+            get {
+                return ResourceManager.GetString("EPEV_Label_LastUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power:.
+        /// </summary>
+        public static string EPEV_Label_Power {
+            get {
+                return ResourceManager.GetString("EPEV_Label_Power", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SOC:.
+        /// </summary>
+        public static string EPEV_Label_SOC {
+            get {
+                return ResourceManager.GetString("EPEV_Label_SOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start (hex or dec):.
+        /// </summary>
+        public static string EPEV_Label_Start {
+            get {
+                return ResourceManager.GetString("EPEV_Label_Start", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Voltage:.
+        /// </summary>
+        public static string EPEV_Label_Voltage {
+            get {
+                return ResourceManager.GetString("EPEV_Label_Voltage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Comm error.
+        /// </summary>
+        public static string EPEV_Link_CommError {
+            get {
+                return ResourceManager.GetString("EPEV_Link_CommError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connected (idle).
+        /// </summary>
+        public static string EPEV_Link_ConnectedIdle {
+            get {
+                return ResourceManager.GetString("EPEV_Link_ConnectedIdle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connected, but no data.
+        /// </summary>
+        public static string EPEV_Link_ConnectedNoData {
+            get {
+                return ResourceManager.GetString("EPEV_Link_ConnectedNoData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disconnected.
+        /// </summary>
+        public static string EPEV_Link_Disconnected {
+            get {
+                return ResourceManager.GetString("EPEV_Link_Disconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Polling.
+        /// </summary>
+        public static string EPEV_Link_Polling {
+            get {
+                return ResourceManager.GetString("EPEV_Link_Polling", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connect first..
+        /// </summary>
+        public static string EPEV_Msg_ConnectFirst {
+            get {
+                return ResourceManager.GetString("EPEV_Msg_ConnectFirst", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Count must be 1..60..
+        /// </summary>
+        public static string EPEV_Msg_CountRange {
+            get {
+                return ResourceManager.GetString("EPEV_Msg_CountRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid start address..
+        /// </summary>
+        public static string EPEV_Msg_InvalidStart {
+            get {
+                return ResourceManager.GetString("EPEV_Msg_InvalidStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Device ID must be 1..247..
+        /// </summary>
+        public static string EPEV_Msg_InvalidUnitId {
+            get {
+                return ResourceManager.GetString("EPEV_Msg_InvalidUnitId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select a COM port first..
+        /// </summary>
+        public static string EPEV_Msg_SelectPort {
+            get {
+                return ResourceManager.GetString("EPEV_Msg_SelectPort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to EPEVER Monitor.
+        /// </summary>
+        public static string EPEV_Msg_Title {
+            get {
+                return ResourceManager.GetString("EPEV_Msg_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rated Charge Current:.
+        /// </summary>
+        public static string EPEV_Rated_ChargeCurrent {
+            get {
+                return ResourceManager.GetString("EPEV_Rated_ChargeCurrent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rated Load Current:.
+        /// </summary>
+        public static string EPEV_Rated_LoadCurrent {
+            get {
+                return ResourceManager.GetString("EPEV_Rated_LoadCurrent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PV Rated Input Voltage:.
+        /// </summary>
+        public static string EPEV_Rated_PvRatedInputVoltage {
+            get {
+                return ResourceManager.GetString("EPEV_Rated_PvRatedInputVoltage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Advanced Inspector (Read Input Registers 0x04).
+        /// </summary>
+        public static string EPEV_Section_Inspector {
+            get {
+                return ResourceManager.GetString("EPEV_Section_Inspector", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Raw / Debug.
+        /// </summary>
+        public static string EPEV_Section_RawDebug {
+            get {
+                return ResourceManager.GetString("EPEV_Section_RawDebug", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Real-time Curves.
+        /// </summary>
+        public static string EPEV_Section_RealtimeCurves {
+            get {
+                return ResourceManager.GetString("EPEV_Section_RealtimeCurves", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Battery.
+        /// </summary>
+        public static string EPEV_Series_Battery {
+            get {
+                return ResourceManager.GetString("EPEV_Series_Battery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Load.
+        /// </summary>
+        public static string EPEV_Series_Load {
+            get {
+                return ResourceManager.GetString("EPEV_Series_Load", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Solar.
+        /// </summary>
+        public static string EPEV_Series_Solar {
+            get {
+                return ResourceManager.GetString("EPEV_Series_Solar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  %.
+        /// </summary>
+        public static string EPEV_SocPercent {
+            get {
+                return ResourceManager.GetString("EPEV_SocPercent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connected to {0} @ {1} (ID={2})..
+        /// </summary>
+        public static string EPEV_Status_ConnectedFmt {
+            get {
+                return ResourceManager.GetString("EPEV_Status_ConnectedFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select COM port, set ID, click Connect..
+        /// </summary>
+        public static string EPEV_Status_InitHint {
+            get {
+                return ResourceManager.GetString("EPEV_Status_InitHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        public static string EPEV_Status_OK {
+            get {
+                return ResourceManager.GetString("EPEV_Status_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current.
+        /// </summary>
+        public static string EPEV_Tab_Current {
+            get {
+                return ResourceManager.GetString("EPEV_Tab_Current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power.
+        /// </summary>
+        public static string EPEV_Tab_Power {
+            get {
+                return ResourceManager.GetString("EPEV_Tab_Power", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Voltage.
+        /// </summary>
+        public static string EPEV_Tab_Voltage {
+            get {
+                return ResourceManager.GetString("EPEV_Tab_Voltage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ambient:.
+        /// </summary>
+        public static string EPEV_Temp_Ambient {
+            get {
+                return ResourceManager.GetString("EPEV_Temp_Ambient", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Battery:.
+        /// </summary>
+        public static string EPEV_Temp_Battery {
+            get {
+                return ResourceManager.GetString("EPEV_Temp_Battery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Controller:.
+        /// </summary>
+        public static string EPEV_Temp_Controller {
+            get {
+                return ResourceManager.GetString("EPEV_Temp_Controller", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tip: Only one master on RS-485. Close other apps..
+        /// </summary>
+        public static string EPEV_Tip_RS485 {
+            get {
+                return ResourceManager.GetString("EPEV_Tip_RS485", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Battery Vmax:.
+        /// </summary>
+        public static string EPEV_Today_BattVmax {
+            get {
+                return ResourceManager.GetString("EPEV_Today_BattVmax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Battery Vmin:.
+        /// </summary>
+        public static string EPEV_Today_BattVmin {
+            get {
+                return ResourceManager.GetString("EPEV_Today_BattVmin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Auto.
+        /// </summary>
+        public static string EPEV_Toolbar_Auto {
+            get {
+                return ResourceManager.GetString("EPEV_Toolbar_Auto", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Baud:.
+        /// </summary>
+        public static string EPEV_Toolbar_Baud {
+            get {
+                return ResourceManager.GetString("EPEV_Toolbar_Baud", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ID:.
+        /// </summary>
+        public static string EPEV_Toolbar_ID {
+            get {
+                return ResourceManager.GetString("EPEV_Toolbar_ID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Interval:.
+        /// </summary>
+        public static string EPEV_Toolbar_Interval {
+            get {
+                return ResourceManager.GetString("EPEV_Toolbar_Interval", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Port:.
+        /// </summary>
+        public static string EPEV_Toolbar_Port {
+            get {
+                return ResourceManager.GetString("EPEV_Toolbar_Port", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  A.
+        /// </summary>
+        public static string EPEV_Unit_A {
+            get {
+                return ResourceManager.GetString("EPEV_Unit_A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  °C.
+        /// </summary>
+        public static string EPEV_Unit_Cdeg {
+            get {
+                return ResourceManager.GetString("EPEV_Unit_Cdeg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  V.
+        /// </summary>
+        public static string EPEV_Unit_V {
+            get {
+                return ResourceManager.GetString("EPEV_Unit_V", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  W.
+        /// </summary>
+        public static string EPEV_Unit_W {
+            get {
+                return ResourceManager.GetString("EPEV_Unit_W", resourceCulture);
             }
         }
         
@@ -2167,6 +2959,987 @@ namespace HouseholdMS.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Apply.
+        /// </summary>
+        public static string IT8615_Btn_Apply {
+            get {
+                return ResourceManager.GetString("IT8615_Btn_Apply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply Display/Average.
+        /// </summary>
+        public static string IT8615_Btn_ApplyDisplayAvg {
+            get {
+                return ResourceManager.GetString("IT8615_Btn_ApplyDisplayAvg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply Knob.
+        /// </summary>
+        public static string IT8615_Btn_ApplyKnob {
+            get {
+                return ResourceManager.GetString("IT8615_Btn_ApplyKnob", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply Power Factor / Crest Factor.
+        /// </summary>
+        public static string IT8615_Btn_ApplyPfCf {
+            get {
+                return ResourceManager.GetString("IT8615_Btn_ApplyPfCf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply Time/Div.
+        /// </summary>
+        public static string IT8615_Btn_ApplyTimeDiv {
+            get {
+                return ResourceManager.GetString("IT8615_Btn_ApplyTimeDiv", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply Trigger.
+        /// </summary>
+        public static string IT8615_Btn_ApplyTrigger {
+            get {
+                return ResourceManager.GetString("IT8615_Btn_ApplyTrigger", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply Vertical.
+        /// </summary>
+        public static string IT8615_Btn_ApplyVertical {
+            get {
+                return ResourceManager.GetString("IT8615_Btn_ApplyVertical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connect.
+        /// </summary>
+        public static string IT8615_Btn_Connect {
+            get {
+                return ResourceManager.GetString("IT8615_Btn_Connect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disconnect.
+        /// </summary>
+        public static string IT8615_Btn_Disconnect {
+            get {
+                return ResourceManager.GetString("IT8615_Btn_Disconnect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Discover.
+        /// </summary>
+        public static string IT8615_Btn_Discover {
+            get {
+                return ResourceManager.GetString("IT8615_Btn_Discover", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Emergency Stop.
+        /// </summary>
+        public static string IT8615_Btn_EStop {
+            get {
+                return ResourceManager.GetString("IT8615_Btn_EStop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Run.
+        /// </summary>
+        public static string IT8615_Btn_Run {
+            get {
+                return ResourceManager.GetString("IT8615_Btn_Run", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Single.
+        /// </summary>
+        public static string IT8615_Btn_Single {
+            get {
+                return ResourceManager.GetString("IT8615_Btn_Single", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start.
+        /// </summary>
+        public static string IT8615_Btn_Start {
+            get {
+                return ResourceManager.GetString("IT8615_Btn_Start", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stop.
+        /// </summary>
+        public static string IT8615_Btn_Stop {
+            get {
+                return ResourceManager.GetString("IT8615_Btn_Stop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to    Instrument ID:.
+        /// </summary>
+        public static string IT8615_Conn_InstrumentId {
+            get {
+                return ResourceManager.GetString("IT8615_Conn_InstrumentId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resource:.
+        /// </summary>
+        public static string IT8615_Conn_Resource {
+            get {
+                return ResourceManager.GetString("IT8615_Conn_Resource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Retry Count.
+        /// </summary>
+        public static string IT8615_Conn_Retry {
+            get {
+                return ResourceManager.GetString("IT8615_Conn_Retry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timeout (ms).
+        /// </summary>
+        public static string IT8615_Conn_Timeout {
+            get {
+                return ResourceManager.GetString("IT8615_Conn_Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        public static string IT8615_Error_Title {
+            get {
+                return ResourceManager.GetString("IT8615_Error_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current (Constant Current).
+        /// </summary>
+        public static string IT8615_Func_Current {
+            get {
+                return ResourceManager.GetString("IT8615_Func_Current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power (Constant Power).
+        /// </summary>
+        public static string IT8615_Func_Power {
+            get {
+                return ResourceManager.GetString("IT8615_Func_Power", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resistance (Constant Resistance).
+        /// </summary>
+        public static string IT8615_Func_Resistance {
+            get {
+                return ResourceManager.GetString("IT8615_Func_Resistance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Short Circuit.
+        /// </summary>
+        public static string IT8615_Func_Short {
+            get {
+                return ResourceManager.GetString("IT8615_Func_Short", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Voltage (Constant Voltage).
+        /// </summary>
+        public static string IT8615_Func_Voltage {
+            get {
+                return ResourceManager.GetString("IT8615_Func_Voltage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Harmonic Order (n).
+        /// </summary>
+        public static string IT8615_Harm_AxisX {
+            get {
+                return ResourceManager.GetString("IT8615_Harm_AxisX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Amplitude (normalized).
+        /// </summary>
+        public static string IT8615_Harm_AxisY {
+            get {
+                return ResourceManager.GetString("IT8615_Harm_AxisY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Measure Harmonics.
+        /// </summary>
+        public static string IT8615_Harm_BtnMeasure {
+            get {
+                return ResourceManager.GetString("IT8615_Harm_BtnMeasure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Voltage Harmonics.
+        /// </summary>
+        public static string IT8615_Harm_SeriesLabel {
+            get {
+                return ResourceManager.GetString("IT8615_Harm_SeriesLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Up to Harmonic Number:.
+        /// </summary>
+        public static string IT8615_Harm_UpToN {
+            get {
+                return ResourceManager.GetString("IT8615_Harm_UpToN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Control, scope, and harmonics.
+        /// </summary>
+        public static string IT8615_Header_Sub {
+            get {
+                return ResourceManager.GetString("IT8615_Header_Sub", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IT8615 Electronic Load.
+        /// </summary>
+        public static string IT8615_Header_Title {
+            get {
+                return ResourceManager.GetString("IT8615_Header_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AB (Curr Base).
+        /// </summary>
+        public static string IT8615_Knob_AB {
+            get {
+                return ResourceManager.GetString("IT8615_Knob_AB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AR (Curr Range).
+        /// </summary>
+        public static string IT8615_Knob_AR {
+            get {
+                return ResourceManager.GetString("IT8615_Knob_AR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UR/AR(change range), UB/AB(change base), TL(trigger level), TD(trigger delay), T/d(time per division).
+        /// </summary>
+        public static string IT8615_Knob_Help {
+            get {
+                return ResourceManager.GetString("IT8615_Knob_Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Knob maps to.
+        /// </summary>
+        public static string IT8615_Knob_Label {
+            get {
+                return ResourceManager.GetString("IT8615_Knob_Label", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TD (Trig Delay).
+        /// </summary>
+        public static string IT8615_Knob_TD {
+            get {
+                return ResourceManager.GetString("IT8615_Knob_TD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to T/d (Time/Div).
+        /// </summary>
+        public static string IT8615_Knob_Tdiv {
+            get {
+                return ResourceManager.GetString("IT8615_Knob_Tdiv", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Knob Function.
+        /// </summary>
+        public static string IT8615_Knob_Title {
+            get {
+                return ResourceManager.GetString("IT8615_Knob_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TL (Trig Level).
+        /// </summary>
+        public static string IT8615_Knob_TL {
+            get {
+                return ResourceManager.GetString("IT8615_Knob_TL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UB (Volt Base).
+        /// </summary>
+        public static string IT8615_Knob_UB {
+            get {
+                return ResourceManager.GetString("IT8615_Knob_UB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UR (Volt Range).
+        /// </summary>
+        public static string IT8615_Knob_UR {
+            get {
+                return ResourceManager.GetString("IT8615_Knob_UR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time/Div (s).
+        /// </summary>
+        public static string IT8615_Label_TimeDiv {
+            get {
+                return ResourceManager.GetString("IT8615_Label_TimeDiv", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Crest Factor:.
+        /// </summary>
+        public static string IT8615_Meter_Cf {
+            get {
+                return ResourceManager.GetString("IT8615_Meter_Cf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Frequency:.
+        /// </summary>
+        public static string IT8615_Meter_Freq {
+            get {
+                return ResourceManager.GetString("IT8615_Meter_Freq", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current RMS:.
+        /// </summary>
+        public static string IT8615_Meter_Irms {
+            get {
+                return ResourceManager.GetString("IT8615_Meter_Irms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power Factor:.
+        /// </summary>
+        public static string IT8615_Meter_Pf {
+            get {
+                return ResourceManager.GetString("IT8615_Meter_Pf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power:.
+        /// </summary>
+        public static string IT8615_Meter_Power {
+            get {
+                return ResourceManager.GetString("IT8615_Meter_Power", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Meter (Live).
+        /// </summary>
+        public static string IT8615_Meter_Title {
+            get {
+                return ResourceManager.GetString("IT8615_Meter_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Voltage RMS:.
+        /// </summary>
+        public static string IT8615_Meter_Vrms {
+            get {
+                return ResourceManager.GetString("IT8615_Meter_Vrms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Modes: Constant Current, Constant Resistance, Constant Voltage, Constant Power, Short Circuit.
+        /// </summary>
+        public static string IT8615_ModeTooltip {
+            get {
+                return ResourceManager.GetString("IT8615_ModeTooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connect to the instrument first..
+        /// </summary>
+        public static string IT8615_Msg_NotConnectedBody {
+            get {
+                return ResourceManager.GetString("IT8615_Msg_NotConnectedBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not connected.
+        /// </summary>
+        public static string IT8615_Msg_NotConnectedTitle {
+            get {
+                return ResourceManager.GetString("IT8615_Msg_NotConnectedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pick a VISA resource..
+        /// </summary>
+        public static string IT8615_Msg_PickResource {
+            get {
+                return ResourceManager.GetString("IT8615_Msg_PickResource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The selected resource is not an ITECH IT8615. Choose the correct device..
+        /// </summary>
+        public static string IT8615_Msg_WrongInstrumentBody {
+            get {
+                return ResourceManager.GetString("IT8615_Msg_WrongInstrumentBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wrong instrument.
+        /// </summary>
+        public static string IT8615_Msg_WrongInstrumentTitle {
+            get {
+                return ResourceManager.GetString("IT8615_Msg_WrongInstrumentTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AC / DC:.
+        /// </summary>
+        public static string IT8615_Param_Acdc {
+            get {
+                return ResourceManager.GetString("IT8615_Param_Acdc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Crest Factor:.
+        /// </summary>
+        public static string IT8615_Param_CrestFactor {
+            get {
+                return ResourceManager.GetString("IT8615_Param_CrestFactor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable Input.
+        /// </summary>
+        public static string IT8615_Param_EnableInput {
+            get {
+                return ResourceManager.GetString("IT8615_Param_EnableInput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Function:.
+        /// </summary>
+        public static string IT8615_Param_Function {
+            get {
+                return ResourceManager.GetString("IT8615_Param_Function", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Operating Mode.
+        /// </summary>
+        public static string IT8615_Param_OperatingMode {
+            get {
+                return ResourceManager.GetString("IT8615_Param_OperatingMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power Factor:.
+        /// </summary>
+        public static string IT8615_Param_PowerFactor {
+            get {
+                return ResourceManager.GetString("IT8615_Param_PowerFactor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Setpoint:.
+        /// </summary>
+        public static string IT8615_Param_Setpoint {
+            get {
+                return ResourceManager.GetString("IT8615_Param_Setpoint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sample.
+        /// </summary>
+        public static string IT8615_Scope_AxisX {
+            get {
+                return ResourceManager.GetString("IT8615_Scope_AxisX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to V / A.
+        /// </summary>
+        public static string IT8615_Scope_AxisY {
+            get {
+                return ResourceManager.GetString("IT8615_Scope_AxisY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current.
+        /// </summary>
+        public static string IT8615_Scope_SeriesCurr {
+            get {
+                return ResourceManager.GetString("IT8615_Scope_SeriesCurr", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Voltage.
+        /// </summary>
+        public static string IT8615_Scope_SeriesVolt {
+            get {
+                return ResourceManager.GetString("IT8615_Scope_SeriesVolt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connected..
+        /// </summary>
+        public static string IT8615_Status_Connected {
+            get {
+                return ResourceManager.GetString("IT8615_Status_Connected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disconnected..
+        /// </summary>
+        public static string IT8615_Status_Disconnected {
+            get {
+                return ResourceManager.GetString("IT8615_Status_Disconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Found {0} VISA resources..
+        /// </summary>
+        public static string IT8615_Status_DiscoveredFmt {
+            get {
+                return ResourceManager.GetString("IT8615_Status_DiscoveredFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display={0}, Average={1}.
+        /// </summary>
+        public static string IT8615_Status_DisplayAvgFmt {
+            get {
+                return ResourceManager.GetString("IT8615_Status_DisplayAvgFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Emergency stop executed..
+        /// </summary>
+        public static string IT8615_Status_EStopExecuted {
+            get {
+                return ResourceManager.GetString("IT8615_Status_EStopExecuted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Harmonics captured: n={0}.
+        /// </summary>
+        public static string IT8615_Status_Harm_CapturedFmt {
+            get {
+                return ResourceManager.GetString("IT8615_Status_Harm_CapturedFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Harmonics: no data..
+        /// </summary>
+        public static string IT8615_Status_Harm_NoData {
+            get {
+                return ResourceManager.GetString("IT8615_Status_Harm_NoData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Idle.
+        /// </summary>
+        public static string IT8615_Status_Idle {
+            get {
+                return ResourceManager.GetString("IT8615_Status_Idle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Knob → {0}.
+        /// </summary>
+        public static string IT8615_Status_KnobFmt {
+            get {
+                return ResourceManager.GetString("IT8615_Status_KnobFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power factor / crest factor applied..
+        /// </summary>
+        public static string IT8615_Status_PfCfApplied {
+            get {
+                return ResourceManager.GetString("IT8615_Status_PfCfApplied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scope LIVE: V[{0}], I[{1}].
+        /// </summary>
+        public static string IT8615_Status_ScopeLiveFmt {
+            get {
+                return ResourceManager.GetString("IT8615_Status_ScopeLiveFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scope: no data yet (check trigger level/mode or press Run again)..
+        /// </summary>
+        public static string IT8615_Status_ScopeNoData {
+            get {
+                return ResourceManager.GetString("IT8615_Status_ScopeNoData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scope: V[{0}], I[{1}] points..
+        /// </summary>
+        public static string IT8615_Status_ScopePointsFmt {
+            get {
+                return ResourceManager.GetString("IT8615_Status_ScopePointsFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scope stopped..
+        /// </summary>
+        public static string IT8615_Status_ScopeStopped {
+            get {
+                return ResourceManager.GetString("IT8615_Status_ScopeStopped", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Setpoint applied..
+        /// </summary>
+        public static string IT8615_Status_SetpointApplied {
+            get {
+                return ResourceManager.GetString("IT8615_Status_SetpointApplied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time/Div = {0} s.
+        /// </summary>
+        public static string IT8615_Status_TimeDivFmt {
+            get {
+                return ResourceManager.GetString("IT8615_Status_TimeDivFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Trigger applied..
+        /// </summary>
+        public static string IT8615_Status_TriggerApplied {
+            get {
+                return ResourceManager.GetString("IT8615_Status_TriggerApplied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vertical set VBase={0}, VRange={1}, ABase={2}, ARange={3}.
+        /// </summary>
+        public static string IT8615_Status_VerticalSetFmt {
+            get {
+                return ResourceManager.GetString("IT8615_Status_VerticalSetFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Harmonics.
+        /// </summary>
+        public static string IT8615_Tab_Harmonics {
+            get {
+                return ResourceManager.GetString("IT8615_Tab_Harmonics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameters.
+        /// </summary>
+        public static string IT8615_Tab_Parameters {
+            get {
+                return ResourceManager.GetString("IT8615_Tab_Parameters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scope.
+        /// </summary>
+        public static string IT8615_Tab_Scope {
+            get {
+                return ResourceManager.GetString("IT8615_Tab_Scope", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delay (s).
+        /// </summary>
+        public static string IT8615_Trig_DelaySec {
+            get {
+                return ResourceManager.GetString("IT8615_Trig_DelaySec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Level.
+        /// </summary>
+        public static string IT8615_Trig_Level {
+            get {
+                return ResourceManager.GetString("IT8615_Trig_Level", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mode.
+        /// </summary>
+        public static string IT8615_Trig_Mode {
+            get {
+                return ResourceManager.GetString("IT8615_Trig_Mode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Slope.
+        /// </summary>
+        public static string IT8615_Trig_Slope {
+            get {
+                return ResourceManager.GetString("IT8615_Trig_Slope", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source.
+        /// </summary>
+        public static string IT8615_Trig_Source {
+            get {
+                return ResourceManager.GetString("IT8615_Trig_Source", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Trig:.
+        /// </summary>
+        public static string IT8615_Trig_StatePrefix {
+            get {
+                return ResourceManager.GetString("IT8615_Trig_StatePrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Trigger Setup.
+        /// </summary>
+        public static string IT8615_Trig_Title {
+            get {
+                return ResourceManager.GetString("IT8615_Trig_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AUTO.
+        /// </summary>
+        public static string IT8615_TrigMode_Auto {
+            get {
+                return ResourceManager.GetString("IT8615_TrigMode_Auto", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NORM.
+        /// </summary>
+        public static string IT8615_TrigMode_Norm {
+            get {
+                return ResourceManager.GetString("IT8615_TrigMode_Norm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Any.
+        /// </summary>
+        public static string IT8615_TrigSlope_Any {
+            get {
+                return ResourceManager.GetString("IT8615_TrigSlope_Any", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Negative.
+        /// </summary>
+        public static string IT8615_TrigSlope_Neg {
+            get {
+                return ResourceManager.GetString("IT8615_TrigSlope_Neg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Positive.
+        /// </summary>
+        public static string IT8615_TrigSlope_Pos {
+            get {
+                return ResourceManager.GetString("IT8615_TrigSlope_Pos", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current.
+        /// </summary>
+        public static string IT8615_TrigSrc_Current {
+            get {
+                return ResourceManager.GetString("IT8615_TrigSrc_Current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Voltage.
+        /// </summary>
+        public static string IT8615_TrigSrc_Voltage {
+            get {
+                return ResourceManager.GetString("IT8615_TrigSrc_Voltage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A Base (A).
+        /// </summary>
+        public static string IT8615_Vert_ABase {
+            get {
+                return ResourceManager.GetString("IT8615_Vert_ABase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A Range (A).
+        /// </summary>
+        public static string IT8615_Vert_ARange {
+            get {
+                return ResourceManager.GetString("IT8615_Vert_ARange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Average (1-16).
+        /// </summary>
+        public static string IT8615_Vert_Average {
+            get {
+                return ResourceManager.GetString("IT8615_Vert_Average", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display.
+        /// </summary>
+        public static string IT8615_Vert_Display {
+            get {
+                return ResourceManager.GetString("IT8615_Vert_Display", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vertical / Measure.
+        /// </summary>
+        public static string IT8615_Vert_Title {
+            get {
+                return ResourceManager.GetString("IT8615_Vert_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to V Base (V).
+        /// </summary>
+        public static string IT8615_Vert_VBase {
+            get {
+                return ResourceManager.GetString("IT8615_Vert_VBase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to V Range (V).
+        /// </summary>
+        public static string IT8615_Vert_VRange {
+            get {
+                return ResourceManager.GetString("IT8615_Vert_VRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ✖ Cancel.
         /// </summary>
         public static string ItemDlg_Cancel {
@@ -2316,6 +4089,1230 @@ namespace HouseholdMS.Resources {
         public static string Login_Welcome {
             get {
                 return ResourceManager.GetString("Login_Welcome", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Acquisition.
+        /// </summary>
+        public static string MEAS_Acq_Title {
+            get {
+                return ResourceManager.GetString("MEAS_Acq_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Advanced Controls.
+        /// </summary>
+        public static string MEAS_Advanced_Title {
+            get {
+                return ResourceManager.GetString("MEAS_Advanced_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply.
+        /// </summary>
+        public static string MEAS_Btn_Apply {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_Apply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply A.
+        /// </summary>
+        public static string MEAS_Btn_ApplyA {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_ApplyA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply CAP.
+        /// </summary>
+        public static string MEAS_Btn_ApplyCap {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_ApplyCap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply Limits.
+        /// </summary>
+        public static string MEAS_Btn_ApplyLimits {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_ApplyLimits", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply mA.
+        /// </summary>
+        public static string MEAS_Btn_ApplymA {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_ApplymA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply mV.
+        /// </summary>
+        public static string MEAS_Btn_ApplymV {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_ApplymV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply Threshold.
+        /// </summary>
+        public static string MEAS_Btn_ApplyThreshold {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_ApplyThreshold", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply Unit.
+        /// </summary>
+        public static string MEAS_Btn_ApplyUnit {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_ApplyUnit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply V.
+        /// </summary>
+        public static string MEAS_Btn_ApplyV {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_ApplyV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connect.
+        /// </summary>
+        public static string MEAS_Btn_Connect {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_Connect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disconnect.
+        /// </summary>
+        public static string MEAS_Btn_Disconnect {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_Disconnect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IDN?.
+        /// </summary>
+        public static string MEAS_Btn_IDN {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_IDN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Local (SYST:LOC).
+        /// </summary>
+        public static string MEAS_Btn_Local {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_Local", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Math OFF.
+        /// </summary>
+        public static string MEAS_Btn_MathOff {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_MathOff", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Read Once.
+        /// </summary>
+        public static string MEAS_Btn_ReadOnce {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_ReadOnce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh Stats.
+        /// </summary>
+        public static string MEAS_Btn_RefreshStats {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_RefreshStats", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remote (SYST:REM).
+        /// </summary>
+        public static string MEAS_Btn_Remote {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_Remote", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reset View.
+        /// </summary>
+        public static string MEAS_Btn_ResetView {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_ResetView", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use dB.
+        /// </summary>
+        public static string MEAS_Btn_UseDb {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_UseDb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use dBm.
+        /// </summary>
+        public static string MEAS_Btn_UseDbm {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_UseDbm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Zoom In.
+        /// </summary>
+        public static string MEAS_Btn_ZoomIn {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_ZoomIn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Zoom Out.
+        /// </summary>
+        public static string MEAS_Btn_ZoomOut {
+            get {
+                return ResourceManager.GetString("MEAS_Btn_ZoomOut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Capacitance (F).
+        /// </summary>
+        public static string MEAS_Cap_Header {
+            get {
+                return ResourceManager.GetString("MEAS_Cap_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Auto Range.
+        /// </summary>
+        public static string MEAS_Check_AutoRange {
+            get {
+                return ResourceManager.GetString("MEAS_Check_AutoRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Beeper.
+        /// </summary>
+        public static string MEAS_Check_Beeper {
+            get {
+                return ResourceManager.GetString("MEAS_Check_Beeper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Baud.
+        /// </summary>
+        public static string MEAS_Conn_Baud {
+            get {
+                return ResourceManager.GetString("MEAS_Conn_Baud", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bits.
+        /// </summary>
+        public static string MEAS_Conn_Bits {
+            get {
+                return ResourceManager.GetString("MEAS_Conn_Bits", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to COM.
+        /// </summary>
+        public static string MEAS_Conn_COM {
+            get {
+                return ResourceManager.GetString("MEAS_Conn_COM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parity.
+        /// </summary>
+        public static string MEAS_Conn_Parity {
+            get {
+                return ResourceManager.GetString("MEAS_Conn_Parity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Continuity and Diode.
+        /// </summary>
+        public static string MEAS_Cont_Header {
+            get {
+                return ResourceManager.GetString("MEAS_Cont_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current (A / mA / µA).
+        /// </summary>
+        public static string MEAS_Curr_Header {
+            get {
+                return ResourceManager.GetString("MEAS_Curr_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Level in dB / dBm.
+        /// </summary>
+        public static string MEAS_dB_Header {
+            get {
+                return ResourceManager.GetString("MEAS_dB_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Capacitance (F).
+        /// </summary>
+        public static string MEAS_Func_Cap {
+            get {
+                return ResourceManager.GetString("MEAS_Func_Cap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Continuity.
+        /// </summary>
+        public static string MEAS_Func_Cont {
+            get {
+                return ResourceManager.GetString("MEAS_Func_Cont", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current AC.
+        /// </summary>
+        public static string MEAS_Func_CurrAC {
+            get {
+                return ResourceManager.GetString("MEAS_Func_CurrAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current DC.
+        /// </summary>
+        public static string MEAS_Func_CurrDC {
+            get {
+                return ResourceManager.GetString("MEAS_Func_CurrDC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Diode.
+        /// </summary>
+        public static string MEAS_Func_Diode {
+            get {
+                return ResourceManager.GetString("MEAS_Func_Diode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 4-Wire Resistance (Ω).
+        /// </summary>
+        public static string MEAS_Func_FourRes {
+            get {
+                return ResourceManager.GetString("MEAS_Func_FourRes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Frequency (Hz).
+        /// </summary>
+        public static string MEAS_Func_Freq {
+            get {
+                return ResourceManager.GetString("MEAS_Func_Freq", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Period (s).
+        /// </summary>
+        public static string MEAS_Func_Per {
+            get {
+                return ResourceManager.GetString("MEAS_Func_Per", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resistance (Ω).
+        /// </summary>
+        public static string MEAS_Func_Res {
+            get {
+                return ResourceManager.GetString("MEAS_Func_Res", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Temperature (RTD).
+        /// </summary>
+        public static string MEAS_Func_TempRTD {
+            get {
+                return ResourceManager.GetString("MEAS_Func_TempRTD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Voltage AC.
+        /// </summary>
+        public static string MEAS_Func_VoltAC {
+            get {
+                return ResourceManager.GetString("MEAS_Func_VoltAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Voltage DC.
+        /// </summary>
+        public static string MEAS_Func_VoltDC {
+            get {
+                return ResourceManager.GetString("MEAS_Func_VoltDC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Function.
+        /// </summary>
+        public static string MEAS_Function_Title {
+            get {
+                return ResourceManager.GetString("MEAS_Function_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Measurement Console.
+        /// </summary>
+        public static string MEAS_Header_Title {
+            get {
+                return ResourceManager.GetString("MEAS_Header_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A Range:.
+        /// </summary>
+        public static string MEAS_Label_ARange {
+            get {
+                return ResourceManager.GetString("MEAS_Label_ARange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avg:.
+        /// </summary>
+        public static string MEAS_Label_Avg {
+            get {
+                return ResourceManager.GetString("MEAS_Label_Avg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Continuity Threshold (Ω):.
+        /// </summary>
+        public static string MEAS_Label_ContThreshold {
+            get {
+                return ResourceManager.GetString("MEAS_Label_ContThreshold", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current Range:.
+        /// </summary>
+        public static string MEAS_Label_CurrentRange {
+            get {
+                return ResourceManager.GetString("MEAS_Label_CurrentRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Effective SPS:.
+        /// </summary>
+        public static string MEAS_Label_EffectiveSps {
+            get {
+                return ResourceManager.GetString("MEAS_Label_EffectiveSps", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Interval.
+        /// </summary>
+        public static string MEAS_Label_Interval {
+            get {
+                return ResourceManager.GetString("MEAS_Label_Interval", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lower Limit:.
+        /// </summary>
+        public static string MEAS_Label_LowerLimit {
+            get {
+                return ResourceManager.GetString("MEAS_Label_LowerLimit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to mA/µA Range:.
+        /// </summary>
+        public static string MEAS_Label_mARange {
+            get {
+                return ResourceManager.GetString("MEAS_Label_mARange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Max:.
+        /// </summary>
+        public static string MEAS_Label_Max {
+            get {
+                return ResourceManager.GetString("MEAS_Label_Max", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Measured Value:.
+        /// </summary>
+        public static string MEAS_Label_MeasuredValue {
+            get {
+                return ResourceManager.GetString("MEAS_Label_MeasuredValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Min:.
+        /// </summary>
+        public static string MEAS_Label_Min {
+            get {
+                return ResourceManager.GetString("MEAS_Label_Min", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mode:.
+        /// </summary>
+        public static string MEAS_Label_Mode {
+            get {
+                return ResourceManager.GetString("MEAS_Label_Mode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to mV Range:.
+        /// </summary>
+        public static string MEAS_Label_mVRange {
+            get {
+                return ResourceManager.GetString("MEAS_Label_mVRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PASS/FAIL:.
+        /// </summary>
+        public static string MEAS_Label_PassFail {
+            get {
+                return ResourceManager.GetString("MEAS_Label_PassFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Range:.
+        /// </summary>
+        public static string MEAS_Label_Range {
+            get {
+                return ResourceManager.GetString("MEAS_Label_Range", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rate.
+        /// </summary>
+        public static string MEAS_Label_Rate {
+            get {
+                return ResourceManager.GetString("MEAS_Label_Rate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ref (Ω):.
+        /// </summary>
+        public static string MEAS_Label_RefOhms {
+            get {
+                return ResourceManager.GetString("MEAS_Label_RefOhms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        public static string MEAS_Label_Status {
+            get {
+                return ResourceManager.GetString("MEAS_Label_Status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unit:.
+        /// </summary>
+        public static string MEAS_Label_Unit {
+            get {
+                return ResourceManager.GetString("MEAS_Label_Unit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Units:.
+        /// </summary>
+        public static string MEAS_Label_Units {
+            get {
+                return ResourceManager.GetString("MEAS_Label_Units", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Upper Limit:.
+        /// </summary>
+        public static string MEAS_Label_UpperLimit {
+            get {
+                return ResourceManager.GetString("MEAS_Label_UpperLimit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to V Range:.
+        /// </summary>
+        public static string MEAS_Label_VRange {
+            get {
+                return ResourceManager.GetString("MEAS_Label_VRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable Math Calculations.
+        /// </summary>
+        public static string MEAS_Math_Disable {
+            get {
+                return ResourceManager.GetString("MEAS_Math_Disable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable Math Calculations.
+        /// </summary>
+        public static string MEAS_Math_Enable {
+            get {
+                return ResourceManager.GetString("MEAS_Math_Enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Math.
+        /// </summary>
+        public static string MEAS_Math_Title {
+            get {
+                return ResourceManager.GetString("MEAS_Math_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current.
+        /// </summary>
+        public static string MEAS_Quick_Current {
+            get {
+                return ResourceManager.GetString("MEAS_Quick_Current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resistance.
+        /// </summary>
+        public static string MEAS_Quick_Resistance {
+            get {
+                return ResourceManager.GetString("MEAS_Quick_Resistance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Voltage.
+        /// </summary>
+        public static string MEAS_Quick_Voltage {
+            get {
+                return ResourceManager.GetString("MEAS_Quick_Voltage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fast.
+        /// </summary>
+        public static string MEAS_Rate_Fast {
+            get {
+                return ResourceManager.GetString("MEAS_Rate_Fast", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Low.
+        /// </summary>
+        public static string MEAS_Rate_Low {
+            get {
+                return ResourceManager.GetString("MEAS_Rate_Low", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Medium.
+        /// </summary>
+        public static string MEAS_Rate_Medium {
+            get {
+                return ResourceManager.GetString("MEAS_Rate_Medium", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable REL.
+        /// </summary>
+        public static string MEAS_Rel_Disable {
+            get {
+                return ResourceManager.GetString("MEAS_Rel_Disable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable REL.
+        /// </summary>
+        public static string MEAS_Rel_Enable {
+            get {
+                return ResourceManager.GetString("MEAS_Rel_Enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relative (NULL).
+        /// </summary>
+        public static string MEAS_Rel_Header {
+            get {
+                return ResourceManager.GetString("MEAS_Rel_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Zero (NULL:OFFS).
+        /// </summary>
+        public static string MEAS_Rel_Zero {
+            get {
+                return ResourceManager.GetString("MEAS_Rel_Zero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Averaging stats refreshed..
+        /// </summary>
+        public static string MEAS_Status_AvgRefreshed {
+            get {
+                return ResourceManager.GetString("MEAS_Status_AvgRefreshed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AVG?/MIN?/MAX? refreshed..
+        /// </summary>
+        public static string MEAS_Status_AvgRefreshedAlt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_AvgRefreshedAlt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Beeper OFF.
+        /// </summary>
+        public static string MEAS_Status_BeeperOff {
+            get {
+                return ResourceManager.GetString("MEAS_Status_BeeperOff", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Beeper ON.
+        /// </summary>
+        public static string MEAS_Status_BeeperOn {
+            get {
+                return ResourceManager.GetString("MEAS_Status_BeeperOn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CONF:CAP {0}.
+        /// </summary>
+        public static string MEAS_Status_CapConfFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_CapConfFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connected..
+        /// </summary>
+        public static string MEAS_Status_Connected {
+            get {
+                return ResourceManager.GetString("MEAS_Status_Connected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connection error: {0}.
+        /// </summary>
+        public static string MEAS_Status_ConnectionErrorFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_ConnectionErrorFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Continuous reading started..
+        /// </summary>
+        public static string MEAS_Status_ContStart {
+            get {
+                return ResourceManager.GetString("MEAS_Status_ContStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Continuous reading stopped..
+        /// </summary>
+        public static string MEAS_Status_ContStop {
+            get {
+                return ResourceManager.GetString("MEAS_Status_ContStop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CONT:THREShold {0}.
+        /// </summary>
+        public static string MEAS_Status_ContThresholdFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_ContThresholdFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CONF:CURR:{0} {1}.
+        /// </summary>
+        public static string MEAS_Status_CurrConfFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_CurrConfFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disconnected..
+        /// </summary>
+        public static string MEAS_Status_Disconnected {
+            get {
+                return ResourceManager.GetString("MEAS_Status_Disconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disconnect error: {0}.
+        /// </summary>
+        public static string MEAS_Status_DisconnectErrorFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_DisconnectErrorFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error: {0}.
+        /// </summary>
+        public static string MEAS_Status_ErrorPrefixFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_ErrorPrefixFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FUNC? → {0}.
+        /// </summary>
+        public static string MEAS_Status_FuncQueryFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_FuncQueryFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Function set: {0}.
+        /// </summary>
+        public static string MEAS_Status_FunctionSetFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_FunctionSetFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Function set: {0} • Meter: {1}.
+        /// </summary>
+        public static string MEAS_Status_FunctionSetWithMeterFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_FunctionSetWithMeterFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timeout while setting function..
+        /// </summary>
+        public static string MEAS_Status_FunctionTimeout {
+            get {
+                return ResourceManager.GetString("MEAS_Status_FunctionTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IDN received..
+        /// </summary>
+        public static string MEAS_Status_IdnReceived {
+            get {
+                return ResourceManager.GetString("MEAS_Status_IdnReceived", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IDN timeout..
+        /// </summary>
+        public static string MEAS_Status_IdnTimeout {
+            get {
+                return ResourceManager.GetString("MEAS_Status_IdnTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid continuity threshold..
+        /// </summary>
+        public static string MEAS_Status_InvalidContThreshold {
+            get {
+                return ResourceManager.GetString("MEAS_Status_InvalidContThreshold", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Limits applied..
+        /// </summary>
+        public static string MEAS_Status_LimitsApplied {
+            get {
+                return ResourceManager.GetString("MEAS_Status_LimitsApplied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Local mode requested (SYST:LOC)..
+        /// </summary>
+        public static string MEAS_Status_LocalRequested {
+            get {
+                return ResourceManager.GetString("MEAS_Status_LocalRequested", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Average math disabled..
+        /// </summary>
+        public static string MEAS_Status_MathDisabled {
+            get {
+                return ResourceManager.GetString("MEAS_Status_MathDisabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Average math enabled..
+        /// </summary>
+        public static string MEAS_Status_MathEnabled {
+            get {
+                return ResourceManager.GetString("MEAS_Status_MathEnabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Math error: {0}.
+        /// </summary>
+        public static string MEAS_Status_MathErrorFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_MathErrorFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No data from device..
+        /// </summary>
+        public static string MEAS_Status_NoData {
+            get {
+                return ResourceManager.GetString("MEAS_Status_NoData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No response to *IDN?. Check cable/port/power..
+        /// </summary>
+        public static string MEAS_Status_NoIdn {
+            get {
+                return ResourceManager.GetString("MEAS_Status_NoIdn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Device is not connected..
+        /// </summary>
+        public static string MEAS_Status_NotConnected {
+            get {
+                return ResourceManager.GetString("MEAS_Status_NotConnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CONF:PER.
+        /// </summary>
+        public static string MEAS_Status_PerConf {
+            get {
+                return ResourceManager.GetString("MEAS_Status_PerConf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Port scan error: {0}.
+        /// </summary>
+        public static string MEAS_Status_PortScanErrorFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_PortScanErrorFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ports updated..
+        /// </summary>
+        public static string MEAS_Status_PortsUpdated {
+            get {
+                return ResourceManager.GetString("MEAS_Status_PortsUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RANGE? → {0}.
+        /// </summary>
+        public static string MEAS_Status_RangeQueryFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_RangeQueryFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RATE? queried..
+        /// </summary>
+        public static string MEAS_Status_RateQueried {
+            get {
+                return ResourceManager.GetString("MEAS_Status_RateQueried", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Measurement complete..
+        /// </summary>
+        public static string MEAS_Status_ReadDone {
+            get {
+                return ResourceManager.GetString("MEAS_Status_ReadDone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Read timeout..
+        /// </summary>
+        public static string MEAS_Status_ReadTimeout {
+            get {
+                return ResourceManager.GetString("MEAS_Status_ReadTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remote mode requested (SYST:REM)..
+        /// </summary>
+        public static string MEAS_Status_RemoteRequested {
+            get {
+                return ResourceManager.GetString("MEAS_Status_RemoteRequested", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CONF:RES.
+        /// </summary>
+        public static string MEAS_Status_ResConf {
+            get {
+                return ResourceManager.GetString("MEAS_Status_ResConf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scanning ports….
+        /// </summary>
+        public static string MEAS_Status_ScanningPorts {
+            get {
+                return ResourceManager.GetString("MEAS_Status_ScanningPorts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MEAS:TEMP? complete..
+        /// </summary>
+        public static string MEAS_Status_TempReadDone {
+            get {
+                return ResourceManager.GetString("MEAS_Status_TempReadDone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TEMP:RTD:TYPE? → {0}.
+        /// </summary>
+        public static string MEAS_Status_TempTypeQueriedFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_TempTypeQueriedFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TEMP:RTD:UNIT {0}.
+        /// </summary>
+        public static string MEAS_Status_TempUnitAppliedFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_TempUnitAppliedFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TEMP:RTD:UNIT? → {0}.
+        /// </summary>
+        public static string MEAS_Status_TempUnitQueriedFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_TempUnitQueriedFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CONF:TEMP:THER KITS90 sent..
+        /// </summary>
+        public static string MEAS_Status_ThermoConfigured {
+            get {
+                return ResourceManager.GetString("MEAS_Status_ThermoConfigured", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timeout: {0}.
+        /// </summary>
+        public static string MEAS_Status_TimeoutFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_TimeoutFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CONF:VOLT:{0} {1}.
+        /// </summary>
+        public static string MEAS_Status_VoltConfFmt {
+            get {
+                return ResourceManager.GetString("MEAS_Status_VoltConfFmt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Temperature (RTD / THER).
+        /// </summary>
+        public static string MEAS_Temp_Header {
+            get {
+                return ResourceManager.GetString("MEAS_Temp_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Continuous.
+        /// </summary>
+        public static string MEAS_Toggle_Continuous {
+            get {
+                return ResourceManager.GetString("MEAS_Toggle_Continuous", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 500E-6 (500µA), 5E-3 (5mA), 50E-3 (50mA), 500E-3 (500mA).
+        /// </summary>
+        public static string MEAS_Tooltip_mARange {
+            get {
+                return ResourceManager.GetString("MEAS_Tooltip_mARange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh COM list.
+        /// </summary>
+        public static string MEAS_Tooltip_RefreshCom {
+            get {
+                return ResourceManager.GetString("MEAS_Tooltip_RefreshCom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Query AVG?/MIN?/MAX? now.
+        /// </summary>
+        public static string MEAS_Tooltip_RefreshStats {
+            get {
+                return ResourceManager.GetString("MEAS_Tooltip_RefreshStats", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configures thermometer standard.
+        /// </summary>
+        public static string MEAS_Tooltip_ThermStandard {
+            get {
+                return ResourceManager.GetString("MEAS_Tooltip_ThermStandard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Voltage (V / mV).
+        /// </summary>
+        public static string MEAS_Volt_Header {
+            get {
+                return ResourceManager.GetString("MEAS_Volt_Header", resourceCulture);
             }
         }
         
@@ -4047,6 +7044,816 @@ namespace HouseholdMS.Resources {
         public static string SV_Title {
             get {
                 return ResourceManager.GetString("SV_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time (s).
+        /// </summary>
+        public static string TBS_Axis_Time {
+            get {
+                return ResourceManager.GetString("TBS_Axis_Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Voltage (V).
+        /// </summary>
+        public static string TBS_Axis_Voltage {
+            get {
+                return ResourceManager.GetString("TBS_Axis_Voltage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply Gate.
+        /// </summary>
+        public static string TBS_Btn_ApplyGate {
+            get {
+                return ResourceManager.GetString("TBS_Btn_ApplyGate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply Range.
+        /// </summary>
+        public static string TBS_Btn_ApplyRange {
+            get {
+                return ResourceManager.GetString("TBS_Btn_ApplyRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Auto from Data.
+        /// </summary>
+        public static string TBS_Btn_AutoFromData {
+            get {
+                return ResourceManager.GetString("TBS_Btn_AutoFromData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AUTOSet.
+        /// </summary>
+        public static string TBS_Btn_Autoset {
+            get {
+                return ResourceManager.GetString("TBS_Btn_Autoset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clear.
+        /// </summary>
+        public static string TBS_Btn_Clear {
+            get {
+                return ResourceManager.GetString("TBS_Btn_Clear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clear All Slots.
+        /// </summary>
+        public static string TBS_Btn_ClearAllSlots {
+            get {
+                return ResourceManager.GetString("TBS_Btn_ClearAllSlots", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to *CLS.
+        /// </summary>
+        public static string TBS_Btn_CLS {
+            get {
+                return ResourceManager.GetString("TBS_Btn_CLS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configure Slot.
+        /// </summary>
+        public static string TBS_Btn_ConfigSlot {
+            get {
+                return ResourceManager.GetString("TBS_Btn_ConfigSlot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connect.
+        /// </summary>
+        public static string TBS_Btn_Connect {
+            get {
+                return ResourceManager.GetString("TBS_Btn_Connect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable Slot.
+        /// </summary>
+        public static string TBS_Btn_DisableSlot {
+            get {
+                return ResourceManager.GetString("TBS_Btn_DisableSlot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disconnect.
+        /// </summary>
+        public static string TBS_Btn_Disconnect {
+            get {
+                return ResourceManager.GetString("TBS_Btn_Disconnect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Discover Supported (src1).
+        /// </summary>
+        public static string TBS_Btn_Discover {
+            get {
+                return ResourceManager.GetString("TBS_Btn_Discover", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable Slot.
+        /// </summary>
+        public static string TBS_Btn_EnableSlot {
+            get {
+                return ResourceManager.GetString("TBS_Btn_EnableSlot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fit All.
+        /// </summary>
+        public static string TBS_Btn_FitAll {
+            get {
+                return ResourceManager.GetString("TBS_Btn_FitAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to *IDN?.
+        /// </summary>
+        public static string TBS_Btn_IDN {
+            get {
+                return ResourceManager.GetString("TBS_Btn_IDN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pause Live.
+        /// </summary>
+        public static string TBS_Btn_Pause {
+            get {
+                return ResourceManager.GetString("TBS_Btn_Pause", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Read Selected.
+        /// </summary>
+        public static string TBS_Btn_ReadSelected {
+            get {
+                return ResourceManager.GetString("TBS_Btn_ReadSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Read Slot.
+        /// </summary>
+        public static string TBS_Btn_ReadSlot {
+            get {
+                return ResourceManager.GetString("TBS_Btn_ReadSlot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resume Live.
+        /// </summary>
+        public static string TBS_Btn_Resume {
+            get {
+                return ResourceManager.GetString("TBS_Btn_Resume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to *RST.
+        /// </summary>
+        public static string TBS_Btn_RST {
+            get {
+                return ResourceManager.GetString("TBS_Btn_RST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sample Rate?.
+        /// </summary>
+        public static string TBS_Btn_SampleRateQ {
+            get {
+                return ResourceManager.GetString("TBS_Btn_SampleRateQ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set H.
+        /// </summary>
+        public static string TBS_Btn_SetH {
+            get {
+                return ResourceManager.GetString("TBS_Btn_SetH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set Holdoff.
+        /// </summary>
+        public static string TBS_Btn_SetHoldoff {
+            get {
+                return ResourceManager.GetString("TBS_Btn_SetHoldoff", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set Level.
+        /// </summary>
+        public static string TBS_Btn_SetLevel {
+            get {
+                return ResourceManager.GetString("TBS_Btn_SetLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set V.
+        /// </summary>
+        public static string TBS_Btn_SetV {
+            get {
+                return ResourceManager.GetString("TBS_Btn_SetV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to State?.
+        /// </summary>
+        public static string TBS_Btn_StateQ {
+            get {
+                return ResourceManager.GetString("TBS_Btn_StateQ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value?.
+        /// </summary>
+        public static string TBS_Btn_ValueQ {
+            get {
+                return ResourceManager.GetString("TBS_Btn_ValueQ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time Domain.
+        /// </summary>
+        public static string TBS_Chart_TimeDomain {
+            get {
+                return ResourceManager.GetString("TBS_Chart_TimeDomain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable Cursors.
+        /// </summary>
+        public static string TBS_Cur_Disable {
+            get {
+                return ResourceManager.GetString("TBS_Cur_Disable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable Cursors.
+        /// </summary>
+        public static string TBS_Cur_Enable {
+            get {
+                return ResourceManager.GetString("TBS_Cur_Enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SCPI over VISA / Serial — live control and capture.
+        /// </summary>
+        public static string TBS_Header_Sub {
+            get {
+                return ResourceManager.GetString("TBS_Header_Sub", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tektronix TBS1202C — Remote Control.
+        /// </summary>
+        public static string TBS_Header_Title {
+            get {
+                return ResourceManager.GetString("TBS_Header_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (multi-select below).
+        /// </summary>
+        public static string TBS_Hint_MultiSelect {
+            get {
+                return ResourceManager.GetString("TBS_Hint_MultiSelect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Applies to all checked sources above (CH1/CH2)..
+        /// </summary>
+        public static string TBS_Info_ChannelApplies {
+            get {
+                return ResourceManager.GetString("TBS_Info_ChannelApplies", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updates ~every 2s while Live is running. Toggle CH1/CH2 in the Graph toolbar..
+        /// </summary>
+        public static string TBS_Info_MiniGraphs {
+            get {
+                return ResourceManager.GetString("TBS_Info_MiniGraphs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Auto.
+        /// </summary>
+        public static string TBS_Label_Auto {
+            get {
+                return ResourceManager.GetString("TBS_Label_Auto", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 20 MHz BW Limit.
+        /// </summary>
+        public static string TBS_Label_BWLimit {
+            get {
+                return ResourceManager.GetString("TBS_Label_BWLimit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Offset (V).
+        /// </summary>
+        public static string TBS_Label_ChOffset {
+            get {
+                return ResourceManager.GetString("TBS_Label_ChOffset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scale (V/div).
+        /// </summary>
+        public static string TBS_Label_ChScale {
+            get {
+                return ResourceManager.GetString("TBS_Label_ChScale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Coupling.
+        /// </summary>
+        public static string TBS_Label_Coupling {
+            get {
+                return ResourceManager.GetString("TBS_Label_Coupling", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Function.
+        /// </summary>
+        public static string TBS_Label_Function {
+            get {
+                return ResourceManager.GetString("TBS_Label_Function", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gate by Cursors.
+        /// </summary>
+        public static string TBS_Label_GateByCursors {
+            get {
+                return ResourceManager.GetString("TBS_Label_GateByCursors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to H1 (s).
+        /// </summary>
+        public static string TBS_Label_H1 {
+            get {
+                return ResourceManager.GetString("TBS_Label_H1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to H2 (s).
+        /// </summary>
+        public static string TBS_Label_H2 {
+            get {
+                return ResourceManager.GetString("TBS_Label_H2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Holdoff (s).
+        /// </summary>
+        public static string TBS_Label_Holdoff {
+            get {
+                return ResourceManager.GetString("TBS_Label_Holdoff", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invert.
+        /// </summary>
+        public static string TBS_Label_Invert {
+            get {
+                return ResourceManager.GetString("TBS_Label_Invert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Level (V).
+        /// </summary>
+        public static string TBS_Label_LevelV {
+            get {
+                return ResourceManager.GetString("TBS_Label_LevelV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Live (Hz):.
+        /// </summary>
+        public static string TBS_Label_LiveHz {
+            get {
+                return ResourceManager.GetString("TBS_Label_LiveHz", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mode:.
+        /// </summary>
+        public static string TBS_Label_Mode {
+            get {
+                return ResourceManager.GetString("TBS_Label_Mode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NumAvg:.
+        /// </summary>
+        public static string TBS_Label_NumAvg {
+            get {
+                return ResourceManager.GetString("TBS_Label_NumAvg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Persistence On.
+        /// </summary>
+        public static string TBS_Label_PersistOn {
+            get {
+                return ResourceManager.GetString("TBS_Label_PersistOn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Persistence (s).
+        /// </summary>
+        public static string TBS_Label_PersistSec {
+            get {
+                return ResourceManager.GetString("TBS_Label_PersistSec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Record Len.
+        /// </summary>
+        public static string TBS_Label_RecordLen {
+            get {
+                return ResourceManager.GetString("TBS_Label_RecordLen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Roll Mode.
+        /// </summary>
+        public static string TBS_Label_RollMode {
+            get {
+                return ResourceManager.GetString("TBS_Label_RollMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Slope.
+        /// </summary>
+        public static string TBS_Label_Slope {
+            get {
+                return ResourceManager.GetString("TBS_Label_Slope", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Slot (1..6).
+        /// </summary>
+        public static string TBS_Label_Slot {
+            get {
+                return ResourceManager.GetString("TBS_Label_Slot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source.
+        /// </summary>
+        public static string TBS_Label_Source {
+            get {
+                return ResourceManager.GetString("TBS_Label_Source", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source1.
+        /// </summary>
+        public static string TBS_Label_Source1 {
+            get {
+                return ResourceManager.GetString("TBS_Label_Source1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source2.
+        /// </summary>
+        public static string TBS_Label_Source2 {
+            get {
+                return ResourceManager.GetString("TBS_Label_Source2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sources:.
+        /// </summary>
+        public static string TBS_Label_Sources {
+            get {
+                return ResourceManager.GetString("TBS_Label_Sources", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Src1.
+        /// </summary>
+        public static string TBS_Label_Src1Short {
+            get {
+                return ResourceManager.GetString("TBS_Label_Src1Short", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Src2.
+        /// </summary>
+        public static string TBS_Label_Src2Short {
+            get {
+                return ResourceManager.GetString("TBS_Label_Src2Short", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pos (s).
+        /// </summary>
+        public static string TBS_Label_TbPos {
+            get {
+                return ResourceManager.GetString("TBS_Label_TbPos", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scale (s/div).
+        /// </summary>
+        public static string TBS_Label_TbScale {
+            get {
+                return ResourceManager.GetString("TBS_Label_TbScale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type.
+        /// </summary>
+        public static string TBS_Label_Type {
+            get {
+                return ResourceManager.GetString("TBS_Label_Type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to V1 (V).
+        /// </summary>
+        public static string TBS_Label_V1 {
+            get {
+                return ResourceManager.GetString("TBS_Label_V1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to V2 (V).
+        /// </summary>
+        public static string TBS_Label_V2 {
+            get {
+                return ResourceManager.GetString("TBS_Label_V2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to X:.
+        /// </summary>
+        public static string TBS_Label_X {
+            get {
+                return ResourceManager.GetString("TBS_Label_X", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Y:.
+        /// </summary>
+        public static string TBS_Label_Y {
+            get {
+                return ResourceManager.GetString("TBS_Label_Y", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Acquisition.
+        /// </summary>
+        public static string TBS_Section_Acquisition {
+            get {
+                return ResourceManager.GetString("TBS_Section_Acquisition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Channel.
+        /// </summary>
+        public static string TBS_Section_Channel {
+            get {
+                return ResourceManager.GetString("TBS_Section_Channel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Console.
+        /// </summary>
+        public static string TBS_Section_Console {
+            get {
+                return ResourceManager.GetString("TBS_Section_Console", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cursors.
+        /// </summary>
+        public static string TBS_Section_Cursors {
+            get {
+                return ResourceManager.GetString("TBS_Section_Cursors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display.
+        /// </summary>
+        public static string TBS_Section_Display {
+            get {
+                return ResourceManager.GetString("TBS_Section_Display", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Immediate Measurement.
+        /// </summary>
+        public static string TBS_Section_Immediate {
+            get {
+                return ResourceManager.GetString("TBS_Section_Immediate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Live Mini Graphs (per-channel).
+        /// </summary>
+        public static string TBS_Section_LiveMini {
+            get {
+                return ResourceManager.GetString("TBS_Section_LiveMini", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to On-screen Slots (show on scope).
+        /// </summary>
+        public static string TBS_Section_Slots {
+            get {
+                return ResourceManager.GetString("TBS_Section_Slots", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timebase.
+        /// </summary>
+        public static string TBS_Section_Timebase {
+            get {
+                return ResourceManager.GetString("TBS_Section_Timebase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Trigger.
+        /// </summary>
+        public static string TBS_Section_Trigger {
+            get {
+                return ResourceManager.GetString("TBS_Section_Trigger", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Graph.
+        /// </summary>
+        public static string TBS_Tab_Graph {
+            get {
+                return ResourceManager.GetString("TBS_Tab_Graph", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Measurements.
+        /// </summary>
+        public static string TBS_Tab_Measurements {
+            get {
+                return ResourceManager.GetString("TBS_Tab_Measurements", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AUTOSet EXECute.
+        /// </summary>
+        public static string TBS_Tooltip_Autoset {
+            get {
+                return ResourceManager.GetString("TBS_Tooltip_Autoset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Polling rate for CURVe? reads.
+        /// </summary>
+        public static string TBS_Tooltip_LiveHz {
+            get {
+                return ResourceManager.GetString("TBS_Tooltip_LiveHz", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to use for phase/delay.
+        /// </summary>
+        public static string TBS_Tooltip_Src2 {
+            get {
+                return ResourceManager.GetString("TBS_Tooltip_Src2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to X Max (s).
+        /// </summary>
+        public static string TBS_Tooltip_XMax {
+            get {
+                return ResourceManager.GetString("TBS_Tooltip_XMax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to X Min (s).
+        /// </summary>
+        public static string TBS_Tooltip_XMin {
+            get {
+                return ResourceManager.GetString("TBS_Tooltip_XMin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Y Max.
+        /// </summary>
+        public static string TBS_Tooltip_YMax {
+            get {
+                return ResourceManager.GetString("TBS_Tooltip_YMax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Y Min.
+        /// </summary>
+        public static string TBS_Tooltip_YMin {
+            get {
+                return ResourceManager.GetString("TBS_Tooltip_YMin", resourceCulture);
             }
         }
         

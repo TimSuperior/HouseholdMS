@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;  // ← add this here
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,50 +11,12 @@ using System.Windows.Threading;
 using HouseholdMS.Drivers;
 using HouseholdMS.Models;
 using HouseholdMS.Services;
-
+using HouseholdMS.Resources; // <-- for Strings
 
 namespace HouseholdMS.Controls
 {
     public partial class It8615Control : UserControl
     {
-
-        private async void BtnMeasureHarmonics_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (!EnsureConnected()) return;
-
-                // n from textbox with sane bounds
-                int n = ParseIntOr(TxtHarmonicsN, 50, 1, 1000);
-
-                // Query voltage harmonics from the instrument
-                var amps = await _it.MeasureVoltageHarmonicsAsync(n);
-                if (amps == null || amps.Length == 0)
-                {
-                    Harmonics.Clear();
-                    SetStatus("Harmonics: no data.");
-                    return;
-                }
-
-                // Normalize to fundamental to match the chart label "Amplitude (normalized)"
-                double fundamental = Math.Abs(amps[0]);
-                Harmonics.Clear();
-                for (int k = 0; k < amps.Length && k < n; k++)
-                {
-                    double a = amps[k];
-                    double y = (fundamental > 1e-12) ? (a / fundamental) : a; // fallback: raw if fundamental ~ 0
-                    Harmonics.Add(new SamplePoint { Index = k + 1, Value = y }); // 1 = fundamental, 2 = 2nd, ...
-                }
-
-                SetStatus($"Harmonics captured: n={Harmonics.Count}");
-            }
-            catch (Exception ex)
-            {
-                Fail(ex);
-            }
-        }
-
-
         // Big scope series
         public ObservableCollection<SamplePoint> ScopeV { get; } = new ObservableCollection<SamplePoint>();
         public ObservableCollection<SamplePoint> ScopeI { get; } = new ObservableCollection<SamplePoint>();
@@ -84,6 +46,18 @@ namespace HouseholdMS.Controls
             InitializeComponent();
             DataContext = this;
 
+            // Localized items for the "Knob" ComboBox — keep the token as prefix (UR/AR/UB/AB/TL/TD/T/d)
+            CboKnob.ItemsSource = new[]
+            {
+                Strings.IT8615_Knob_UR,
+                Strings.IT8615_Knob_AR,
+                Strings.IT8615_Knob_UB,
+                Strings.IT8615_Knob_AB,
+                Strings.IT8615_Knob_TL,
+                Strings.IT8615_Knob_TD,
+                Strings.IT8615_Knob_Tdiv
+            };
+
             SeedMiniCharts();
 
             // LIVE scope timer (~6-7 Hz)
@@ -91,8 +65,8 @@ namespace HouseholdMS.Controls
             _scopeTimer.Tick += async (s, e) => await ScopeTimerTickAsync();
 
             // Safe defaults for trigger pickers even before connect
-            if (CboTrigSource != null && CboTrigSource.Items.Count > 0 && CboTrigSource.SelectedIndex < 0) CboTrigSource.SelectedIndex = 0; // VOLTage
-            if (CboTrigSlope != null && CboTrigSlope.Items.Count > 0 && CboTrigSlope.SelectedIndex < 0) CboTrigSlope.SelectedIndex = 0; // POSitive
+            if (CboTrigSource != null && CboTrigSource.Items.Count > 0 && CboTrigSource.SelectedIndex < 0) CboTrigSource.SelectedIndex = 0;
+            if (CboTrigSlope != null && CboTrigSlope.Items.Count > 0 && CboTrigSlope.SelectedIndex < 0) CboTrigSlope.SelectedIndex = 0;
 
             Unloaded += async (_, __) => await SafeShutdownAsync();
         }
@@ -111,14 +85,13 @@ namespace HouseholdMS.Controls
         private bool EnsureConnected()
         {
             if (_it != null) return true;
-            MessageBox.Show("Connect to the instrument first.", "Not connected");
+            MessageBox.Show(Strings.IT8615_Msg_NotConnectedBody, Strings.IT8615_Msg_NotConnectedTitle);
             return false;
         }
 
         private static string GetComboText(ComboBox cbo, string fallback)
         {
             if (cbo == null) return fallback;
-
             if (cbo.SelectedItem is string s1) return s1;
 
             if (cbo.SelectedItem is ComboBoxItem cbi)
@@ -193,7 +166,7 @@ namespace HouseholdMS.Controls
                     s.IndexOf("ITECH", StringComparison.OrdinalIgnoreCase) >= 0);
                 ResourceCombo.SelectedIndex = (idx >= 0) ? idx : (list.Count > 0 ? 0 : -1);
 
-                SetStatus($"Found {list.Count} VISA resources.");
+                SetStatus(string.Format(CultureInfo.InvariantCulture, Strings.IT8615_Status_DiscoveredFmt, list.Count));
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -204,7 +177,7 @@ namespace HouseholdMS.Controls
             {
                 if (ResourceCombo.SelectedItem == null)
                 {
-                    MessageBox.Show("Pick a VISA resource.");
+                    MessageBox.Show(Strings.IT8615_Msg_PickResource, Strings.IT8615_Error_Title);
                     return;
                 }
 
@@ -221,7 +194,7 @@ namespace HouseholdMS.Controls
                        idn.IndexOf("IT86", StringComparison.OrdinalIgnoreCase) >= 0)))
                 {
                     _visa.Close();
-                    MessageBox.Show("The selected resource is not an ITECH IT8615. Choose the correct device.", "Wrong instrument");
+                    MessageBox.Show(Strings.IT8615_Msg_WrongInstrumentBody, Strings.IT8615_Msg_WrongInstrumentTitle);
                     return;
                 }
 
@@ -240,7 +213,7 @@ namespace HouseholdMS.Controls
                 if (CboTrigSource != null && CboTrigSource.SelectedIndex < 0 && CboTrigSource.Items.Count > 0) CboTrigSource.SelectedIndex = 0;
                 if (CboTrigSlope != null && CboTrigSlope.SelectedIndex < 0 && CboTrigSlope.Items.Count > 0) CboTrigSlope.SelectedIndex = 0;
 
-                SetStatus("Connected.");
+                SetStatus(Strings.IT8615_Status_Connected);
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -253,7 +226,7 @@ namespace HouseholdMS.Controls
                 _visa.Close();
                 _it = null;
                 _acq = null;
-                SetStatus("Disconnected.");
+                SetStatus(Strings.IT8615_Status_Disconnected);
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -315,7 +288,7 @@ namespace HouseholdMS.Controls
                 await _it.SetFunctionAsync(f);
                 await _it.SetSetpointAsync(set);
                 TxtSetpointUnits.Text = _it.CurrentUnits;
-                SetStatus("Setpoint applied.");
+                SetStatus(Strings.IT8615_Status_SetpointApplied);
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -338,7 +311,7 @@ namespace HouseholdMS.Controls
                 double pf = ParseDoubleOr(TxtPf, 1.0);
                 double cf = ParseDoubleOr(TxtCf, 1.41);
                 await _it.SetPfCfAsync(pf, cf);
-                SetStatus("Power factor / crest factor applied.");
+                SetStatus(Strings.IT8615_Status_PfCfApplied);
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -372,7 +345,7 @@ namespace HouseholdMS.Controls
                 if (!EnsureConnected()) return;
                 await _it.EStopAsync();
                 ChkEnable.IsChecked = false;
-                SetStatus("Emergency stop executed.");
+                SetStatus(Strings.IT8615_Status_EStopExecuted);
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -404,7 +377,7 @@ namespace HouseholdMS.Controls
                 if (v.Length > 0 || i.Length > 0)
                 {
                     ReplaceScopeSeries(v, i);
-                    SetStatus($"Scope LIVE: V[{v.Length}], I[{i.Length}]");
+                    SetStatus(string.Format(CultureInfo.InvariantCulture, Strings.IT8615_Status_ScopeLiveFmt, v.Length, i.Length));
                 }
             }
             catch (Exception ex)
@@ -453,7 +426,7 @@ namespace HouseholdMS.Controls
                 if (!EnsureConnected()) return;
                 await _it.ScopeStopAsync();
                 StopScopeLive();
-                SetStatus("Scope stopped.");
+                SetStatus(Strings.IT8615_Status_ScopeStopped);
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -481,9 +454,10 @@ namespace HouseholdMS.Controls
             ReplaceScopeSeries(v, i);
 
             if ((v == null || v.Length == 0) && (i == null || i.Length == 0))
-                SetStatus("Scope: no data yet (check trigger level/mode or press Run again).");
+                SetStatus(Strings.IT8615_Status_ScopeNoData);
             else
-                SetStatus($"Scope: V[{(v != null ? v.Length : 0)}], I[{(i != null ? i.Length : 0)}] points.");
+                SetStatus(string.Format(CultureInfo.InvariantCulture, Strings.IT8615_Status_ScopePointsFmt,
+                    v != null ? v.Length : 0, i != null ? i.Length : 0));
         }
 
         private async void BtnApplyDivTime_Click(object sender, RoutedEventArgs e)
@@ -491,9 +465,10 @@ namespace HouseholdMS.Controls
             try
             {
                 if (!EnsureConnected()) return;
-                var t = (CboDivTime.SelectedItem as string) ?? "0.01";
+                var cbi = CboDivTime.SelectedItem as ComboBoxItem;
+                var t = (cbi?.Content as string) ?? "0.01";
                 await _it.ScopeSetDivTimeAsync(t);
-                SetStatus("Time/Div = " + t + " s");
+                SetStatus(string.Format(CultureInfo.InvariantCulture, Strings.IT8615_Status_TimeDivFmt, t));
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -505,7 +480,7 @@ namespace HouseholdMS.Controls
                 if (!EnsureConnected()) return;
                 await ApplyTriggerInternalAsync();
                 await RefreshTrigStateAsync();
-                SetStatus("Trigger applied.");
+                SetStatus(Strings.IT8615_Status_TriggerApplied);
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -524,7 +499,7 @@ namespace HouseholdMS.Controls
                 await _it.ScopeSetVoltageRangeAsync(vr);
                 await _it.ScopeSetCurrentBaseAsync(ab);
                 await _it.ScopeSetCurrentRangeAsync(ar);
-                SetStatus(string.Format(CultureInfo.InvariantCulture, "Vertical set VBase={0}, VRange={1}, ABase={2}, ARange={3}", vb, vr, ab, ar));
+                SetStatus(string.Format(CultureInfo.InvariantCulture, Strings.IT8615_Status_VerticalSetFmt, vb, vr, ab, ar));
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -534,11 +509,11 @@ namespace HouseholdMS.Controls
             try
             {
                 if (!EnsureConnected()) return;
-                var disp = (CboScopeSel.SelectedItem as string) ?? "UA";
+                var disp = GetComboText(CboScopeSel, "UA");
                 int avg = ParseIntOr(TxtAvgCount, 4, 1, 16);
                 await _it.ScopeSetDisplaySelectionAsync(disp);
                 await _it.ScopeSetAverageCountAsync(avg);
-                SetStatus("Display=" + disp + ", Average=" + avg);
+                SetStatus(string.Format(CultureInfo.InvariantCulture, Strings.IT8615_Status_DisplayAvgFmt, disp, avg));
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -548,7 +523,7 @@ namespace HouseholdMS.Controls
             try
             {
                 if (!EnsureConnected()) return;
-                var human = (CboKnob.SelectedItem as string) ?? "UR (Volt Range)";
+                var human = (CboKnob.SelectedItem as string) ?? Strings.IT8615_Knob_UR;
                 var token = human.StartsWith("UR") ? "UR"
                          : human.StartsWith("AR") ? "AR"
                          : human.StartsWith("UB") ? "UB"
@@ -557,7 +532,7 @@ namespace HouseholdMS.Controls
                          : human.StartsWith("TD") ? "TD"
                          : "T/d";
                 await _it.ScopeSetKnobSelectionAsync(token);
-                SetStatus("Knob → " + token);
+                SetStatus(string.Format(CultureInfo.InvariantCulture, Strings.IT8615_Status_KnobFmt, token));
             }
             catch (Exception ex) { Fail(ex); }
         }
@@ -584,7 +559,7 @@ namespace HouseholdMS.Controls
             try
             {
                 var s = await _it.ScopeQueryTriggerStateAsync();
-                if (TxtTrigState != null) TxtTrigState.Text = "Trig:" + s;
+                if (TxtTrigState != null) TxtTrigState.Text = Strings.IT8615_Trig_StatePrefix + s;
             }
             catch
             {
@@ -597,7 +572,41 @@ namespace HouseholdMS.Controls
         private void Fail(Exception ex)
         {
             SetStatus("ERR: " + ex.Message);
-            MessageBox.Show(ex.Message, "Error");
+            MessageBox.Show(ex.Message, Strings.Common_ErrorCaption);
+        }
+
+        // --------- Harmonics ----------
+        private async void BtnMeasureHarmonics_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!EnsureConnected()) return;
+
+                int n = ParseIntOr(TxtHarmonicsN, 50, 1, 1000);
+
+                var amps = await _it.MeasureVoltageHarmonicsAsync(n);
+                if (amps == null || amps.Length == 0)
+                {
+                    Harmonics.Clear();
+                    SetStatus(Strings.IT8615_Status_Harm_NoData);
+                    return;
+                }
+
+                double fundamental = Math.Abs(amps[0]);
+                Harmonics.Clear();
+                for (int k = 0; k < amps.Length && k < n; k++)
+                {
+                    double a = amps[k];
+                    double y = (fundamental > 1e-12) ? (a / fundamental) : a;
+                    Harmonics.Add(new SamplePoint { Index = k + 1, Value = y });
+                }
+
+                SetStatus(string.Format(CultureInfo.InvariantCulture, Strings.IT8615_Status_Harm_CapturedFmt, Harmonics.Count));
+            }
+            catch (Exception ex)
+            {
+                Fail(ex);
+            }
         }
     }
 
@@ -651,8 +660,7 @@ namespace HouseholdMS.Controls
 
         private static SessionAccessor GetAccessor(ItechIt8615 it)
         {
-            SessionAccessor acc;
-            if (_cache.TryGetValue(it, out acc)) return acc;
+            if (_cache.TryGetValue(it, out var acc)) return acc;
 
             var visa = GetVisa(it);
             var vt = visa.GetType();
@@ -678,8 +686,7 @@ namespace HouseholdMS.Controls
         {
             var acc = GetAccessor(it);
             var ret = acc.WriteMethod.Invoke(acc.Visa, new object[] { cmd });
-            var task = ret as Task;
-            if (task != null) await task;
+            if (ret is Task task) await task;
         }
 
         private static async Task<string> ScpiQueryStringAsync(ItechIt8615 it, string cmd)
@@ -687,14 +694,9 @@ namespace HouseholdMS.Controls
             var acc = GetAccessor(it);
             var ret = acc.QueryMethod.Invoke(acc.Visa, new object[] { cmd });
 
-            var ts = ret as Task<string>;
-            if (ts != null) return await ts;
-
-            var s = ret as string;
-            if (s != null) return s;
-
-            var t = ret as Task;
-            if (t != null) { await t; return string.Empty; }
+            if (ret is Task<string> ts) return await ts;
+            if (ret is string s) return s;
+            if (ret is Task t) { await t; return string.Empty; }
 
             return string.Empty;
         }
@@ -745,7 +747,5 @@ namespace HouseholdMS.Controls
 
         public static Task<string> ScopeQueryTriggerStateAsync(this ItechIt8615 it)
             => ScpiQueryStringAsync(it, "WAVE:TRIGger:STATe?");
-
-
     }
 }

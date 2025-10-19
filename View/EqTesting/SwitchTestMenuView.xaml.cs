@@ -1,5 +1,4 @@
-﻿// View/EqTesting/SwitchTestMenuView.xaml.cs
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -20,8 +19,6 @@ namespace HouseholdMS.View.EqTesting
     public partial class SwitchTestMenuView : UserControl
     {
         // -------------------- SIMPLE LANGUAGE SWITCH (images) --------------------
-        // Edit only these arrays when you add/remove frames.
-        // EN = "TPEN_*", ES = "TPES_*". (Add KO later if you want.)
         private static readonly string[] EN_IMAGES = new[]
         {
             "pack://application:,,,/Assets/Procedures/TPEN_PnK_Inverter_01.png",
@@ -44,7 +41,6 @@ namespace HouseholdMS.View.EqTesting
             "pack://application:,,,/Assets/Procedures/TPES_PnK_Inverter_07.png",
         };
 
-        // If you add Korean later, just define:
         // private static readonly string[] KO_IMAGES = new[] { "pack://.../TPKO_Switch_01.png", ... };
 
         private static string GetSavedLanguage()
@@ -68,7 +64,6 @@ namespace HouseholdMS.View.EqTesting
         private static string[] GetImagesForLang(string lang)
         {
             if (lang == "es") return ES_IMAGES;
-            // if (lang == "ko") return KO_IMAGES; // when you add them
             return EN_IMAGES; // default
         }
         // ----------------------------------------------------------------
@@ -135,11 +130,13 @@ namespace HouseholdMS.View.EqTesting
         {
             public readonly string Title;
             public readonly string[] Images;
+
             public Album(string title, params string[] images)
             {
                 if (images == null || images.Length == 0)
                     throw new ArgumentException("Album must contain at least one image.", nameof(images));
-                Title = string.IsNullOrWhiteSpace(title) ? "Album" : title;
+                // Do NOT inject "Album"; keep empty if caller passes empty/whitespace.
+                Title = string.IsNullOrWhiteSpace(title) ? string.Empty : title;
                 Images = images;
             }
         }
@@ -183,12 +180,10 @@ namespace HouseholdMS.View.EqTesting
             InitializeComponent();
             Loaded += (s, e) => this.Focus(); // keep focus for keyboard handling
 
-            // ---- Choose the set once based on saved language ----
             var lang = GetSavedLanguage();
             _ST = GetStrings(lang);
             var imgs = GetImagesForLang(lang);
 
-            // Immediately open the Switch Tests album.
             var albumTitle = T("album_switch");
             LoadGalleryAndOpen(
                 name: T("gallery_name"),
@@ -197,7 +192,6 @@ namespace HouseholdMS.View.EqTesting
                 new AlbumSpec(albumTitle, imgs)
             );
 
-            // Optional: localize button captions if present in XAML
             if (PrevBtn != null) PrevBtn.Content = T("prev");
             if (NextBtn != null) NextBtn.Content = T("next");
         }
@@ -207,7 +201,7 @@ namespace HouseholdMS.View.EqTesting
             if (albums == null || albums.Length == 0)
                 throw new ArgumentException(T("err_one_album_required"), nameof(albums));
 
-            Album[] internalAlbums = albums.Select(a =>
+            var internalAlbums = albums.Select(a =>
             {
                 if (a.Images == null || a.Images.Length == 0)
                     throw new ArgumentException(string.Format(T("err_album_empty"), a.Title));
@@ -216,8 +210,8 @@ namespace HouseholdMS.View.EqTesting
 
             _gallery = new Gallery(name, version, internalAlbums);
 
-            Album chosen = internalAlbums.FirstOrDefault(a =>
-                string.Equals(a.Title, defaultAlbumTitle, StringComparison.OrdinalIgnoreCase))
+            var chosen = internalAlbums.FirstOrDefault(a =>
+                string.Equals(a.Title ?? string.Empty, defaultAlbumTitle ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 ?? internalAlbums[0];
 
             OpenAlbum(chosen);
@@ -231,19 +225,18 @@ namespace HouseholdMS.View.EqTesting
             RenderImage();
         }
 
-        // Robust loader: tries direct URI, pack resource stream, site-of-origin, then raw file path.
+        // Robust loader: direct URI -> pack resource stream -> site-of-origin -> raw file path.
         private ImageSource LoadImageStrong(string uriString)
         {
             if (string.IsNullOrWhiteSpace(uriString)) return null;
 
-            BitmapImage cached;
-            if (_imageCache.TryGetValue(uriString, out cached))
+            if (_imageCache.TryGetValue(uriString, out var cached))
                 return cached;
 
-            // 1) Direct Uri load (pack/file/absolute/relative)
+            // 1) Direct Uri load
             try
             {
-                BitmapImage bmp1 = new BitmapImage();
+                var bmp1 = new BitmapImage();
                 bmp1.BeginInit();
                 bmp1.CacheOption = BitmapCacheOption.OnLoad;
                 bmp1.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
@@ -255,7 +248,7 @@ namespace HouseholdMS.View.EqTesting
             }
             catch { }
 
-            // 2) Application resource stream (for pack application resources)
+            // 2) Application resource stream
             try
             {
                 const string APP = "pack://application:,,,/";
@@ -263,15 +256,14 @@ namespace HouseholdMS.View.EqTesting
                 if (rel.StartsWith(APP, StringComparison.OrdinalIgnoreCase))
                     rel = rel.Substring(APP.Length);
 
-                Uri relUri;
-                if (Uri.TryCreate(rel, UriKind.Relative, out relUri))
+                if (Uri.TryCreate(rel, UriKind.Relative, out var relUri))
                 {
                     StreamResourceInfo sri = Application.GetResourceStream(relUri);
                     if (sri != null && sri.Stream != null)
                     {
-                        using (Stream s = sri.Stream)
+                        using (var s = sri.Stream)
                         {
-                            BitmapImage bmp2 = new BitmapImage();
+                            var bmp2 = new BitmapImage();
                             bmp2.BeginInit();
                             bmp2.CacheOption = BitmapCacheOption.OnLoad;
                             bmp2.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
@@ -293,12 +285,12 @@ namespace HouseholdMS.View.EqTesting
                 if (uriString.StartsWith(SOO, StringComparison.OrdinalIgnoreCase))
                 {
                     string localPath = uriString.Substring(SOO.Length).TrimStart('/', '\\');
-                    string abs = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, localPath);
+                    string abs = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, localPath);
                     if (File.Exists(abs))
                     {
-                        using (FileStream fs = File.OpenRead(abs))
+                        using (var fs = File.OpenRead(abs))
                         {
-                            BitmapImage bmp3 = new BitmapImage();
+                            var bmp3 = new BitmapImage();
                             bmp3.BeginInit();
                             bmp3.CacheOption = BitmapCacheOption.OnLoad;
                             bmp3.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
@@ -318,9 +310,9 @@ namespace HouseholdMS.View.EqTesting
             {
                 if (File.Exists(uriString))
                 {
-                    using (FileStream fs = File.OpenRead(uriString))
+                    using (var fs = File.OpenRead(uriString))
                     {
-                        BitmapImage bmp4 = new BitmapImage();
+                        var bmp4 = new BitmapImage();
                         bmp4.BeginInit();
                         bmp4.CacheOption = BitmapCacheOption.OnLoad;
                         bmp4.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
@@ -347,10 +339,11 @@ namespace HouseholdMS.View.EqTesting
             var ver = string.IsNullOrWhiteSpace(_gallery.Version) ? "" : T("version_prefix") + _gallery.Version;
             HeaderVersion.Text = ver;
 
-            HeaderStep.Text = _album.Title + T("step_sep") + (_imageIndex + 1) + "/" + _album.Images.Length;
+            // Show ONLY the page number (no album prefix)
+            HeaderStep.Text = (_imageIndex + 1) + "/" + _album.Images.Length;
 
             string uri = _album.Images[_imageIndex];
-            ImageSource src = LoadImageStrong(uri);
+            var src = LoadImageStrong(uri);
             PageImage.Source = src;
             PageImage.ToolTip = (src == null) ? string.Format(T("missing_image"), uri) : null;
 

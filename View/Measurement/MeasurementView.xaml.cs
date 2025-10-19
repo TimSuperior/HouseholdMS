@@ -1,4 +1,5 @@
 ﻿using HouseholdMS.Services;
+using HouseholdMS.Resources; // <-- for Strings.*
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,7 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Threading; // <-- for Dispatcher.InvokeAsync
+using System.Windows.Threading; // for Dispatcher.InvokeAsync
 
 namespace HouseholdMS.View.Measurement
 {
@@ -61,7 +62,7 @@ namespace HouseholdMS.View.Measurement
             InitializeSerialSettings();
             InitFunctionDefaults();
             UpdateIntervalLabel();
-            SetStatus("Disconnected.");
+            SetStatus(Strings.MEAS_Status_Disconnected);
 
             var rateCombo = this.FindName("RateCombo") as ComboBox;
             if (rateCombo != null && rateCombo.SelectedItem == null && rateCombo.Items.Count > 0)
@@ -86,7 +87,7 @@ namespace HouseholdMS.View.Measurement
         {
             if (_device == null || !_device.IsConnected)
             {
-                SetStatus("Device is not connected.");
+                SetStatus(Strings.MEAS_Status_NotConnected);
                 return false;
             }
             return true;
@@ -105,7 +106,7 @@ namespace HouseholdMS.View.Measurement
 
             try
             {
-                SetStatus("Scanning ports…");
+                SetStatus(Strings.MEAS_Status_ScanningPorts);
                 var list = await SerialPortInspector.GetOrProbeAsync(
                     attemptTimeoutMs: 200,
                     cacheTtlMs: 15000,
@@ -113,12 +114,12 @@ namespace HouseholdMS.View.Measurement
 
                 PortComboBox.ItemsSource = list;
                 if (PortComboBox.Items.Count > 0) PortComboBox.SelectedIndex = 0;
-                SetStatus("Ports updated.");
+                SetStatus(Strings.MEAS_Status_PortsUpdated);
             }
             catch (OperationCanceledException) { }
             catch (Exception ex)
             {
-                SetStatus("Port scan error: " + ex.Message);
+                SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_PortScanErrorFmt, ex.Message));
             }
         }
 
@@ -203,7 +204,7 @@ namespace HouseholdMS.View.Measurement
                 var idn = await _device.ReadDeviceIDAsync();
                 if (string.IsNullOrWhiteSpace(idn))
                 {
-                    SetStatus("No response to *IDN?. Check cable/port/power.");
+                    SetStatus(Strings.MEAS_Status_NoIdn);
                     DisconnectAndDisposeDevice();
                     return;
                 }
@@ -224,10 +225,10 @@ namespace HouseholdMS.View.Measurement
                 _mathEnabled = false;
                 UpdateMathToggleUI();
 
-                SetStatus("Connected.");
+                SetStatus(Strings.MEAS_Status_Connected);
             }
-            catch (TimeoutException tex) { SetStatus("Timeout: " + tex.Message); }
-            catch (Exception ex) { SetStatus("Connection error: " + ex.Message); }
+            catch (TimeoutException tex) { SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_TimeoutFmt, tex.Message)); }
+            catch (Exception ex) { SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_ConnectionErrorFmt, ex.Message)); }
             finally { SetBusy(false); }
         }
 
@@ -240,7 +241,7 @@ namespace HouseholdMS.View.Measurement
                 PlotControl?.Stop();
                 PlotControl?.ResetStats();
                 DisconnectAndDisposeDevice();
-                SetStatus("Disconnected.");
+                SetStatus(Strings.MEAS_Status_Disconnected);
 
                 var idn = IdnBlockSafe; if (idn != null) idn.Text = string.Empty;
                 if (DeviceNameText != null) DeviceNameText.Text = "—";
@@ -250,7 +251,7 @@ namespace HouseholdMS.View.Measurement
                 ClearStatsTexts();
                 UpdateMathToggleUI();
             }
-            catch (Exception ex) { SetStatus("Disconnect error: " + ex.Message); }
+            catch (Exception ex) { SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_DisconnectErrorFmt, ex.Message)); }
         }
 
         private void DisconnectAndDisposeDevice()
@@ -270,10 +271,10 @@ namespace HouseholdMS.View.Measurement
                 if (idnBlock != null) idnBlock.Text = "IDN: " + (string.IsNullOrWhiteSpace(idn) ? "(empty)" : idn.Trim());
                 if (!string.IsNullOrWhiteSpace(idn) && DeviceNameText != null) DeviceNameText.Text = idn.Trim();
 
-                SetStatus("IDN received.");
+                SetStatus(Strings.MEAS_Status_IdnReceived);
             }
-            catch (TimeoutException) { SetStatus("IDN timeout."); }
-            catch (Exception ex) { SetStatus("Error: " + ex.Message); }
+            catch (TimeoutException) { SetStatus(Strings.MEAS_Status_IdnTimeout); }
+            catch (Exception ex) { SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_ErrorPrefixFmt, ex.Message)); }
             finally { SetBusy(false); }
         }
 
@@ -297,12 +298,15 @@ namespace HouseholdMS.View.Measurement
             {
                 await Task.Run(() => _device.SetFunction(functionCommand));
                 string readback = _device.GetFunction();
-                SetStatus($"Function set: {functionLabel}" + (string.IsNullOrWhiteSpace(readback) ? "" : $" • Meter: {readback}"));
+                string msg = string.IsNullOrWhiteSpace(readback)
+                    ? string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_FunctionSetFmt, functionLabel)
+                    : string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_FunctionSetWithMeterFmt, functionLabel, readback);
+                SetStatus(msg);
                 UnitLabel.Text = InferUnitFromFunction(functionCommand);
                 if (wasContinuous) ContToggle.IsChecked = true;
             }
-            catch (TimeoutException) { SetStatus("Timeout while setting function."); }
-            catch (Exception ex) { SetStatus("Error: " + ex.Message); }
+            catch (TimeoutException) { SetStatus(Strings.MEAS_Status_FunctionTimeout); }
+            catch (Exception ex) { SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_ErrorPrefixFmt, ex.Message)); }
             finally { SetInteractive(true); SetBusy(false); }
         }
 
@@ -348,12 +352,12 @@ namespace HouseholdMS.View.Measurement
                 if (resp != null)
                 {
                     HandleIncomingMeasurement(resp, DateTime.UtcNow);
-                    SetStatus("Measurement complete.");
+                    SetStatus(Strings.MEAS_Status_ReadDone);
                 }
-                else SetStatus("No data from device.");
+                else SetStatus(Strings.MEAS_Status_NoData);
             }
-            catch (TimeoutException) { SetStatus("Read timeout."); }
-            catch (Exception ex) { SetStatus("Error: " + ex.Message); }
+            catch (TimeoutException) { SetStatus(Strings.MEAS_Status_ReadTimeout); }
+            catch (Exception ex) { SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_ErrorPrefixFmt, ex.Message)); }
             finally { SetBusy(false); }
         }
 
@@ -371,7 +375,7 @@ namespace HouseholdMS.View.Measurement
                     await Task.Run(() => _device.SetAveraging(true));
                     _mathEnabled = true;
                     StartAveragingPoller();
-                    SetStatus("Average math enabled.");
+                    SetStatus(Strings.MEAS_Status_MathEnabled);
                 }
                 else
                 {
@@ -380,14 +384,14 @@ namespace HouseholdMS.View.Measurement
                     StopAveragingPoller();
                     PlotControl?.SetDeviceStats(null, null, null);
                     ClearStatsTexts();
-                    SetStatus("Average math disabled.");
+                    SetStatus(Strings.MEAS_Status_MathDisabled);
                 }
 
                 UpdateMathToggleUI();
             }
             catch (Exception ex)
             {
-                SetStatus("Math error: " + ex.Message);
+                SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_MathErrorFmt, ex.Message));
             }
             finally
             {
@@ -398,7 +402,7 @@ namespace HouseholdMS.View.Measurement
         private void UpdateMathToggleUI()
         {
             if (MathToggleBtn == null) return;
-            MathToggleBtn.Content = _mathEnabled ? "Disable Math Calculations" : "Enable Math Calculations";
+            MathToggleBtn.Content = _mathEnabled ? Strings.MEAS_Math_Disable : Strings.MEAS_Math_Enable;
         }
 
         private void ClearStatsTexts()
@@ -418,7 +422,7 @@ namespace HouseholdMS.View.Measurement
 
             _cts = new CancellationTokenSource();
             var token = _cts.Token;
-            SetStatus("Continuous reading started.");
+            SetStatus(Strings.MEAS_Status_ContStart);
 
             TrySetDeviceRateFromUIOrInterval();
 
@@ -454,7 +458,7 @@ namespace HouseholdMS.View.Measurement
         private void ContToggle_Unchecked(object sender, RoutedEventArgs e)
         {
             StopContinuousIfRunning();
-            SetStatus("Continuous reading stopped.");
+            SetStatus(Strings.MEAS_Status_ContStop);
         }
 
         private void StopContinuousIfRunning()
@@ -598,8 +602,8 @@ namespace HouseholdMS.View.Measurement
             if (shouldResume && ContToggle != null) ContToggle.IsChecked = true;
         }
 
-        private void Remote_Click(object sender, RoutedEventArgs e) { if (!EnsureConnected()) return; _device.SetRemote(); SetStatus("Remote mode requested (SYST:REM)."); }
-        private void Local_Click(object sender, RoutedEventArgs e) { if (!EnsureConnected()) return; _device.SetLocal(); SetStatus("Local mode requested (SYST:LOC)."); }
+        private void Remote_Click(object sender, RoutedEventArgs e) { if (!EnsureConnected()) return; _device.SetRemote(); SetStatus(Strings.MEAS_Status_RemoteRequested); }
+        private void Local_Click(object sender, RoutedEventArgs e) { if (!EnsureConnected()) return; _device.SetLocal(); SetStatus(Strings.MEAS_Status_LocalRequested); }
 
         private void QueryRate_Click(object sender, RoutedEventArgs e)
         {
@@ -607,7 +611,7 @@ namespace HouseholdMS.View.Measurement
             var r = _device.QueryRate();
             var tb = this.FindName("RateReadbackText") as TextBlock;
             if (tb != null) tb.Text = string.IsNullOrWhiteSpace(r) ? "—" : r.Trim();
-            SetStatus("RATE? queried.");
+            SetStatus(Strings.MEAS_Status_RateQueried);
         }
 
         private async void ApplyTempUnit_Click(object sender, RoutedEventArgs e)
@@ -615,7 +619,7 @@ namespace HouseholdMS.View.Measurement
             if (!EnsureConnected()) return;
             char u = (TempUnitC?.IsChecked == true) ? 'C' : (TempUnitF?.IsChecked == true) ? 'F' : 'K';
             var was = await PauseContinuousIfRunningAsync();
-            try { _device.SetTempUnit(u); SetStatus($"TEMP:RTD:UNIT {u}"); }
+            try { _device.SetTempUnit(u); SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_TempUnitAppliedFmt, u)); }
             finally { ResumeContinuousIf(was); }
         }
 
@@ -626,18 +630,18 @@ namespace HouseholdMS.View.Measurement
             if (r?.Contains("C") == true) TempUnitC.IsChecked = true;
             else if (r?.Contains("F") == true) TempUnitF.IsChecked = true;
             else if (r?.Contains("K") == true) TempUnitK.IsChecked = true;
-            SetStatus($"TEMP:RTD:UNIT? → {r}");
+            SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_TempUnitQueriedFmt, r));
         }
 
         private async void ApplyTherKits90_Click(object sender, RoutedEventArgs e)
         {
             if (!EnsureConnected()) return;
             var was = await PauseContinuousIfRunningAsync();
-            try { _device.ConfigureTempTherKITS90(); SetStatus("CONF:TEMP:THER KITS90 sent."); }
+            try { _device.ConfigureTempTherKITS90(); SetStatus(Strings.MEAS_Status_ThermoConfigured); }
             finally { ResumeContinuousIf(was); }
         }
 
-        private void QueryTempType_Click(object sender, RoutedEventArgs e) { if (!EnsureConnected()) return; var r = _device.QueryTempType(); SetStatus($"TEMP:RTD:TYPE? → {r}"); }
+        private void QueryTempType_Click(object sender, RoutedEventArgs e) { if (!EnsureConnected()) return; var r = _device.QueryTempType(); SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_TempTypeQueriedFmt, r)); }
 
         private void ReadTempOnce_Click(object sender, RoutedEventArgs e)
         {
@@ -647,10 +651,10 @@ namespace HouseholdMS.View.Measurement
             {
                 HandleIncomingMeasurement(r, DateTime.UtcNow);
             }
-            SetStatus("MEAS:TEMP? complete.");
+            SetStatus(Strings.MEAS_Status_TempReadDone);
         }
 
-        // ---------- Voltage range APPLY (split buttons + clear the other) ----------
+        // ---------- Voltage range APPLY ----------
         private async void ApplyVoltRangeV_Click(object sender, RoutedEventArgs e)
         {
             if (!EnsureConnected()) return;
@@ -664,9 +668,8 @@ namespace HouseholdMS.View.Measurement
             {
                 if (mode == "DC") _device.ConfVoltDC(vSel);
                 else _device.ConfVoltAC(vSel);
-                SetStatus($"CONF:VOLT:{mode} {vSel}");
+                SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_VoltConfFmt, mode, vSel));
                 UpdateRangeDisplay($"{vSel} V");
-                // clear the mV selection to avoid ambiguity
                 VoltRange_mV.SelectedIndex = -1;
             }
             finally { ResumeContinuousIf(was); }
@@ -685,9 +688,8 @@ namespace HouseholdMS.View.Measurement
             {
                 if (mode == "DC") _device.ConfMilliVoltDC(mvSel);
                 else _device.ConfMilliVoltAC(mvSel);
-                SetStatus($"CONF:VOLT:{mode} {mvSel}");
+                SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_VoltConfFmt, mode, mvSel));
                 UpdateRangeDisplay($"{mvSel} V");
-                // clear the V selection to avoid ambiguity
                 VoltRangeV.SelectedIndex = -1;
             }
             finally { ResumeContinuousIf(was); }
@@ -697,7 +699,7 @@ namespace HouseholdMS.View.Measurement
         {
             if (!EnsureConnected()) return;
             var r = _device.QueryRange();
-            SetStatus($"RANGE? → {r}");
+            SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_RangeQueryFmt, r));
             if (!string.IsNullOrWhiteSpace(r))
                 UpdateRangeDisplay(r.Trim());
         }
@@ -706,7 +708,7 @@ namespace HouseholdMS.View.Measurement
         {
             if (!EnsureConnected()) return;
             var f = _device.QueryFunction();
-            SetStatus($"FUNC? → {f}");
+            SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_FuncQueryFmt, f));
         }
 
         private void UpdateRangeDisplay(string rangeText)
@@ -726,9 +728,8 @@ namespace HouseholdMS.View.Measurement
             try
             {
                 if (mode == "DC") _device.ConfCurrDC_Amps(aSel); else _device.ConfCurrAC_Amps(aSel);
-                SetStatus($"CONF:CURR:{mode} {aSel}");
+                SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_CurrConfFmt, mode, aSel));
                 UpdateRangeDisplay($"{aSel} A");
-                // clear the other selector
                 CurrRange_mA.SelectedIndex = -1;
             }
             finally { ResumeContinuousIf(was); }
@@ -745,9 +746,8 @@ namespace HouseholdMS.View.Measurement
             try
             {
                 if (mode == "DC") _device.ConfCurrDC_mA(mSel); else _device.ConfCurrAC_mA(mSel);
-                SetStatus($"CONF:CURR:{mode} {mSel}");
+                SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_CurrConfFmt, mode, mSel));
                 UpdateRangeDisplay($"{mSel} A");
-                // clear the other selector
                 CurrRangeA.SelectedIndex = -1;
             }
             finally { ResumeContinuousIf(was); }
@@ -757,7 +757,7 @@ namespace HouseholdMS.View.Measurement
         {
             if (!EnsureConnected()) return;
             var was = await PauseContinuousIfRunningAsync();
-            try { _device.ConfRes(); SetStatus("CONF:RES"); }
+            try { _device.ConfRes(); SetStatus(Strings.MEAS_Status_ResConf); }
             finally { ResumeContinuousIf(was); }
         }
 
@@ -768,7 +768,7 @@ namespace HouseholdMS.View.Measurement
             if (string.IsNullOrWhiteSpace(sel)) return;
 
             var was = await PauseContinuousIfRunningAsync();
-            try { _device.ConfCap(sel); SetStatus($"CONF:CAP {sel}"); }
+            try { _device.ConfCap(sel); SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_CapConfFmt, sel)); }
             finally { ResumeContinuousIf(was); }
         }
 
@@ -776,7 +776,7 @@ namespace HouseholdMS.View.Measurement
         {
             if (!EnsureConnected()) return;
             var was = await PauseContinuousIfRunningAsync();
-            try { _device.ConfPer(); SetStatus("CONF:PER"); }
+            try { _device.ConfPer(); SetStatus(Strings.MEAS_Status_PerConf); }
             finally { ResumeContinuousIf(was); }
         }
 
@@ -792,14 +792,14 @@ namespace HouseholdMS.View.Measurement
                     MinValText.Text = DoubleToStr(stats.Min);
                     MaxValText.Text = DoubleToStr(stats.Max);
                     PlotControl?.SetDeviceStats(stats.Min, stats.Max, stats.Avg);
-                    SetStatus("Averaging stats refreshed.");
+                    SetStatus(Strings.MEAS_Status_AvgRefreshed);
                 }
                 else
                 {
                     AvgValText.Text = _device.QueryAverAvg() ?? "—";
                     MinValText.Text = _device.QueryAverMin() ?? "—";
                     MaxValText.Text = _device.QueryAverMax() ?? "—";
-                    SetStatus("AVG?/MIN?/MAX? refreshed.");
+                    SetStatus(Strings.MEAS_Status_AvgRefreshedAlt);
                 }
             }
             catch { /* ignore UI errors */ }
@@ -819,7 +819,7 @@ namespace HouseholdMS.View.Measurement
             _device.SetAutoRange(false);
         }
 
-        // -------- Math suite (other math remains the same) --------
+        // -------- Math suite (relative, dB) --------
         private void RelEnable_Click(object sender, RoutedEventArgs e)
         {
             if (!EnsureConnected()) return;
@@ -879,11 +879,11 @@ namespace HouseholdMS.View.Measurement
             if (!EnsureConnected()) return;
             if (!double.TryParse(ContThresholdBox.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double thr))
             {
-                SetStatus("Invalid continuity threshold.");
+                SetStatus(Strings.MEAS_Status_InvalidContThreshold);
                 return;
             }
             var was = await PauseContinuousIfRunningAsync();
-            try { _device.SetContinuityThreshold(thr); SetStatus($"CONT:THREShold {thr}"); }
+            try { _device.SetContinuityThreshold(thr); SetStatus(string.Format(CultureInfo.CurrentCulture, Strings.MEAS_Status_ContThresholdFmt, thr)); }
             finally { ResumeContinuousIf(was); }
         }
 
@@ -891,20 +891,20 @@ namespace HouseholdMS.View.Measurement
         {
             if (!EnsureConnected()) return;
             _device.SetBeeper(true);
-            SetStatus("Beeper ON");
+            SetStatus(Strings.MEAS_Status_BeeperOn);
         }
 
         private void BeepToggle_Unchecked(object sender, RoutedEventArgs e)
         {
             if (!EnsureConnected()) return;
             _device.SetBeeper(false);
-            SetStatus("Beeper OFF");
+            SetStatus(Strings.MEAS_Status_BeeperOff);
         }
 
         // -------- Limits + PASS/FAIL --------
         private void ApplyLimits_Click(object sender, RoutedEventArgs e)
         {
-            SetStatus("Limits applied.");
+            SetStatus(Strings.MEAS_Status_LimitsApplied);
         }
 
         private (double? lo, double? hi) GetLimits()
@@ -923,7 +923,7 @@ namespace HouseholdMS.View.Measurement
             if (lo.HasValue && value.Value < lo.Value) pass = false;
             if (hi.HasValue && value.Value > hi.Value) pass = false;
 
-            PassFailText.Text = pass ? "PASS" : "FAIL";
+            PassFailText.Text = pass ? Strings.Common_Pass : Strings.Common_Fail;
             PassFailText.Foreground = pass ? (Brush)FindResource("PassBrush") : (Brush)FindResource("FailBrush");
         }
 

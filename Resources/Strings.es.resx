@@ -833,5 +833,524 @@
 	<data name="YR_Error_NavigationPrefix" xml:space="preserve"><value>Error de navegación: </value></data>
 	<data name="YR_Error_LoadSvgPrefix" xml:space="preserve"><value>No se pudo cargar el SVG. ErrorStatus=</value></data>
 
-	
+	<!-- ===== MeasurementView (ES) ===== -->
+	<data name="MEAS_Header_Title" xml:space="preserve"><value>Consola de Medición</value></data>
+	<data name="MEAS_Label_EffectiveSps" xml:space="preserve"><value>SPS efectivo:</value></data>
+	<data name="MEAS_Label_Status" xml:space="preserve"><value>Estado</value></data>
+
+	<data name="MEAS_Conn_COM" xml:space="preserve"><value>COM</value></data>
+	<data name="MEAS_Conn_Baud" xml:space="preserve"><value>Baudios</value></data>
+	<data name="MEAS_Conn_Parity" xml:space="preserve"><value>Paridad</value></data>
+	<data name="MEAS_Conn_Bits" xml:space="preserve"><value>Bits</value></data>
+	<data name="MEAS_Tooltip_RefreshCom" xml:space="preserve"><value>Actualizar lista de puertos COM</value></data>
+	<data name="MEAS_Btn_Connect" xml:space="preserve"><value>Conectar</value></data>
+	<data name="MEAS_Btn_Disconnect" xml:space="preserve"><value>Desconectar</value></data>
+	<data name="MEAS_Btn_IDN" xml:space="preserve"><value>IDN?</value></data>
+
+	<data name="MEAS_Function_Title" xml:space="preserve"><value>Función</value></data>
+	<data name="MEAS_Btn_Apply" xml:space="preserve"><value>Aplicar</value></data>
+	<data name="MEAS_Check_AutoRange" xml:space="preserve"><value>Rango automático</value></data>
+	<data name="MEAS_Label_Units" xml:space="preserve"><value>Unidades:</value></data>
+	<data name="MEAS_Label_CurrentRange" xml:space="preserve"><value>Rango actual:</value></data>
+
+	<!-- Lista de funciones -->
+	<data name="MEAS_Func_VoltDC" xml:space="preserve"><value>Voltaje CC</value></data>
+	<data name="MEAS_Func_VoltAC" xml:space="preserve"><value>Voltaje CA</value></data>
+	<data name="MEAS_Func_CurrDC" xml:space="preserve"><value>Corriente CC</value></data>
+	<data name="MEAS_Func_CurrAC" xml:space="preserve"><value>Corriente CA</value></data>
+	<data name="MEAS_Func_Res" xml:space="preserve"><value>Resistencia (Ω)</value></data>
+	<data name="MEAS_Func_FourRes" xml:space="preserve"><value>Resistencia 4 hilos (Ω)</value></data>
+	<data name="MEAS_Func_TempRTD" xml:space="preserve"><value>Temperatura (RTD)</value></data>
+	<data name="MEAS_Func_Freq" xml:space="preserve"><value>Frecuencia (Hz)</value></data>
+	<data name="MEAS_Func_Per" xml:space="preserve"><value>Período (s)</value></data>
+	<data name="MEAS_Func_Cap" xml:space="preserve"><value>Capacitancia (F)</value></data>
+	<data name="MEAS_Func_Cont" xml:space="preserve"><value>Continuidad</value></data>
+	<data name="MEAS_Func_Diode" xml:space="preserve"><value>Diodo</value></data>
+
+	<!-- Matemáticas -->
+	<data name="MEAS_Math_Title" xml:space="preserve"><value>Cálculo</value></data>
+	<data name="MEAS_Math_Enable" xml:space="preserve"><value>Activar cálculos</value></data>
+	<data name="MEAS_Math_Disable" xml:space="preserve"><value>Desactivar cálculos</value></data>
+	<data name="MEAS_Btn_RefreshStats" xml:space="preserve"><value>Actualizar estadísticas</value></data>
+	<data name="MEAS_Tooltip_RefreshStats" xml:space="preserve"><value>Consultar AVG?/MIN?/MAX? ahora</value></data>
+	<data name="MEAS_Rel_Header" xml:space="preserve"><value>Relativo (NULL)</value></data>
+	<data name="MEAS_Rel_Enable" xml:space="preserve"><value>Activar REL</value></data>
+	<data name="MEAS_Rel_Zero" xml:space="preserve"><value>Cero (NULL:OFFS)</value></data>
+	<data name="MEAS_Rel_Disable" xml:space="preserve"><value>Desactivar REL</value></data>
+	<data name="MEAS_dB_Header" xml:space="preserve"><value>Nivel en dB / dBm</value></data>
+	<data name="MEAS_Label_RefOhms" xml:space="preserve"><value>Ref (Ω):</value></data>
+	<data name="MEAS_Btn_UseDb" xml:space="preserve"><value>Usar dB</value></data>
+	<data name="MEAS_Btn_UseDbm" xml:space="preserve"><value>Usar dBm</value></data>
+	<data name="MEAS_Btn_MathOff" xml:space="preserve"><value>Calculo OFF</value></data>
+
+	<!-- Adquisición -->
+	<data name="MEAS_Acq_Title" xml:space="preserve"><value>Adquisición</value></data>
+	<data name="MEAS_Btn_ReadOnce" xml:space="preserve"><value>Leer una vez</value></data>
+	<data name="MEAS_Toggle_Continuous" xml:space="preserve"><value>Continuo</value></data>
+	<data name="MEAS_Label_Rate" xml:space="preserve"><value>Velocidad</value></data>
+	<data name="MEAS_Rate_Fast" xml:space="preserve"><value>Rápido</value></data>
+	<data name="MEAS_Rate_Medium" xml:space="preserve"><value>Medio</value></data>
+	<data name="MEAS_Rate_Low" xml:space="preserve"><value>Bajo</value></data>
+	<data name="MEAS_Label_Interval" xml:space="preserve"><value>Intervalo</value></data>
+
+	<!-- Avanzado -->
+	<data name="MEAS_Advanced_Title" xml:space="preserve"><value>Controles avanzados</value></data>
+	<data name="MEAS_Btn_Remote" xml:space="preserve"><value>Remoto (SYST:REM)</value></data>
+	<data name="MEAS_Btn_Local" xml:space="preserve"><value>Local (SYST:LOC)</value></data>
+	<data name="MEAS_Temp_Header" xml:space="preserve"><value>Temperatura (RTD / THER)</value></data>
+	<data name="MEAS_Label_Unit" xml:space="preserve"><value>Unidad:</value></data>
+	<data name="MEAS_Btn_ApplyUnit" xml:space="preserve"><value>Aplicar unidad</value></data>
+	<data name="MEAS_Tooltip_ThermStandard" xml:space="preserve"><value>Configura el estándar del termómetro</value></data>
+	<data name="MEAS_Volt_Header" xml:space="preserve"><value>Voltaje (V / mV)</value></data>
+	<data name="MEAS_Label_Mode" xml:space="preserve"><value>Modo:</value></data>
+	<data name="MEAS_Label_VRange" xml:space="preserve"><value>Rango V:</value></data>
+	<data name="MEAS_Label_mVRange" xml:space="preserve"><value>Rango mV:</value></data>
+	<data name="MEAS_Btn_ApplyV" xml:space="preserve"><value>Aplicar V</value></data>
+	<data name="MEAS_Btn_ApplymV" xml:space="preserve"><value>Aplicar mV</value></data>
+
+	<data name="MEAS_Curr_Header" xml:space="preserve"><value>Corriente (A / mA / µA)</value></data>
+	<data name="MEAS_Label_ARange" xml:space="preserve"><value>Rango A:</value></data>
+	<data name="MEAS_Label_mARange" xml:space="preserve"><value>Rango mA/µA:</value></data>
+	<data name="MEAS_Tooltip_mARange" xml:space="preserve"><value>500E-6 (500µA), 5E-3 (5mA), 50E-3 (50mA), 500E-3 (500mA)</value></data>
+	<data name="MEAS_Btn_ApplyA" xml:space="preserve"><value>Aplicar A</value></data>
+	<data name="MEAS_Btn_ApplymA" xml:space="preserve"><value>Aplicar mA</value></data>
+
+	<data name="MEAS_Cap_Header" xml:space="preserve"><value>Capacitancia (F)</value></data>
+	<data name="MEAS_Label_Range" xml:space="preserve"><value>Rango:</value></data>
+	<data name="MEAS_Btn_ApplyCap" xml:space="preserve"><value>Aplicar CAP</value></data>
+
+	<data name="MEAS_Cont_Header" xml:space="preserve"><value>Continuidad y diodo</value></data>
+	<data name="MEAS_Label_ContThreshold" xml:space="preserve"><value>Umbral de continuidad (Ω):</value></data>
+	<data name="MEAS_Btn_ApplyThreshold" xml:space="preserve"><value>Aplicar umbral</value></data>
+	<data name="MEAS_Check_Beeper" xml:space="preserve"><value>Alarma</value></data>
+
+	<!-- Lectura + Gráfico -->
+	<data name="MEAS_Label_MeasuredValue" xml:space="preserve"><value>Valor medido:</value></data>
+	<data name="MEAS_Label_PassFail" xml:space="preserve"><value>APTO/NO APTO:</value></data>
+	<data name="MEAS_Label_Avg" xml:space="preserve"><value>Prom:</value></data>
+	<data name="MEAS_Label_Min" xml:space="preserve"><value>Mín:</value></data>
+	<data name="MEAS_Label_Max" xml:space="preserve"><value>Máx:</value></data>
+	<data name="MEAS_Quick_Voltage" xml:space="preserve"><value>Voltaje</value></data>
+	<data name="MEAS_Quick_Current" xml:space="preserve"><value>Corriente</value></data>
+	<data name="MEAS_Quick_Resistance" xml:space="preserve"><value>Resistencia</value></data>
+
+	<data name="MEAS_Btn_ZoomIn" xml:space="preserve"><value>Acercar</value></data>
+	<data name="MEAS_Btn_ZoomOut" xml:space="preserve"><value>Alejar</value></data>
+	<data name="MEAS_Btn_ResetView" xml:space="preserve"><value>Restablecer vista</value></data>
+
+	<data name="MEAS_Label_LowerLimit" xml:space="preserve"><value>Límite inferior:</value></data>
+	<data name="MEAS_Label_UpperLimit" xml:space="preserve"><value>Límite superior:</value></data>
+	<data name="MEAS_Btn_ApplyLimits" xml:space="preserve"><value>Aplicar límites</value></data>
+
+	<!-- Mensajes / estado -->
+	<data name="MEAS_Status_Disconnected" xml:space="preserve"><value>Desconectado.</value></data>
+	<data name="MEAS_Status_NotConnected" xml:space="preserve"><value>El dispositivo no está conectado.</value></data>
+	<data name="MEAS_Status_ScanningPorts" xml:space="preserve"><value>Escaneando puertos…</value></data>
+	<data name="MEAS_Status_PortsUpdated" xml:space="preserve"><value>Puertos actualizados.</value></data>
+	<data name="MEAS_Status_PortScanErrorFmt" xml:space="preserve"><value>Error al escanear puertos: {0}</value></data>
+	<data name="MEAS_Status_TimeoutFmt" xml:space="preserve"><value>Tiempo de espera: {0}</value></data>
+	<data name="MEAS_Status_ConnectionErrorFmt" xml:space="preserve"><value>Error de conexión: {0}</value></data>
+	<data name="MEAS_Status_NoIdn" xml:space="preserve"><value>Sin respuesta a *IDN?. Verifique cable/puerto/energía.</value></data>
+	<data name="MEAS_Status_Connected" xml:space="preserve"><value>Conectado.</value></data>
+	<data name="MEAS_Status_DisconnectErrorFmt" xml:space="preserve"><value>Error al desconectar: {0}</value></data>
+	<data name="MEAS_Status_IdnReceived" xml:space="preserve"><value>IDN recibido.</value></data>
+	<data name="MEAS_Status_IdnTimeout" xml:space="preserve"><value>Tiempo de espera de IDN.</value></data>
+	<data name="MEAS_Status_ErrorPrefixFmt" xml:space="preserve"><value>Error: {0}</value></data>
+
+	<data name="MEAS_Status_FunctionSetFmt" xml:space="preserve"><value>Función establecida: {0}</value></data>
+	<data name="MEAS_Status_FunctionSetWithMeterFmt" xml:space="preserve"><value>Función establecida: {0} • Medidor: {1}</value></data>
+	<data name="MEAS_Status_FunctionTimeout" xml:space="preserve"><value>Tiempo de espera al configurar la función.</value></data>
+
+	<data name="MEAS_Status_ReadDone" xml:space="preserve"><value>Medición completa.</value></data>
+	<data name="MEAS_Status_NoData" xml:space="preserve"><value>Sin datos del dispositivo.</value></data>
+	<data name="MEAS_Status_ReadTimeout" xml:space="preserve"><value>Tiempo de espera de lectura.</value></data>
+
+	<data name="MEAS_Status_MathEnabled" xml:space="preserve"><value>Cálculo promedio activado.</value></data>
+	<data name="MEAS_Status_MathDisabled" xml:space="preserve"><value>Cálculo promedio desactivado.</value></data>
+	<data name="MEAS_Status_MathErrorFmt" xml:space="preserve"><value>Error de cálculo: {0}</value></data>
+
+	<data name="MEAS_Status_ContStart" xml:space="preserve"><value>Lectura continua iniciada.</value></data>
+	<data name="MEAS_Status_ContStop" xml:space="preserve"><value>Lectura continua detenida.</value></data>
+
+	<data name="MEAS_Status_RemoteRequested" xml:space="preserve"><value>Modo remoto solicitado (SYST:REM).</value></data>
+	<data name="MEAS_Status_LocalRequested" xml:space="preserve"><value>Modo local solicitado (SYST:LOC).</value></data>
+	<data name="MEAS_Status_RateQueried" xml:space="preserve"><value>RATE? consultado.</value></data>
+
+	<data name="MEAS_Status_TempUnitAppliedFmt" xml:space="preserve"><value>TEMP:RTD:UNIT {0}</value></data>
+	<data name="MEAS_Status_TempUnitQueriedFmt" xml:space="preserve"><value>TEMP:RTD:UNIT? → {0}</value></data>
+	<data name="MEAS_Status_ThermoConfigured" xml:space="preserve"><value>CONF:TEMP:THER KITS90 enviado.</value></data>
+	<data name="MEAS_Status_TempTypeQueriedFmt" xml:space="preserve"><value>TEMP:RTD:TYPE? → {0}</value></data>
+	<data name="MEAS_Status_TempReadDone" xml:space="preserve"><value>MEAS:TEMP? completado.</value></data>
+
+	<data name="MEAS_Status_VoltConfFmt" xml:space="preserve"><value>CONF:VOLT:{0} {1}</value></data>
+	<data name="MEAS_Status_RangeQueryFmt" xml:space="preserve"><value>RANGE? → {0}</value></data>
+	<data name="MEAS_Status_FuncQueryFmt" xml:space="preserve"><value>FUNC? → {0}</value></data>
+	<data name="MEAS_Status_CurrConfFmt" xml:space="preserve"><value>CONF:CURR:{0} {1}</value></data>
+	<data name="MEAS_Status_ResConf" xml:space="preserve"><value>CONF:RES</value></data>
+	<data name="MEAS_Status_CapConfFmt" xml:space="preserve"><value>CONF:CAP {0}</value></data>
+	<data name="MEAS_Status_PerConf" xml:space="preserve"><value>CONF:PER</value></data>
+
+	<data name="MEAS_Status_AvgRefreshed" xml:space="preserve"><value>Estadísticas de promedio actualizadas.</value></data>
+	<data name="MEAS_Status_AvgRefreshedAlt" xml:space="preserve"><value>AVG?/MIN?/MAX? actualizado.</value></data>
+
+	<data name="MEAS_Status_InvalidContThreshold" xml:space="preserve"><value>Umbral de continuidad inválido.</value></data>
+	<data name="MEAS_Status_ContThresholdFmt" xml:space="preserve"><value>CONT:THREShold {0}</value></data>
+	<data name="MEAS_Status_BeeperOn" xml:space="preserve"><value>Alarma ON</value></data>
+	<data name="MEAS_Status_BeeperOff" xml:space="preserve"><value>Alarma OFF</value></data>
+
+	<data name="MEAS_Status_LimitsApplied" xml:space="preserve"><value>Límites aplicados.</value></data>
+
+	<!-- Común PASS/FAIL -->
+	<data name="Common_Pass" xml:space="preserve"><value>APTO</value></data>
+	<data name="Common_Fail" xml:space="preserve"><value>NO APTO</value></data>
+
+	<!-- ===== Tektronix TBS1202C View ===== -->
+	<data name="TBS_Header_Title" xml:space="preserve"><value>Tektronix TBS1202C — Control remoto</value></data>
+	<data name="TBS_Header_Sub"   xml:space="preserve"><value>SCPI por VISA / Serie — control y captura en vivo</value></data>
+
+	<data name="TBS_Btn_Connect" xml:space="preserve"><value>Conectar</value></data>
+	<data name="TBS_Btn_Disconnect" xml:space="preserve"><value>Desconectar</value></data>
+	<data name="TBS_Btn_IDN" xml:space="preserve"><value>*IDN?</value></data>
+	<data name="TBS_Btn_RST" xml:space="preserve"><value>*RST</value></data>
+	<data name="TBS_Btn_CLS" xml:space="preserve"><value>*CLS</value></data>
+	<data name="TBS_Btn_Autoset" xml:space="preserve"><value>AUTOSet</value></data>
+	<data name="TBS_Tooltip_Autoset" xml:space="preserve"><value>AUTOSet EXECute</value></data>
+
+	<data name="TBS_Tab_Graph" xml:space="preserve"><value>Gráfica</value></data>
+	<data name="TBS_Tab_Measurements" xml:space="preserve"><value>Medidas</value></data>
+
+	<data name="TBS_Label_Sources" xml:space="preserve"><value>Fuentes:</value></data>
+	<data name="TBS_Label_LiveHz" xml:space="preserve"><value>En vivo (Hz):</value></data>
+	<data name="TBS_Tooltip_LiveHz" xml:space="preserve"><value>Frecuencia de sondeo para lecturas CURVe?</value></data>
+	<data name="TBS_Btn_FitAll" xml:space="preserve"><value>Ajustar todo</value></data>
+	<data name="TBS_Btn_Clear" xml:space="preserve"><value>Limpiar</value></data>
+	<data name="TBS_Btn_Pause" xml:space="preserve"><value>Pausar en vivo</value></data>
+	<data name="TBS_Btn_Resume" xml:space="preserve"><value>Reanudar en vivo</value></data>
+
+	<data name="TBS_Label_X" xml:space="preserve"><value>X:</value></data>
+	<data name="TBS_Label_Y" xml:space="preserve"><value>Y:</value></data>
+	<data name="TBS_Label_Auto" xml:space="preserve"><value>Auto</value></data>
+	<data name="TBS_Tooltip_XMin" xml:space="preserve"><value>X mín (s)</value></data>
+	<data name="TBS_Tooltip_XMax" xml:space="preserve"><value>X máx (s)</value></data>
+	<data name="TBS_Tooltip_YMin" xml:space="preserve"><value>Y mín</value></data>
+	<data name="TBS_Tooltip_YMax" xml:space="preserve"><value>Y máx</value></data>
+	<data name="TBS_Btn_ApplyRange" xml:space="preserve"><value>Aplicar rango</value></data>
+	<data name="TBS_Btn_AutoFromData" xml:space="preserve"><value>Auto desde datos</value></data>
+
+	<data name="TBS_Section_Acquisition" xml:space="preserve"><value>Adquisición</value></data>
+	<data name="TBS_Label_Mode" xml:space="preserve"><value>Modo:</value></data>
+	<data name="TBS_Label_NumAvg" xml:space="preserve"><value>Promedios:</value></data>
+
+	<data name="TBS_Section_Timebase" xml:space="preserve"><value>Base de tiempo</value></data>
+	<data name="TBS_Label_TbScale" xml:space="preserve"><value>Escala (s/div)</value></data>
+	<data name="TBS_Label_TbPos" xml:space="preserve"><value>Pos (s)</value></data>
+	<data name="TBS_Label_RecordLen" xml:space="preserve"><value>Longitud de registro</value></data>
+	<data name="TBS_Label_RollMode" xml:space="preserve"><value>Modo roll</value></data>
+	<data name="TBS_Btn_SampleRateQ" xml:space="preserve"><value>¿Frecuencia de muestreo?</value></data>
+
+	<data name="TBS_Section_Channel" xml:space="preserve"><value>Canal</value></data>
+	<data name="TBS_Info_ChannelApplies" xml:space="preserve"><value>Se aplica a todas las fuentes marcadas arriba (CH1/CH2).</value></data>
+	<data name="TBS_Label_ChScale" xml:space="preserve"><value>Escala (V/div)</value></data>
+	<data name="TBS_Label_ChOffset" xml:space="preserve"><value>Offset (V)</value></data>
+	<data name="TBS_Label_Coupling" xml:space="preserve"><value>Acoplamiento</value></data>
+	<data name="TBS_Label_BWLimit" xml:space="preserve"><value>Límite de BW 20 MHz</value></data>
+	<data name="TBS_Label_Invert" xml:space="preserve"><value>Invertir</value></data>
+
+	<data name="TBS_Section_Trigger" xml:space="preserve"><value>Disparo</value></data>
+	<data name="TBS_Label_Source" xml:space="preserve"><value>Fuente</value></data>
+	<data name="TBS_Label_Slope" xml:space="preserve"><value>Pendiente</value></data>
+	<data name="TBS_Label_LevelV" xml:space="preserve"><value>Nivel (V)</value></data>
+	<data name="TBS_Btn_SetLevel" xml:space="preserve"><value>Establecer nivel</value></data>
+	<data name="TBS_Label_Holdoff" xml:space="preserve"><value>Retardo (s)</value></data>
+	<data name="TBS_Btn_SetHoldoff" xml:space="preserve"><value>Establecer retardo</value></data>
+	<data name="TBS_Btn_StateQ" xml:space="preserve"><value>¿Estado?</value></data>
+
+	<data name="TBS_Section_Cursors" xml:space="preserve"><value>Cursores</value></data>
+	<data name="TBS_Cur_Enable" xml:space="preserve"><value>Activar cursores</value></data>
+	<data name="TBS_Cur_Disable" xml:space="preserve"><value>Desactivar cursores</value></data>
+	<data name="TBS_Label_Function" xml:space="preserve"><value>Función</value></data>
+	<data name="TBS_Label_H1" xml:space="preserve"><value>H1 (s)</value></data>
+	<data name="TBS_Label_H2" xml:space="preserve"><value>H2 (s)</value></data>
+	<data name="TBS_Btn_SetH" xml:space="preserve"><value>Establecer H</value></data>
+	<data name="TBS_Label_V1" xml:space="preserve"><value>V1 (V)</value></data>
+	<data name="TBS_Label_V2" xml:space="preserve"><value>V2 (V)</value></data>
+	<data name="TBS_Btn_SetV" xml:space="preserve"><value>Establecer V</value></data>
+
+	<data name="TBS_Section_Display" xml:space="preserve"><value>Pantalla</value></data>
+	<data name="TBS_Label_PersistOn" xml:space="preserve"><value>Persistencia activada</value></data>
+	<data name="TBS_Label_PersistSec" xml:space="preserve"><value>Persistencia (s)</value></data>
+
+	<data name="TBS_Chart_TimeDomain" xml:space="preserve"><value>Dominio del tiempo</value></data>
+	<data name="TBS_Axis_Time" xml:space="preserve"><value>Tiempo (s)</value></data>
+	<data name="TBS_Axis_Voltage" xml:space="preserve"><value>Voltaje (V)</value></data>
+
+	<data name="TBS_Section_Immediate" xml:space="preserve"><value>Medición inmediata</value></data>
+	<data name="TBS_Label_Type" xml:space="preserve"><value>Tipo</value></data>
+	<data name="TBS_Label_Source1" xml:space="preserve"><value>Fuente1</value></data>
+	<data name="TBS_Label_Source2" xml:space="preserve"><value>Fuente2</value></data>
+	<data name="TBS_Btn_ValueQ" xml:space="preserve"><value>¿Valor?</value></data>
+	<data name="TBS_Btn_Discover" xml:space="preserve"><value>Descubrir soportadas (src1)</value></data>
+	<data name="TBS_Btn_ReadSelected" xml:space="preserve"><value>Leer seleccionadas</value></data>
+	<data name="TBS_Hint_MultiSelect" xml:space="preserve"><value>(selección múltiple abajo)</value></data>
+
+	<data name="TBS_Section_Slots" xml:space="preserve"><value>Slots en pantalla (mostrar en el osciloscopio)</value></data>
+	<data name="TBS_Label_Slot" xml:space="preserve"><value>Slot (1..6)</value></data>
+	<data name="TBS_Label_Src1Short" xml:space="preserve"><value>Src1</value></data>
+	<data name="TBS_Label_Src2Short" xml:space="preserve"><value>Src2</value></data>
+	<data name="TBS_Tooltip_Src2" xml:space="preserve"><value>usar para fase/retardo</value></data>
+	<data name="TBS_Btn_ConfigSlot" xml:space="preserve"><value>Configurar slot</value></data>
+	<data name="TBS_Btn_EnableSlot" xml:space="preserve"><value>Habilitar slot</value></data>
+	<data name="TBS_Btn_DisableSlot" xml:space="preserve"><value>Deshabilitar slot</value></data>
+	<data name="TBS_Btn_ReadSlot" xml:space="preserve"><value>Leer slot</value></data>
+	<data name="TBS_Label_GateByCursors" xml:space="preserve"><value>Delimitar por cursores</value></data>
+	<data name="TBS_Btn_ApplyGate" xml:space="preserve"><value>Aplicar delimitación</value></data>
+	<data name="TBS_Btn_ClearAllSlots" xml:space="preserve"><value>Limpiar todos los slots</value></data>
+
+	<data name="TBS_Section_LiveMini" xml:space="preserve"><value>Mini gráficas en vivo (por canal)</value></data>
+	<data name="TBS_Info_MiniGraphs" xml:space="preserve">
+  <value>Se actualiza ~cada 2 s mientras En vivo está activo. Alterna CH1/CH2 en la barra de herramientas de Gráfica.</value>
+</data>
+
+	<data name="TBS_Section_Console" xml:space="preserve"><value>Consola</value></data>
+
+	<!-- Shared keys if missing -->
+	<data name="Common_Apply" xml:space="preserve"><value>Aplicar</value></data>
+	<data name="Common_Set" xml:space="preserve"><value>Establecer</value></data>
+
+	<!-- ===== Epever Monitor (ES) ===== -->
+	<data name="EPEV_Header_Title" xml:space="preserve"><value>Monitor MPPT EPEVER</value></data>
+	<data name="EPEV_Header_ReadOnlyChip" xml:space="preserve"><value>SOLO LECTURA</value></data>
+	<data name="EPEV_Header_StatusLabel" xml:space="preserve"><value>Estado:</value></data>
+
+	<data name="EPEV_Link_Disconnected" xml:space="preserve"><value>Desconectado</value></data>
+	<data name="EPEV_Link_ConnectedIdle" xml:space="preserve"><value>Conectado (inactivo)</value></data>
+	<data name="EPEV_Link_CommError" xml:space="preserve"><value>Error de comunicación</value></data>
+	<data name="EPEV_Link_Polling" xml:space="preserve"><value>Consultando</value></data>
+	<data name="EPEV_Link_ConnectedNoData" xml:space="preserve"><value>Conectado, pero sin datos</value></data>
+
+	<data name="EPEV_Status_InitHint" xml:space="preserve"><value>Seleccione el puerto COM, ponga el ID y pulse Conectar.</value></data>
+	<data name="EPEV_Status_OK" xml:space="preserve"><value>OK</value></data>
+	<data name="EPEV_Disconnected" xml:space="preserve"><value>Desconectado.</value></data>
+	<data name="EPEV_Status_ConnectedFmt" xml:space="preserve"><value>Conectado a {0} @ {1} (ID={2}).</value></data>
+
+	<data name="EPEV_Toolbar_Port" xml:space="preserve"><value>Puerto:</value></data>
+	<data name="EPEV_Toolbar_Baud" xml:space="preserve"><value>Baudios:</value></data>
+	<data name="EPEV_Toolbar_ID" xml:space="preserve"><value>ID:</value></data>
+	<data name="EPEV_Toolbar_Interval" xml:space="preserve"><value>Intervalo:</value></data>
+	<data name="EPEV_Toolbar_Auto" xml:space="preserve"><value>Auto</value></data>
+
+	<data name="EPEV_Interval_1s" xml:space="preserve"><value>1s</value></data>
+	<data name="EPEV_Interval_2s" xml:space="preserve"><value>2s</value></data>
+	<data name="EPEV_Interval_5s" xml:space="preserve"><value>5s</value></data>
+
+	<data name="EPEV_Btn_Refresh" xml:space="preserve"><value>Actualizar</value></data>
+	<data name="EPEV_Btn_Connect" xml:space="preserve"><value>Conectar</value></data>
+	<data name="EPEV_Btn_Disconnect" xml:space="preserve"><value>Desconectar</value></data>
+	<data name="EPEV_Btn_ReadNow" xml:space="preserve"><value>Leer ahora</value></data>
+
+	<data name="EPEV_Card_Device" xml:space="preserve"><value>Dispositivo</value></data>
+	<data name="EPEV_Device_VendorLabel" xml:space="preserve"><value>Fabricante:</value></data>
+	<data name="EPEV_Device_ProductLabel" xml:space="preserve"><value>Producto:</value></data>
+	<data name="EPEV_Device_FirmwareLabel" xml:space="preserve"><value>Firmware:</value></data>
+
+	<data name="EPEV_Card_Rated" xml:space="preserve"><value>Nominal (solo lectura)</value></data>
+	<data name="EPEV_Rated_PvRatedInputVoltage" xml:space="preserve"><value>Tensión nominal de entrada FV:</value></data>
+	<data name="EPEV_Rated_ChargeCurrent" xml:space="preserve"><value>Corriente de carga nominal:</value></data>
+	<data name="EPEV_Rated_LoadCurrent" xml:space="preserve"><value>Corriente nominal de carga (Load):</value></data>
+
+	<data name="EPEV_Card_PVArray" xml:space="preserve"><value>FV (Arreglo)</value></data>
+	<data name="EPEV_Label_Voltage" xml:space="preserve"><value>Tensión:</value></data>
+	<data name="EPEV_Label_Current" xml:space="preserve"><value>Corriente:</value></data>
+	<data name="EPEV_Label_Power" xml:space="preserve"><value>Potencia:</value></data>
+
+	<data name="EPEV_Card_Battery" xml:space="preserve"><value>Batería (Carga)</value></data>
+	<data name="EPEV_Label_ChargeCurrent" xml:space="preserve"><value>Corriente de carga:</value></data>
+	<data name="EPEV_Label_ChargePower" xml:space="preserve"><value>Potencia de carga:</value></data>
+
+	<data name="EPEV_Card_LoadOutput" xml:space="preserve"><value>Salida de carga</value></data>
+	<data name="EPEV_Card_State" xml:space="preserve"><value>Estado</value></data>
+	<data name="EPEV_Label_SOC" xml:space="preserve"><value>SOC:</value></data>
+	<data name="EPEV_Label_ChargeStage" xml:space="preserve"><value>Etapa de carga:</value></data>
+	<data name="EPEV_Label_LastUpdate" xml:space="preserve"><value>Última actualización:</value></data>
+
+	<data name="EPEV_Card_Temperatures" xml:space="preserve"><value>Temperaturas</value></data>
+	<data name="EPEV_Temp_Battery" xml:space="preserve"><value>Batería:</value></data>
+	<data name="EPEV_Temp_Ambient" xml:space="preserve"><value>Ambiente:</value></data>
+	<data name="EPEV_Temp_Controller" xml:space="preserve"><value>Controlador:</value></data>
+
+	<data name="EPEV_Card_TodayExtremes" xml:space="preserve"><value>Extremos de hoy</value></data>
+	<data name="EPEV_Today_BattVmax" xml:space="preserve"><value>Batería Vmáx:</value></data>
+	<data name="EPEV_Today_BattVmin" xml:space="preserve"><value>Batería Vmín:</value></data>
+
+	<data name="EPEV_Section_RealtimeCurves" xml:space="preserve"><value>Curvas en tiempo real</value></data>
+	<data name="EPEV_Btn_ResetView" xml:space="preserve"><value>Restablecer vista</value></data>
+	<data name="EPEV_Tab_Voltage" xml:space="preserve"><value>Tensión</value></data>
+	<data name="EPEV_Tab_Current" xml:space="preserve"><value>Corriente</value></data>
+	<data name="EPEV_Tab_Power" xml:space="preserve"><value>Potencia</value></data>
+
+	<data name="EPEV_Axis_Time" xml:space="preserve"><value>Tiempo</value></data>
+	<data name="EPEV_Axis_VoltV" xml:space="preserve"><value>Tensión, V</value></data>
+	<data name="EPEV_Axis_CurrA" xml:space="preserve"><value>Corriente, A</value></data>
+	<data name="EPEV_Axis_PowerW" xml:space="preserve"><value>Potencia, W</value></data>
+
+	<data name="EPEV_Series_Solar" xml:space="preserve"><value>Solar</value></data>
+	<data name="EPEV_Series_Battery" xml:space="preserve"><value>Batería</value></data>
+	<data name="EPEV_Series_Load" xml:space="preserve"><value>Carga</value></data>
+
+	<data name="EPEV_Section_RawDebug" xml:space="preserve"><value>Bruto / Depuración</value></data>
+	<data name="EPEV_Tip_RS485" xml:space="preserve"><value>Consejo: Solo un maestro en RS-485. Cierre otras apps.</value></data>
+	<data name="EPEV_Section_Inspector" xml:space="preserve"><value>Inspector avanzado (Leer registros de entrada 0x04)</value></data>
+	<data name="EPEV_Label_Start" xml:space="preserve"><value>Inicio (hex o dec):</value></data>
+	<data name="EPEV_Label_Count" xml:space="preserve"><value>Cantidad:</value></data>
+	<data name="EPEV_Btn_Read" xml:space="preserve"><value>Leer</value></data>
+	<data name="EPEV_Col_Index" xml:space="preserve"><value>Índice</value></data>
+	<data name="EPEV_Col_ValueHex" xml:space="preserve"><value>Valor (hex)</value></data>
+	<data name="EPEV_Col_ValueDec" xml:space="preserve"><value>Valor (dec)</value></data>
+	<data name="EPEV_Col_Scaled100" xml:space="preserve"><value>/100</value></data>
+
+	<data name="EPEV_Msg_Title" xml:space="preserve"><value>Monitor EPEVER</value></data>
+	<data name="EPEV_Msg_SelectPort" xml:space="preserve"><value>Primero seleccione un puerto COM.</value></data>
+	<data name="EPEV_Msg_InvalidUnitId" xml:space="preserve"><value>El ID del equipo debe ser 1..247.</value></data>
+	<data name="EPEV_Msg_ConnectFirst" xml:space="preserve"><value>Conéctese primero.</value></data>
+	<data name="EPEV_Msg_InvalidStart" xml:space="preserve"><value>Dirección inicial no válida.</value></data>
+	<data name="EPEV_Msg_CountRange" xml:space="preserve"><value>La cantidad debe ser 1..60.</value></data>
+
+	<data name="EPEV_Unit_V" xml:space="preserve"><value> V</value></data>
+	<data name="EPEV_Unit_A" xml:space="preserve"><value> A</value></data>
+	<data name="EPEV_Unit_W" xml:space="preserve"><value> W</value></data>
+	<data name="EPEV_Unit_Cdeg" xml:space="preserve"><value> °C</value></data>
+	<data name="EPEV_SocPercent" xml:space="preserve"><value> %</value></data>
+
+	<!-- It8615Control (ES) -->
+	<data name="IT8615_Header_Title" xml:space="preserve"><value>Carga electrónica IT8615</value></data>
+	<data name="IT8615_Header_Sub" xml:space="preserve"><value>Control, osciloscopio y armónicos</value></data>
+
+	<data name="IT8615_Conn_Resource" xml:space="preserve"><value>Recurso:</value></data>
+	<data name="IT8615_Btn_Discover" xml:space="preserve"><value>Buscar</value></data>
+	<data name="IT8615_Btn_Connect" xml:space="preserve"><value>Conectar</value></data>
+	<data name="IT8615_Btn_Disconnect" xml:space="preserve"><value>Desconectar</value></data>
+	<data name="IT8615_Conn_InstrumentId" xml:space="preserve"><value>   ID del instrumento:</value></data>
+	<data name="IT8615_Conn_Timeout" xml:space="preserve"><value>Timeout (ms)</value></data>
+	<data name="IT8615_Conn_Retry" xml:space="preserve"><value>Reintentos</value></data>
+
+	<data name="IT8615_Tab_Parameters" xml:space="preserve"><value>Parámetros</value></data>
+	<data name="IT8615_Tab_Scope" xml:space="preserve"><value>Osciloscopio</value></data>
+	<data name="IT8615_Tab_Harmonics" xml:space="preserve"><value>Armónicos</value></data>
+
+	<data name="IT8615_Param_OperatingMode" xml:space="preserve"><value>Modo de operación</value></data>
+	<data name="IT8615_Param_Acdc" xml:space="preserve"><value>AC / DC:</value></data>
+	<data name="IT8615_Param_Function" xml:space="preserve"><value>Función:</value></data>
+	<data name="IT8615_ModeTooltip" xml:space="preserve"><value>Modos: Corriente Constante, Resistencia Constante, Voltaje Constante, Potencia Constante, Cortocircuito</value></data>
+
+	<data name="IT8615_Func_Current" xml:space="preserve"><value>Corriente (Corriente Constante)</value></data>
+	<data name="IT8615_Func_Resistance" xml:space="preserve"><value>Resistencia (Resistencia Constante)</value></data>
+	<data name="IT8615_Func_Voltage" xml:space="preserve"><value>Voltaje (Voltaje Constante)</value></data>
+	<data name="IT8615_Func_Power" xml:space="preserve"><value>Potencia (Potencia Constante)</value></data>
+	<data name="IT8615_Func_Short" xml:space="preserve"><value>Cortocircuito</value></data>
+
+	<data name="IT8615_Param_Setpoint" xml:space="preserve"><value>Setpoint:</value></data>
+	<data name="IT8615_Btn_Apply" xml:space="preserve"><value>Aplicar</value></data>
+	<data name="IT8615_Param_EnableInput" xml:space="preserve"><value>Habilitar entrada</value></data>
+
+	<data name="IT8615_Param_PowerFactor" xml:space="preserve"><value>Factor de potencia:</value></data>
+	<data name="IT8615_Param_CrestFactor" xml:space="preserve"><value>Factor de cresta:</value></data>
+	<data name="IT8615_Btn_ApplyPfCf" xml:space="preserve"><value>Aplicar FP / FC</value></data>
+
+	<data name="IT8615_Btn_Start" xml:space="preserve"><value>Iniciar</value></data>
+	<data name="IT8615_Btn_Stop" xml:space="preserve"><value>Detener</value></data>
+	<data name="IT8615_Btn_EStop" xml:space="preserve"><value>Parada de emergencia</value></data>
+
+	<data name="IT8615_Meter_Title" xml:space="preserve"><value>Medidor (En vivo)</value></data>
+	<data name="IT8615_Meter_Vrms" xml:space="preserve"><value>Voltaje RMS:</value></data>
+	<data name="IT8615_Meter_Irms" xml:space="preserve"><value>Corriente RMS:</value></data>
+	<data name="IT8615_Meter_Power" xml:space="preserve"><value>Potencia:</value></data>
+	<data name="IT8615_Meter_Pf" xml:space="preserve"><value>Factor de potencia:</value></data>
+	<data name="IT8615_Meter_Freq" xml:space="preserve"><value>Frecuencia:</value></data>
+	<data name="IT8615_Meter_Cf" xml:space="preserve"><value>Factor de cresta:</value></data>
+
+	<data name="IT8615_Btn_Run" xml:space="preserve"><value>Ejecutar</value></data>
+	<data name="IT8615_Btn_Single" xml:space="preserve"><value>Única</value></data>
+	<data name="IT8615_Label_TimeDiv" xml:space="preserve"><value>Tiempo/Div (s)</value></data>
+	<data name="IT8615_Btn_ApplyTimeDiv" xml:space="preserve"><value>Aplicar Tiempo/Div</value></data>
+
+	<data name="IT8615_Trig_Title" xml:space="preserve"><value>Configuración de disparo</value></data>
+	<data name="IT8615_Trig_Source" xml:space="preserve"><value>Fuente</value></data>
+	<data name="IT8615_Trig_Slope" xml:space="preserve"><value>Pendiente</value></data>
+	<data name="IT8615_Trig_Mode" xml:space="preserve"><value>Modo</value></data>
+	<data name="IT8615_Trig_Level" xml:space="preserve"><value>Nivel</value></data>
+	<data name="IT8615_Trig_DelaySec" xml:space="preserve"><value>Retardo (s)</value></data>
+	<data name="IT8615_Btn_ApplyTrigger" xml:space="preserve"><value>Aplicar disparo</value></data>
+	<data name="IT8615_Trig_StatePrefix" xml:space="preserve"><value>Trig:</value></data>
+
+	<data name="IT8615_TrigSrc_Voltage" xml:space="preserve"><value>Voltaje</value></data>
+	<data name="IT8615_TrigSrc_Current" xml:space="preserve"><value>Corriente</value></data>
+	<data name="IT8615_TrigSlope_Pos" xml:space="preserve"><value>Positiva</value></data>
+	<data name="IT8615_TrigSlope_Neg" xml:space="preserve"><value>Negativa</value></data>
+	<data name="IT8615_TrigSlope_Any" xml:space="preserve"><value>Cualquiera</value></data>
+	<data name="IT8615_TrigMode_Auto" xml:space="preserve"><value>AUTO</value></data>
+	<data name="IT8615_TrigMode_Norm" xml:space="preserve"><value>NORM</value></data>
+
+	<data name="IT8615_Vert_Title" xml:space="preserve"><value>Vertical / Medición</value></data>
+	<data name="IT8615_Vert_VBase" xml:space="preserve"><value>V Base (V)</value></data>
+	<data name="IT8615_Vert_VRange" xml:space="preserve"><value>V Rango (V)</value></data>
+	<data name="IT8615_Vert_ABase" xml:space="preserve"><value>A Base (A)</value></data>
+	<data name="IT8615_Vert_ARange" xml:space="preserve"><value>A Rango (A)</value></data>
+	<data name="IT8615_Vert_Display" xml:space="preserve"><value>Visualización</value></data>
+	<data name="IT8615_Vert_Average" xml:space="preserve"><value>Promedio (1-16)</value></data>
+	<data name="IT8615_Btn_ApplyVertical" xml:space="preserve"><value>Aplicar Vertical</value></data>
+	<data name="IT8615_Btn_ApplyDisplayAvg" xml:space="preserve"><value>Aplicar Visualización/Promedio</value></data>
+
+	<data name="IT8615_Knob_Title" xml:space="preserve"><value>Función del mando</value></data>
+	<data name="IT8615_Knob_Label" xml:space="preserve"><value>El mando controla</value></data>
+	<data name="IT8615_Btn_ApplyKnob" xml:space="preserve"><value>Aplicar mando</value></data>
+	<data name="IT8615_Knob_Help" xml:space="preserve"><value>UR/AR(cambia rango), UB/AB(cambia base), TL(nivel), TD(retardo), T/d(tiempo por división)</value></data>
+
+	<!-- Knob items must keep token prefix -->
+	<data name="IT8615_Knob_UR" xml:space="preserve"><value>UR (Rango de Voltaje)</value></data>
+	<data name="IT8615_Knob_AR" xml:space="preserve"><value>AR (Rango de Corriente)</value></data>
+	<data name="IT8615_Knob_UB" xml:space="preserve"><value>UB (Base de Voltaje)</value></data>
+	<data name="IT8615_Knob_AB" xml:space="preserve"><value>AB (Base de Corriente)</value></data>
+	<data name="IT8615_Knob_TL" xml:space="preserve"><value>TL (Nivel de disparo)</value></data>
+	<data name="IT8615_Knob_TD" xml:space="preserve"><value>TD (Retardo de disparo)</value></data>
+	<data name="IT8615_Knob_Tdiv" xml:space="preserve"><value>T/d (Tiempo/Div)</value></data>
+
+	<data name="IT8615_Scope_AxisX" xml:space="preserve"><value>Muestra</value></data>
+	<data name="IT8615_Scope_AxisY" xml:space="preserve"><value>V / A</value></data>
+	<data name="IT8615_Scope_SeriesVolt" xml:space="preserve"><value>Voltaje</value></data>
+	<data name="IT8615_Scope_SeriesCurr" xml:space="preserve"><value>Corriente</value></data>
+
+	<data name="IT8615_Harm_BtnMeasure" xml:space="preserve"><value>Medir armónicos</value></data>
+	<data name="IT8615_Harm_UpToN" xml:space="preserve"><value>Hasta el número de armónico:</value></data>
+	<data name="IT8615_Harm_AxisX" xml:space="preserve"><value>Orden de armónico (n)</value></data>
+	<data name="IT8615_Harm_AxisY" xml:space="preserve"><value>Amplitud (normalizada)</value></data>
+	<data name="IT8615_Harm_SeriesLabel" xml:space="preserve"><value>Armónicos de voltaje</value></data>
+
+	<data name="IT8615_Status_Idle" xml:space="preserve"><value>Inactivo</value></data>
+
+	<!-- Messages / Status -->
+	<data name="IT8615_Msg_NotConnectedTitle" xml:space="preserve"><value>No conectado</value></data>
+	<data name="IT8615_Msg_NotConnectedBody" xml:space="preserve"><value>Conéctese primero al instrumento.</value></data>
+	<data name="IT8615_Status_Harm_NoData" xml:space="preserve"><value>Armónicos: sin datos.</value></data>
+	<data name="IT8615_Status_Harm_CapturedFmt" xml:space="preserve"><value>Armónicos capturados: n={0}</value></data>
+	<data name="IT8615_Status_DiscoveredFmt" xml:space="preserve"><value>Se encontraron {0} recursos VISA.</value></data>
+	<data name="IT8615_Msg_PickResource" xml:space="preserve"><value>Seleccione un recurso VISA.</value></data>
+	<data name="IT8615_Msg_WrongInstrumentTitle" xml:space="preserve"><value>Instrumento incorrecto</value></data>
+	<data name="IT8615_Msg_WrongInstrumentBody" xml:space="preserve"><value>El recurso seleccionado no es un ITECH IT8615. Elija el dispositivo correcto.</value></data>
+	<data name="IT8615_Status_Connected" xml:space="preserve"><value>Conectado.</value></data>
+	<data name="IT8615_Status_Disconnected" xml:space="preserve"><value>Desconectado.</value></data>
+	<data name="IT8615_Status_SetpointApplied" xml:space="preserve"><value>Setpoint aplicado.</value></data>
+	<data name="IT8615_Status_PfCfApplied" xml:space="preserve"><value>FP / FC aplicados.</value></data>
+	<data name="IT8615_Status_EStopExecuted" xml:space="preserve"><value>Parada de emergencia ejecutada.</value></data>
+	<data name="IT8615_Status_ScopeLiveFmt" xml:space="preserve"><value>Scope EN VIVO: V[{0}], I[{1}]</value></data>
+	<data name="IT8615_Status_ScopeNoData" xml:space="preserve"><value>Osciloscopio: sin datos aún (revise nivel/modo de disparo o pulse Ejecutar de nuevo).</value></data>
+	<data name="IT8615_Status_ScopePointsFmt" xml:space="preserve"><value>Osciloscopio: V[{0}], I[{1}] puntos.</value></data>
+	<data name="IT8615_Status_TimeDivFmt" xml:space="preserve"><value>Tiempo/Div = {0} s</value></data>
+	<data name="IT8615_Status_TriggerApplied" xml:space="preserve"><value>Disparo aplicado.</value></data>
+	<data name="IT8615_Status_VerticalSetFmt" xml:space="preserve"><value>Vertical: VBase={0}, VRango={1}, ABase={2}, ARango={3}</value></data>
+	<data name="IT8615_Status_DisplayAvgFmt" xml:space="preserve"><value>Vista={0}, Promedio={1}</value></data>
+	<data name="IT8615_Status_KnobFmt" xml:space="preserve"><value>Mando → {0}</value></data>
+	<data name="IT8615_Status_ScopeStopped" xml:space="preserve"><value>Osciloscopio detenido.</value></data>
+
+	<data name="IT8615_Error_Title" xml:space="preserve"><value>Error</value></data>
+
 </root>

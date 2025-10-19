@@ -12,6 +12,7 @@ using HouseholdMS.Helpers;
 using HouseholdMS.Services; // for PortDescriptor / SerialPortInspector
 using Syncfusion.UI.Xaml.Charts;   // axes + behaviors
 using System.Windows.Input;
+using HouseholdMS.Resources; // <-- for Strings.*
 
 namespace HouseholdMS.View.UserControls
 {
@@ -46,7 +47,7 @@ namespace HouseholdMS.View.UserControls
             InitializeComponent();
             DataContext = this; // bind chart series
             _ = RefreshPortsAsync();
-            TxtStatus.Text = "Select COM port, set ID, click Connect.";
+            TxtStatus.Text = Strings.EPEV_Status_InitHint;
             this.Unloaded += EpeverMonitorControl_Unloaded;
         }
 
@@ -73,12 +74,12 @@ namespace HouseholdMS.View.UserControls
             var portName = ExtractPortName(CmbPorts?.SelectedItem);
             if (string.IsNullOrWhiteSpace(portName))
             {
-                MessageBox.Show("Select a COM port first.", "EPEVER Monitor", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(Strings.EPEV_Msg_SelectPort, Strings.EPEV_Msg_Title, MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
             if (!byte.TryParse(TxtId.Text.Trim(), out byte unitId) || unitId < 1 || unitId > 247)
             {
-                MessageBox.Show("Device ID must be 1..247.", "EPEVER Monitor", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(Strings.EPEV_Msg_InvalidUnitId, Strings.EPEV_Msg_Title, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -93,9 +94,9 @@ namespace HouseholdMS.View.UserControls
             _timer.Start();
 
             var selectedText = CmbPorts.SelectedItem?.ToString() ?? portName;
-            TxtLink.Text = "Connected (idle)";
+            TxtLink.Text = Strings.EPEV_Link_ConnectedIdle;
             TxtLink.Foreground = (System.Windows.Media.Brush)FindResource("Warn");
-            TxtStatus.Text = $"Connected to {selectedText} @ {GetBaudUI()} (ID={unitId}).";
+            TxtStatus.Text = string.Format(Strings.EPEV_Status_ConnectedFmt, selectedText, GetBaudUI(), unitId);
 
             // Device identification (background)
             _ = Task.Run(() => QueryDeviceIdentification(portName, GetBaudUI(), unitId, _cts.Token));
@@ -110,16 +111,16 @@ namespace HouseholdMS.View.UserControls
         // -------- Inspector --------
         private void BtnInspectorRead_Click(object sender, RoutedEventArgs e)
         {
-            if (!_connected) { MessageBox.Show("Connect first.", "Inspector", MessageBoxButton.OK, MessageBoxImage.Information); return; }
+            if (!_connected) { MessageBox.Show(Strings.EPEV_Msg_ConnectFirst, Strings.EPEV_Msg_Title, MessageBoxButton.OK, MessageBoxImage.Information); return; }
 
             if (!TryParseAddress(TxtInspectorStart.Text.Trim(), out ushort start))
             {
-                MessageBox.Show("Invalid start address.", "Inspector", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(Strings.EPEV_Msg_InvalidStart, Strings.EPEV_Msg_Title, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             if (!ushort.TryParse(TxtInspectorCount.Text.Trim(), out ushort count) || count < 1 || count > 60)
             {
-                MessageBox.Show("Count must be 1..60.", "Inspector", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(Strings.EPEV_Msg_CountRange, Strings.EPEV_Msg_Title, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -166,13 +167,13 @@ namespace HouseholdMS.View.UserControls
             try
             {
                 UiSnap snap = UiRead(GetUiSnap);
-                if (string.IsNullOrWhiteSpace(snap.Port)) throw new InvalidOperationException("No COM port selected.");
+                if (string.IsNullOrWhiteSpace(snap.Port)) throw new InvalidOperationException(Strings.EPEV_Msg_SelectPort);
                 await Task.Run(() => PollOnce(snap.Port, snap.Baud, snap.Unit, _cts != null ? _cts.Token : CancellationToken.None));
             }
             catch (Exception ex)
             {
-                TxtStatus.Text = "Error: " + ex.Message;
-                TxtLink.Text = "Comm error";
+                TxtStatus.Text = Strings.Error_UnexpectedPrefix + " " + ex.Message; // "An unexpected error occurred: ..."
+                TxtLink.Text = Strings.EPEV_Link_CommError;
                 TxtLink.Foreground = (System.Windows.Media.Brush)FindResource("Bad");
                 TxtRaw.Text = "ERR: " + ex.Message;
             }
@@ -266,39 +267,49 @@ namespace HouseholdMS.View.UserControls
 
             Dispatcher.Invoke(() =>
             {
-                TxtPvV.Text = "Voltage: " + (pvV.HasValue ? pvV.Value.ToString("F2") + " V" : "—");
-                TxtPvA.Text = "Current: " + (pvA.HasValue ? pvA.Value.ToString("F2") + " A" : "—");
-                TxtPvW.Text = "Power: " + (pvW.HasValue ? pvW.Value.ToString("F1") + " W" : "—");
+                // units
+                string uV = Strings.EPEV_Unit_V;
+                string uA = Strings.EPEV_Unit_A;
+                string uW = Strings.EPEV_Unit_W;
+                string uC = Strings.EPEV_Unit_Cdeg;
+                string dash = Strings.Common_NoDataDash;
 
-                TxtBatV.Text = "Voltage: " + (batV.HasValue ? batV.Value.ToString("F2") + " V" : "—");
-                TxtBatA.Text = "Charge Current: " + (batA.HasValue ? batA.Value.ToString("F2") + " A" : "—");
-                TxtBatW.Text = "Charge Power: " + (batW.HasValue ? batW.Value.ToString("F1") + " W" : "—");
+                // PV
+                TxtPvV.Text = $"{Strings.EPEV_Label_Voltage} " + (pvV.HasValue ? pvV.Value.ToString("F2") + uV : dash);
+                TxtPvA.Text = $"{Strings.EPEV_Label_Current} " + (pvA.HasValue ? pvA.Value.ToString("F2") + uA : dash);
+                TxtPvW.Text = $"{Strings.EPEV_Label_Power} " + (pvW.HasValue ? pvW.Value.ToString("F1") + uW : dash);
 
-                TxtLoadV.Text = "Voltage: " + (loadV.HasValue ? loadV.Value.ToString("F2") + " V" : "—");
-                TxtLoadA.Text = "Current: " + (loadA.HasValue ? loadA.Value.ToString("F2") + " A" : "—");
-                TxtLoadW.Text = "Power: " + (loadW.HasValue ? loadW.Value.ToString("F1") + " W" : "—");
+                // Battery
+                TxtBatV.Text = $"{Strings.EPEV_Label_Voltage} " + (batV.HasValue ? batV.Value.ToString("F2") + uV : dash);
+                TxtBatA.Text = $"{Strings.EPEV_Label_ChargeCurrent} " + (batA.HasValue ? batA.Value.ToString("F2") + uA : dash);
+                TxtBatW.Text = $"{Strings.EPEV_Label_ChargePower} " + (batW.HasValue ? batW.Value.ToString("F1") + uW : dash);
 
-                TxtSoc.Text = "SOC: " + (soc.HasValue ? soc.Value + " %" : "—");
-                TxtStage.Text = "Charge Stage: " + (stage ?? "—");
+                // Load
+                TxtLoadV.Text = $"{Strings.EPEV_Label_Voltage} " + (loadV.HasValue ? loadV.Value.ToString("F2") + uV : dash);
+                TxtLoadA.Text = $"{Strings.EPEV_Label_Current} " + (loadA.HasValue ? loadA.Value.ToString("F2") + uA : dash);
+                TxtLoadW.Text = $"{Strings.EPEV_Label_Power} " + (loadW.HasValue ? loadW.Value.ToString("F1") + uW : dash);
 
-                TxtTempBatt.Text = "Battery: " + (tBatt.HasValue ? tBatt.Value.ToString("F2") + " °C" : "—");
-                TxtTempAmb.Text = "Ambient: " + (tAmb.HasValue ? tAmb.Value.ToString("F2") + " °C" : "—");
-                TxtTempCtrl.Text = "Controller: " + (tCtrl.HasValue ? tCtrl.Value.ToString("F2") + " °C" : "—");
+                // State / temps / extremes / rated
+                TxtSoc.Text = $"{Strings.EPEV_Label_SOC} " + (soc.HasValue ? soc.Value + Strings.EPEV_SocPercent : dash);
+                TxtStage.Text = $"{Strings.EPEV_Label_ChargeStage} " + (stage ?? dash);
+                TxtTempBatt.Text = $"{Strings.EPEV_Temp_Battery} " + (tBatt.HasValue ? tBatt.Value.ToString("F2") + uC : dash);
+                TxtTempAmb.Text = $"{Strings.EPEV_Temp_Ambient} " + (tAmb.HasValue ? tAmb.Value.ToString("F2") + uC : dash);
+                TxtTempCtrl.Text = $"{Strings.EPEV_Temp_Controller} " + (tCtrl.HasValue ? tCtrl.Value.ToString("F2") + uC : dash);
 
-                TxtBattVmaxToday.Text = "Battery Vmax: " + (vMaxToday.HasValue ? vMaxToday.Value.ToString("F2") + " V" : "—");
-                TxtBattVminToday.Text = "Battery Vmin: " + (vMinToday.HasValue ? vMinToday.Value.ToString("F2") + " V" : "—");
+                TxtBattVmaxToday.Text = $"{Strings.EPEV_Today_BattVmax} " + (vMaxToday.HasValue ? vMaxToday.Value.ToString("F2") + uV : dash);
+                TxtBattVminToday.Text = $"{Strings.EPEV_Today_BattVmin} " + (vMinToday.HasValue ? vMinToday.Value.ToString("F2") + uV : dash);
 
-                TxtRatedVin.Text = "PV Rated Input Voltage: " + (ratedVin.HasValue ? ratedVin.Value.ToString("F1") + " V" : "—");
-                TxtRatedChgA.Text = "Rated Charge Current: " + (ratedChg.HasValue ? ratedChg.Value.ToString("F1") + " A" : "—");
-                TxtRatedLoadA.Text = "Rated Load Current: " + (ratedLoad.HasValue ? ratedLoad.Value.ToString("F1") + " A" : "—");
+                TxtRatedVin.Text = $"{Strings.EPEV_Rated_PvRatedInputVoltage} " + (ratedVin.HasValue ? ratedVin.Value.ToString("F1") + uV : dash);
+                TxtRatedChgA.Text = $"{Strings.EPEV_Rated_ChargeCurrent} " + (ratedChg.HasValue ? ratedChg.Value.ToString("F1") + uA : dash);
+                TxtRatedLoadA.Text = $"{Strings.EPEV_Rated_LoadCurrent} " + (ratedLoad.HasValue ? ratedLoad.Value.ToString("F1") + uA : dash);
 
-                TxtUpdated.Text = "Last update: " + DateTime.Now.ToString("HH:mm:ss");
+                TxtUpdated.Text = $"{Strings.EPEV_Label_LastUpdate} " + DateTime.Now.ToString("HH:mm:ss");
 
                 bool anyOk = pvV.HasValue || batV.HasValue || loadV.HasValue || soc.HasValue ||
                              tBatt.HasValue || tAmb.HasValue || tCtrl.HasValue || vMaxToday.HasValue;
 
-                if (anyOk) { TxtStatus.Text = "OK"; TxtLink.Text = "Polling"; TxtLink.Foreground = (System.Windows.Media.Brush)FindResource("Good"); }
-                else { TxtStatus.Text = "No data (check wiring/ID/baud)"; TxtLink.Text = "Connected, but no data"; TxtLink.Foreground = (System.Windows.Media.Brush)FindResource("Warn"); }
+                if (anyOk) { TxtStatus.Text = Strings.EPEV_Status_OK; TxtLink.Text = Strings.EPEV_Link_Polling; TxtLink.Foreground = (System.Windows.Media.Brush)FindResource("Good"); }
+                else { TxtStatus.Text = "No data (check wiring/ID/baud)"; TxtLink.Text = Strings.EPEV_Link_ConnectedNoData; TxtLink.Foreground = (System.Windows.Media.Brush)FindResource("Warn"); }
 
                 var errs = new List<string>();
                 if (blkAErr != null) errs.Add("BlockA: " + blkAErr);
@@ -381,7 +392,7 @@ namespace HouseholdMS.View.UserControls
             try { var s = ModbusRtuRaw.ReadInputRegisters(port, baud, unit, EpeverRegisters.SOC_ADDR, EpeverRegisters.SOC_COUNT, 800); soc = s[0]; } catch { }
         }
 
-        // -------- Device ID (unchanged) --------
+        // -------- Device ID (unchanged logic; localized labels) --------
         private void QueryDeviceIdentification(string port, int baud, byte unit, CancellationToken ct)
         {
             try
@@ -393,9 +404,9 @@ namespace HouseholdMS.View.UserControls
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        TxtDevVendor.Text = "Vendor: N/A";
-                        TxtDevProduct.Text = "Product: N/A";
-                        TxtDevFw.Text = "Firmware: N/A";
+                        TxtDevVendor.Text = $"{Strings.EPEV_Device_VendorLabel} {Strings.Common_NoDataDash}";
+                        TxtDevProduct.Text = $"{Strings.EPEV_Device_ProductLabel} {Strings.Common_NoDataDash}";
+                        TxtDevFw.Text = $"{Strings.EPEV_Device_FirmwareLabel} {Strings.Common_NoDataDash}";
                         if (!string.IsNullOrWhiteSpace(error)) TxtRaw.Text = "DevID ERR: " + error;
                     });
                     return;
@@ -407,9 +418,9 @@ namespace HouseholdMS.View.UserControls
 
                 Dispatcher.Invoke(() =>
                 {
-                    TxtDevVendor.Text = "Vendor: " + (string.IsNullOrWhiteSpace(vendor) ? "—" : vendor);
-                    TxtDevProduct.Text = "Product: " + (string.IsNullOrWhiteSpace(product) ? "—" : product);
-                    TxtDevFw.Text = "Firmware: " + (string.IsNullOrWhiteSpace(fw) ? "—" : fw);
+                    TxtDevVendor.Text = $"{Strings.EPEV_Device_VendorLabel} " + (string.IsNullOrWhiteSpace(vendor) ? Strings.Common_NoDataDash : vendor);
+                    TxtDevProduct.Text = $"{Strings.EPEV_Device_ProductLabel} " + (string.IsNullOrWhiteSpace(product) ? Strings.Common_NoDataDash : product);
+                    TxtDevFw.Text = $"{Strings.EPEV_Device_FirmwareLabel} " + (string.IsNullOrWhiteSpace(fw) ? Strings.Common_NoDataDash : fw);
                 });
             }
             catch (OperationCanceledException) { }
@@ -417,9 +428,9 @@ namespace HouseholdMS.View.UserControls
             {
                 Dispatcher.Invoke(() =>
                 {
-                    TxtDevVendor.Text = "Vendor: N/A";
-                    TxtDevProduct.Text = "Product: N/A";
-                    TxtDevFw.Text = "Firmware: N/A";
+                    TxtDevVendor.Text = $"{Strings.EPEV_Device_VendorLabel} {Strings.Common_NoDataDash}";
+                    TxtDevProduct.Text = $"{Strings.EPEV_Device_ProductLabel} {Strings.Common_NoDataDash}";
+                    TxtDevFw.Text = $"{Strings.EPEV_Device_FirmwareLabel} {Strings.Common_NoDataDash}";
                     TxtRaw.Text = "DevID ERR: " + ex.Message;
                 });
             }
@@ -488,7 +499,7 @@ namespace HouseholdMS.View.UserControls
                 var ports = SerialPort.GetPortNames().ToList();
                 CmbPorts.ItemsSource = ports;
                 if (ports.Count > 0) CmbPorts.SelectedIndex = 0;
-                TxtStatus.Text = "Port scan error: " + ex.Message;
+                TxtStatus.Text = string.Format(Strings.MEAS_Status_PortScanErrorFmt, ex.Message);
             }
         }
 
@@ -511,9 +522,9 @@ namespace HouseholdMS.View.UserControls
         private TimeSpan GetSelectedInterval()
         {
             var item = CmbInterval.SelectedItem as ComboBoxItem;
-            var label = item != null ? item.Content.ToString() : "1s";
-            if (label == "2s") return TimeSpan.FromSeconds(2);
-            if (label == "5s") return TimeSpan.FromSeconds(5);
+            var label = item != null ? item.Content.ToString() : Strings.EPEV_Interval_1s;
+            if (label == Strings.EPEV_Interval_2s) return TimeSpan.FromSeconds(2);
+            if (label == Strings.EPEV_Interval_5s) return TimeSpan.FromSeconds(5);
             return TimeSpan.FromSeconds(1);
         }
 
@@ -538,14 +549,14 @@ namespace HouseholdMS.View.UserControls
             _cts = null;
             _connected = false;
             SetUiState(false);
-            TxtLink.Text = "Disconnected";
+            TxtLink.Text = Strings.EPEV_Link_Disconnected;
             TxtLink.Foreground = (System.Windows.Media.Brush)FindResource("Bad");
-            TxtStatus.Text = "Disconnected.";
+            TxtStatus.Text = Strings.EPEV_Disconnected;
 
             // Clear device info
-            TxtDevVendor.Text = "Vendor: —";
-            TxtDevProduct.Text = "Product: —";
-            TxtDevFw.Text = "Firmware: —";
+            TxtDevVendor.Text = $"{Strings.EPEV_Device_VendorLabel} {Strings.Common_NoDataDash}";
+            TxtDevProduct.Text = $"{Strings.EPEV_Device_ProductLabel} {Strings.Common_NoDataDash}";
+            TxtDevFw.Text = $"{Strings.EPEV_Device_FirmwareLabel} {Strings.Common_NoDataDash}";
 
             ClearAllSeries();
 

@@ -1,7 +1,8 @@
-﻿<UserControl x:Class="HouseholdMS.View.Measurement.MeasurementView" 
+﻿<UserControl x:Class="HouseholdMS.View.Measurement.MeasurementView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:HouseholdMS.View.Measurement"
+             xmlns:res="clr-namespace:HouseholdMS.Resources"
              MinWidth="820" MinHeight="560"
              FontFamily="Segoe UI" FontSize="13"
              SnapsToDevicePixels="True" UseLayoutRounding="True"
@@ -146,7 +147,7 @@
                 <!-- Header -->
                 <DockPanel Grid.Row="0" Margin="0,0,0,14">
                     <StackPanel DockPanel.Dock="Left">
-                        <TextBlock Text="Measurement Console" FontSize="22" FontWeight="Bold"
+                        <TextBlock Text="{x:Static res:Strings.MEAS_Header_Title}" FontSize="22" FontWeight="Bold"
                                    Foreground="{StaticResource HeaderFg}"/>
                         <TextBlock x:Name="DeviceNameText" Text="—" Foreground="{StaticResource SubtleFg}" TextWrapping="Wrap"/>
                     </StackPanel>
@@ -160,12 +161,12 @@
                                     <ColumnDefinition Width="7*"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="Effective SPS:"/>
+                                    <TextBlock Text="{x:Static res:Strings.MEAS_Label_EffectiveSps}"/>
                                     <TextBlock x:Name="SpsText" FontWeight="SemiBold" Margin="6,0,0,0"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Status" FontWeight="Bold" Margin="0,6,0,4"/>
+                                    <TextBlock Text="{x:Static res:Strings.MEAS_Label_Status}" FontWeight="Bold" Margin="0,6,0,4"/>
                                     <TextBlock x:Name="StatusBlock" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Grid>
@@ -186,27 +187,27 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Orientation="Horizontal" Margin="0,0,8,0">
-                            <TextBlock Text="COM" Margin="0,0,6,0"/>
+                            <TextBlock Text="{x:Static res:Strings.MEAS_Conn_COM}" Margin="0,0,6,0"/>
                             <ComboBox x:Name="PortComboBox" Width="160"/>
                             <Button Content="⟲" Width="36" Margin="6,0,0,0"
-                                    Click="RefreshPorts_Click" ToolTip="Refresh COM list"/>
+                                    Click="RefreshPorts_Click" ToolTip="{x:Static res:Strings.MEAS_Tooltip_RefreshCom}"/>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" Grid.Column="1" Margin="8,0">
-                            <TextBlock Text="Baud" Margin="0,0,6,0"/>
+                            <TextBlock Text="{x:Static res:Strings.MEAS_Conn_Baud}" Margin="0,0,6,0"/>
                             <ComboBox x:Name="BaudComboBox" Width="130"/>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" Grid.Column="2" Margin="8,0">
-                            <TextBlock Text="Parity" Margin="0,0,6,0"/>
+                            <TextBlock Text="{x:Static res:Strings.MEAS_Conn_Parity}" Margin="0,0,6,0"/>
                             <ComboBox x:Name="ParityComboBox" Width="110"/>
-                            <TextBlock Text="Bits" Margin="12,0,6,0"/>
+                            <TextBlock Text="{x:Static res:Strings.MEAS_Conn_Bits}" Margin="12,0,6,0"/>
                             <ComboBox x:Name="DataBitsComboBox" Width="90"/>
                         </StackPanel>
 
-                        <Button Grid.Column="3" Content="Connect" Width="110" Margin="8,0,0,0" Click="Connect_Click"/>
-                        <Button Grid.Column="4" Content="Disconnect" Width="120" Margin="8,0,0,0" Click="Disconnect_Click"/>
-                        <Button Grid.Column="5" Content="IDN?" Width="80" Margin="8,0,0,0" Click="ReadIDN_Click"/>
+                        <Button Grid.Column="3" Content="{x:Static res:Strings.MEAS_Btn_Connect}" Width="110" Margin="8,0,0,0" Click="Connect_Click"/>
+                        <Button Grid.Column="4" Content="{x:Static res:Strings.MEAS_Btn_Disconnect}" Width="120" Margin="8,0,0,0" Click="Disconnect_Click"/>
+                        <Button Grid.Column="5" Content="{x:Static res:Strings.MEAS_Btn_IDN}" Width="80" Margin="8,0,0,0" Click="ReadIDN_Click"/>
                     </Grid>
                 </Border>
 
@@ -224,98 +225,96 @@
 
                         <!-- Function selector -->
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Function" Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Text="{x:Static res:Strings.MEAS_Function_Title}" Style="{StaticResource SectionTitle}"/>
                             <WrapPanel>
                                 <ComboBox x:Name="FunctionCombo" Width="210" Margin="0,0,10,0">
-                                    <ComboBoxItem Content="Voltage DC"        Tag="VOLT:DC"/>
-                                    <ComboBoxItem Content="Voltage AC"        Tag="VOLT:AC"/>
-                                    <ComboBoxItem Content="Current DC"        Tag="CURR:DC"/>
-                                    <ComboBoxItem Content="Current AC"        Tag="CURR:AC"/>
-                                    <ComboBoxItem Content="Resistance (Ω)"    Tag="RES"/>
-                                    <ComboBoxItem Content="4-Wire Resistance (Ω)" Tag="FRES"/>
-                                    <ComboBoxItem Content="Temperature (RTD)" Tag="TEMP"/>
-                                    <ComboBoxItem Content="Frequency (Hz)"    Tag="FREQ"/>
-                                    <ComboBoxItem Content="Period (s)"        Tag="PER"/>
-                                    <ComboBoxItem Content="Capacitance (F)"   Tag="CAP"/>
-                                    <ComboBoxItem Content="Continuity"        Tag="CONT"/>
-                                    <ComboBoxItem Content="Diode"             Tag="DIOD"/>
+                                    <ComboBoxItem Content="{x:Static res:Strings.MEAS_Func_VoltDC}"        Tag="VOLT:DC"/>
+                                    <ComboBoxItem Content="{x:Static res:Strings.MEAS_Func_VoltAC}"        Tag="VOLT:AC"/>
+                                    <ComboBoxItem Content="{x:Static res:Strings.MEAS_Func_CurrDC}"        Tag="CURR:DC"/>
+                                    <ComboBoxItem Content="{x:Static res:Strings.MEAS_Func_CurrAC}"        Tag="CURR:AC"/>
+                                    <ComboBoxItem Content="{x:Static res:Strings.MEAS_Func_Res}"           Tag="RES"/>
+                                    <ComboBoxItem Content="{x:Static res:Strings.MEAS_Func_FourRes}"       Tag="FRES"/>
+                                    <ComboBoxItem Content="{x:Static res:Strings.MEAS_Func_TempRTD}"       Tag="TEMP"/>
+                                    <ComboBoxItem Content="{x:Static res:Strings.MEAS_Func_Freq}"          Tag="FREQ"/>
+                                    <ComboBoxItem Content="{x:Static res:Strings.MEAS_Func_Per}"           Tag="PER"/>
+                                    <ComboBoxItem Content="{x:Static res:Strings.MEAS_Func_Cap}"           Tag="CAP"/>
+                                    <ComboBoxItem Content="{x:Static res:Strings.MEAS_Func_Cont}"          Tag="CONT"/>
+                                    <ComboBoxItem Content="{x:Static res:Strings.MEAS_Func_Diode}"         Tag="DIOD"/>
                                 </ComboBox>
-                                <Button Content="Apply" Width="90" Click="ApplyFunction_Click"/>
+                                <Button Content="{x:Static res:Strings.MEAS_Btn_Apply}" Width="90" Click="ApplyFunction_Click"/>
                             </WrapPanel>
 
                             <WrapPanel Margin="0,6,0,0">
-                                <CheckBox x:Name="AutoRangeCheck" Content="Auto Range"
+                                <CheckBox x:Name="AutoRangeCheck" Content="{x:Static res:Strings.MEAS_Check_AutoRange}"
                                           Checked="AutoRangeCheck_Checked" Unchecked="AutoRangeCheck_Unchecked"/>
-                                <TextBlock Text="Units:" Margin="16,0,6,0"/>
+                                <TextBlock Text="{x:Static res:Strings.MEAS_Label_Units}" Margin="16,0,6,0"/>
                                 <TextBlock x:Name="UnitLabel" FontWeight="SemiBold" />
                             </WrapPanel>
 
                             <!-- Show active range here -->
                             <WrapPanel Margin="0,6,0,0">
-                                <TextBlock Text="Current Range:"/>
+                                <TextBlock Text="{x:Static res:Strings.MEAS_Label_CurrentRange}"/>
                                 <TextBlock x:Name="RangeDisplayText" FontWeight="SemiBold" Margin="6,0,0,0"/>
                             </WrapPanel>
                         </StackPanel>
 
                         <!-- Math -->
                         <StackPanel Grid.Column="1" Margin="12,0,0,0">
-                            <TextBlock Text="Math" Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Text="{x:Static res:Strings.MEAS_Math_Title}" Style="{StaticResource SectionTitle}"/>
 
                             <!-- Single toggle + Refresh Stats -->
                             <WrapPanel>
-                                <Button x:Name="MathToggleBtn"
-                                        Width="200"
-                                        Content="Enable Math Calculations"
+                                <Button x:Name="MathToggleBtn" Width="200"
+                                        Content="{x:Static res:Strings.MEAS_Math_Enable}"
                                         Click="MathToggleBtn_Click" />
-                                <Button Content="Refresh Stats" Width="120" Margin="8,0,0,0"
-                                        Click="RefreshStats_Click" ToolTip="Query AVG?/MIN?/MAX? now"/>
+                                <Button Content="{x:Static res:Strings.MEAS_Btn_RefreshStats}" Width="120" Margin="8,0,0,0"
+                                        Click="RefreshStats_Click" ToolTip="{x:Static res:Strings.MEAS_Tooltip_RefreshStats}"/>
                             </WrapPanel>
 
-                            <Expander Header="Relative (NULL)" IsExpanded="False" Margin="0,8,0,0">
+                            <Expander Header="{x:Static res:Strings.MEAS_Rel_Header}" IsExpanded="False" Margin="0,8,0,0">
                                 <WrapPanel Margin="8,6,0,6">
-                                    <Button Content="Enable REL" Width="110" Click="RelEnable_Click"/>
-                                    <Button Content="Zero (NULL:OFFS)" Width="140" Margin="8,0,0,0" Click="RelZero_Click"/>
-                                    <Button Content="Disable REL" Width="120" Margin="8,0,0,0" Click="RelDisable_Click"/>
+                                    <Button Content="{x:Static res:Strings.MEAS_Rel_Enable}" Width="110" Click="RelEnable_Click"/>
+                                    <Button Content="{x:Static res:Strings.MEAS_Rel_Zero}" Width="140" Margin="8,0,0,0" Click="RelZero_Click"/>
+                                    <Button Content="{x:Static res:Strings.MEAS_Rel_Disable}" Width="120" Margin="8,0,0,0" Click="RelDisable_Click"/>
                                 </WrapPanel>
                             </Expander>
 
-                            <Expander Header="Level in dB / dBm" IsExpanded="False">
+                            <Expander Header="{x:Static res:Strings.MEAS_dB_Header}" IsExpanded="False">
                                 <WrapPanel Margin="8,6,0,6">
-                                    <TextBlock Text="Ref (Ω):" Margin="0,6,6,0"/>
+                                    <TextBlock Text="{x:Static res:Strings.MEAS_Label_RefOhms}" Margin="0,6,6,0"/>
                                     <ComboBox x:Name="DbRefCombo" Width="120">
                                         <ComboBoxItem Content="50"/>
                                         <ComboBoxItem Content="75"/>
                                         <ComboBoxItem Content="600"/>
                                     </ComboBox>
-                                    <Button Content="Use dB" Width="90" Margin="8,0,0,0" Click="MathDb_Click"/>
-                                    <Button Content="Use dBm" Width="90" Margin="8,0,0,0" Click="MathDbm_Click"/>
-                                    <Button Content="Math OFF" Width="100" Margin="8,0,0,0" Click="MathOff_Click"/>
+                                    <Button Content="{x:Static res:Strings.MEAS_Btn_UseDb}" Width="90" Margin="8,0,0,0" Click="MathDb_Click"/>
+                                    <Button Content="{x:Static res:Strings.MEAS_Btn_UseDbm}" Width="90" Margin="8,0,0,0" Click="MathDbm_Click"/>
+                                    <Button Content="{x:Static res:Strings.MEAS_Btn_MathOff}" Width="100" Margin="8,0,0,0" Click="MathOff_Click"/>
                                 </WrapPanel>
                             </Expander>
-                            <!-- (Statistics expander removed; stats moved to Readout + Graph) -->
                         </StackPanel>
 
                         <!-- Acquisition -->
                         <StackPanel Grid.Column="2" Margin="12,0,0,0">
-                            <TextBlock Text="Acquisition" Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Text="{x:Static res:Strings.MEAS_Acq_Title}" Style="{StaticResource SectionTitle}"/>
 
                             <WrapPanel>
-                                <Button Content="Read Once" Width="110" Click="ReadButton_Click"/>
-                                <ToggleButton x:Name="ContToggle" Content="Continuous" Width="120" Margin="8,0,0,0"
+                                <Button Content="{x:Static res:Strings.MEAS_Btn_ReadOnce}" Width="110" Click="ReadButton_Click"/>
+                                <ToggleButton x:Name="ContToggle" Content="{x:Static res:Strings.MEAS_Toggle_Continuous}" Width="120" Margin="8,0,0,0"
                                               Checked="ContToggle_Checked" Unchecked="ContToggle_Unchecked"/>
                             </WrapPanel>
 
                             <StackPanel Orientation="Horizontal" Margin="0,8,0,0" VerticalAlignment="Center">
-                                <TextBlock Text="Rate" Margin="0,0,6,0"/>
+                                <TextBlock Text="{x:Static res:Strings.MEAS_Label_Rate}" Margin="0,0,6,0"/>
                                 <ComboBox x:Name="RateCombo" Width="140" SelectionChanged="RateCombo_Changed">
-                                    <ComboBoxItem Content="Fast"   Tag="F"/>
-                                    <ComboBoxItem Content="Medium" Tag="M" IsSelected="True"/>
-                                    <ComboBoxItem Content="Low"    Tag="L"/>
+                                    <ComboBoxItem Content="{x:Static res:Strings.MEAS_Rate_Fast}"   Tag="F"/>
+                                    <ComboBoxItem Content="{x:Static res:Strings.MEAS_Rate_Medium}" Tag="M" IsSelected="True"/>
+                                    <ComboBoxItem Content="{x:Static res:Strings.MEAS_Rate_Low}"    Tag="L"/>
                                 </ComboBox>
                             </StackPanel>
 
                             <StackPanel Orientation="Horizontal" Margin="0,8,0,0" VerticalAlignment="Center">
-                                <TextBlock Text="Interval" Margin="0,0,8,0"/>
+                                <TextBlock Text="{x:Static res:Strings.MEAS_Label_Interval}" Margin="0,0,8,0"/>
                                 <Slider x:Name="IntervalSlider" Minimum="50" Maximum="2000" Value="500"
                                         Width="180" Margin="0,0,8,0"/>
                                 <TextBlock x:Name="IntervalLabel" Text="500 ms"/>
@@ -327,11 +326,11 @@
                 <!-- Advanced Controls -->
                 <Border Grid.Row="3" Style="{StaticResource Card}" Margin="0,0,0,14">
                     <StackPanel>
-                        <TextBlock Text="Advanced Controls" Style="{StaticResource SectionTitle}" FontSize="16"/>
+                        <TextBlock Text="{x:Static res:Strings.MEAS_Advanced_Title}" Style="{StaticResource SectionTitle}" FontSize="16"/>
 
                         <WrapPanel Margin="0,4,0,8">
-                            <Button Content="Remote (SYST:REM)" Width="150" Click="Remote_Click"/>
-                            <Button Content="Local (SYST:LOC)"  Width="140" Margin="8,0,0,0" Click="Local_Click"/>
+                            <Button Content="{x:Static res:Strings.MEAS_Btn_Remote}" Width="150" Click="Remote_Click"/>
+                            <Button Content="{x:Static res:Strings.MEAS_Btn_Local}"  Width="140" Margin="8,0,0,0" Click="Local_Click"/>
                             <Button Content="RATE?"             Width="90"  Margin="8,0,0,0" Click="QueryRate_Click"/>
                             <Button Content="FUNC?"             Width="80"  Margin="8,0,0,0" Click="QueryFunc_Click"/>
                             <Button Content="RANGE?"            Width="90"  Margin="8,0,0,0" Click="QueryRange_Click"/>
@@ -339,20 +338,20 @@
                         </WrapPanel>
 
                         <!-- Temperature -->
-                        <Expander Header="Temperature (RTD / THER)" IsExpanded="False">
+                        <Expander Header="{x:Static res:Strings.MEAS_Temp_Header}" IsExpanded="False">
                             <StackPanel Margin="8">
                                 <WrapPanel>
-                                    <TextBlock Text="Unit:" Margin="0,6,8,0"/>
+                                    <TextBlock Text="{x:Static res:Strings.MEAS_Label_Unit}" Margin="0,6,8,0"/>
                                     <RadioButton x:Name="TempUnitC" Content="°C" IsChecked="True" GroupName="TempUnit"/>
                                     <RadioButton x:Name="TempUnitF" Content="°F" Margin="8,0,0,0" GroupName="TempUnit"/>
                                     <RadioButton x:Name="TempUnitK" Content="K"  Margin="8,0,0,0" GroupName="TempUnit"/>
-                                    <Button Content="Apply Unit" Width="110" Margin="12,0,0,0" Click="ApplyTempUnit_Click"/>
+                                    <Button Content="{x:Static res:Strings.MEAS_Btn_ApplyUnit}" Width="110" Margin="12,0,0,0" Click="ApplyTempUnit_Click"/>
                                     <Button Content="UNIT?" Width="80" Margin="8,0,0,0" Click="QueryTempUnit_Click"/>
                                 </WrapPanel>
 
                                 <WrapPanel Margin="8,8,0,0">
                                     <Button Content="CONF:TEMP:THER KITS90" Width="210" Click="ApplyTherKits90_Click"
-                                            ToolTip="Configures thermometer standard"/>
+                                            ToolTip="{x:Static res:Strings.MEAS_Tooltip_ThermStandard}"/>
                                     <Button Content="TYPE?" Width="80" Margin="8,0,0,0" Click="QueryTempType_Click"/>
                                     <Button Content="MEAS:TEMP?" Width="120" Margin="8,0,0,0" Click="ReadTempOnce_Click"/>
                                 </WrapPanel>
@@ -360,83 +359,83 @@
                         </Expander>
 
                         <!-- Voltage -->
-                        <Expander Header="Voltage (V / mV)" IsExpanded="False">
+                        <Expander Header="{x:Static res:Strings.MEAS_Volt_Header}" IsExpanded="False">
                             <StackPanel Margin="8">
                                 <WrapPanel>
-                                    <TextBlock Text="Mode:" Margin="0,6,8,0"/>
+                                    <TextBlock Text="{x:Static res:Strings.MEAS_Label_Mode}" Margin="0,6,8,0"/>
                                     <ComboBox x:Name="VoltModeCombo" Width="120">
                                         <ComboBoxItem Content="DC" IsSelected="True"/>
                                         <ComboBoxItem Content="AC"/>
                                     </ComboBox>
-                                    <TextBlock Text="V Range:" Margin="16,6,8,0"/>
+                                    <TextBlock Text="{x:Static res:Strings.MEAS_Label_VRange}" Margin="16,6,8,0"/>
                                     <ComboBox x:Name="VoltRangeV" Width="100">
                                         <ComboBoxItem Content="5"/>
                                         <ComboBoxItem Content="50"/>
                                         <ComboBoxItem Content="500"/>
                                         <ComboBoxItem Content="1000"/>
                                     </ComboBox>
-                                    <TextBlock Text="mV Range:" Margin="16,6,8,0"/>
+                                    <TextBlock Text="{x:Static res:Strings.MEAS_Label_mVRange}" Margin="16,6,8,0"/>
                                     <ComboBox x:Name="VoltRange_mV" Width="120">
                                         <ComboBoxItem Content="50E-3"/>
                                         <ComboBoxItem Content="500E-3"/>
                                     </ComboBox>
-                                    <Button Content="Apply V" Width="90" Margin="12,0,0,0" Click="ApplyVoltRangeV_Click"/>
-                                    <Button Content="Apply mV" Width="100" Margin="8,0,0,0" Click="ApplyVoltRange_mV_Click"/>
+                                    <Button Content="{x:Static res:Strings.MEAS_Btn_ApplyV}" Width="90" Margin="12,0,0,0" Click="ApplyVoltRangeV_Click"/>
+                                    <Button Content="{x:Static res:Strings.MEAS_Btn_ApplymV}" Width="100" Margin="8,0,0,0" Click="ApplyVoltRange_mV_Click"/>
                                 </WrapPanel>
                             </StackPanel>
                         </Expander>
 
                         <!-- Current -->
-                        <Expander Header="Current (A / mA / µA)" IsExpanded="False">
+                        <Expander Header="{x:Static res:Strings.MEAS_Curr_Header}" IsExpanded="False">
                             <StackPanel Margin="8">
                                 <WrapPanel>
-                                    <TextBlock Text="Mode:" Margin="0,6,8,0"/>
+                                    <TextBlock Text="{x:Static res:Strings.MEAS_Label_Mode}" Margin="0,6,8,0"/>
                                     <ComboBox x:Name="CurrModeCombo" Width="120">
                                         <ComboBoxItem Content="DC" IsSelected="True"/>
                                         <ComboBoxItem Content="AC"/>
                                     </ComboBox>
-                                    <TextBlock Text="A Range:" Margin="16,6,8,0"/>
+                                    <TextBlock Text="{x:Static res:Strings.MEAS_Label_ARange}" Margin="16,6,8,0"/>
                                     <ComboBox x:Name="CurrRangeA" Width="110">
                                         <ComboBoxItem Content="5"/>
                                         <ComboBoxItem Content="10"/>
                                     </ComboBox>
-                                    <TextBlock Text="mA/µA Range:" Margin="16,6,8,0"/>
+                                    <TextBlock Text="{x:Static res:Strings.MEAS_Label_mARange}" Margin="16,6,8,0"/>
                                     <ComboBox x:Name="CurrRange_mA" Width="170"
-                                              ToolTip="500E-6 (500µA), 5E-3 (5mA), 50E-3 (50mA), 500E-3 (500mA)">
+                                              ToolTip="{x:Static res:Strings.MEAS_Tooltip_mARange}">
                                         <ComboBoxItem Content="500E-6"/>
                                         <ComboBoxItem Content="5E-3"/>
                                         <ComboBoxItem Content="50E-3"/>
                                         <ComboBoxItem Content="500E-3"/>
                                     </ComboBox>
-                                    <Button Content="Apply A" Width="90" Margin="12,0,0,0" Click="ApplyCurrRangeA_Click"/>
-                                    <Button Content="Apply mA" Width="100" Margin="8,0,0,0" Click="ApplyCurrRange_mA_Click"/>
+                                    <Button Content="{x:Static res:Strings.MEAS_Btn_ApplyA}" Width="90" Margin="12,0,0,0" Click="ApplyCurrRangeA_Click"/>
+                                    <Button Content="{x:Static res:Strings.MEAS_Btn_ApplymA}" Width="100" Margin="8,0,0,0" Click="ApplyCurrRange_mA_Click"/>
                                 </WrapPanel>
                             </StackPanel>
                         </Expander>
 
                         <!-- Capacitance -->
-                        <Expander Header="Capacitance (F)" IsExpanded="False">
+                        <Expander Header="{x:Static res:Strings.MEAS_Cap_Header}" IsExpanded="False">
                             <StackPanel Margin="8">
                                 <WrapPanel>
-                                    <TextBlock Text="Range:" Margin="0,6,8,0"/>
+                                    <TextBlock Text="{x:Static res:Strings.MEAS_Label_Range}" Margin="0,6,8,0"/>
                                     <ComboBox x:Name="CapRangeCombo" Width="140">
                                         <ComboBoxItem Content="50E-9"/>
                                         <ComboBoxItem Content="500E-9"/>
                                         <ComboBoxItem Content="5E-6"/>
                                     </ComboBox>
-                                    <Button Content="Apply CAP" Width="110" Margin="8,0,0,0" Click="ApplyCap_Click"/>
+                                    <Button Content="{x:Static res:Strings.MEAS_Btn_ApplyCap}" Width="110" Margin="8,0,0,0" Click="ApplyCap_Click"/>
                                 </WrapPanel>
                             </StackPanel>
                         </Expander>
 
-                        <!-- Removed Resistance and Period expanders (duplicates) -->
-                        <Expander Header="Continuity and Diode" IsExpanded="False">
+                        <!-- Continuity & Diode -->
+                        <Expander Header="{x:Static res:Strings.MEAS_Cont_Header}" IsExpanded="False">
                             <StackPanel Margin="8">
                                 <WrapPanel>
-                                    <TextBlock Text="Continuity Threshold (Ω):" Margin="0,6,8,0"/>
+                                    <TextBlock Text="{x:Static res:Strings.MEAS_Label_ContThreshold}" Margin="0,6,8,0"/>
                                     <TextBox x:Name="ContThresholdBox" Width="120" Text="50"/>
-                                    <Button Content="Apply Threshold" Width="130" Margin="8,0,0,0" Click="ApplyContinuityThreshold_Click"/>
-                                    <CheckBox x:Name="BeepToggle" Content="Beeper" Margin="16,0,0,0"
+                                    <Button Content="{x:Static res:Strings.MEAS_Btn_ApplyThreshold}" Width="130" Margin="8,0,0,0" Click="ApplyContinuityThreshold_Click"/>
+                                    <CheckBox x:Name="BeepToggle" Content="{x:Static res:Strings.MEAS_Check_Beeper}" Margin="16,0,0,0"
                                               Checked="BeepToggle_Checked" Unchecked="BeepToggle_Unchecked"/>
                                 </WrapPanel>
                             </StackPanel>
@@ -462,26 +461,26 @@
 
                         <!-- Big value -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,8">
-                            <TextBlock Text="Measured Value:" FontWeight="Bold" Margin="0,0,8,0"/>
+                            <TextBlock Text="{x:Static res:Strings.MEAS_Label_MeasuredValue}" FontWeight="Bold" Margin="0,0,8,0"/>
                             <TextBlock x:Name="MeasurementText" FontSize="26" FontWeight="SemiBold"
                                        Foreground="{StaticResource HeaderFg}"/>
                             <TextBlock Text=" " Width="8"/>
                             <TextBlock x:Name="UnitSuffixText" FontSize="20" VerticalAlignment="Bottom"/>
                             <Border Background="#EEF2FF" CornerRadius="8" Padding="6,2" Margin="12,0,0,0">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="PASS/FAIL:" FontWeight="Bold"/>
+                                    <TextBlock Text="{x:Static res:Strings.MEAS_Label_PassFail}" FontWeight="Bold"/>
                                     <TextBlock x:Name="PassFailText" Margin="6,0,0,0"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
-                        <!-- Stats (Averaging) now here -->
+                        <!-- Stats -->
                         <WrapPanel Grid.Row="1" Margin="0,0,0,8">
-                            <TextBlock Text="Avg:" Margin="0,6,6,0"/>
+                            <TextBlock Text="{x:Static res:Strings.MEAS_Label_Avg}" Margin="0,6,6,0"/>
                             <TextBlock x:Name="AvgValText" Margin="0,6,12,0"/>
-                            <TextBlock Text="Min:" Margin="0,6,6,0"/>
+                            <TextBlock Text="{x:Static res:Strings.MEAS_Label_Min}" Margin="0,6,6,0"/>
                             <TextBlock x:Name="MinValText" Margin="0,6,12,0"/>
-                            <TextBlock Text="Max:" Margin="0,6,6,0"/>
+                            <TextBlock Text="{x:Static res:Strings.MEAS_Label_Max}" Margin="0,6,6,0"/>
                             <TextBlock x:Name="MaxValText" Margin="0,6,12,0"/>
                         </WrapPanel>
 
@@ -493,15 +492,15 @@
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Voltage" FontWeight="Bold"/>
+                                <TextBlock Text="{x:Static res:Strings.MEAS_Quick_Voltage}" FontWeight="Bold"/>
                                 <TextBlock x:Name="VoltageText" FontSize="16"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1">
-                                <TextBlock Text="Current" FontWeight="Bold"/>
+                                <TextBlock Text="{x:Static res:Strings.MEAS_Quick_Current}" FontWeight="Bold"/>
                                 <TextBlock x:Name="CurrentText" FontSize="16"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Resistance" FontWeight="Bold"/>
+                                <TextBlock Text="{x:Static res:Strings.MEAS_Quick_Resistance}" FontWeight="Bold"/>
                                 <TextBlock x:Name="ResistanceText" FontSize="16"/>
                             </StackPanel>
                         </Grid>
@@ -516,9 +515,9 @@
                         <!-- Zoom -->
                         <DockPanel Grid.Row="4" LastChildFill="False" Margin="0,8,0,0">
                             <WrapPanel DockPanel.Dock="Left">
-                                <Button Content="Zoom In" Width="90" Click="PlotZoomIn_Click"/>
-                                <Button Content="Zoom Out" Width="90" Margin="8,0,0,0" Click="PlotZoomOut_Click"/>
-                                <Button Content="Reset View" Width="110" Margin="8,0,0,0" Click="PlotResetView_Click"/>
+                                <Button Content="{x:Static res:Strings.MEAS_Btn_ZoomIn}" Width="90" Click="PlotZoomIn_Click"/>
+                                <Button Content="{x:Static res:Strings.MEAS_Btn_ZoomOut}" Width="90" Margin="8,0,0,0" Click="PlotZoomOut_Click"/>
+                                <Button Content="{x:Static res:Strings.MEAS_Btn_ResetView}" Width="110" Margin="8,0,0,0" Click="PlotResetView_Click"/>
                             </WrapPanel>
                         </DockPanel>
                     </Grid>
@@ -527,11 +526,11 @@
                 <!-- Limits -->
                 <Border Grid.Row="5" Style="{StaticResource Card}" Margin="0,14,0,0">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Lower Limit:" Margin="0,0,8,0"/>
+                        <TextBlock Text="{x:Static res:Strings.MEAS_Label_LowerLimit}" Margin="0,0,8,0"/>
                         <TextBox x:Name="LowerLimitBox" Width="120" Text="" Margin="0,0,12,0"/>
-                        <TextBlock Text="Upper Limit:" Margin="0,0,8,0"/>
+                        <TextBlock Text="{x:Static res:Strings.MEAS_Label_UpperLimit}" Margin="0,0,8,0"/>
                         <TextBox x:Name="UpperLimitBox" Width="120" Text=""/>
-                        <Button Content="Apply Limits" Width="120" Margin="12,0,0,0" Click="ApplyLimits_Click"/>
+                        <Button Content="{x:Static res:Strings.MEAS_Btn_ApplyLimits}" Width="120" Margin="12,0,0,0" Click="ApplyLimits_Click"/>
                     </StackPanel>
                 </Border>
             </Grid>

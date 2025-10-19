@@ -1,5 +1,4 @@
-﻿// View/EqTesting/TestProcedure.xaml.cs
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -20,8 +19,6 @@ namespace HouseholdMS.View.EqTesting
     public partial class TestProcedure : UserControl
     {
         // -------------------- SIMPLE LANGUAGE SWITCH (images) --------------------
-        // Edit only these arrays when you add/remove frames.
-        // EN = "TPEN_*", ES = "TPES_*". (Add KO later if you want.)
         private static readonly string[] EN_IMAGES = new[]
         {
             "pack://application:,,,/Assets/Procedures/TPEN_PV_Panel_01.png",
@@ -54,7 +51,6 @@ namespace HouseholdMS.View.EqTesting
             "pack://application:,,,/Assets/Procedures/TPES_PV_Panel_12.png",
         };
 
-        // If you add Korean later, just define:
         // private static readonly string[] KO_IMAGES = new[] { "pack://.../TPKO_PV_Panel_01.png", ... };
 
         private static string GetSavedLanguage()
@@ -78,8 +74,8 @@ namespace HouseholdMS.View.EqTesting
         private static string[] GetImagesForLang(string lang)
         {
             if (lang == "es") return ES_IMAGES;
-            // if (lang == "ko") return KO_IMAGES; // when you add them
-            return EN_IMAGES; // default
+            // if (lang == "ko") return KO_IMAGES;
+            return EN_IMAGES;
         }
         // ----------------------------------------------------------------
 
@@ -129,15 +125,14 @@ namespace HouseholdMS.View.EqTesting
 
         private static Dictionary<string, string> GetStrings(string lang)
         {
-            Dictionary<string, string> st;
-            if (!L10N.TryGetValue(lang ?? "en", out st)) st = L10N["en"];
+            if (!L10N.TryGetValue(lang ?? "en", out var st)) st = L10N["en"];
             return st;
         }
 
         private string T(string key)
         {
             if (_ST == null) return key;
-            string v; return _ST.TryGetValue(key, out v) ? v : key;
+            return _ST.TryGetValue(key, out var v) ? v : key;
         }
         // ----------------------------------------------------------------
 
@@ -145,11 +140,13 @@ namespace HouseholdMS.View.EqTesting
         {
             public readonly string Title;
             public readonly string[] Images;
+
             public Album(string title, params string[] images)
             {
                 if (images == null || images.Length == 0)
                     throw new ArgumentException("Album must contain at least one image.", nameof(images));
-                Title = string.IsNullOrWhiteSpace(title) ? "Album" : title;
+                // Keep empty when caller passes empty/whitespace (no auto "Album" prefix).
+                Title = string.IsNullOrWhiteSpace(title) ? string.Empty : title; // <-- changed
                 Images = images;
             }
         }
@@ -184,21 +181,18 @@ namespace HouseholdMS.View.EqTesting
         private Album _album;
         private int _imageIndex = -1;
 
-        // Strong cache prevents disappearing images
         private readonly Dictionary<string, BitmapImage> _imageCache =
             new Dictionary<string, BitmapImage>(StringComparer.OrdinalIgnoreCase);
 
         public TestProcedure()
         {
             InitializeComponent();
-            Loaded += (s, e) => this.Focus(); // keep focus on the control for keyboard handling
+            Loaded += (s, e) => this.Focus(); // keep focus for keyboard
 
-            // ---- Choose the set once based on saved language ----
             var lang = GetSavedLanguage();
             _ST = GetStrings(lang);
             var imgs = GetImagesForLang(lang);
 
-            // Immediately open the album. Paths support pack://application, pack://siteoforigin, or raw file paths.
             var albumTitle = T("album_bvi");
             LoadGalleryAndOpen(
                 name: T("gallery_name"),
@@ -207,7 +201,6 @@ namespace HouseholdMS.View.EqTesting
                 new AlbumSpec(albumTitle, imgs)
             );
 
-            // Optional: localize button captions (if buttons exist in XAML)
             if (PrevBtn != null) PrevBtn.Content = T("prev");
             if (NextBtn != null) NextBtn.Content = T("next");
         }
@@ -217,7 +210,7 @@ namespace HouseholdMS.View.EqTesting
             if (albums == null || albums.Length == 0)
                 throw new ArgumentException(T("err_one_album_required"), nameof(albums));
 
-            Album[] internalAlbums = albums.Select(a =>
+            var internalAlbums = albums.Select(a =>
             {
                 if (a.Images == null || a.Images.Length == 0)
                     throw new ArgumentException(string.Format(T("err_album_empty"), a.Title));
@@ -226,8 +219,8 @@ namespace HouseholdMS.View.EqTesting
 
             _gallery = new Gallery(name, version, internalAlbums);
 
-            Album chosen = internalAlbums.FirstOrDefault(a =>
-                string.Equals(a.Title, defaultAlbumTitle, StringComparison.OrdinalIgnoreCase))
+            var chosen = internalAlbums.FirstOrDefault(a =>
+                string.Equals(a.Title ?? string.Empty, defaultAlbumTitle ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 ?? internalAlbums[0];
 
             OpenAlbum(chosen);
@@ -246,8 +239,7 @@ namespace HouseholdMS.View.EqTesting
         {
             if (string.IsNullOrWhiteSpace(uriString)) return null;
 
-            BitmapImage cached;
-            if (_imageCache.TryGetValue(uriString, out cached))
+            if (_imageCache.TryGetValue(uriString, out var cached))
                 return cached;
 
             // 1) Direct Uri load (pack/file/absolute/relative)
@@ -273,8 +265,7 @@ namespace HouseholdMS.View.EqTesting
                 if (rel.StartsWith(APP, StringComparison.OrdinalIgnoreCase))
                     rel = rel.Substring(APP.Length);
 
-                Uri relUri;
-                if (Uri.TryCreate(rel, UriKind.Relative, out relUri))
+                if (Uri.TryCreate(rel, UriKind.Relative, out var relUri))
                 {
                     StreamResourceInfo sri = Application.GetResourceStream(relUri);
                     if (sri != null && sri.Stream != null)
@@ -303,7 +294,7 @@ namespace HouseholdMS.View.EqTesting
                 if (uriString.StartsWith(SOO, StringComparison.OrdinalIgnoreCase))
                 {
                     string localPath = uriString.Substring(SOO.Length).TrimStart('/', '\\');
-                    string abs = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, localPath);
+                    string abs = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, localPath);
                     if (File.Exists(abs))
                     {
                         using (var fs = File.OpenRead(abs))
@@ -357,10 +348,11 @@ namespace HouseholdMS.View.EqTesting
             var ver = string.IsNullOrWhiteSpace(_gallery.Version) ? "" : T("version_prefix") + _gallery.Version;
             HeaderVersion.Text = ver;
 
-            HeaderStep.Text = _album.Title + T("step_sep") + (_imageIndex + 1) + "/" + _album.Images.Length;
+            // Show ONLY the page number (no album/title prefix)
+            HeaderStep.Text = (_imageIndex + 1) + "/" + _album.Images.Length;
 
             string uri = _album.Images[_imageIndex];
-            ImageSource src = LoadImageStrong(uri);
+            var src = LoadImageStrong(uri);
             PageImage.Source = src;
             PageImage.ToolTip = (src == null) ? string.Format(T("missing_image"), uri) : null;
 
