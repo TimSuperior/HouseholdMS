@@ -76,7 +76,10 @@ namespace HouseholdMS.View
             UpdateColumnFilterButtonContent(); // reflect "All"
         }
 
-        private bool IsAdmin() => string.Equals(_currentUserRole, "Admin", StringComparison.OrdinalIgnoreCase);
+        // >>> CHANGED: Technician now has admin rights too
+        private bool IsAdmin()
+            => string.Equals(_currentUserRole, "Admin", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(_currentUserRole, "Technician", StringComparison.OrdinalIgnoreCase);
 
         public void LoadInventory()
         {
@@ -253,7 +256,7 @@ namespace HouseholdMS.View
         {
             if (!IsAdmin())
             {
-                MessageBox.Show("Only admins can add inventory items.", "Access Denied",
+                MessageBox.Show("Only Admins or Technicians can add inventory items.", "Access Denied",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -348,7 +351,7 @@ namespace HouseholdMS.View
         {
             if (!IsAdmin())
             {
-                MessageBox.Show("Access Denied: You cannot restock inventory.", "Access Denied",
+                MessageBox.Show("Access Denied: Only Admins or Technicians can restock inventory.", "Access Denied",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -404,7 +407,7 @@ namespace HouseholdMS.View
         {
             if (!IsAdmin())
             {
-                MessageBox.Show("Access Denied: You cannot use inventory items.", "Access Denied",
+                MessageBox.Show("Access Denied: Only Admins or Technicians can use inventory items.", "Access Denied",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }

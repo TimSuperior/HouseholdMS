@@ -32,7 +32,21 @@ namespace HouseholdMS.View.Dashboard
         private Dictionary<string, string> _headerToProperty;
 
         private readonly string _currentUserRole;
-        private bool IsAdmin => string.Equals(_currentUserRole, "Admin", StringComparison.OrdinalIgnoreCase);
+
+        // ************* ONLY CHANGE: treat Technician like Admin *************
+        private static readonly StringComparison OrdIC = StringComparison.OrdinalIgnoreCase;
+        private static bool HasAdminOrTechnicianAccess(string role)
+        {
+            if (string.IsNullOrWhiteSpace(role)) return false;
+            role = role.Trim();
+            return role.Equals("Admin", OrdIC)
+                || role.Equals("Administrator", OrdIC)
+                || role.Equals("Technician", OrdIC)
+                || role.Equals("Tech", OrdIC);
+        }
+
+        private bool IsAdmin => HasAdminOrTechnicianAccess(_currentUserRole);
+        // ********************************************************************
 
         // Filters
         private string _normalizedStatusFilter = string.Empty;
@@ -47,16 +61,14 @@ namespace HouseholdMS.View.Dashboard
         {
             nameof(Household.HouseholdID),
             nameof(Household.OwnerName),
-            nameof(Household.DNI),           // <-- UserName -> DNI
+            nameof(Household.DNI),
             nameof(Household.Municipality),
             nameof(Household.District),
-            // NEW: Coordinates
             nameof(Household.X),
             nameof(Household.Y),
             nameof(Household.ContactNum),
             "InstallDateText",
             "LastInspectText",
-            // NEW: Series
             nameof(Household.SP),
             nameof(Household.SMI),
             nameof(Household.SB),
@@ -68,11 +80,10 @@ namespace HouseholdMS.View.Dashboard
         private static readonly string[] DefaultColumnKeys = new[]
         {
             nameof(Household.OwnerName),
-            nameof(Household.DNI),           // <-- UserName -> DNI
+            nameof(Household.DNI),
             nameof(Household.Municipality),
             nameof(Household.District),
             nameof(Household.ContactNum)
-            // (ID exact match handled separately to preserve prior behavior)
         };
 
         private readonly HashSet<string> _selectedColumnKeys = new HashSet<string>(StringComparer.Ordinal);
@@ -124,11 +135,9 @@ namespace HouseholdMS.View.Dashboard
             {
                 { Strings.AHV_Column_ID,          "HouseholdID" },
                 { Strings.AHV_Column_OwnerName,   "OwnerName" },
-                // Username header is now literal "DNI" in XAML
                 { "DNI",                           "DNI" },
                 { Strings.AHV_Column_Municipality,"Municipality" },
                 { Strings.AHV_Column_District,    "District" },
-                // NEW: headers for extra columns (literal)
                 { "X",                             "X" },
                 { "Y",                             "Y" },
                 { Strings.AHV_Column_Contact,     "ContactNum" },
@@ -157,11 +166,9 @@ namespace HouseholdMS.View.Dashboard
             {
                 conn.Open();
                 using (var cmd = new System.Data.SQLite.SQLiteCommand(
-                    // UserName -> DNI; include new columns
                     "SELECT HouseholdID, OwnerName, DNI, Municipality, District, X, Y, ContactNum, InstallDate, LastInspect, UserComm, Statuss, SP, SMI, SB FROM Households;", conn))
                 using (var reader = cmd.ExecuteReader())
                 {
-                    // NEW: cache schema once (avoid per-row GetSchemaTable() overhead)
                     var schemaCols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     var schema = reader.GetSchemaTable();
                     if (schema != null)
@@ -208,7 +215,6 @@ namespace HouseholdMS.View.Dashboard
                             LastInspect = lastInspect,
                             UserComm = reader["UserComm"] == DBNull.Value ? string.Empty : Convert.ToString(reader["UserComm"]),
                             Statuss = normalizedStatus,
-                            // NEW: extra fields
                             X = readDouble("X"),
                             Y = readDouble("Y"),
                             SP = reader["SP"] == DBNull.Value ? null : Convert.ToString(reader["SP"]),
@@ -257,10 +263,9 @@ namespace HouseholdMS.View.Dashboard
             string search = string.IsNullOrWhiteSpace(_searchText) ? string.Empty : _searchText.Trim().ToLowerInvariant();
             bool useCategory = _categoryFilterActive && !string.IsNullOrWhiteSpace(_normalizedStatusFilter);
 
-            // Decide which columns to use
             var keys = _selectedColumnKeys.Count == 0 ? DefaultColumnKeys : _selectedColumnKeys.ToArray();
 
-            using (view.DeferRefresh()) // NEW: single refresh at the end
+            using (view.DeferRefresh())
             {
                 view.Filter = delegate (object obj)
                 {
@@ -275,11 +280,9 @@ namespace HouseholdMS.View.Dashboard
 
                     if (string.IsNullOrEmpty(search)) return true;
 
-                    // Preserve previous exact ID behavior (in addition to column matching)
                     int idValue;
                     if (int.TryParse(search, out idValue) && h.HouseholdID == idValue) return true;
 
-                    // Column-based matching
                     for (int i = 0; i < keys.Length; i++)
                     {
                         string cell = GetCellString(h, keys[i]);
@@ -298,7 +301,7 @@ namespace HouseholdMS.View.Dashboard
             {
                 case nameof(Household.HouseholdID): return h.HouseholdID.ToString();
                 case nameof(Household.OwnerName): return h.OwnerName ?? string.Empty;
-                case nameof(Household.DNI): return h.DNI ?? string.Empty;           // <-- UserName -> DNI
+                case nameof(Household.DNI): return h.DNI ?? string.Empty;
                 case nameof(Household.Municipality): return h.Municipality ?? string.Empty;
                 case nameof(Household.District): return h.District ?? string.Empty;
                 case nameof(Household.ContactNum): return h.ContactNum ?? string.Empty;
@@ -306,7 +309,6 @@ namespace HouseholdMS.View.Dashboard
                 case "LastInspectText": return h.LastInspect == DateTime.MinValue ? string.Empty : h.LastInspect.ToString("yyyy-MM-dd");
                 case nameof(Household.Statuss): return h.Statuss ?? string.Empty;
                 case nameof(Household.UserComm): return h.UserComm ?? string.Empty;
-                // NEW: extra DB columns
                 case nameof(Household.X): return h.X?.ToString() ?? string.Empty;
                 case nameof(Household.Y): return h.Y?.ToString() ?? string.Empty;
                 case nameof(Household.SP): return h.SP ?? string.Empty;
@@ -320,7 +322,6 @@ namespace HouseholdMS.View.Dashboard
         {
             _searchText = SearchBox?.Text ?? string.Empty;
 
-            // NEW: debounce instead of refreshing on every keystroke
             if (_searchDebounce != null)
             {
                 _searchDebounce.Stop();
@@ -359,7 +360,7 @@ namespace HouseholdMS.View.Dashboard
             view.Refresh();
         }
 
-        // === Add new household (Admins only) ===
+        // === Add new household (Admins or Technicians) ===
         private void AddHouseholdButton_Click(object sender, RoutedEventArgs e)
         {
             if (!IsAdmin)
@@ -376,7 +377,6 @@ namespace HouseholdMS.View.Dashboard
 
             var dialog = CreateWideDialog(form, "Add Household");
 
-            // Use proper EventHandler signature
             form.OnSavedSuccessfully += (object s, EventArgs args) =>
             {
                 try { dialog.DialogResult = true; } catch { }
@@ -394,7 +394,7 @@ namespace HouseholdMS.View.Dashboard
             ShowDialogSafe(dialog);
         }
 
-        // === Double-click row: open AddHouseholdControl (admin edit, others read-only) ===
+        // === Double-click row: open AddHouseholdControl (admin/tech edit, others read-only) ===
         private void HouseholdListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
@@ -412,7 +412,6 @@ namespace HouseholdMS.View.Dashboard
 
             var dlg = CreateWideDialog(form, "Edit Household #" + selected.HouseholdID);
 
-            // Use proper EventHandler signature
             form.OnSavedSuccessfully += (object s, EventArgs args) =>
             {
                 try { dlg.DialogResult = true; } catch { }
@@ -566,7 +565,6 @@ namespace HouseholdMS.View.Dashboard
         {
             UpdateColumnFilterButtonContent();
 
-            // Re-apply filter if there's text
             string text = SearchBox != null ? (SearchBox.Text ?? string.Empty) : string.Empty;
             if (!string.IsNullOrWhiteSpace(text))
                 ApplyFilter();
@@ -597,10 +595,8 @@ namespace HouseholdMS.View.Dashboard
 
         private void OkColumns_Click(object sender, RoutedEventArgs e)
         {
-            // reflect current selection count on the chip
             UpdateColumnFilterButtonContent();
 
-            // if search box has user text (not placeholder), apply the filter now
             var tagText = SearchBox?.Tag as string ?? string.Empty;
             var text = SearchBox?.Text ?? string.Empty;
             if (!string.IsNullOrWhiteSpace(text) && !string.Equals(text, tagText, StringComparison.Ordinal))
@@ -608,7 +604,6 @@ namespace HouseholdMS.View.Dashboard
                 ApplyFilter();
             }
 
-            // close the popup
             ColumnPopup.IsOpen = false;
         }
 

@@ -34,12 +34,12 @@ namespace HouseholdMS.View.UserControls
             DependencyProperty.Register(nameof(LossesPct), typeof(double), typeof(PvEnergyTileControl),
                 new PropertyMetadata(14.0, OnParamsChanged));
 
-        public double Latitude { get { return (double)GetValue(LatitudeProperty); } set { SetValue(LatitudeProperty, value); } }
-        public double Longitude { get { return (double)GetValue(LongitudeProperty); } set { SetValue(LongitudeProperty, value); } }
-        public double PeakKw { get { return (double)GetValue(PeakKwProperty); } set { SetValue(PeakKwProperty, value); } }
-        public int Tilt { get { return (int)GetValue(TiltProperty); } set { SetValue(TiltProperty, value); } }
-        public int Azimuth { get { return (int)GetValue(AzimuthProperty); } set { SetValue(AzimuthProperty, value); } }
-        public double LossesPct { get { return (double)GetValue(LossesPctProperty); } set { SetValue(LossesPctProperty, value); } }
+        public double Latitude { get => (double)GetValue(LatitudeProperty); set => SetValue(LatitudeProperty, value); }
+        public double Longitude { get => (double)GetValue(LongitudeProperty); set => SetValue(LongitudeProperty, value); }
+        public double PeakKw { get => (double)GetValue(PeakKwProperty); set => SetValue(PeakKwProperty, value); }
+        public int Tilt { get => (int)GetValue(TiltProperty); set => SetValue(TiltProperty, value); }
+        public int Azimuth { get => (int)GetValue(AzimuthProperty); set => SetValue(AzimuthProperty, value); }
+        public double LossesPct { get => (double)GetValue(LossesPctProperty); set => SetValue(LossesPctProperty, value); }
 
         // -------- UI state / text (DependencyProperties) --------
         public static readonly DependencyProperty IsBusyProperty =
@@ -48,8 +48,8 @@ namespace HouseholdMS.View.UserControls
 
         public bool IsBusy
         {
-            get { return (bool)GetValue(IsBusyProperty); }
-            set { SetValue(IsBusyProperty, value); }
+            get => (bool)GetValue(IsBusyProperty);
+            set => SetValue(IsBusyProperty, value);
         }
 
         public static readonly DependencyProperty StatusTextProperty =
@@ -68,10 +68,10 @@ namespace HouseholdMS.View.UserControls
             DependencyProperty.Register(nameof(ConfigText), typeof(string), typeof(PvEnergyTileControl),
                 new PropertyMetadata(string.Empty));
 
-        public string StatusText { get { return (string)GetValue(StatusTextProperty); } set { SetValue(StatusTextProperty, value); } }
-        public string MonthlyText { get { return (string)GetValue(MonthlyTextProperty); } set { SetValue(MonthlyTextProperty, value); } }
-        public string AnnualText { get { return (string)GetValue(AnnualTextProperty); } set { SetValue(AnnualTextProperty, value); } }
-        public string ConfigText { get { return (string)GetValue(ConfigTextProperty); } set { SetValue(ConfigTextProperty, value); } }
+        public string StatusText { get => (string)GetValue(StatusTextProperty); set => SetValue(StatusTextProperty, value); }
+        public string MonthlyText { get => (string)GetValue(MonthlyTextProperty); set => SetValue(MonthlyTextProperty, value); }
+        public string AnnualText { get => (string)GetValue(AnnualTextProperty); set => SetValue(AnnualTextProperty, value); }
+        public string ConfigText { get => (string)GetValue(ConfigTextProperty); set => SetValue(ConfigTextProperty, value); }
 
         public PvEnergyTileControl()
         {

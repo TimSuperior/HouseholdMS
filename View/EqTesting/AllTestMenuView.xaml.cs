@@ -1,5 +1,4 @@
-﻿// View/EqTesting/AllTestMenuView.xaml.cs
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -138,11 +137,15 @@ namespace HouseholdMS.View.EqTesting
         {
             public readonly string Title;
             public readonly string[] Images;
+
             public Album(string title, params string[] images)
             {
                 if (images == null || images.Length == 0)
                     throw new ArgumentException("Album must contain at least one image.", nameof(images));
-                Title = string.IsNullOrWhiteSpace(title) ? "Album" : title;
+
+                // CHANGED: do NOT force a fallback like "Album".
+                // Keep it empty if caller passes empty/whitespace.
+                Title = string.IsNullOrWhiteSpace(title) ? string.Empty : title;
                 Images = images;
             }
         }
@@ -190,7 +193,7 @@ namespace HouseholdMS.View.EqTesting
             _ST = GetStrings(lang);
             var imgs = GetImagesForLang(lang);
 
-            var albumTitle = T("album_bvi");
+            var albumTitle = T("album_bvi"); // may be empty or whitespace
             LoadGalleryAndOpen(
                 name: T("gallery_name"),
                 version: "1.1",
@@ -218,7 +221,7 @@ namespace HouseholdMS.View.EqTesting
             _gallery = new Gallery(name, version, internalAlbums);
 
             var chosen = internalAlbums.FirstOrDefault(a =>
-                string.Equals(a.Title, defaultAlbumTitle, StringComparison.OrdinalIgnoreCase))
+                string.Equals(a.Title ?? string.Empty, defaultAlbumTitle ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 ?? internalAlbums[0];
 
             OpenAlbum(chosen);
@@ -348,7 +351,8 @@ namespace HouseholdMS.View.EqTesting
             var ver = string.IsNullOrWhiteSpace(_gallery.Version) ? "" : T("version_prefix") + _gallery.Version;
             HeaderVersion.Text = ver;
 
-            HeaderStep.Text = _album.Title + T("step_sep") + (_imageIndex + 1) + "/" + _album.Images.Length;
+            // CHANGED: show ONLY the page number (no "Album" or title prefix).
+            HeaderStep.Text = (_imageIndex + 1) + "/" + _album.Images.Length;
 
             string uri = _album.Images[_imageIndex];
             var src = LoadImageStrong(uri);

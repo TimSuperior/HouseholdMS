@@ -1,5 +1,4 @@
-﻿// View/EqTesting/BatteryTestMenuView.xaml.cs
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -13,14 +12,13 @@ using System.Windows.Resources;
 namespace HouseholdMS.View.EqTesting
 {
     /// <summary>
-    /// Single-album image viewer: "Battery Visual Inspection".
+    /// Single-album image viewer.
     /// Back/Next buttons + Left/Right arrow keys.
     /// Up/Down keys suppressed to avoid dotted focus cues.
     /// </summary>
     public partial class BatteryTestMenuView : UserControl
     {
         // -------------------- SIMPLE LANGUAGE SWITCH (images) --------------------
-        // EN = "TPEN_*", ES = "TPES_*". (Add KO later if you want.)
         private static readonly string[] EN_IMAGES = new[]
         {
             "pack://application:,,,/Assets/Procedures/TPEN_ISDT_charger_01.png",
@@ -49,9 +47,6 @@ namespace HouseholdMS.View.EqTesting
             "pack://application:,,,/Assets/Procedures/TPES_ISDT_charger_10.png",
         };
 
-        // If you add Korean later, just define:
-        // private static readonly string[] KO_IMAGES = new[] { "pack://.../TPKO_ISDT_charger_01.png", ... };
-
         private static string GetSavedLanguage()
         {
             try
@@ -73,7 +68,6 @@ namespace HouseholdMS.View.EqTesting
         private static string[] GetImagesForLang(string lang)
         {
             if (lang == "es") return ES_IMAGES;
-            // if (lang == "ko") return KO_IMAGES; // when you add them
             return EN_IMAGES; // default
         }
         // ----------------------------------------------------------------
@@ -140,11 +134,14 @@ namespace HouseholdMS.View.EqTesting
         {
             public readonly string Title;
             public readonly string[] Images;
+
             public Album(string title, params string[] images)
             {
                 if (images == null || images.Length == 0)
                     throw new ArgumentException("Album must contain at least one image.", nameof(images));
-                Title = string.IsNullOrWhiteSpace(title) ? "Album" : title;
+
+                // Do NOT force a fallback like "Album"; keep empty if caller passes empty/whitespace.
+                Title = string.IsNullOrWhiteSpace(title) ? string.Empty : title;
                 Images = images;
             }
         }
@@ -179,22 +176,18 @@ namespace HouseholdMS.View.EqTesting
         private Album _album;
         private int _imageIndex = -1;
 
-        // Strong cache prevents disappearing images
         private readonly Dictionary<string, BitmapImage> _imageCache =
             new Dictionary<string, BitmapImage>(StringComparer.OrdinalIgnoreCase);
 
         public BatteryTestMenuView()
         {
             InitializeComponent();
-            Loaded += (s, e) => this.Focus(); // keep focus on the control for keyboard handling
+            Loaded += (s, e) => this.Focus(); // keep focus for keyboard
 
-            // ---- Choose the set once based on saved language ----
             var lang = GetSavedLanguage();
             _ST = GetStrings(lang);
             var imgs = GetImagesForLang(lang);
 
-            // Immediately open the Battery Visual Inspection album.
-            // Adjust these paths freely (pack/resource/site-of-origin/raw file all supported).
             var albumTitle = T("album_bvi");
             LoadGalleryAndOpen(
                 name: T("gallery_name"),
@@ -203,7 +196,6 @@ namespace HouseholdMS.View.EqTesting
                 new AlbumSpec(albumTitle, imgs)
             );
 
-            // Optional: localize button labels (if present in XAML)
             if (PrevBtn != null) PrevBtn.Content = T("prev");
             if (NextBtn != null) NextBtn.Content = T("next");
         }
@@ -223,7 +215,7 @@ namespace HouseholdMS.View.EqTesting
             _gallery = new Gallery(name, version, internalAlbums);
 
             var chosen = internalAlbums.FirstOrDefault(a =>
-                string.Equals(a.Title, defaultAlbumTitle, StringComparison.OrdinalIgnoreCase))
+                string.Equals(a.Title ?? string.Empty, defaultAlbumTitle ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 ?? internalAlbums[0];
 
             OpenAlbum(chosen);
@@ -237,7 +229,7 @@ namespace HouseholdMS.View.EqTesting
             RenderImage();
         }
 
-        // Robust loader: tries direct URI, pack resource stream, site-of-origin, then raw file path.
+        // Robust loader: pack URI -> resource stream -> site-of-origin -> raw file
         private ImageSource LoadImageStrong(string uriString)
         {
             if (string.IsNullOrWhiteSpace(uriString)) return null;
@@ -246,7 +238,7 @@ namespace HouseholdMS.View.EqTesting
             if (_imageCache.TryGetValue(uriString, out cached))
                 return cached;
 
-            // 1) Direct Uri load (pack/file/absolute/relative)
+            // 1) Direct Uri load
             try
             {
                 var bmp1 = new BitmapImage();
@@ -261,7 +253,7 @@ namespace HouseholdMS.View.EqTesting
             }
             catch { }
 
-            // 2) Application resource stream (for pack application resources)
+            // 2) Application resource stream
             try
             {
                 const string APP = "pack://application:,,,/";
@@ -353,7 +345,8 @@ namespace HouseholdMS.View.EqTesting
             var ver = string.IsNullOrWhiteSpace(_gallery.Version) ? "" : T("version_prefix") + _gallery.Version;
             HeaderVersion.Text = ver;
 
-            HeaderStep.Text = _album.Title + T("step_sep") + (_imageIndex + 1) + "/" + _album.Images.Length;
+            // SHOW ONLY PAGE NUMBER: "{current}/{total}"
+            HeaderStep.Text = (_imageIndex + 1) + "/" + _album.Images.Length;
 
             string uri = _album.Images[_imageIndex];
             var src = LoadImageStrong(uri);
@@ -392,7 +385,6 @@ namespace HouseholdMS.View.EqTesting
 
         private void Root_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            // Swallow Up/Down so WPF doesn't shift focus and draw dotted focus cues
             if (e.Key == Key.Up || e.Key == Key.Down)
             {
                 e.Handled = true;
@@ -416,7 +408,6 @@ namespace HouseholdMS.View.EqTesting
             }
             else if (e.Key == Key.Up || e.Key == Key.Down)
             {
-                // belt & suspenders
                 e.Handled = true;
             }
         }

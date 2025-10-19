@@ -31,43 +31,38 @@ namespace HouseholdMS
             bool isAdmin = string.Equals(_currentUserRole, "Admin", StringComparison.OrdinalIgnoreCase);
             bool isTech = string.Equals(_currentUserRole, "Technician", StringComparison.OrdinalIgnoreCase);
 
-            if (isAdmin || isTech)
-            {
-                bt_AllTest.Visibility = Visibility.Visible;
-                bt_BatteryTest.Visibility = Visibility.Visible;
-                bt_ControllerTest.Visibility = Visibility.Visible;
-                bt_TestProcedure.Visibility = Visibility.Visible;
-                bt_SwitchTest.Visibility = Visibility.Visible;
-                bt_TestReports.Visibility = Visibility.Collapsed;
+            // ============================================================
+            // VISIBILITY POLICY (per your request):
+            // - Test Procedures section: show ALL buttons for EVERYONE.
+            // - Monitoring -> MPPT/BatteryTest button: show for EVERYONE.
+            // - Test Reports: keep hidden.
+            // - Settings & Manage Users: Admin only.
+            // - Everything else unchanged.
+            // ============================================================
 
-                // NEW: show K4 Battery Balancing for admin/tech
-                bt_K4BatteryBalancing.Visibility = Visibility.Visible;
+            // ----- Test Procedures header and ALL submenu items are visible to all users -----
+            Header_TestManuals.Visibility = Visibility.Visible;
+            bt_TestProcedure.Visibility = Visibility.Visible;   // general procedures
+            bt_ControllerTest.Visibility = Visibility.Visible;   // controller steps
+            bt_SwitchTest.Visibility = Visibility.Visible;   // switch steps
+            bt_AllTest.Visibility = Visibility.Visible;   // BlueSmart Charger (requested to show)
+            bt_K4BatteryBalancing.Visibility = Visibility.Visible;   // K4 Balancing (requested to show)
+            bt_TestReports.Visibility = Visibility.Collapsed; // keep hidden (may contain sensitive data)
 
-                if (isAdmin)
-                {
-                    bt_SettingMenu.Visibility = Visibility.Visible;   // top-nav settings button
-                    NavManageUsersBtn.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    bt_SettingMenu.Visibility = Visibility.Collapsed;
-                    NavManageUsersBtn.Visibility = Visibility.Collapsed;
-                }
-            }
-            else
-            {
-                bt_AllTest.Visibility = Visibility.Collapsed;
-                bt_BatteryTest.Visibility = Visibility.Collapsed;
-                bt_ControllerTest.Visibility = Visibility.Collapsed;
-                bt_TestProcedure.Visibility = Visibility.Collapsed;
-                bt_SwitchTest.Visibility = Visibility.Collapsed;
-                bt_SettingMenu.Visibility = Visibility.Collapsed; // top-nav
-                bt_TestReports.Visibility = Visibility.Collapsed;
-                NavManageUsersBtn.Visibility = Visibility.Collapsed;
+            // ----- Monitoring header is visible to all; MPPT/BatteryTest button visible to all -----
+            Header_Monitoring.Visibility = Visibility.Visible;
+            Panel_Monitoring.Visibility = Visibility.Collapsed; // start collapsed, as before
+            bt_BatteryTest.Visibility = Visibility.Visible;   // MPPT monitor button (show for guest too)
 
-                // NEW: hide K4 Battery Balancing for non-privileged users
-                bt_K4BatteryBalancing.Visibility = Visibility.Collapsed;
-            }
+            // (Other Monitoring buttons were not gated previously; leave them as-is.)
+
+            // ----- Dashboard header/submenu always available -----
+            bt_Dashboard.Visibility = Visibility.Visible;
+            Panel_Dashboard.Visibility = Visibility.Visible;
+
+            // ----- Settings & Manage Users: Admin only -----
+            bt_SettingMenu.Visibility = isAdmin ? Visibility.Visible : Visibility.Collapsed;
+            NavManageUsersBtn.Visibility = isAdmin ? Visibility.Visible : Visibility.Collapsed;
 
             // Start with Dashboard panel expanded (others collapsed) and show Dashboard view
             ExpandOnly(Panel_Dashboard);
@@ -110,7 +105,7 @@ namespace HouseholdMS
         private void bt_ManageUsers(object sender, RoutedEventArgs e)
         {
             // Collapse all accordion sections since Manage Users has no submenu
-            ExpandOnly(null);  // <-- key fix: ensures previous dropdowns are closed
+            ExpandOnly(null);
             MainContent.Content = new HouseholdMS.View.UserManagementView(_currentUserRole, _currentUsername);
         }
 
@@ -151,7 +146,7 @@ namespace HouseholdMS
             MainContent.Content = new TestProcedure();
         }
 
-        // NEW: K4 Battery Balancing -> BatteryTestMenuView
+        // K4 Battery Balancing -> BatteryTestMenuView
         private void bt_K4BatteryBalancing_Click(object sender, RoutedEventArgs e)
         {
             MainContent.Content = new BatteryTestMenuView();

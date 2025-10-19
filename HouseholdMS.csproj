@@ -902,11 +902,13 @@
     <Resource Include="Assets\MainMenuPics\mainpic.png" />
     <Resource Include="Assets\Logo\App.ico" />
     <Resource Include="App.ico" />
-    <SplashScreen Include="Assets\Logo\splash_720.png">
+    <None Include="Assets\Logo\splash_720.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </SplashScreen>
+    </None>
     <Resource Include="Assets\MainMenuPics\mainpic_transparent.png" />
     <Resource Include="Assets\MainMenuPics\mainpic1.png" />
+    <None Include="Assets\Logo\splash_721.png" />
+    <SplashScreen Include="Assets\Logo\splash_722.png" />
     <Content Include="Assets\Manuals\VictronConnect_Manual.pdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
