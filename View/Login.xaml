@@ -1,4 +1,4 @@
-﻿<Window x:Class="HouseholdMS.View.Login"
+﻿<Window x:Class="HouseholdMS.View.Login" 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:res="clr-namespace:HouseholdMS.Resources"
@@ -9,31 +9,42 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanMinimize"
         Background="#f0f2f5">
-    <Grid FocusManager.FocusedElement="{Binding ElementName=LoginUsernameBox}">
 
-        <!-- Decorative left rail (overlay; doesn't affect centering) -->
+    <!-- Root: set the background image here so it sits behind everything -->
+    <Grid FocusManager.FocusedElement="{Binding ElementName=LoginUsernameBox}">
+        <Grid.Background>
+            <!-- Uses pack URI to a Resource. Stretches and lightly fades for readability -->
+            <ImageBrush ImageSource="pack://application:,,,/Assets/Logo/splash_722.png"
+                        Stretch="UniformToFill"
+                        AlignmentX="Center"
+                        AlignmentY="Center"
+                        Opacity="0.22"/>
+        </Grid.Background>
+
+        <!-- Decorative left rail — make transparent so it no longer hides (cuts) the image -->
         <Border HorizontalAlignment="Left"
                 VerticalAlignment="Stretch"
                 Width="260"
-                Background="#e9edf3"/>
+                Background="Transparent"  
+            IsHitTestVisible="False"/>
 
-        <!-- Content area with wide L/R margins for whitespace -->
-        <Grid Margin="160,40,160,40">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <!-- Content area with wide L/R margins for whitespace -->
+            <Grid Margin="160,40,160,40">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-            <ScrollViewer Grid.Column="1"
+                <ScrollViewer Grid.Column="1"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Center"
                           HorizontalScrollBarVisibility="Disabled"
                           VerticalScrollBarVisibility="Auto">
-                <Grid>
+                    <Grid>
 
-                    <!-- ===== LOGIN CARD ===== -->
-                    <Border x:Name="LoginCard"
+                        <!-- ===== LOGIN CARD ===== -->
+                        <Border x:Name="LoginCard"
                             Background="White"
                             BorderBrush="#DDDDDD"
                             BorderThickness="1"
@@ -44,33 +55,33 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Visibility="Visible">
-                        <Border.LayoutTransform>
-                            <ScaleTransform
+                            <Border.LayoutTransform>
+                                <ScaleTransform
                                 ScaleX="{DynamicResource AppUiScale}"
                                 ScaleY="{DynamicResource AppUiScale}"/>
-                        </Border.LayoutTransform>
+                            </Border.LayoutTransform>
 
-                        <StackPanel>
-                            <TextBlock Text="{x:Static res:Strings.Login_Welcome}"
+                            <StackPanel>
+                                <TextBlock Text="{x:Static res:Strings.Login_Welcome}"
                                        FontSize="28"
                                        FontWeight="Bold"
                                        Foreground="#333333"
                                        TextAlignment="Center"
                                        Margin="0,0,0,24"/>
 
-                            <TextBlock Text="{x:Static res:Strings.Login_Username}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
-                            <TextBox x:Name="LoginUsernameBox"
+                                <TextBlock Text="{x:Static res:Strings.Login_Username}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
+                                <TextBox x:Name="LoginUsernameBox"
                                      Height="40" Margin="0,0,0,12" Padding="10,0"
                                      Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"
                                      VerticalContentAlignment="Center" />
 
-                            <TextBlock Text="{x:Static res:Strings.Login_Password}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
-                            <PasswordBox x:Name="LoginPasswordBox"
+                                <TextBlock Text="{x:Static res:Strings.Login_Password}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
+                                <PasswordBox x:Name="LoginPasswordBox"
                                          Height="40" Margin="0,0,0,20" Padding="10,0"
                                          Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"
                                          VerticalContentAlignment="Center" />
 
-                            <Button x:Name="LoginBtn"
+                                <Button x:Name="LoginBtn"
                                     Content="{x:Static res:Strings.Login_Button_Login}"
                                     Height="44" Background="#4CAF50" Foreground="White"
                                     FontWeight="Bold" BorderThickness="0"
@@ -78,23 +89,23 @@
                                     IsDefault="True"
                                     Click="Login_Click"/>
 
-                            <Button Content="{x:Static res:Strings.Login_Button_RegisterNewUser}"
+                                <Button Content="{x:Static res:Strings.Login_Button_RegisterNewUser}"
                                     Height="40" Background="#DDDDDD" Foreground="#333333"
                                     FontWeight="SemiBold" BorderThickness="0"
                                     Margin="0,0,0,12"
                                     Click="ShowRegister_Click"/>
 
-                            <Button x:Name="ExitBtn"
+                                <Button x:Name="ExitBtn"
                                     Content="{x:Static res:Strings.Login_Button_Exit}"
                                     Height="40" Background="#E53935" Foreground="White"
                                     FontWeight="SemiBold" BorderThickness="0"
                                     IsCancel="True"
                                     Click="Exit_Click"/>
-                        </StackPanel>
-                    </Border>
+                            </StackPanel>
+                        </Border>
 
-                    <!-- ===== REGISTER CARD ===== -->
-                    <Border x:Name="RegisterCard"
+                        <!-- ===== REGISTER CARD ===== -->
+                        <Border x:Name="RegisterCard"
                             Background="White"
                             BorderBrush="#DDDDDD"
                             BorderThickness="1"
@@ -105,53 +116,53 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Visibility="Collapsed">
-                        <Border.LayoutTransform>
-                            <ScaleTransform
+                            <Border.LayoutTransform>
+                                <ScaleTransform
                                 ScaleX="{DynamicResource AppUiScale}"
                                 ScaleY="{DynamicResource AppUiScale}"/>
-                        </Border.LayoutTransform>
+                            </Border.LayoutTransform>
 
-                        <StackPanel>
-                            <TextBlock Text="{x:Static res:Strings.Register_Title}"
+                            <StackPanel>
+                                <TextBlock Text="{x:Static res:Strings.Register_Title}"
                                        FontSize="28"
                                        FontWeight="Bold"
                                        Foreground="#333333"
                                        TextAlignment="Center"
                                        Margin="0,0,0,24"/>
 
-                            <TextBlock Text="{x:Static res:Strings.Register_Name}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
-                            <TextBox x:Name="RegNameBox"
+                                <TextBlock Text="{x:Static res:Strings.Register_Name}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
+                                <TextBox x:Name="RegNameBox"
                                      Height="40" Margin="0,0,0,12" Padding="10,0"
                                      Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"
                                      VerticalContentAlignment="Center" />
 
-                            <TextBlock Text="{x:Static res:Strings.Register_Username}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
-                            <TextBox x:Name="RegUsernameBox"
+                                <TextBlock Text="{x:Static res:Strings.Register_Username}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
+                                <TextBox x:Name="RegUsernameBox"
                                      Height="40" Margin="0,0,0,12" Padding="10,0"
                                      Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"
                                      VerticalContentAlignment="Center" />
 
-                            <TextBlock Text="{x:Static res:Strings.Register_Password}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
-                            <PasswordBox x:Name="RegPasswordBox"
+                                <TextBlock Text="{x:Static res:Strings.Register_Password}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
+                                <PasswordBox x:Name="RegPasswordBox"
                                          Height="40" Margin="0,4,0,4" Padding="10,0"
                                          Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"
                                          VerticalContentAlignment="Center" />
 
-                            <!-- Password rules note -->
-                            <TextBlock Margin="0,0,0,10"
+                                <!-- Password rules note -->
+                                <TextBlock Margin="0,0,0,10"
                                        FontSize="12"
                                        Foreground="#666666"
                                        TextWrapping="Wrap"
                                        Text="{x:Static res:Strings.Register_PasswordNote}"/>
 
-                            <TextBlock Text="{x:Static res:Strings.Register_ConfirmPassword}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
-                            <PasswordBox x:Name="RegConfirmPasswordBox"
+                                <TextBlock Text="{x:Static res:Strings.Register_ConfirmPassword}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
+                                <PasswordBox x:Name="RegConfirmPasswordBox"
                                          Height="40" Margin="0,0,0,16" Padding="10,0"
                                          Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"
                                          VerticalContentAlignment="Center" />
 
-                            <!-- Technician toggle -->
-                            <CheckBox x:Name="IsTechnicianCheck"
+                                <!-- Technician toggle -->
+                                <CheckBox x:Name="IsTechnicianCheck"
                                       Style="{x:Null}"
                                       Visibility="Visible"
                                       IsEnabled="True"
@@ -162,54 +173,54 @@
                                       Checked="Reg_TechCheck_Toggled"
                                       Unchecked="Reg_TechCheck_Toggled"/>
 
-                            <!-- Technician details -->
-                            <StackPanel x:Name="TechDetailsPanel" Visibility="Collapsed">
-                                <Separator Margin="0,0,0,12"/>
+                                <!-- Technician details -->
+                                <StackPanel x:Name="TechDetailsPanel" Visibility="Collapsed">
+                                    <Separator Margin="0,0,0,12"/>
 
-                                <TextBlock Text="{x:Static res:Strings.Register_PhoneLabel}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
-                                <TextBox x:Name="RegPhoneBox"
+                                    <TextBlock Text="{x:Static res:Strings.Register_PhoneLabel}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
+                                    <TextBox x:Name="RegPhoneBox"
                                          Height="36" Margin="0,0,0,8" Padding="10,0"
                                          Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"
                                          VerticalContentAlignment="Center"
                                          PreviewTextInput="DigitsOnly_PreviewTextInput"
                                          DataObject.Pasting="DigitsOnly_OnPaste"/>
 
-                                <TextBlock Text="{x:Static res:Strings.Register_AddressLabel}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
-                                <TextBox x:Name="RegAddressBox"
+                                    <TextBlock Text="{x:Static res:Strings.Register_AddressLabel}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
+                                    <TextBox x:Name="RegAddressBox"
                                          Height="36" Margin="0,0,0,8" Padding="10,0"
                                          Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"
                                          VerticalContentAlignment="Center"/>
 
-                                <TextBlock Text="{x:Static res:Strings.Register_AreaLabel}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
-                                <TextBox x:Name="RegAreaBox"
+                                    <TextBlock Text="{x:Static res:Strings.Register_AreaLabel}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
+                                    <TextBox x:Name="RegAreaBox"
                                          Height="36" Margin="0,0,0,8" Padding="10,0"
                                          Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"
                                          VerticalContentAlignment="Center"/>
 
-                                <TextBlock Text="{x:Static res:Strings.Register_NoteLabel}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
-                                <TextBox x:Name="RegNoteBox"
+                                    <TextBlock Text="{x:Static res:Strings.Register_NoteLabel}" FontSize="13" Margin="5,0,0,4" Foreground="#555555"/>
+                                    <TextBox x:Name="RegNoteBox"
                                          Height="60" Margin="0,0,0,8"
                                          TextWrapping="Wrap" AcceptsReturn="True"
                                          Padding="8,6"
                                          Background="#FAFAFA" BorderBrush="#CCCCCC" BorderThickness="1"/>
-                            </StackPanel>
+                                </StackPanel>
 
-                            <Button x:Name="RegisterBtn"
+                                <Button x:Name="RegisterBtn"
                                     Content="{x:Static res:Strings.Register_Button_Register}"
                                     Height="44" Background="#4CAF50" Foreground="White"
                                     FontWeight="Bold" BorderThickness="0"
                                     Margin="0,8,0,12"
                                     Click="RegisterButton_Click"/>
 
-                            <Button Content="{x:Static res:Strings.Register_Button_BackToLogin}"
+                                <Button Content="{x:Static res:Strings.Register_Button_BackToLogin}"
                                     Height="40" Background="#DDDDDD" Foreground="#333333"
                                     FontWeight="SemiBold" BorderThickness="0"
                                     Click="BackToLoginButton_Click"/>
-                        </StackPanel>
-                    </Border>
+                            </StackPanel>
+                        </Border>
 
-                </Grid>
-            </ScrollViewer>
-        </Grid>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
     </Grid>
 </Window>
