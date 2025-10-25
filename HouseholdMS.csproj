@@ -315,6 +315,9 @@
     <Compile Include="View\Measurement\Tbs1000cView.xaml.cs">
       <DependentUpon>Tbs1000cView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\UsefulLinksView.xaml.cs">
+      <DependentUpon>UsefulLinksView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\UserControls\IrradianceTileControl.xaml.cs">
       <DependentUpon>IrradianceTileControl.xaml</DependentUpon>
     </Compile>
@@ -483,6 +486,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Measurement\Tbs1000cView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\UsefulLinksView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -902,6 +909,51 @@
     <Resource Include="Assets\MainMenuPics\mainpic.png" />
     <Resource Include="Assets\Logo\App.ico" />
     <Resource Include="App.ico" />
+    <Content Include="Assets\Links\376FC_ClampMeter_UserMan.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Links\DCPowerSupTS1001_userman_kr.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Links\GTC600_QuickST.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Links\GTC600_UserMan.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Links\HPSmartTankseries_Setup Guide.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Links\HPSmartTankseries_UserMan.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Links\IT8600UserManual_en.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Links\K4_userman_ch.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Links\MaxMultimetroDigital_UserManEs.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Links\MPPT_UserMan_En.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Links\Multimeter_UserMan_en.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Links\TBS1000COscilloscopeUserMan_en.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Links\VictronConnect.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Links\VictronUserMan_es.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Links\1_400.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="Assets\Logo\splash_720.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
